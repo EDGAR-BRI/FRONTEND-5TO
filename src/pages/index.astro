@@ -1,5 +1,4 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 import '../styles/global.css'
 
@@ -8,5 +7,110 @@ import '../styles/global.css'
 ---
 
 <Layout>
-	<Welcome />
+	<main class="min-h-screen bg-slate-950 text-white">
+		<div class="mx-auto max-w-6xl px-6 py-16">
+			<header class="flex flex-col gap-6">
+				<p class="text-sm uppercase tracking-[0.3em] text-slate-400">Proyecto de 5to semestre</p>
+				<h1 class="text-4xl font-semibold leading-tight sm:text-5xl">
+					Inicio del proyecto final
+				</h1>
+				<p class="max-w-2xl text-lg text-slate-300">
+					Este espacio presenta el trabajo del 5to semestre. Aquí podrás describir el objetivo, el impacto y el avance del proyecto.
+				</p>
+				<div class="flex flex-wrap gap-4">
+					<a
+						href="#"
+						class="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+					>
+						Resumen del proyecto
+					</a>
+					<a
+						href="#"
+						class="rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-white transition hover:border-slate-500"
+					>
+						Cronograma y metas
+					</a>
+				</div>
+			</header>
+
+			<section class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+				<div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+					<p class="text-sm text-slate-400">01</p>
+					<h2 class="mt-2 text-xl font-semibold">Tema y problemática</h2>
+					<p class="mt-3 text-slate-300">
+						Explica el contexto del proyecto de 5to semestre y la necesidad que aborda.
+					</p>
+				</div>
+				<div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+					<p class="text-sm text-slate-400">02</p>
+					<h2 class="mt-2 text-xl font-semibold">Objetivo del proyecto</h2>
+					<p class="mt-3 text-slate-300">
+						Resume la solución y qué resultados esperas al finalizar el semestre.
+					</p>
+				</div>
+				<div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+					<p class="text-sm text-slate-400">03</p>
+					<h2 class="mt-2 text-xl font-semibold">Entregables</h2>
+					<p class="mt-3 text-slate-300">
+						Lista los entregables clave: prototipo, documentación y presentación final.
+					</p>
+				</div>
+			</section>
+
+			<section class="mt-16 rounded-3xl border border-slate-800 bg-slate-900/60 p-8">
+				<div class="flex flex-col gap-6">
+					<div>
+						<p class="text-sm uppercase tracking-[0.3em] text-slate-400">Tecnologías</p>
+						<h2 class="mt-2 text-2xl font-semibold">Stack previsto para el proyecto</h2>
+						<p class="mt-3 text-slate-300">
+							Estas son las herramientas con las que planeamos construir la solución.
+						</p>
+					</div>
+					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+						<div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+							<p class="text-sm text-slate-400">Frontend</p>
+							<h3 class="mt-2 text-lg font-semibold">Astro</h3>
+							<p class="mt-2 text-sm text-slate-300">Arquitectura rápida y componentes.</p>
+						</div>
+						<div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+							<p class="text-sm text-slate-400">UI</p>
+							<h3 class="mt-2 text-lg font-semibold">Tailwind CSS</h3>
+							<p class="mt-2 text-sm text-slate-300">Diseño moderno y consistente.</p>
+						</div>
+						<div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+							<p class="text-sm text-slate-400">Lenguaje</p>
+							<h3 class="mt-2 text-lg font-semibold">TypeScript</h3>
+							<p class="mt-2 text-sm text-slate-300">Código seguro y escalable.</p>
+						</div>
+						<div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+							<p class="text-sm text-slate-400">Control</p>
+							<h3 class="mt-2 text-lg font-semibold">Git + GitHub</h3>
+							<p class="mt-2 text-sm text-slate-300">Versionamiento y colaboración.</p>
+						</div>
+					</div>
+					<div class="flex flex-wrap gap-2">
+						<span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">Astro</span>
+						<span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">Tailwind CSS</span>
+						<span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">TypeScript</span>
+						<span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">Node.js</span>
+						<span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">GitHub</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="mt-16 rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8">
+				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<h3 class="text-2xl font-semibold">¿Listo para presentar el avance?</h3>
+						<p class="mt-2 text-slate-300">
+							Personaliza con el nombre del proyecto, equipo y profesor.
+						</p>
+					</div>
+					<button class="rounded-full bg-indigo-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400">
+						Editar detalles
+					</button>
+				</div>
+			</section>
+		</div>
+	</main>
 </Layout>
