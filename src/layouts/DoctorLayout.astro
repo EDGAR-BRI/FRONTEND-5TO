@@ -4,7 +4,6 @@ import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
 import BottomNavbar from "@/components/astro/BottomNavbar.astro";
 const { title } = Astro.props;
-const {doctor_id} = Astro.params;
 
 const menuItems = [
 	{
@@ -14,7 +13,7 @@ const menuItems = [
 	},
 	{
 		label: "Agendas",
-		href: `agenda`,
+		href: `schedule`,
 		icon: "fa-solid fa-calendar-days",
 	},
 	{
@@ -50,7 +49,7 @@ const currentPath = Astro.url.pathname;
 		<ClientRouter />
 	</head>
 	<body
-		class="bg-cool-gray-100 text-cool-gray-10 font-sans antialiased relative overflow-x-hidden"
+		class="bg-primary-100 font-sans antialiased relative overflow-x-hidden"
 	>
 		<!-- Main Wrapper: Padded on left for desktop sidebar -->
 		<div
