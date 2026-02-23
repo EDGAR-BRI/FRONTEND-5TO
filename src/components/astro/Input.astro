@@ -5,7 +5,7 @@ const { placeholder, type, name, id, value, onChange } = Astro.props;
 <div class="flex flex-col gap-1">
     <label class="text-sm font-semibold text-gray-500" for={id}>{name}</label>
     <input
-        class="p-2 border-[1px] placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-blue-600 focus:border-2 focus:outline-none"
+        class="p-2 border placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-blue-600 focus:border-2 focus:outline-none"
         type={type}
         name={name}
         id={id}
