@@ -63,25 +63,25 @@ export function DataTable<T>({
     const pagination = response?.pagination;
 
     if (safeData.length === 0) {
-        return <div className="p-8 text-center text-cool-gray-40 bg-cool-gray-90 rounded border border-cool-gray-80">No hay datos que coincidan con tu búsqueda.</div>;
+        return <div className="p-8 text-center text-cool-gray-40 bg-primary-400 rounded border border-primary-600">No hay datos que coincidan con tu búsqueda.</div>;
     }
 
     return (
-        <div className="bg-cool-gray-90 border border-cool-gray-80 rounded-md overflow-hidden flex flex-col">
+        <div className="bg-primary-100 border-2 border-primary-300 rounded-md overflow-hidden flex flex-col">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-cool-gray-80">
-                    <thead className="bg-cool-gray-100">
+                <table className="min-w-full divide-y divide-primary-300">
+                    <thead className="bg-primary-300">
                         <tr>
                             {columns.map((col, index) => (
-                                <th key={index} className={`px-6 py-3 text-xs font-medium text-cool-gray-40 uppercase tracking-wider ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}`}>
+                                <th key={index} className={`px-6 py-3 text-xs font-semibold text-primary-900 uppercase tracking-wider ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}`}>
                                     {col.header}
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-cool-gray-80">
+                    <tbody className="divide-y divide-primary-300">
                         {safeData.map((item: any, rowIndex: number) => (
-                            <tr key={rowIndex} className="hover:bg-cool-gray-80/30 transition-colors">
+                            <tr key={rowIndex} className="hover:bg-primary-500/30 transition-colors">
                                 {columns.map((col, colIndex) => (
                                     <td key={colIndex} className={`px-6 py-4 whitespace-nowrap ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}`}>
                                         {col.cell ? col.cell(item) : (item as any)[col.accessorKey as string]}
@@ -95,8 +95,8 @@ export function DataTable<T>({
 
             {/* Footer de Paginación: Solo aparece si hay datos de paginación Y función para cambiar */}
             {pagination && onPageChange && (
-                <div className="bg-cool-gray-100 px-4 py-3 border-t border-cool-gray-80 flex items-center justify-between">
-                    <span className="text-xs text-cool-gray-40">
+                <div className="bg-primary-500 px-4 py-3 border-t border-primary-600 flex items-center justify-between">
+                    <span className="text-xs text-primary-900">
                         Pág <span className="text-white font-bold">{pagination.page}</span> de {pagination.totalPages}
                         <span className="ml-2 opacity-50">({pagination.total} registros)</span>
                     </span>

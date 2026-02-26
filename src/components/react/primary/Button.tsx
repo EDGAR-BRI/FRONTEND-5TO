@@ -1,7 +1,8 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef } from "react";
 import { Spinner } from "@/components/react/primary/Spinner";
 
-export type variant = 'primary' | 'secondary' | 'ghost' | 'danger-ghost';
+export type variant = "primary" | "secondary" | "ghost" | "danger-ghost";
+export type size = "default" | "sm" | "lg" | "icon";
 
 export const ButtonTheme = {
     PRIMARY: "primary" as variant,
@@ -13,81 +14,67 @@ export const ButtonTheme = {
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     label: string;
     variant?: variant;
+    size?: size;
     loading?: boolean;
     adaptive?: boolean;
 }
+
+const cx = (...classes: Array<string | undefined | false | null>) =>
+    classes.filter(Boolean).join(" ");
+
+const baseClasses =
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-[3px] focus-visible:ring-primary-300 focus-visible:border-primary-300";
+
+const variantClasses: Record<variant, string> = {
+    primary: "bg-primary text-white hover:bg-primary-600",
+    secondary:
+        "border border-primary-600 bg-primary-100 text-primary-700 hover:bg-primary-200",
+    ghost: "bg-transparent text-primary-700 hover:bg-primary-200",
+    "danger-ghost": "bg-transparent text-error hover:bg-error/10",
+};
+
+const sizeClasses: Record<size, string> = {
+    default: "h-9 px-4 py-2",
+    sm: "h-8 rounded-md gap-1.5 px-3",
+    lg: "h-10 rounded-md px-6",
+    icon: "h-9 w-9 p-0",
+};
 
 // 1. Envolvemos el componente con forwardRef<HTMLButtonElement, ButtonProps>
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     label,
     variant = ButtonTheme.PRIMARY,
+    size = "default",
     loading,
     adaptive = false,
     className = "",
     disabled,
+    children,
     ...props
 }, ref) => { // 2. Recibimos 'ref' como segundo argumento
 
     const isDisabled = disabled || loading;
 
-    // --- LÓGICA PARA BOTONES TIPO TEXTO (GHOST / DANGER) ---
-    if (variant === ButtonTheme.GHOST || variant === ButtonTheme.DANGER_GHOST) {
+	const content = children ?? label;
 
-        const colorClasses = variant === ButtonTheme.GHOST
-            ? "text-cool-gray-50 hover:text-primary-60 text-x" 
-            : "text-rose-500 hover:text-rose-700 text-x font-medium"; 
-
-        return (
-            <button
-                ref={ref} // 3. Conectamos la ref aquí
-                disabled={isDisabled}
-                {...props}
-                className={`
-                    transition-colors duration-200 font-medium text-x
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                    ${colorClasses} 
-                    ${className}
-                `}
-            >
-                <span className="flex items-center justify-center gap-2">
-                    {loading ? <Spinner className="w-4 h-4 text-current" /> : label}
-                </span>
-            </button>
-        );
-    }
-
-    // Lógica Primaria
-    if (variant === ButtonTheme.PRIMARY) {
-        return (
-            <button
-                ref={ref} // 3. Conectamos la ref aquí también
-                disabled={isDisabled}
-                {...props}
-                className={`group ${adaptive ? "w-full" : "w-auto"} relative rounded-md px-6 py-3 bg-primary-60 text-white font-bold uppercase tracking-wider overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(15,98,254,0.5)] active:scale-95 active:brightness-90 active:duration-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:hover:shadow-none disabled:bg-cool-gray-60 disabled:text-cool-gray-30 ${className}`}
-            >
-                {!isDisabled && (
-                    <div className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                )}
-                <span className="flex items-center justify-center text-sm font-medium gap-2">
-                    {loading ? <Spinner /> : label}
-                </span>
-            </button>
-        );
-    }
-
-    // Lógica Secundaria
-    return (
-        <button
-            ref={ref} // 3. Y aquí también
-            disabled={isDisabled}
-            {...props}
-            className={`px-6 rounded-md ${adaptive ? "w-full" : "w-auto"} text-sm py-3 border border-cool-gray-60 disabled:bg-cool-gray-60 text-cool-gray-30 hover:text-white hover:border-white uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:border-cool-gray-60 active:scale-95 active:brightness-90 active:duration-100 ${className}`}
-        >
-            <span className="flex items-center justify-center gap-2">
-                {loading ? <Spinner /> : label}
-            </span>
-        </button>
-    );
+	return (
+		<button
+			ref={ref}
+			disabled={isDisabled}
+			{...props}
+			className={cx(
+				baseClasses,
+				variantClasses[variant],
+				sizeClasses[size],
+				adaptive ? "w-full" : "w-auto",
+				loading ? "cursor-wait" : undefined,
+				className
+			)}
+		>
+			{loading ? <Spinner className="w-4 h-4 text-current" /> : null}
+			{content}
+		</button>
+	);
 });
 
 // Es útil para debugging en React DevTools

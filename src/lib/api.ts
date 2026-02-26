@@ -1,4 +1,6 @@
-export const API_URL = import.meta.env.PUBLIC_BACKEND_URL || "http://127.0.0.1:3000/api/v1";
+// Si no hay backend configurado, apuntamos a los endpoints locales de Astro.
+// Esto permite trabajar con mocks durante el desarrollo sin levantar un servidor aparte.
+export const API_URL = import.meta.env.PUBLIC_BACKEND_URL || "/api/v1";
 import Cookies from "js-cookie";
 import type { AstroCookies } from "astro";
 
