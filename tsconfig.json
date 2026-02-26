@@ -6,6 +6,7 @@
   ],
   "exclude": [
     "dist",
+    "src/components/ui prueba/**",
     "tailwind.config.mjs",
     "*.config.mjs"
   ],

@@ -43,7 +43,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
          - transition-opacity: Suavidad visual
       */}
       <div 
-        className="fixed inset-0 bg-cool-gray-90/60 backdrop-blur-sm transition-opacity" 
+        className="fixed inset-0 bg-primary-900/50 backdrop-blur-sm transition-opacity" 
         onClick={onClose} 
         aria-hidden="true"
       />
@@ -54,20 +54,20 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
       */}
       <div 
         ref={contentRef}
-        className="relative z-10 w-full max-w-lg bg-cool-gray-90 border border-cool-gray-70 rounded-md shadow-2xl transform transition-all"
+        className="relative z-10 w-full max-w-lg bg-primary-100 border-2 border-primary-300 rounded-md shadow-2xl transform transition-all"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         {/* Header Opcional */}
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-cool-gray-80">
-            <h3 className="text-lg font-medium text-white">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-primary-300">
+            <h3 className="text-lg font-semibold text-primary-900">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="text-cool-gray-40 hover:text-white transition-colors"
+              className="text-primary-700 hover:text-primary-900 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

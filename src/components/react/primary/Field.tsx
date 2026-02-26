@@ -89,13 +89,13 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
         return (
             <div className="flex flex-col gap-2 w-full">
                 <div className="flex items-center">
-                    <label className="font-medium text-xs text-cool-gray-40 w-fit px-1">
+                    <label className="font-medium text-xs text-primary-700 w-fit px-1">
                         {label}
                     </label>
                     {tooltip && <Tooltip text={tooltip} />}
                 </div>
                 <div
-                    className="grid gap-4 p-4 bg-cool-gray-90 rounded-lg border border-cool-gray-70"
+                    className="grid gap-4 p-4 bg-primary-100 rounded-lg border border-primary-300"
                     style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
                 >
                     {options.map((opt) => (
@@ -108,11 +108,11 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                                 value={opt.value}
                                 checked={value === opt.value}
                                 onChange={onChange}
-                                className="w-4 h-4 text-primary-60 accent-primary-60 cursor-pointer border-cool-gray-40 focus:ring-primary-60"
+                                className="w-4 h-4 text-primary-60 accent-primary-60 cursor-pointer border-primary-300 focus:ring-primary-60"
                                 disabled={disabled}
                                 {...props}
                             />
-                            <span className={`text-sm font-medium ${value === opt.value ? 'text-primary-60' : 'text-cool-gray-30'}`}>{opt.label} </span>
+                            <span className={`text-sm font-medium ${value === opt.value ? 'text-primary-700' : 'text-primary-600'}`}>{opt.label} </span>
                         </label>
                     ))}
                 </div>
@@ -124,7 +124,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
         setInputType(prev => prev === "password" ? "text" : "password");
     };
 
-    const bgClass = variant === "primary" ? "bg-cool-gray-100" : variant === "secondary" ? "bg-cool-gray-90" : "bg-cool-gray-80";
+    const bgClass = variant === "primary" ? "bg-primary-100" : variant === "secondary" ? "bg-primary-50" : "bg-primary-200/40";
     const isDate = inputType === 'date';
     const useCustomDatePicker = isDate && !useNativeDatePicker;
     // NOTE: Some browsers don't allow intermediate values like '-' in <input type="number">.
@@ -199,7 +199,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
     return (
         <div className="flex flex-col gap-1 w-full">
             <div className="flex items-center">
-                <label htmlFor={name} className="font-medium text-xs text-cool-gray-40 w-fit px-1">
+                <label htmlFor={name} className="font-medium text-xs text-primary-700 w-fit px-1">
                     {label}
                 </label>
                 {tooltip && <Tooltip text={tooltip} />}
@@ -220,7 +220,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                             readOnly
                             required={required}
                             disabled={disabled}
-                            className={`w-full h-10 text-cool-gray-10 ${bgClass} border border-cool-gray-80 rounded-md px-4 py-2 pr-10 text-body-s placeholder-cool-gray-40 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
+                            className={`w-full h-10 text-primary-900 ${bgClass} border border-primary-300 rounded-md px-4 py-2 pr-10 text-body-s placeholder-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
                             onClick={() => {
                                 if (!disabled) setIsDateOpen(v => !v);
                             }}
@@ -237,7 +237,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                                 onClick={() => {
                                     if (!disabled) setIsDateOpen(v => !v);
                                 }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-cool-gray-10 cursor-pointer"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-700 cursor-pointer"
                                 aria-label="Abrir calendario"
                                 tabIndex={-1}
                             >
@@ -260,7 +260,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         )}
 
                         {isDateOpen && !disabled && (
-                            <div className="absolute z-50 mt-2 w-fit min-w-72 rounded-lg border border-cool-gray-70 bg-cool-gray-90 p-3 shadow-xl">
+                            <div className="absolute z-50 mt-2 w-fit min-w-72 rounded-lg border border-primary-300 bg-primary-100 p-3 shadow-xl">
                                 <DayPicker
                                     mode="single"
                                     selected={selectedDate}
@@ -277,19 +277,19 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                                     classNames={{
                                         months: 'flex flex-col',
                                         month: 'space-y-3',
-                                        caption: 'flex justify-between items-center gap-2 text-cool-gray-10',
+                                        caption: 'flex justify-between items-center gap-2 text-primary-900',
                                         caption_label: 'text-sm font-semibold',
                                         nav: 'flex items-center gap-2',
-                                        nav_button: 'h-8 w-8 inline-flex items-center justify-center rounded-md border border-cool-gray-70 text-cool-gray-10 hover:bg-cool-gray-80',
+                                        nav_button: 'h-8 w-8 inline-flex items-center justify-center rounded-md border border-primary-300 text-primary-900 hover:bg-primary-200/50',
                                         table: 'w-full border-collapse space-y-1',
                                         head_row: 'flex',
-                                        head_cell: 'w-9 text-center text-[11px] font-semibold text-cool-gray-40',
+                                        head_cell: 'w-9 text-center text-[11px] font-semibold text-primary-700',
                                         row: 'flex w-full mt-1',
                                         cell: 'w-9 h-9 text-center text-sm',
-                                        day: 'w-9 h-9 rounded-md hover:bg-cool-gray-80 text-cool-gray-10',
-                                        day_selected: 'bg-primary-60 text-white hover:bg-primary-60',
-                                        day_today: 'border border-primary-30',
-                                        day_outside: 'text-cool-gray-60 opacity-60',
+                                        day: 'w-9 h-9 rounded-md hover:bg-primary-200/60 text-primary-900',
+                                        day_selected: 'bg-primary-600 text-white hover:bg-primary-600',
+                                        day_today: 'border border-primary-300',
+                                        day_outside: 'text-primary-400 opacity-60',
                                     }}
                                 />
                             </div>
@@ -312,7 +312,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         step={step}
                         inputMode={type === 'number' ? 'decimal' : undefined}
                         onKeyDown={handleKeyDown}
-                        className={`w-full h-10 text-cool-gray-10 ${bgClass} border border-cool-gray-80 rounded-md px-4 py-2 text-body-s placeholder-cool-gray-40 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isDate ? 'pr-10 gt-date-input' : ''}`}
+                        className={`w-full h-10 text-primary-900 ${bgClass} border border-primary-300 rounded-md px-4 py-2 text-body-s placeholder-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isDate ? 'pr-10 gt-date-input' : ''}`}
                         {...props}
                     />
                 )}
@@ -327,7 +327,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (internalInputRef.current as any)?.showPicker?.();
                         }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-cool-gray-10 cursor-pointer"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-700 cursor-pointer"
                         aria-label="Abrir calendario"
                     >
                         <svg
@@ -352,7 +352,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                     <button
                         type="button"
                         onClick={togglePassword}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-cool-gray-60 cursor-pointer"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-700 cursor-pointer"
                     >
                         {inputType === "password" ? (
                             <svg
