@@ -33,6 +33,9 @@
       "@/types/*": [
         "src/types/*"
       ],
+      "@/lib/*": [
+        "src/lib/*"
+      ],
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react"
