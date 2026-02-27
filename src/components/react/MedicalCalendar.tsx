@@ -1,12 +1,11 @@
 import { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useNextCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
 import {
   createViewDay,
+  createViewList,
   createViewWeek,
   createViewMonthGrid,
-  createPreactView,
-  setRangeForMonth,
-  toJSDate,
   type CalendarEvent,
   type CalendarType,
 } from '@schedule-x/calendar'
@@ -15,8 +14,6 @@ import { createEventModalPlugin } from '@schedule-x/event-modal'
 import { mergeLocales, translations as sxTranslations, esES } from '@schedule-x/translations'
 import '@schedule-x/theme-default/dist/index.css'
 import 'temporal-polyfill/global'
-
-import { Fragment, h } from 'preact'
 
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 
@@ -36,229 +33,6 @@ type ClinicalEvent = CalendarEvent & {
   metadata: ClinicalMetadata
 }
 
-type ListViewProps = {
-  $app: any
-  id: string
-}
-
-function toPlainDateString(dateTime: any): string {
-  if (!dateTime) return ''
-  if (typeof dateTime.toPlainDate === 'function') return dateTime.toPlainDate().toString()
-  return String(dateTime)
-}
-
-function buildDaysWithEventsInRange($app: any): Array<{ date: string; events: any[] }> {
-  const range = $app?.calendarState?.range?.value
-  if (!range?.start || !range?.end) return []
-
-  const start = range.start.toPlainDate()
-  const end = range.end.toPlainDate()
-
-  const events: any[] = $app?.calendarEvents?.list?.value ?? []
-  const byDate = new Map<string, any[]>()
-
-  for (const event of events) {
-    const startDateString = toPlainDateString(event.start)
-    const endDateString = toPlainDateString(event.end)
-    if (!startDateString) continue
-
-    const eventStart = Temporal.PlainDate.from(startDateString)
-    const eventEnd = endDateString ? Temporal.PlainDate.from(endDateString) : eventStart
-
-    const clippedStart = Temporal.PlainDate.compare(eventStart, start) < 0 ? start : eventStart
-    const clippedEnd = Temporal.PlainDate.compare(eventEnd, end) > 0 ? end : eventEnd
-
-    if (Temporal.PlainDate.compare(clippedStart, clippedEnd) > 0) continue
-
-    for (
-      let cursor = clippedStart;
-      Temporal.PlainDate.compare(cursor, clippedEnd) <= 0;
-      cursor = cursor.add({ days: 1 })
-    ) {
-      const key = cursor.toString()
-      const arr = byDate.get(key)
-      if (arr) arr.push(event)
-      else byDate.set(key, [event])
-    }
-  }
-
-  const days = Array.from(byDate.entries())
-    .map(([date, dayEvents]) => ({ date, events: dayEvents }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-
-  for (const day of days) {
-    day.events.sort((a, b) => String(a.start).localeCompare(String(b.start)))
-  }
-
-  return days
-}
-
-function formatListTimeAmPm($app: any, event: any): string {
-  if (!(event.start instanceof Temporal.ZonedDateTime) || !(event.end instanceof Temporal.ZonedDateTime)) {
-    return ''
-  }
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }
-
-  const startZDT = Temporal.ZonedDateTime.from({
-    year: event.start.year,
-    month: event.start.month,
-    day: event.start.day,
-    hour: event.start.hour,
-    minute: event.start.minute,
-    timeZone: $app.config.timezone.value,
-  })
-  const endZDT = Temporal.ZonedDateTime.from({
-    year: event.end.year,
-    month: event.end.month,
-    day: event.end.day,
-    hour: event.end.hour,
-    minute: event.end.minute,
-    timeZone: $app.config.timezone.value,
-  })
-
-  const startLabel = startZDT.toLocaleString('en-US', timeOptions)
-  const endLabel = endZDT.toLocaleString('en-US', timeOptions)
-  return `${startLabel} – ${endLabel}`
-}
-
-const viewListAmPm = createPreactView({
-  name: 'list',
-  label: 'Lista',
-  setDateRange: setRangeForMonth,
-  Component: ({ $app, id }: ListViewProps) => {
-    const daysWithEvents = buildDaysWithEventsInRange($app)
-
-    return h(
-      'div',
-      { id, className: 'sx__list-wrapper' },
-      daysWithEvents.length === 0
-        ? h('div', { className: 'sx__list-no-events' }, $app.translate('No events'))
-        : daysWithEvents.map((day) => {
-            const dayLabel = toJSDate(day.date).toLocaleDateString($app.config.locale.value, {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })
-
-            return h(
-              'div',
-              { key: day.date, className: 'sx__list-day', 'data-date': day.date },
-              h(
-                'div',
-                { className: 'sx__list-day-header' },
-                h('div', { className: 'sx__list-day-date' }, dayLabel)
-              ),
-              h(
-                'div',
-                { className: 'sx__list-day-events' },
-                day.events.map((event) => {
-                  const classNames = ['sx__event', 'sx__list-event']
-                  if (event?._options?.additionalClasses) classNames.push(...event._options.additionalClasses)
-
-                  const onClick = (e: UIEvent) => {
-                    const target = e.currentTarget as unknown as HTMLElement | null
-                    const plugin = $app?.config?.plugins?.eventModal
-                    if (plugin && target) {
-                      plugin.calendarEventElement.value = target
-                      plugin.setCalendarEvent(event, target.getBoundingClientRect())
-                    }
-
-                    $app?.config?.callbacks?.onEventClick?.(
-                      event._getExternalEvent ? event._getExternalEvent() : event,
-                      e
-                    )
-                  }
-
-                  const onDoubleClick = (e: UIEvent) => {
-                    $app?.config?.callbacks?.onDoubleClickEvent?.(
-                      event._getExternalEvent ? event._getExternalEvent() : event,
-                      e
-                    )
-                  }
-
-                  const onKeyDown = (e: KeyboardEvent) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.stopPropagation()
-                      onClick(e as unknown as UIEvent)
-                    }
-                  }
-
-                  const dayDate = day.date
-                  const startDate = toPlainDateString(event.start)
-                  const endDate = toPlainDateString(event.end)
-                  const isMultiDay = startDate && endDate && startDate !== endDate
-                  const isFirstDay = startDate === dayDate
-                  const isLastDay = endDate === dayDate
-
-                  const timeText = formatListTimeAmPm($app, event)
-                  const [startText, endText] = timeText ? timeText.split(' – ') : ['', '']
-
-                  const timeNode = !timeText
-                    ? null
-                    : !isMultiDay
-                      ? h(
-                          Fragment,
-                          null,
-                          h('div', { className: 'sx__list-event-start-time' }, startText),
-                          h('div', { className: 'sx__list-event-end-time' }, endText)
-                        )
-                      : isFirstDay
-                        ? h(
-                            Fragment,
-                            null,
-                            h('div', { className: 'sx__list-event-start-time' }, startText),
-                            h('div', { className: 'sx__list-event-arrow' }, '→')
-                          )
-                        : isLastDay
-                          ? h(
-                              Fragment,
-                              null,
-                              h('div', { className: 'sx__list-event-arrow' }, '←'),
-                              h('div', { className: 'sx__list-event-end-time' }, endText)
-                            )
-                          : h('div', { className: 'sx__list-event-arrow' }, '↔')
-
-                  return h(
-                    'div',
-                    {
-                      key: event.id,
-                      className: classNames.join(' '),
-                      onClick,
-                      onDblClick: onDoubleClick,
-                      onKeyDown,
-                      tabIndex: 0,
-                      role: 'button',
-                    },
-                    h('div', {
-                      className: 'sx__list-event-color-line',
-                      style: { backgroundColor: `var(--sx-color-${event._color})` },
-                    }),
-                    h(
-                      'div',
-                      { className: 'sx__list-event-content' },
-                      h('div', { className: 'sx__list-event-title' }, event.title),
-                      h('div', { className: 'sx__list-event-times' }, timeNode)
-                    )
-                  )
-                })
-              ),
-              h('div', { className: 'sx__list-day-margin' })
-            )
-          })
-    )
-  },
-  hasSmallScreenCompat: true,
-  hasWideScreenCompat: true,
-  backwardForwardFn: (to: Temporal.ZonedDateTime | Temporal.PlainDate, n: number) => to.add({ months: n }),
-  backwardForwardUnits: 1,
-})
-
 const appointmentTypeLabel: Record<AppointmentType, string> = {
   'first-visit': 'Primera vez',
   'follow-up': 'Control',
@@ -270,17 +44,6 @@ const appointmentStatusLabel: Record<AppointmentStatus, string> = {
   confirmed: 'Confirmada',
   attended: 'Atendida',
   cancelled: 'Cancelada',
-}
-
-function atTime12(
-  base: Temporal.ZonedDateTime,
-  hour: number,
-  minute: number,
-  dayPeriod: 'AM' | 'PM'
-) {
-  const normalizedHour = ((hour % 12) + 12) % 12
-  const hour24 = dayPeriod === 'PM' ? normalizedHour + 12 : normalizedHour
-  return base.with({ hour: hour24, minute, second: 0, millisecond: 0 })
 }
 
 function withClinicalEventUI(event: ClinicalEvent): ClinicalEvent {
@@ -365,9 +128,9 @@ export default function MedicalCalendar() {
 
   const events = useMemo<ClinicalEvent[]>(() => {
     const now = Temporal.Now.zonedDateTimeISO()
-    const start1 = atTime12(now, 9, 0, 'AM')
-    const start2 = atTime12(now, 11, 30, 'AM')
-    const start3 = atTime12(now, 1, 0, 'PM')
+    const start1 = now.with({ hour: 9, minute: 0, second: 0, millisecond: 0 })
+    const start2 = now.with({ hour: 11, minute: 30, second: 0, millisecond: 0 })
+    const start3 = now.with({ hour: 13, minute: 0, second: 0, millisecond: 0 })
 
     return [
       withClinicalEventUI({
@@ -413,26 +176,15 @@ export default function MedicalCalendar() {
   }, [])
 
   const calendar = useNextCalendarApp({
-    // NI SE LES OCURRA MOVER ESTA CONFIGURACIÓN DE LUGAR, O SE ROMPE LA INTERNACIONALIZACIÓN DE LAS FECHAS 
-    // Y TODO EL PROYECTO SE IRA A LA MIERDA:
-    locale: 'es-US',
-    translations: mergeLocales(sxTranslations, { esUS: esES }),
-    // FIN DE LA CONFIGURACIÓN CRÍTICA PARA FECHAS. NO MOVER NI MODIFICAR NADA.
+    locale: 'es-ES',
     firstDayOfWeek: 1,
     selectedDate,
     dayBoundaries: {
       start: '06:00',
       end: '22:00',
     },
-    weekOptions: {
-      timeAxisFormatOptions: {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      },
-    },
     defaultView: 'week',
-    views: [createViewDay(), createViewWeek(), createViewMonthGrid(), viewListAmPm],
+    views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewList()],
 
     calendars,
     events,
@@ -527,6 +279,8 @@ export default function MedicalCalendar() {
 
   return (
     // 3. ALTURA DEFINIDA: Si el padre no tiene altura, los cálculos de coordenadas de Temporal fallan.
+    <div className="calendar-container h-full min-h-0 overflow-hidden">
+      <ScheduleXCalendar calendarApp={calendar} customComponents={customComponents} />
     <div className="calendar-container h-full min-h-0 overflow-hidden">
       <ScheduleXCalendar calendarApp={calendar} customComponents={customComponents} />
     </div>

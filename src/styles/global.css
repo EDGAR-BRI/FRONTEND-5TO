@@ -91,3 +91,50 @@ input.gt-date-input::-webkit-calendar-picker-indicator {
   position: absolute;
   right: 0;
 }
+
+/* Schedule-X (Agenda Clínica) */
+.calendar-container {
+  min-height: 0;
+}
+
+.calendar-container .sx-react-calendar-wrapper {
+  height: 100%;
+  min-height: 0;
+}
+
+.sx__time-grid-event.sx-status-cancelled,
+.sx__date-grid-event.sx-status-cancelled,
+.sx__month-grid-event.sx-status-cancelled {
+  opacity: 0.5;
+}
+
+.sx__time-grid-event.sx-status-cancelled,
+.sx__date-grid-event.sx-status-cancelled,
+.sx__month-grid-event.sx-status-cancelled {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.sx__time-grid-event.sx-calendar-bloqueo .sx__time-grid-event-inner,
+.sx__date-grid-event.sx-calendar-bloqueo,
+.sx__month-grid-event.sx-calendar-bloqueo {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.12) 0,
+    rgba(0, 0, 0, 0.12) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+.is-dark .sx__time-grid-event.sx-calendar-bloqueo .sx__time-grid-event-inner,
+.is-dark .sx__date-grid-event.sx-calendar-bloqueo,
+.is-dark .sx__month-grid-event.sx-calendar-bloqueo {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.14) 0,
+    rgba(255, 255, 255, 0.14) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
