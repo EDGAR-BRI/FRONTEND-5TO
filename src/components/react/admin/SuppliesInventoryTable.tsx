@@ -1,21 +1,8 @@
 import { DataTable, type Column } from "@/components/react/primary/DataTable";
 import { Badge } from "@/components/react/primary/Badge";
+import EditProductModalTrigger from "@/components/react/admin/EditProductModalTrigger";
 
-export type InventoryItemType = "INSUMO" | "SERVICIO";
-export type InventoryStatus = "ACTIVO" | "INACTIVO";
-
-export type InventoryItem = {
-	id: number;
-	type: InventoryItemType;
-	name: string;
-	category: string;
-	unit?: string;
-	price: number;
-	stock?: number;
-	minStock?: number;
-	available?: boolean;
-	status: InventoryStatus;
-};
+import type { InventoryItem, InventoryItemType } from "@/types/Inventory";
 
 const money = (value: number) =>
 	new Intl.NumberFormat("es-EC", {
@@ -126,6 +113,16 @@ export default function SuppliesInventoryTable({ businessId = 1 }: { businessId?
 				<Badge styles={statusBadgeStyles(item.status === "ACTIVO" ? "success" : "neutral")}>
 					{item.status}
 				</Badge>
+			),
+		},
+		{
+			header: "Acciones",
+			align: "center",
+			cell: (item) => (
+				<div className="flex justify-center gap-2">
+					<EditProductModalTrigger item={item} />
+					<button className="text-primary-600 hover:text-primary-800">Eliminar</button>
+				</div>
 			),
 		},
 	];
