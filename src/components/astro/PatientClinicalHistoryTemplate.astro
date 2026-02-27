@@ -1,0 +1,207 @@
+---
+export type Props = {
+  patientId: string
+  mode?: 'doctor' | 'pacient'
+}
+
+const { patientId, mode = 'doctor' } = Astro.props
+
+function hashToIndex(input: string, max: number) {
+  let hash = 0
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0
+  }
+  return max <= 0 ? 0 : hash % max
+}
+
+function makeMockHistory(id: string) {
+  const names = ['María Pérez', 'Carlos Gómez', 'Ana Rodríguez', 'Luis Fernández', 'Sofía Martínez']
+  const bloodTypes = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-']
+
+  const fullName = names[hashToIndex(id, names.length)]
+  const bloodType = bloodTypes[hashToIndex(id + 'blood', bloodTypes.length)]
+
+  return {
+    patient: {
+      id,
+      fullName,
+      document: `DOC-${id.slice(0, 8) || '00000000'}`,
+      sex: ['Femenino', 'Masculino'][hashToIndex(id + 'sex', 2)],
+      age: 24 + hashToIndex(id + 'age', 43),
+      bloodType,
+      phone: '+1 (555) 010-2026',
+      email: 'paciente@example.com',
+      emergencyContact: 'Contacto: Familiar (555) 010-1111',
+    },
+    alerts: {
+      allergies: ['Penicilina', 'Mariscos'].slice(0, 1 + hashToIndex(id + 'all', 2)),
+      chronicConditions: ['Hipertensión', 'Asma'].slice(0, hashToIndex(id + 'cc', 3)),
+      notes: 'Plantilla temporal (sin backend).',
+    },
+    medications: [
+      { name: 'Losartán 50mg', sig: '1 tableta diaria', status: 'Activa' },
+      { name: 'Ibuprofeno 400mg', sig: 'Según dolor (máx. 3/día)', status: 'PRN' },
+    ],
+    visits: [
+      {
+        date: '2026-02-20',
+        specialty: 'Medicina General',
+        reason: 'Control',
+        diagnosis: 'Evolución favorable',
+        plan: 'Mantener tratamiento. Control en 4 semanas.',
+      },
+      {
+        date: '2026-01-10',
+        specialty: 'Urgencias',
+        reason: 'Dolor torácico',
+        diagnosis: 'Dolor musculoesquelético',
+        plan: 'AINEs y reposo. Signos de alarma explicados.',
+      },
+    ],
+    labs: [
+      { date: '2026-02-15', test: 'Hemograma', result: 'Sin alteraciones', status: 'Normal' },
+      { date: '2026-02-15', test: 'Glucosa', result: '92 mg/dL', status: 'Normal' },
+      { date: '2026-02-15', test: 'Colesterol LDL', result: '118 mg/dL', status: 'Leve' },
+    ],
+    files: [
+      { date: '2026-02-20', name: 'Resumen de consulta.pdf', type: 'PDF' },
+      { date: '2026-01-10', name: 'Nota de urgencias.pdf', type: 'PDF' },
+    ],
+  }
+}
+
+const data = makeMockHistory(patientId)
+---
+
+<section class="p-6 lg:p-8">
+  <div class="flex flex-col gap-1 mb-6">
+    <h1 class="text-2xl font-semibold text-primary-800">Historial Clínico</h1>
+    <div class="text-sm text-primary-700">
+      <span class="font-medium">Paciente:</span> {data.patient.fullName}
+      <span class="mx-2">•</span>
+      <span class="font-medium">ID:</span> {data.patient.id}
+      <span class="mx-2">•</span>
+      <span class="font-medium">Modo:</span> {mode === 'pacient' ? 'Paciente' : 'Doctor'}
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 bg-white border border-primary-200 rounded-lg p-4">
+      <h2 class="text-base font-semibold text-primary-800 mb-3">Datos del paciente</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <div><span class="text-primary-700 font-medium">Documento:</span> {data.patient.document}</div>
+        <div><span class="text-primary-700 font-medium">Edad:</span> {data.patient.age}</div>
+        <div><span class="text-primary-700 font-medium">Sexo:</span> {data.patient.sex}</div>
+        <div><span class="text-primary-700 font-medium">Tipo de sangre:</span> {data.patient.bloodType}</div>
+        <div><span class="text-primary-700 font-medium">Teléfono:</span> {data.patient.phone}</div>
+        <div><span class="text-primary-700 font-medium">Email:</span> {data.patient.email}</div>
+        <div class="sm:col-span-2"><span class="text-primary-700 font-medium">Emergencia:</span> {data.patient.emergencyContact}</div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-primary-200 rounded-lg p-4">
+      <h2 class="text-base font-semibold text-primary-800 mb-3">Alertas</h2>
+      <div class="space-y-3 text-sm">
+        <div>
+          <div class="text-primary-700 font-medium">Alergias</div>
+          {data.alerts.allergies.length ? (
+            <ul class="list-disc pl-5">
+              {data.alerts.allergies.map((a) => (
+                <li>{a}</li>
+              ))}
+            </ul>
+          ) : (
+            <div class="text-primary-700">Sin alergias registradas.</div>
+          )}
+        </div>
+        <div>
+          <div class="text-primary-700 font-medium">Crónicos</div>
+          {data.alerts.chronicConditions.length ? (
+            <ul class="list-disc pl-5">
+              {data.alerts.chronicConditions.map((c) => (
+                <li>{c}</li>
+              ))}
+            </ul>
+          ) : (
+            <div class="text-primary-700">Sin condiciones crónicas registradas.</div>
+          )}
+        </div>
+        <div class="text-xs text-primary-700">{data.alerts.notes}</div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-primary-200 rounded-lg p-4">
+      <h2 class="text-base font-semibold text-primary-800 mb-3">Medicamentos</h2>
+      <div class="space-y-2 text-sm">
+        {data.medications.map((m) => (
+          <div class="border border-primary-200 rounded-md p-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-medium text-primary-800">{m.name}</div>
+              <div class="text-xs text-primary-700">{m.status}</div>
+            </div>
+            <div class="text-primary-700">{m.sig}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 bg-white border border-primary-200 rounded-lg p-4">
+      <h2 class="text-base font-semibold text-primary-800 mb-3">Consultas recientes</h2>
+      <div class="space-y-3">
+        {data.visits.map((v) => (
+          <div class="border border-primary-200 rounded-md p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="text-sm font-semibold text-primary-800">{v.specialty}</div>
+              <div class="text-xs text-primary-700">{v.date}</div>
+            </div>
+            <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div>
+                <div class="text-primary-700 font-medium">Motivo</div>
+                <div class="text-primary-800">{v.reason}</div>
+              </div>
+              <div>
+                <div class="text-primary-700 font-medium">Diagnóstico</div>
+                <div class="text-primary-800">{v.diagnosis}</div>
+              </div>
+              <div>
+                <div class="text-primary-700 font-medium">Plan</div>
+                <div class="text-primary-800">{v.plan}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="bg-white border border-primary-200 rounded-lg p-4">
+      <h2 class="text-base font-semibold text-primary-800 mb-3">Resultados</h2>
+      <div class="space-y-2 text-sm">
+        {data.labs.map((l) => (
+          <div class="flex items-start justify-between gap-3 border border-primary-200 rounded-md p-3">
+            <div>
+              <div class="font-medium text-primary-800">{l.test}</div>
+              <div class="text-primary-700">{l.result}</div>
+              <div class="text-xs text-primary-700">{l.date}</div>
+            </div>
+            <div class="text-xs text-primary-700">{l.status}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="lg:col-span-3 bg-white border border-primary-200 rounded-lg p-4">
+      <h2 class="text-base font-semibold text-primary-800 mb-3">Documentos</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        {data.files.map((f) => (
+          <div class="flex items-center justify-between gap-3 border border-primary-200 rounded-md p-3">
+            <div>
+              <div class="font-medium text-primary-800">{f.name}</div>
+              <div class="text-xs text-primary-700">{f.type} • {f.date}</div>
+            </div>
+            <div class="text-xs text-primary-700">(Mock)</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

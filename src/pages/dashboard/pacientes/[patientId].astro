@@ -1,0 +1,10 @@
+---
+import DoctorLayout from '@/layouts/DoctorLayout.astro'
+import PatientClinicalHistoryTemplate from '@/components/astro/PatientClinicalHistoryTemplate.astro'
+
+const patientId = Astro.params.patientId ?? 'unknown'
+---
+
+<DoctorLayout title="Historia clínica">
+  <PatientClinicalHistoryTemplate patientId={patientId} mode="doctor" />
+</DoctorLayout>
