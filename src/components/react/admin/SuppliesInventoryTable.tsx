@@ -1,4 +1,3 @@
-import React from "react";
 import { DataTable, type Column } from "@/components/react/primary/DataTable";
 import { Badge } from "@/components/react/primary/Badge";
 

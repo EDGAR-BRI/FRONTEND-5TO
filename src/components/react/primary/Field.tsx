@@ -199,7 +199,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
     return (
         <div className="flex flex-col gap-1 w-full">
             <div className="flex items-center">
-                <label htmlFor={name} className="font-medium text-xs text-primary-700 w-fit px-1">
+                <label htmlFor={name} className="font-medium text-sm text-primary-700 w-fit px-1">
                     {label}
                 </label>
                 {tooltip && <Tooltip text={tooltip} />}
@@ -312,7 +312,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         step={step}
                         inputMode={type === 'number' ? 'decimal' : undefined}
                         onKeyDown={handleKeyDown}
-                        className={`w-full h-10 text-primary-900 ${bgClass} border border-primary-300 rounded-md px-4 py-2 text-body-s placeholder-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isDate ? 'pr-10 gt-date-input' : ''}`}
+                        className={`w-full h-10 text-primary-900 ${bgClass} border border-primary-300 rounded-md px-4 py-2 text-body-s placeholder-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isDate ? 'pr-10 gt-date-input' : ''}`}
                         {...props}
                     />
                 )}

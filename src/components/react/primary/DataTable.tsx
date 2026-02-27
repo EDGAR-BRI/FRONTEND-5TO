@@ -35,7 +35,6 @@ interface DataTableProps<T> {
 
 export function DataTable<T>({ 
     endpoint, 
-    businessId, 
     columns, 
     isLoading: externalLoading, 
     currentPage, 
@@ -44,7 +43,7 @@ export function DataTable<T>({
 
     // Usamos 'any' en el tipo de respuesta para soportar ambos formatos (Array y Objeto)
     const { data: response, error, isLoading: swrLoading } = useSWR<any>(
-        businessId ? [endpoint, businessId] : null,
+        endpoint + (currentPage ? `?page=${currentPage}` : ''),
         fetcher
     );
 

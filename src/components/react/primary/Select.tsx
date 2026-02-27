@@ -170,14 +170,14 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
         };
     }, [isOpen]);
 
-    const bgClass = variant === "secondary" ? "bg-cool-gray-100" : "bg-cool-gray-90";
+    const bgClass = variant === "secondary" ? "bg-primary-50" : "bg-primary-100";
 
     return (
         <div className="flex flex-col gap-2 w-full">
             {(label || tooltip) && (
                 <div className="flex items-center">
                     {label && (
-                        <label className="font-medium text-sm text-cool-gray-40 w-fit px-1">
+                        <label className="font-medium text-sm text-primary-700 w-fit px-1">
                             {label}
                         </label>
                     )}
@@ -199,17 +199,17 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
                 <div
                     ref={setRef}
                     tabIndex={0}
-                    className={`w-full h-10 rounded-md px-4 py-2 text-body-s text-white flex items-center justify-between cursor-pointer transition-all border border-cool-gray-80  outline-none relative select-none ${bgClass} ${isOpen ? 'border-primary-60 ring-2 ring-primary-60/50' : 'border-cool-gray-60 hover:border-primary-60'} focus:border-primary-60 focus:ring-1 focus:ring-primary-60`}
+                    className={`w-full h-10 rounded-md px-4 py-2 text-body-s text-primary-700 flex items-center justify-between cursor-pointer transition-all border border-primary-300  outline-none relative select-none ${bgClass} ${isOpen ? 'border-primary-60 ring-2 ring-primary-60/50' : 'border-primary-300 hover:border-primary-60'} focus:border-primary-60 focus:ring-1 focus:ring-primary-60`}
                     onClick={toggle}
                     onKeyDown={handleKeyDown}
                 >
-                    <span className={!selectedOption ? "text-cool-gray-40" : ""}>
+                    <span className={!selectedOption ? "text-primary-400" : ""}>
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
 
                     {/* Arrow Icon */}
                     <svg
-                        className={`w-4 h-4 text-cool-gray-40 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-primary-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

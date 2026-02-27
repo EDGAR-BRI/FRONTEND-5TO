@@ -21,10 +21,10 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ label, checked, onChange, na
                         checked={checked}
                         onChange={onChange}
                     />
-                    <div className="peer rounded-full outline-none duration-100 after:duration-500 w-20 h-10 bg-cool-gray-30 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-60 after:content-['No'] after:absolute after:outline-none after:rounded-full after:h-8 after:w-8 after:bg-white after:top-1 after:left-1 after:flex after:justify-center after:items-center after:text-cool-gray-50 after:font-bold peer-checked:bg-primary-60 peer-checked:after:translate-x-10 peer-checked:after:content-['Sí'] peer-checked:after:border-white peer-checked:after:text-black">
+                    <div className="peer rounded-full outline-none duration-100 after:duration-500 w-20 h-10 bg-primary-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-60 after:content-['No'] after:absolute after:outline-none after:rounded-full after:h-8 after:w-8 after:bg-white after:top-1 after:left-1 after:flex after:justify-center after:items-center after:text-cool-gray-50 after:font-bold peer-checked:bg-primary-60 peer-checked:after:translate-x-10 peer-checked:after:content-['Sí'] peer-checked:after:border-white peer-checked:after:text-black">
                     </div>
                 </label>
-                <span className="text-body-s font-medium text-cool-gray-30">{label}</span>
+                <span className="text-body-s font-medium text-primary">{label}</span>
             </label>
         );
     }
@@ -36,9 +36,9 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ label, checked, onChange, na
                 name={name}
                 checked={checked}
                 onChange={onChange}
-                className="w-4 h-4 rounded border-cool-gray-40 text-primary-60 checked:bg-primary-60 accent-primary-60 bg-transparent focus:ring-primary-60"
+                className="w-4 h-4 rounded border-primary-300 text-primary-60 checked:bg-primary-60 accent-primary-60 bg-transparent focus:ring-primary-60"
             />
-            <span className="text-body-s text-cool-gray-20">{label}</span>
+            <span className="text-body-s text-primary-700">{label}</span>
         </label>
     );
 };
