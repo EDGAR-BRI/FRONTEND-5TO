@@ -17,6 +17,7 @@
     "@schedule-x/event-modal": "^4.2.0",
     "@schedule-x/react": "^4.1.0",
     "@schedule-x/theme-default": "^4.2.0",
+    "@schedule-x/translations": "^4.2.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

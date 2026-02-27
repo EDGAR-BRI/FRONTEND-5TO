@@ -10,6 +10,7 @@ import {
 } from '@schedule-x/calendar'
 import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop'
 import { createEventModalPlugin } from '@schedule-x/event-modal'
+import { mergeLocales, translations as sxTranslations, esES } from '@schedule-x/translations'
 import '@schedule-x/theme-default/dist/index.css'
 import 'temporal-polyfill/global'
 
@@ -42,6 +43,17 @@ const appointmentStatusLabel: Record<AppointmentStatus, string> = {
   confirmed: 'Confirmada',
   attended: 'Atendida',
   cancelled: 'Cancelada',
+}
+
+function atTime12(
+  base: Temporal.ZonedDateTime,
+  hour: number,
+  minute: number,
+  dayPeriod: 'AM' | 'PM'
+) {
+  const normalizedHour = ((hour % 12) + 12) % 12
+  const hour24 = dayPeriod === 'PM' ? normalizedHour + 12 : normalizedHour
+  return base.with({ hour: hour24, minute, second: 0, millisecond: 0 })
 }
 
 function withClinicalEventUI(event: ClinicalEvent): ClinicalEvent {
@@ -126,9 +138,9 @@ export default function MedicalCalendar() {
 
   const events = useMemo<ClinicalEvent[]>(() => {
     const now = Temporal.Now.zonedDateTimeISO()
-    const start1 = now.with({ hour: 9, minute: 0, second: 0, millisecond: 0 })
-    const start2 = now.with({ hour: 11, minute: 30, second: 0, millisecond: 0 })
-    const start3 = now.with({ hour: 13, minute: 0, second: 0, millisecond: 0 })
+    const start1 = atTime12(now, 9, 0, 'AM')
+    const start2 = atTime12(now, 11, 30, 'AM')
+    const start3 = atTime12(now, 1, 0, 'PM')
 
     return [
       withClinicalEventUI({
@@ -174,12 +186,20 @@ export default function MedicalCalendar() {
   }, [])
 
   const calendar = useNextCalendarApp({
-    locale: 'es-ES',
+    locale: 'es-US',
+    translations: mergeLocales(sxTranslations, { esUS: esES }),
     firstDayOfWeek: 1,
     selectedDate,
     dayBoundaries: {
       start: '06:00',
       end: '22:00',
+    },
+    weekOptions: {
+      timeAxisFormatOptions: {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      },
     },
     defaultView: 'week',
     views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewList()],
