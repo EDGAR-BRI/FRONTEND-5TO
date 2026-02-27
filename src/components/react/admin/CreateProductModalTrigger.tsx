@@ -162,7 +162,7 @@ export default function CreateProductModalTrigger() {
 					</div>
 
 					<div className="flex flex-col gap-1 w-full">
-						<label className="font-medium text-xs text-cool-gray-40 w-fit px-1">
+						<label className="font-medium text-xs text-primary-700 w-fit px-1">
 							Descripción
 						</label>
 						<textarea
@@ -171,7 +171,7 @@ export default function CreateProductModalTrigger() {
 							onChange={(e) => set("description", e.target.value)}
 							placeholder="Opcional"
 							rows={3}
-							className="w-full text-cool-gray-10 bg-cool-gray-100 border border-cool-gray-80 rounded-md px-4 py-2 text-body-s placeholder-cool-gray-40 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200"
+							className="w-full text-cool-gray-10 bg-primary-100 border border-primary-300 rounded-md px-4 py-2 text-body-s placeholder-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200"
 						/>
 					</div>
 
