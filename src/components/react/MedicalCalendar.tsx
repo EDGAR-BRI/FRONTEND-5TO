@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useNextCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
 import {
   createViewDay,
-  createViewList,
   createViewWeek,
   createViewMonthGrid,
   createPreactView,
