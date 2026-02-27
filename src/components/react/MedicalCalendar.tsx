@@ -414,8 +414,11 @@ export default function MedicalCalendar() {
   }, [])
 
   const calendar = useNextCalendarApp({
+    // NI SE LES OCURRA MOVER ESTA CONFIGURACIÓN DE LUGAR, O SE ROMPE LA INTERNACIONALIZACIÓN DE LAS FECHAS 
+    // Y TODO EL PROYECTO SE IRA A LA MIERDA:
     locale: 'es-US',
     translations: mergeLocales(sxTranslations, { esUS: esES }),
+    // FIN DE LA CONFIGURACIÓN CRÍTICA PARA FECHAS. NO MOVER NI MODIFICAR NADA.
     firstDayOfWeek: 1,
     selectedDate,
     dayBoundaries: {
