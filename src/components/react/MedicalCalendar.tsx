@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useMemo } from 'react'
 import { useNextCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
 import {
   createViewDay,
@@ -140,118 +139,118 @@ const viewListAmPm = createPreactView({
       daysWithEvents.length === 0
         ? h('div', { className: 'sx__list-no-events' }, $app.translate('No events'))
         : daysWithEvents.map((day) => {
-            const dayLabel = toJSDate(day.date).toLocaleDateString($app.config.locale.value, {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })
+          const dayLabel = toJSDate(day.date).toLocaleDateString($app.config.locale.value, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
 
-            return h(
+          return h(
+            'div',
+            { key: day.date, className: 'sx__list-day', 'data-date': day.date },
+            h(
               'div',
-              { key: day.date, className: 'sx__list-day', 'data-date': day.date },
-              h(
-                'div',
-                { className: 'sx__list-day-header' },
-                h('div', { className: 'sx__list-day-date' }, dayLabel)
-              ),
-              h(
-                'div',
-                { className: 'sx__list-day-events' },
-                day.events.map((event) => {
-                  const classNames = ['sx__event', 'sx__list-event']
-                  if (event?._options?.additionalClasses) classNames.push(...event._options.additionalClasses)
+              { className: 'sx__list-day-header' },
+              h('div', { className: 'sx__list-day-date' }, dayLabel)
+            ),
+            h(
+              'div',
+              { className: 'sx__list-day-events' },
+              day.events.map((event) => {
+                const classNames = ['sx__event', 'sx__list-event']
+                if (event?._options?.additionalClasses) classNames.push(...event._options.additionalClasses)
 
-                  const onClick = (e: UIEvent) => {
-                    const target = e.currentTarget as unknown as HTMLElement | null
-                    const plugin = $app?.config?.plugins?.eventModal
-                    if (plugin && target) {
-                      plugin.calendarEventElement.value = target
-                      plugin.setCalendarEvent(event, target.getBoundingClientRect())
-                    }
+                const onClick = (e: UIEvent) => {
+                  const target = e.currentTarget as unknown as HTMLElement | null
+                  const plugin = $app?.config?.plugins?.eventModal
+                  if (plugin && target) {
+                    plugin.calendarEventElement.value = target
+                    plugin.setCalendarEvent(event, target.getBoundingClientRect())
+                  }
 
-                    $app?.config?.callbacks?.onEventClick?.(
-                      event._getExternalEvent ? event._getExternalEvent() : event,
-                      e
+                  $app?.config?.callbacks?.onEventClick?.(
+                    event._getExternalEvent ? event._getExternalEvent() : event,
+                    e
+                  )
+                }
+
+                const onDoubleClick = (e: UIEvent) => {
+                  $app?.config?.callbacks?.onDoubleClickEvent?.(
+                    event._getExternalEvent ? event._getExternalEvent() : event,
+                    e
+                  )
+                }
+
+                const onKeyDown = (e: KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation()
+                    onClick(e as unknown as UIEvent)
+                  }
+                }
+
+                const dayDate = day.date
+                const startDate = toPlainDateString(event.start)
+                const endDate = toPlainDateString(event.end)
+                const isMultiDay = startDate && endDate && startDate !== endDate
+                const isFirstDay = startDate === dayDate
+                const isLastDay = endDate === dayDate
+
+                const timeText = formatListTimeAmPm($app, event)
+                const [startText, endText] = timeText ? timeText.split(' – ') : ['', '']
+
+                const timeNode = !timeText
+                  ? null
+                  : !isMultiDay
+                    ? h(
+                      Fragment,
+                      null,
+                      h('div', { className: 'sx__list-event-start-time' }, startText),
+                      h('div', { className: 'sx__list-event-end-time' }, endText)
                     )
-                  }
-
-                  const onDoubleClick = (e: UIEvent) => {
-                    $app?.config?.callbacks?.onDoubleClickEvent?.(
-                      event._getExternalEvent ? event._getExternalEvent() : event,
-                      e
-                    )
-                  }
-
-                  const onKeyDown = (e: KeyboardEvent) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.stopPropagation()
-                      onClick(e as unknown as UIEvent)
-                    }
-                  }
-
-                  const dayDate = day.date
-                  const startDate = toPlainDateString(event.start)
-                  const endDate = toPlainDateString(event.end)
-                  const isMultiDay = startDate && endDate && startDate !== endDate
-                  const isFirstDay = startDate === dayDate
-                  const isLastDay = endDate === dayDate
-
-                  const timeText = formatListTimeAmPm($app, event)
-                  const [startText, endText] = timeText ? timeText.split(' – ') : ['', '']
-
-                  const timeNode = !timeText
-                    ? null
-                    : !isMultiDay
+                    : isFirstDay
                       ? h(
+                        Fragment,
+                        null,
+                        h('div', { className: 'sx__list-event-start-time' }, startText),
+                        h('div', { className: 'sx__list-event-arrow' }, '→')
+                      )
+                      : isLastDay
+                        ? h(
                           Fragment,
                           null,
-                          h('div', { className: 'sx__list-event-start-time' }, startText),
+                          h('div', { className: 'sx__list-event-arrow' }, '←'),
                           h('div', { className: 'sx__list-event-end-time' }, endText)
                         )
-                      : isFirstDay
-                        ? h(
-                            Fragment,
-                            null,
-                            h('div', { className: 'sx__list-event-start-time' }, startText),
-                            h('div', { className: 'sx__list-event-arrow' }, '→')
-                          )
-                        : isLastDay
-                          ? h(
-                              Fragment,
-                              null,
-                              h('div', { className: 'sx__list-event-arrow' }, '←'),
-                              h('div', { className: 'sx__list-event-end-time' }, endText)
-                            )
-                          : h('div', { className: 'sx__list-event-arrow' }, '↔')
+                        : h('div', { className: 'sx__list-event-arrow' }, '↔')
 
-                  return h(
+                return h(
+                  'div',
+                  {
+                    key: event.id,
+                    className: classNames.join(' '),
+                    onClick,
+                    onDblClick: onDoubleClick,
+                    onKeyDown,
+                    tabIndex: 0,
+                    role: 'button',
+                  },
+                  h('div', {
+                    className: 'sx__list-event-color-line',
+                    style: { backgroundColor: `var(--sx-color-${event._color})` },
+                  }),
+                  h(
                     'div',
-                    {
-                      key: event.id,
-                      className: classNames.join(' '),
-                      onClick,
-                      onDblClick: onDoubleClick,
-                      onKeyDown,
-                      tabIndex: 0,
-                      role: 'button',
-                    },
-                    h('div', {
-                      className: 'sx__list-event-color-line',
-                      style: { backgroundColor: `var(--sx-color-${event._color})` },
-                    }),
-                    h(
-                      'div',
-                      { className: 'sx__list-event-content' },
-                      h('div', { className: 'sx__list-event-title' }, event.title),
-                      h('div', { className: 'sx__list-event-times' }, timeNode)
-                    )
+                    { className: 'sx__list-event-content' },
+                    h('div', { className: 'sx__list-event-title' }, event.title),
+                    h('div', { className: 'sx__list-event-times' }, timeNode)
                   )
-                })
-              ),
-              h('div', { className: 'sx__list-day-margin' })
-            )
-          })
+                )
+              })
+            ),
+            h('div', { className: 'sx__list-day-margin' })
+          )
+        })
     )
   },
   hasSmallScreenCompat: true,
@@ -528,8 +527,6 @@ export default function MedicalCalendar() {
 
   return (
     // 3. ALTURA DEFINIDA: Si el padre no tiene altura, los cálculos de coordenadas de Temporal fallan.
-    <div className="calendar-container h-full min-h-0 overflow-hidden">
-      <ScheduleXCalendar calendarApp={calendar} customComponents={customComponents} />
     <div className="calendar-container h-full min-h-0 overflow-hidden">
       <ScheduleXCalendar calendarApp={calendar} customComponents={customComponents} />
     </div>
