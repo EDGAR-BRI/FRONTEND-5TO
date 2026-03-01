@@ -1,0 +1,26 @@
+---
+import MainLayout from '@/layouts/AdminLayout.astro';
+import SuppliesInventoryTable from '@/components/react/admin/SuppliesInventoryTable';
+import { Button } from '@/components/react/primary/Button';
+import CreateProductModalTrigger from '@/components/react/admin/CreateProductModalTrigger';
+---
+
+<MainLayout title="Admin | Insumos y servicios">
+	<section class="p-8 space-y-6">
+		<header class="space-y-1">
+			<h1 class="text-2xl font-semibold text-primary-800">Gestión de insumos y servicios</h1>
+			<p class="text-sm text-cool-gray-70">
+				Inventario de la clínica: precios, stock (insumos) y disponibilidad (servicios).
+			</p>
+		</header>
+		<div class="flex justify-end gap-4">
+			<Button
+				label='Ver categorías'
+				variant='secondary'
+			></Button>
+			<CreateProductModalTrigger client:load />
+		</div>
+
+		<SuppliesInventoryTable client:only="react" />
+	</section>
+</MainLayout>
