@@ -1,29 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldAlert, User, Phone, Loader2 } from 'lucide-react';
+import React from 'react';
+import { ShieldAlert, User, Phone } from 'lucide-react';
 
 export const EmergencyContact = () => {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setData({
-        nombre: "María Rodríguez",
-        parentesco: "Madre",
-        telefono: "+58 424-9876543"
-      });
-      setLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex items-center justify-center h-40 w-full">
-        <Loader2 className="w-5 h-5 animate-spin text-red-400" />
-      </div>
-    );
-  }
+  const data = {
+    nombre: "María Rodríguez",
+    parentesco: "Madre",
+    telefono: "+58 424-9876543"
+  };
 
   return (
     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-red-50 w-full">

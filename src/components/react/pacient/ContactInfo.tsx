@@ -1,26 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 
 export const ContactInfo = () => {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setData({
-        email: "pedro.sanchez@gmail.com",
-        telefono: "+58 412-1234567",
-        direccion: "Pueblo Nuevo, Edificio Sol, Apto 4B."
-      });
-      setLoading(false);
-    }, 800);
-  }, []);
-
-  if (loading) return (
-    <div className="bg-white rounded-[2rem] border border-slate-100 h-[380px] flex items-center justify-center w-full">
-      <Loader2 className="animate-spin text-blue-500" />
-    </div>
-  );
+  const data = {
+    email: "pedro.sanchez@gmail.com",
+    telefono: "+58 412-1234567",
+    direccion: "Pueblo Nuevo, Edificio Sol, Apto 4B."
+  };
 
   return (
     <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 w-full flex flex-col h-[380px]">
