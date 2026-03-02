@@ -1,6 +1,5 @@
 import React from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import type { Formats } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -51,49 +50,16 @@ const mensajesEspanol = {
   noEventsInRange: 'No hay citas en este rango.',
 };
 
-function parseFechaHora12h(fecha: string, hora: string): Date {
-  const normalized = hora.trim().toUpperCase();
-  const isAM = /\bAM\b$/.test(normalized);
-  const isPM = /\bPM\b$/.test(normalized);
-
-  const timePart = normalized.replace(/\s*(AM|PM)\s*$/, '').trim();
-  const [hoursPart, minutesPart = '0'] = timePart.split(':');
-
-  let hours = Number(hoursPart);
-  const minutes = Number(minutesPart);
-
-  // Fallback: si el string viene en un formato inesperado, intenta el parseo nativo.
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-    return new Date(`${fecha}T${timePart}`);
-  }
-
-  if (isAM && hours === 12) hours = 0;
-  if (isPM && hours !== 12) hours += 12;
-
-  const hh = String(hours).padStart(2, '0');
-  const mm = String(minutes).padStart(2, '0');
-  return new Date(`${fecha}T${hh}:${mm}:00`);
-}
-
-const formatos12h: Formats = {
-  timeGutterFormat: 'hh:mm a',
-  agendaTimeFormat: 'hh:mm a',
-  eventTimeRangeFormat: ({ start, end }, culture, localizer) => {
-    if (!localizer) return '';
-    return `${localizer.format(start, 'hh:mm a', culture)} – ${localizer.format(end, 'hh:mm a', culture)}`;
-  },
-  agendaTimeRangeFormat: ({ start, end }, culture, localizer) => {
-    if (!localizer) return '';
-    return `${localizer.format(start, 'hh:mm a', culture)} – ${localizer.format(end, 'hh:mm a', culture)}`;
-  },
-};
-
 //arreglo tipo cita
 export default function CalendarWidget({ citas }: { citas: Cita[] }) {
   
  
   const eventosAdaptados: EventoCalendario[] = citas.map((cita: Cita) => {
-    const fechaBase = parseFechaHora12h(cita.fecha, cita.hora);
+    const fechaBase = new Date(`${cita.fecha}T${cita.hora.includes('AM') ? cita.hora.replace(' AM', '') : cita.hora.replace(' PM', '')}`);
+    
+    if (cita.hora.includes('PM') && !cita.hora.startsWith('12')) {
+        fechaBase.setHours(fechaBase.getHours() + 12);
+    }
 
     const fechaFin = new Date(fechaBase);
     fechaFin.setMinutes(fechaFin.getMinutes() + 45);
@@ -139,7 +105,6 @@ export default function CalendarWidget({ citas }: { citas: Cita[] }) {
             endAccessor="end"
             culture="es"
             messages={mensajesEspanol}
-            formats={formatos12h}
             eventPropGetter={aplicarEstilosEvento}
             views={['month', 'week', 'day']}
             defaultView="month"
