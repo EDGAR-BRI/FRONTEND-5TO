@@ -225,7 +225,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
                         <div className="fixed inset-0 z-50" onClick={() => setIsOpen(false)}></div>
 
                         <div
-                            className="fixed z-50 bg-cool-gray-90 border border-cool-gray-70 rounded-md shadow-lg overflow-hidden animate-fade-in-down animate-duration-200"
+                            className="fixed z-50 bg-primary-100 border border-primary-300 rounded-md shadow-lg overflow-hidden animate-fade-in-down animate-duration-200"
                             style={{
                                 top: coords.top !== undefined ? coords.top : 'auto',
                                 bottom: coords.bottom !== undefined ? coords.bottom : 'auto',
@@ -235,14 +235,14 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
                         >
                             <ul ref={optionsListRef} className="max-h-60 overflow-auto py-1 scroll-smooth custom-scrollbar">
                                 <li
-                                    className="px-4 py-2 text-cool-gray-40 cursor-default text-sm border-b border-cool-gray-80/50"
+                                    className="px-4 py-2 text-primary-300 cursor-default text-sm border-b border-primary-300"
                                 >
                                     {placeholder}
                                 </li>
                                 {options.map((option, index) => (
                                     <li
                                         key={option.value}
-                                        className={`px-4 py-2 cursor-pointer transition-colors text-white hover:bg-primary-60/20 hover:text-primary-40 ${highlightedIndex === index ? 'bg-primary-60/20 text-primary-40' : (selectedValue === option.value ? 'bg-primary-60/10 text-primary-40' : '')}`}
+                                        className={`px-4 py-2 cursor-pointer transition-colors text-primary-700 hover:bg-primary-60/20 hover:text-primary-40 ${highlightedIndex === index ? 'bg-primary-60/20 text-primary-40' : (selectedValue === option.value ? 'bg-primary-60/10 text-primary-40' : '')}`}
                                         onMouseEnter={() => setHighlightedIndex(index)}
                                         onClick={() => handleSelect(option.value)}
                                     >

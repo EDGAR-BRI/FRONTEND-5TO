@@ -1,2 +1,140 @@
 @config "../../tailwind.config.mjs";
 @import "tailwindcss";
+
+::selection {
+    background-color: #0F62FE;
+    color: white;
+}
+
+/* Global Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2785D0;
+    /* Cool Gray 100 (Deep background) */
+    border-left: 1px solid #2785D0;
+    /* Cool Gray 90 (Border) */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #4D5358;
+    /* Cool Gray 70 (Dark Metal) */
+    border: 1px solid #343A3F;
+    /* Cool Gray 80 (Thumb Border) */
+    border-radius: 2px;
+    /* Slightly squared for industrial look */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #697077;
+    /* Cool Gray 60 (Lighter Metal) */
+    border-color: #4D5358;
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #BAE0FD #2785D0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@layer base {
+  /* Sobrescribir estilos de autocompletado */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+    /* Cambia #f3f4f6 por el color hexadecimal EXACTO de tu input (cool-gray-100) */
+    -webkit-box-shadow: 0 0 0 30px #121619 inset !important;
+    
+    /* Cambia esto por el color de texto que deseas */
+    -webkit-text-fill-color: #e8e8e9 !important;
+    
+    /* Esto asegura que el borde no cambie de forma extraña */
+    background-clip: content-box !important;
+  }
+}
+
+/* Para Chrome, Safari, Edge y Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Para Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  -webkit-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Oculta el icono nativo del date en navegadores WebKit cuando usamos icono propio y evita que "empuje" el layout */
+input.gt-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+}
+
+/* Schedule-X (Agenda Clínica) */
+.calendar-container {
+  min-height: 0;
+}
+
+.calendar-container .sx-react-calendar-wrapper {
+  height: 100%;
+  min-height: 0;
+}
+
+.sx__time-grid-event.sx-status-cancelled,
+.sx__date-grid-event.sx-status-cancelled,
+.sx__month-grid-event.sx-status-cancelled {
+  opacity: 0.5;
+}
+
+.sx__time-grid-event.sx-status-cancelled,
+.sx__date-grid-event.sx-status-cancelled,
+.sx__month-grid-event.sx-status-cancelled {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.sx__time-grid-event.sx-calendar-bloqueo .sx__time-grid-event-inner,
+.sx__date-grid-event.sx-calendar-bloqueo,
+.sx__month-grid-event.sx-calendar-bloqueo {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.12) 0,
+    rgba(0, 0, 0, 0.12) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+.is-dark .sx__time-grid-event.sx-calendar-bloqueo .sx__time-grid-event-inner,
+.is-dark .sx__date-grid-event.sx-calendar-bloqueo,
+.is-dark .sx__month-grid-event.sx-calendar-bloqueo {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.14) 0,
+    rgba(255, 255, 255, 0.14) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
