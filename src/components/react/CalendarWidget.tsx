@@ -90,7 +90,7 @@ export default function CalendarWidget({ citas }: { citas: Cita[] }) {
   };
 
   return (
-    <div className="h-[600px] w-full bg-white p-4">
+    <div className="h-150 w-full bg-white p-4">
         <style>{`
             .rbc-btn-group button { color: #374151; border-color: #E5E7EB; }
             .rbc-btn-group .rbc-active { background-color: #EFF6FF; color: #2563EB; box-shadow: none; }
