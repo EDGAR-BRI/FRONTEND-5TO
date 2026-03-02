@@ -4,6 +4,7 @@ import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
 import BottomNavbar from "@/components/astro/BottomNavbar.astro";
 const { title } = Astro.props;
+const { receptionist_id } = Astro.params;
 
 const menuItems = [
 	{
@@ -44,10 +45,14 @@ const menuItems = [
 		],
 	},
 	{
-		label: "Horarios",
-		href: `schedules`,
-		icon: "fa-solid fa-clock",
-	},
+    icon: 'fa-regular fa-clock',
+    label: 'Horarios',
+    href: '#',
+    subItems: [
+      { label: 'Vista global', href: `/modules/receptionist/${receptionist_id}/schedules` },
+      { label: 'Configurar ciclos', href: `/modules/receptionist/${receptionist_id}/manage-schedules` },
+    ]
+  },
 	{
 		label: "Perfil",
 		href: `profile`,
@@ -56,6 +61,7 @@ const menuItems = [
 ];
 
 const currentPath = Astro.url.pathname;
+
 ---
 
 <!doctype html>
