@@ -1,32 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { User, Droplets, Activity, Pill, Ban, Loader2, VenusAndMars } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/react/primary/Avatar";
 
 export const BasicData = () => {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setData({
-        nombre: "Pedro Javier Sánchez López",
-        genero: "Masculino",
-        sangre: "O+",
-        alergias: "Niega alergias",
-        condiciones: "Diabetes Tipo 2",
-        medicamentos: "Metformina 500mg",
-        iniciales: "PS"
-      });
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) return (
-    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex items-center justify-center min-h-[500px] w-full">
-      <Loader2 className="animate-spin text-blue-600" />
-    </div>
-  );
+  const data = {
+    nombre: "Pedro Javier Sánchez López",
+    genero: "Masculino",
+    sangre: "O+",
+    alergias: "Niega alergias",
+    condiciones: "Diabetes Tipo 2",
+    medicamentos: "Metformina 500mg",
+    iniciales: "PS"
+  };
 
   return (
     <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col items-center w-full h-full">
