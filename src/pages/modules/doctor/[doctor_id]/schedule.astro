@@ -1,6 +1,41 @@
 ---
 import MainLayout from '@/layouts/DoctorLayout.astro';
-import MedicalCalendar from '@/components/react/MedicalCalendar';
+import AppointmentCalendar from '@/components/react/AppointmentCalendar';
+
+const { doctor_id } = Astro.params;
+
+const today = new Date();
+const yyyy = String(today.getFullYear());
+const mm = String(today.getMonth() + 1).padStart(2, '0');
+const dd = String(today.getDate()).padStart(2, '0');
+const todayIso = `${yyyy}-${mm}-${dd}`;
+
+const citasMock = [
+  {
+    id: 1,
+    doctor: 'María Pérez',
+    especialidad: 'Consulta',
+    fecha: todayIso,
+    hora: '09:00 AM',
+    estado: 'Confirmada',
+  },
+  {
+    id: 2,
+    doctor: 'Carlos Gómez',
+    especialidad: 'Cirugía',
+    fecha: todayIso,
+    hora: '11:30 AM',
+    estado: 'Pendiente',
+  },
+  {
+    id: 3,
+    doctor: 'Bloqueo: Almuerzo',
+    especialidad: 'Bloqueo',
+    fecha: todayIso,
+    hora: '01:00 PM',
+    estado: 'Confirmada',
+  },
+];
 ---
 
 <MainLayout>
@@ -8,7 +43,12 @@ import MedicalCalendar from '@/components/react/MedicalCalendar';
     <h1 class="text-2xl font-semibold text-primary-800 mb-6">Agenda de Consultas</h1>
 
     <div class="flex-1 min-h-0">
-      <MedicalCalendar client:only="react" />
+      <AppointmentCalendar
+        role="doctor"
+        citas={citasMock}
+        context={{ doctorId: doctor_id }}
+        client:load
+      />
     </div>
   </section>
 </MainLayout>
