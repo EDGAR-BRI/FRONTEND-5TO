@@ -62,6 +62,11 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDateOpen, setIsDateOpen] = useState(false);
 
+    // keep inputType in sync if parent changes the `type` prop
+    useEffect(() => {
+        setInputType(type);
+    }, [type]);
+
     // Combine refs
     const setRef = (element: HTMLInputElement | null) => {
         internalInputRef.current = element;
@@ -228,7 +233,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         />
 
                         {/* Input real (valor ISO) para no romper forms/controlado */}
-                        <input type="hidden" name={name} autoFocus={autoFocus} value={(typeof value === 'string' ? value : '')} />
+                        <input type="hidden" name={name} value={(typeof value === 'string' ? value : '')} />
 
                         {/* Icono */}
                         {!showTogglePassword && (
