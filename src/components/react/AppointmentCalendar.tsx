@@ -8,7 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme, type variant } from '@/components/react/primary/Button'
-import { useModal } from '../../hooks/UseModal'
+import { useModal } from '@/hooks/UseModal'
 import { fetcher } from '@/lib/fetcher'
 import { api } from '@/lib/api'
 
