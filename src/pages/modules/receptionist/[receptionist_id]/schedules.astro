@@ -120,14 +120,14 @@ const pendingApts = Object.values(appointmentsByDoctorId).flat().filter(a => a.s
       <div class="flex items-center gap-3">
         <a
           href="manage-schedules"
-          class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
+          class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
         >
           <i class="fa-solid fa-sliders"></i>
           Configurar ciclos
         </a>
         <a
           href="appointments"
-          class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
+          class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
         >
           <i class="fa-solid fa-calendar-plus"></i>
           Nueva cita
@@ -144,7 +144,7 @@ const pendingApts = Object.values(appointmentsByDoctorId).flat().filter(a => a.s
         { label: 'Sin confirmar', value: String(pendingApts), icon: 'fa-solid fa-clock', color: 'text-warning', bg: 'bg-yellow-100' },
       ].map(s => (
         <div class="bg-white rounded-xl border border-primary-200 p-4 shadow-sm flex items-center gap-3">
-          <div class={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center flex-shrink-0`}>
+          <div class={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center shrink-0`}>
             <i class={`${s.icon} ${s.color} text-base`}></i>
           </div>
           <div>
