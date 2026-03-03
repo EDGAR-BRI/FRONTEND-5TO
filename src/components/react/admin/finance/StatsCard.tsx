@@ -19,7 +19,7 @@ export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary
     };
 
     return (
-        <article className="bg-white p-6 rounded-lg border border-primary-300 flex flex-col justify-between h-full transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30">
+        <article className="bg-primary-100 p-6 rounded-xl border-2 border-primary-300 flex flex-col justify-between h-full transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30">
             <div className="flex items-start justify-between">
                 <div>
                     <p className="text-sm font-medium text-cool-gray-60 mb-1">{title}</p>
