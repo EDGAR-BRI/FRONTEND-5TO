@@ -147,7 +147,6 @@ export const FinanceDashboard = () => {
                     trendUp={true}
                     color="success"
                     icon={<LuTrendingUp size={18} />}
-                    variant="compact"
                 />
                 <StatsCard
                     title="Gastos Totales"
