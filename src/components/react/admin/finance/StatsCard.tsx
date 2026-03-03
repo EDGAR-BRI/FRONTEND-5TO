@@ -7,6 +7,7 @@ interface StatsCardProps {
     trendUp?: boolean;
     icon?: React.ReactNode;
     color?: "primary" | "success" | "danger" | "warning";
+
 }
 
 export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary" }: StatsCardProps) => {
@@ -18,7 +19,7 @@ export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl border border-cool-gray-20 shadow-sm flex flex-col justify-between h-full">
+        <article className="bg-white p-6 rounded-lg border border-primary-300 flex flex-col justify-between h-full transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30">
             <div className="flex items-start justify-between">
                 <div>
                     <p className="text-sm font-medium text-cool-gray-60 mb-1">{title}</p>
@@ -38,6 +39,6 @@ export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary
                     <span className="text-cool-gray-50 ml-2">vs mes anterior</span>
                 </div>
             )}
-        </div>
+        </article>
     );
 };
