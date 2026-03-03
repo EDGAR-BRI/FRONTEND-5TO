@@ -53,6 +53,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransacti
 
     const categories = [
         { label: 'Consulta', value: 'Consulta' },
+        { label: 'Farmacia', value: 'Farmacia' },
         { label: 'Tratamiento', value: 'Tratamiento' },
         { label: 'Insumos', value: 'Insumos' },
         { label: 'Servicios', value: 'Servicios' },

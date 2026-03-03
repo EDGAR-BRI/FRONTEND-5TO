@@ -9,7 +9,8 @@ export const GET = async () => {
             date: '2026-02-28',
             detail: 'Consulta Cardiología',
             provider: 'Dr. Mendoza',
-            type: 'consulta', 
+            type: 'income',
+            category: 'Consulta', 
             amount: 60.00, 
             status: 'completed' 
         },
@@ -20,7 +21,8 @@ export const GET = async () => {
             date: '2026-02-28',
             detail: 'Losartán 50mg, Aspirina',
             provider: 'Mostrador 1',
-            type: 'farmacia', 
+            type: 'income',
+            category: 'Farmacia', 
             amount: 25.50, 
             status: 'completed' 
         },
@@ -31,7 +33,8 @@ export const GET = async () => {
             date: '2026-02-27',
             detail: 'Consulta General',
             provider: 'Dra. Silva',
-            type: 'consulta', 
+            type: 'income',
+            category: 'Consulta', 
             amount: 40.00, 
             status: 'pending' 
         },
@@ -42,7 +45,8 @@ export const GET = async () => {
             date: '2026-02-27',
             detail: 'Amoxicilina 500mg',
             provider: 'Mostrador 2',
-            type: 'farmacia', 
+            type: 'income',
+            category: 'Farmacia', 
             amount: 15.00, 
             status: 'completed' 
         },
@@ -53,7 +57,8 @@ export const GET = async () => {
             date: '2026-02-26',
             detail: 'Consulta Dermatología',
             provider: 'Dr. Lopez',
-            type: 'consulta', 
+            type: 'income',
+            category: 'Consulta', 
             amount: 70.00, 
             status: 'cancelled' 
         }

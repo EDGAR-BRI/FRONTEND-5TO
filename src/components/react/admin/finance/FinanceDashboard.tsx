@@ -14,7 +14,7 @@ interface Transaction {
     date: string;
     detail: string;
     provider: string;
-    type: 'consulta' | 'farmacia';
+    category: 'Consulta' | 'Farmacia';
     amount: number;
     status: 'completed' | 'pending' | 'cancelled';
 }
@@ -43,13 +43,13 @@ const columns: Column<Transaction>[] = [
         )
     },
     { 
-        header: "TIPO", 
-        accessorKey: "type",
+        header: "CATEGORÍA", 
+        accessorKey: "category",
         cell: (item) => {
             // Using literal colors or similar logic to match the screenshot
-            const typeConfig = item.type === 'consulta' 
-                ? { bg: 'bg-blue-50', text: 'text-blue-600', label: 'Consulta', icon: '🩺' }
-                : { bg: 'bg-purple-50', text: 'text-purple-600', label: 'Farmacia', icon: '💊' };
+            const typeConfig = item.category === 'Consulta' 
+                ? { bg: 'bg-blue-50', text: 'text-blue-600', icon: '🩺' }
+                : { bg: 'bg-purple-50', text: 'text-purple-600', icon: '💊' };
 
             return (
                 <Badge styles={{ 
@@ -61,7 +61,7 @@ const columns: Column<Transaction>[] = [
                 }}>
                     <div className="flex items-center gap-1">
                         <span>{typeConfig.icon}</span>  {/* Placeholder icon */}
-                        <span>{typeConfig.label}</span>
+                        <span>{item.category}</span>
                     </div>
                 </Badge>
             )
