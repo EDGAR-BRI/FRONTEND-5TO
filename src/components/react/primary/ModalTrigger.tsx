@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react';
 import { Modal } from './Modal';
 import { Button, ButtonTheme, type variant } from './Button';
-import { useModal } from 'src/hooks/UseModal';
+import { useModal } from '@/hooks/UseModal';
 
 interface ModalTriggerProps {
   buttonLabel?: string;
