@@ -6,6 +6,10 @@ import { StatsCard } from './StatsCard';
 import { AddTransactionModal } from './AddTransactionModal';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import {
+    LuTrendingUp, LuTrendingDown, LuDollarSign, LuClock,
+    LuDownload, LuEllipsisVertical, LuChevronDown, LuCircleDollarSign
+} from 'react-icons/lu';
 
 interface Transaction {
     id: number;
@@ -103,10 +107,10 @@ const columns: Column<Transaction>[] = [
         cell: (item) => (
             <div className="flex items-center justify-end gap-2 text-gray-400">
                 <button className="hover:text-primary transition-colors p-1" title="Descargar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                    <LuDownload size={16} />
                 </button>
                 <button className="hover:text-primary transition-colors p-1" title="Más opciones">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                    <LuEllipsisVertical size={16} />
                 </button>
             </div>
         )
@@ -142,6 +146,8 @@ export const FinanceDashboard = () => {
                     trend="12%"
                     trendUp={true}
                     color="success"
+                    icon={<LuTrendingUp size={18} />}
+                    variant="compact"
                 />
                 <StatsCard
                     title="Gastos Totales"
@@ -149,16 +155,19 @@ export const FinanceDashboard = () => {
                     trend="5%"
                     trendUp={false}
                     color="danger"
+                    icon={<LuTrendingDown size={18} />}
                 />
                 <StatsCard
                     title="Balance Neto"
                     value={`$${summary.netBalance.toFixed(2)}`}
                     color="primary"
+                    icon={<LuCircleDollarSign size={18} />}
                 />
                 <StatsCard
                     title="Pagos Pendientes"
                     value={summary.pendingPayments}
                     color="warning"
+                    icon={<LuClock size={18} />}
                 />
             </div>
 
@@ -169,9 +178,7 @@ export const FinanceDashboard = () => {
                 <div className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                            </svg>
+                            <LuDollarSign size={18} className="text-white" />
                         </div>
                         <div>
                             <h2 className="text-base font-semibold text-white leading-tight">Movimientos de Caja</h2>
@@ -191,11 +198,11 @@ export const FinanceDashboard = () => {
                     <div className="flex gap-2">
                         <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                             Todos los ingresos
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                            <LuChevronDown size={12} />
                         </button>
                         <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                             Todos los estados
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                            <LuChevronDown size={12} />
                         </button>
                     </div>
                 </div>
