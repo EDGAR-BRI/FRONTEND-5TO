@@ -1,15 +1,44 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"],
-
+  "include": [
+    ".astro/types.d.ts",
+    "**/*"
+  ],
+  "exclude": [
+    "dist",
+    "src/components/ui prueba/**",
+    "tailwind.config.mjs",
+    "*.config.mjs"
+  ],
   "compilerOptions": {
-    "@/pages/*": ["src/pages/*"],
-    "@/components/*": ["src/components/*"],
-    "@/layouts/*": ["src/layouts/*"],
-    "@/styles/*": ["src/styles/*"],
-    "@/assets/*": ["src/assets/*"],
-    "@/utils/*": ["src/utils/*"]
-    
+    "baseUrl": ".",
+    "paths": {
+      "@/pages/*": [
+        "src/pages/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/layouts/*": [
+        "src/layouts/*"
+      ],
+      "@/styles/*": [
+        "src/styles/*"
+      ],
+      "@/assets/*": [
+        "src/assets/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/types/*": [
+        "src/types/*"
+      ],
+      "@/lib/*": [
+        "src/lib/*"
+      ],
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   }
 }
