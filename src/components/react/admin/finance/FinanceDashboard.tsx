@@ -20,9 +20,9 @@ interface Transaction {
 }
 
 const columns: Column<Transaction>[] = [
-    { 
-        header: "PACIENTE / CLIENTE", 
-        accessorKey: "patientName", 
+    {
+        header: "PACIENTE / CLIENTE",
+        accessorKey: "patientName",
         cell: (item) => (
             <div className="flex flex-col">
                 <span className="font-semibold text-gray-900">{item.patientName}</span>
@@ -32,8 +32,8 @@ const columns: Column<Transaction>[] = [
             </div>
         )
     },
-    { 
-        header: "DETALLE (SERVICIO/MEDICINA)", 
+    {
+        header: "DETALLE (SERVICIO/MEDICINA)",
         accessorKey: "detail",
         cell: (item) => (
             <div className="flex flex-col">
@@ -42,19 +42,19 @@ const columns: Column<Transaction>[] = [
             </div>
         )
     },
-    { 
-        header: "CATEGORÍA", 
+    {
+        header: "CATEGORÍA",
         accessorKey: "category",
         cell: (item) => {
             // Using literal colors or similar logic to match the screenshot
-            const typeConfig = item.category === 'Consulta' 
+            const typeConfig = item.category === 'Consulta'
                 ? { bg: 'bg-blue-50', text: 'text-blue-600', icon: '🩺' }
                 : { bg: 'bg-purple-50', text: 'text-purple-600', icon: '💊' };
 
             return (
-                <Badge styles={{ 
-                    bg: typeConfig.bg, 
-                    text: typeConfig.text, 
+                <Badge styles={{
+                    bg: typeConfig.bg,
+                    text: typeConfig.text,
                     border: 'border-transparent',
                     rounded: 'rounded-md',
                     padding: 'px-2 py-1'
@@ -67,17 +67,17 @@ const columns: Column<Transaction>[] = [
             )
         }
     },
-    { 
-        header: "MONTO", 
-        accessorKey: "amount", 
+    {
+        header: "MONTO",
+        accessorKey: "amount",
         cell: (item) => (
             <span className="font-bold text-gray-900">
                 ${item.amount.toFixed(2)}
             </span>
         )
     },
-    { 
-        header: "ESTADO", 
+    {
+        header: "ESTADO",
         accessorKey: "status",
         cell: (item) => {
             const statusConfig = {
@@ -89,8 +89,8 @@ const columns: Column<Transaction>[] = [
             return (
                 <Badge styles={{ bg: config.bg, text: config.text, rounded: 'rounded-full' }}>
                     <div className="flex items-center gap-1">
-                         {item.status === 'completed' && <span>✓</span>}
-                         {config.label}
+                        {item.status === 'completed' && <span>✓</span>}
+                        {config.label}
                     </div>
                 </Badge>
             );
@@ -103,10 +103,10 @@ const columns: Column<Transaction>[] = [
         cell: (item) => (
             <div className="flex items-center justify-end gap-2 text-gray-400">
                 <button className="hover:text-primary transition-colors p-1" title="Descargar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
                 </button>
                 <button className="hover:text-primary transition-colors p-1" title="Más opciones">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
                 </button>
             </div>
         )
@@ -133,68 +133,84 @@ export const FinanceDashboard = () => {
     return (
         <div className="space-y-6">
             {/* Header Actions */}
-            
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatsCard 
-                    title="Ingresos Totales" 
-                    value={`$${summary.totalIncome.toFixed(2)}`} 
-                    trend="12%" 
+                <StatsCard
+                    title="Ingresos Totales"
+                    value={`$${summary.totalIncome.toFixed(2)}`}
+                    trend="12%"
                     trendUp={true}
                     color="success"
                 />
-                <StatsCard 
-                    title="Gastos Totales" 
-                    value={`$${summary.totalExpenses.toFixed(2)}`} 
-                    trend="5%" 
-                    trendUp={false} 
+                <StatsCard
+                    title="Gastos Totales"
+                    value={`$${summary.totalExpenses.toFixed(2)}`}
+                    trend="5%"
+                    trendUp={false}
                     color="danger"
                 />
-                <StatsCard 
-                    title="Balance Neto" 
-                    value={`$${summary.netBalance.toFixed(2)}`} 
+                <StatsCard
+                    title="Balance Neto"
+                    value={`$${summary.netBalance.toFixed(2)}`}
                     color="primary"
                 />
-                <StatsCard 
-                    title="Pagos Pendientes" 
-                    value={summary.pendingPayments} 
+                <StatsCard
+                    title="Pagos Pendientes"
+                    value={summary.pendingPayments}
                     color="warning"
                 />
             </div>
 
             {/* Transactions Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-start">
-                    <div>
-                        <h2 className="text-lg font-semibold text-cool-gray-90">Movimientos de Caja</h2>
-                        <p className="text-sm text-cool-gray-50 mt-1">Ventas de farmacia y pagos de consultas médicas.</p>
+            <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-base font-semibold text-white leading-tight">Movimientos de Caja</h2>
+                            <p className="text-xs text-primary-200 mt-0.5">Ventas de farmacia y pagos de consultas médicas.</p>
+                        </div>
                     </div>
-                </div>
-                
-                {/* Filters & Actions Bar */}
-                <div className="px-6 py-4 flex flex-wrap gap-4 items-center justify-between">
-                    <div className="flex gap-2">
-                        <Button variant="secondary" label="Todos los ingresos Y" className="!rounded-md !text-gray-600 !border-gray-200 !font-normal" />
-                        <Button variant="secondary" label="Todos los estados Y" className="!rounded-md !text-gray-600 !border-gray-200 !font-normal" />
-                    </div>
-                    <Button 
-                        label="+ Nueva Factura" 
-                        variant="primary" 
+                    <Button
+                        label="+ Nueva Factura"
+                        variant="primary"
                         onClick={() => setIsModalOpen(true)}
-                        className="!bg-teal-600 hover:!bg-teal-700 !rounded-md"
+                        className="bg-white! text-primary-700! hover:bg-primary-50! rounded-lg! text-sm! font-semibold! border-0! shadow-sm!"
                     />
                 </div>
 
-                <DataTable 
-                    endpoint="/admin/transactions" 
-                    columns={columns} 
-                    businessId={1} 
-                />
-            </div>
+                {/* Filters Bar */}
+                <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-gray-100">
+                    <div className="flex gap-2">
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                            Todos los ingresos
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                            Todos los estados
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                    </div>
+                </div>
 
-            <AddTransactionModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
+                <DataTable
+                    className="rounded-none! border-none!"
+                    endpoint="/admin/transactions"
+                    columns={columns}
+                    businessId={1}
+                />
+            </section>
+
+            <AddTransactionModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
             />
         </div>
     );
