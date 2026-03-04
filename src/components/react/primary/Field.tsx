@@ -202,7 +202,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
     };
 
     return (
-        <div className="flex flex-col gap-1 w-full">
+        <div className="flex flex-col w-full">
             <div className="flex items-center">
                 <label htmlFor={name} className="font-medium text-sm text-primary-700 w-fit px-1">
                     {label}
