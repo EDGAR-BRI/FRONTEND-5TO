@@ -85,24 +85,28 @@ export default function UsersDashboard() {
                     value={summary.total}
                     color="primary"
                     icon={<LuUsers size={18} />}
+                    variant="compact"
                 />
                 <StatsCard
                     title="Usuarios Activos"
                     value={summary.activos}
                     color="success"
                     icon={<LuUserCheck size={18} />}
+                    variant="compact"
                 />
                 <StatsCard
                     title="Usuarios Inactivos"
                     value={summary.inactivos}
                     color="danger"
                     icon={<LuUserX size={18} />}
+                    variant="compact"
                 />
                 <StatsCard
                     title="Médicos"
                     value={summary.doctores}
                     color="primary"
                     icon={<LuStethoscope size={18} />}
+                    variant="compact"
                 />
             </div>
 
