@@ -310,12 +310,6 @@ export default function RegisterPatientForm() {
                     {form.createUser && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
                             <Field
-                                name="username" label="Usuario (login)"
-                                placeholder="Ej. mgarcia o mismo que CI"
-                                value={form.username}
-                                onChange={e => set('username', e.target.value)}
-                            />
-                            <Field
                                 name="tempPassword" label="Contraseña temporal"
                                 type="password"
                                 showTogglePassword
