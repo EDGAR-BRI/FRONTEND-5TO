@@ -9,7 +9,6 @@ import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
 
-// ─── Types (mirror DB schema) ────────────────────────────────────────────────
 
 export interface DoctorInfo {
   id: number
@@ -17,18 +16,15 @@ export interface DoctorInfo {
   specialty: string
 }
 
-/** One row from ScheduleDay joined with ScheduleWeek/ScheduleCycle */
 export interface ShiftDay {
-  /** ISO weekday: 1=Mon … 7=Sun */
   dayOfWeek: number
   startsAt: string  // 'HH:mm'
   endsAt: string    // 'HH:mm'
 }
 
-/** One row from Appoinment (with patient info via Form→User) */
 export interface BookedAppointment {
   id: number
-  /** ISO date string: 'YYYY-MM-DD HH:mm' or full timestamp */
+  /**'AAAA-MM-DD HH:mm' */
   scheduledStart: string
   scheduledEnd: string
   patientName: string
@@ -46,8 +42,6 @@ export interface DoctorScheduleCalendarProps {
   appointmentsByDoctorId: Record<number, BookedAppointment[]>
   heightPx?: number
 }
-
-// ─── Calendar setup ──────────────────────────────────────────────────────────
 
 const locales = { es }
 
@@ -89,13 +83,10 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelada: '#ef4444',
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function parseDateTime(str: string): Date {
   return new Date(str.includes('T') ? str : str.replace(' ', 'T'))
 }
 
-/** Generate shift-window background events for the current visible week */
 function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
   const monday = startOfWeek(referenceDate, { weekStartsOn: 1 })
   const events: { start: Date; end: Date; title: string }[] = []
@@ -114,7 +105,6 @@ function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
   return events
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function DoctorScheduleCalendar({
   doctors,
@@ -131,7 +121,6 @@ export default function DoctorScheduleCalendar({
 
   const doctor = doctors.find(d => d.id === selectedDoctorId)
 
-  // Booked appointment events
   const aptEvents = useMemo(() => {
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
     return apts.map(apt => ({
@@ -143,7 +132,6 @@ export default function DoctorScheduleCalendar({
     }))
   }, [selectedDoctorId, appointmentsByDoctorId])
 
-  // Shift background events (grey band)
   const shiftEvents = useMemo(() => {
     const shifts = shiftsByDoctorId[selectedDoctorId] ?? []
     return buildShiftEvents(shifts, referenceDate)
@@ -175,8 +163,6 @@ export default function DoctorScheduleCalendar({
 
   return (
     <div className="flex flex-col gap-4">
-
-      {/* ── Doctor selector tabs ─────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-2">
         {doctors.map(doc => (
           <button
@@ -195,7 +181,6 @@ export default function DoctorScheduleCalendar({
         ))}
       </div>
 
-      {/* ── Legend ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-4 text-xs text-primary-700">
         <span className="font-semibold text-primary-800">
           <i className="fa-solid fa-user-doctor mr-1 text-primary-500" />
@@ -215,7 +200,6 @@ export default function DoctorScheduleCalendar({
         </span>
       </div>
 
-      {/* ── Calendar ────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-primary-200 overflow-hidden shadow-sm">
         <style>{`
           .rbc-btn-group button { color: #374151; border-color: #E5E7EB; font-size: 0.8rem; }
@@ -256,7 +240,6 @@ export default function DoctorScheduleCalendar({
         />
       </div>
 
-      {/* ── Detail modal ────────────────────────────────────────────────── */}
       <Modal isOpen={isOpen} onClose={closeAndClear} title="Detalle de cita">
         {selectedApt && (
           <div className="space-y-3 text-sm">
