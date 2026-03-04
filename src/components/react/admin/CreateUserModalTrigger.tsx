@@ -11,6 +11,7 @@ type UserDraft = {
     name: string;
     email: string;
     role: UserRole | "";
+    password: string;
     status: UserStatus;
 };
 
@@ -18,6 +19,7 @@ const emptyDraft = (): UserDraft => ({
     name: "",
     email: "",
     role: "",
+    password: "",
     status: "ACTIVO",
 });
 
@@ -73,6 +75,16 @@ export default function CreateUserModalTrigger() {
                         placeholder="correo@ejemplo.com"
                         value={draft.email}
                         onChange={(e) => set("email", e.target.value)}
+                        required
+                    />
+
+                    <Field
+                        label="Contraseña"
+                        name="ctrsñ"
+                        type="password"
+                        placeholder="CI o 1234"
+                        value={draft.password}
+                        onChange={(e) => set("password", e.target.value)}
                         required
                     />
 
