@@ -147,7 +147,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
             {/* ── Sidebar: Select Doctor ─────────────────────────────────────── */}
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-4 overflow-hidden flex flex-col gap-3">
                 <h3 className="text-sm font-bold text-primary-800 uppercase tracking-wide border-b border-primary-100 pb-2">Seleccionar Médico</h3>
-                <div className="flex flex-col gap-1 overflow-y-auto max-h-[600px] pr-1">
+                <div className="flex flex-col gap-1 overflow-y-auto max-h-150 pr-1">
                     {doctors.map(doc => (
                         <button
                             key={doc.id}
@@ -223,7 +223,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                             <div key={day.val} className={`border rounded-lg p-3 transition-colors ${hasShifts ? 'border-primary-200 bg-white shadow-sm' : 'border-cool-gray-20 bg-cool-gray-10/30'}`}>
                                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                                     {/* Day label */}
-                                    <div className="w-32 flex items-center gap-2 flex-shrink-0 pt-1">
+                                    <div className="w-32 flex items-center gap-2 shrink-0 pt-1">
                                         <div className={`w-3 h-3 rounded-full ${hasShifts ? 'bg-primary-500' : 'bg-cool-gray-30'}`}></div>
                                         <span className={`font-bold ${hasShifts ? 'text-primary-800' : 'text-cool-gray-50'}`}>{day.label}</span>
                                     </div>
