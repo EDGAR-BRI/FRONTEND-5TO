@@ -3,6 +3,9 @@ import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import DoctorScheduleCalendar from '@/components/react/DoctorScheduleCalendar';
 
 const { receptionist_id } = Astro.params;
+const viewParam = Astro.url.searchParams.get('view');
+const initialView = (viewParam === 'day' || viewParam === 'agenda') ? viewParam : 'week';
+
 
 // ─── Mock data based on DB schema ───────────────────────────────────────────
 // UserDoctor → User join gives us name + specialty
@@ -98,6 +101,24 @@ const confirmedApts = Object.values(appointmentsByDoctorId).flat().filter(a => a
 const pendingApts = Object.values(appointmentsByDoctorId).flat().filter(a => a.status === 'Sin Confirmar').length;
 ---
 
+
+<script>
+  function scrollToCalendar() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('view') !== 'day') return;
+    const el = document.getElementById('calendar');
+    if (!el) return;
+    // getBoundingClientRect().top is viewport-relative. Add window.scrollY to get absolute document position.
+    const absoluteTop = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: absoluteTop, behavior: 'smooth' });
+  }
+
+  // After Astro ClientRouter navigation (view transitions)
+  document.addEventListener('astro:page-load', () => setTimeout(scrollToCalendar, 200));
+  // On direct page load, wait for full render+hydration before computing positions
+  window.addEventListener('load', () => setTimeout(scrollToCalendar, 200));
+</script>
+
 <ReceptionistLayout title="Horarios – Recepción">
   <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
 
@@ -160,7 +181,7 @@ const pendingApts = Object.values(appointmentsByDoctorId).flat().filter(a => a.s
       <div class="px-5 py-4 border-b border-primary-200 flex items-center justify-between">
         <h2 class="text-heading-6 text-primary-800">
           <i class="fa-solid fa-table-cells-large text-primary-500 mr-2"></i>
-          Turnos de la semana (ScheduleDay activo)
+          Turnos de la semana 
         </h2>
         <span class="text-body-xxs text-cool-gray-50">Ciclo semanal vigente</span>
       </div>
@@ -206,7 +227,7 @@ const pendingApts = Object.values(appointmentsByDoctorId).flat().filter(a => a.s
     </div>
 
     <!-- ─── Interactive calendar ────────────────────────────────────────────── -->
-    <div class="bg-white rounded-xl border border-primary-200 shadow-sm p-5">
+    <div id="calendar" class="bg-white rounded-xl border border-primary-200 shadow-sm p-5">
       <div class="mb-4">
         <h2 class="text-heading-6 text-primary-800">
           <i class="fa-solid fa-calendar-week text-primary-500 mr-2"></i>
@@ -223,6 +244,7 @@ const pendingApts = Object.values(appointmentsByDoctorId).flat().filter(a => a.s
         shiftsByDoctorId={shiftsByDoctorId}
         appointmentsByDoctorId={appointmentsByDoctorId}
         heightPx={620}
+        initialView={initialView}
       />
     </div>
 

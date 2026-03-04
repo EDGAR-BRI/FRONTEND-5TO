@@ -41,6 +41,8 @@ export interface DoctorScheduleCalendarProps {
   /** appointmentsByDoctorId[doctorId] = booked appointments */
   appointmentsByDoctorId: Record<number, BookedAppointment[]>
   heightPx?: number
+  /** 'week' (default) or 'day' to start the calendar in day view */
+  initialView?: 'week' | 'day' | 'agenda'
 }
 
 const locales = { es }
@@ -111,6 +113,7 @@ export default function DoctorScheduleCalendar({
   shiftsByDoctorId,
   appointmentsByDoctorId,
   heightPx = 640,
+  initialView = 'week',
 }: DoctorScheduleCalendarProps) {
   const [selectedDoctorId, setSelectedDoctorId] = useState<number>(doctors[0]?.id ?? 0)
   const [referenceDate, setReferenceDate] = useState(new Date())
@@ -229,7 +232,7 @@ export default function DoctorScheduleCalendar({
           onSelectEvent={onSelectEvent}
           onNavigate={(date) => setReferenceDate(date)}
           views={['week', 'day', 'agenda']}
-          defaultView="week"
+          defaultView={initialView}
           step={30}
           timeslots={2}
           min={setMinutes(setHours(new Date(), 6), 0)}
