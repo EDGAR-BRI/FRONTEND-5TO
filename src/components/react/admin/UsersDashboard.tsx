@@ -1,0 +1,164 @@
+import React, { useState, useEffect } from 'react';
+import { DataTable, type Column } from '@/components/react/primary/DataTable';
+import { Badge } from '@/components/react/primary/Badge';
+import EditUserModalTrigger from '@/components/react/admin/EditUserModalTrigger';
+import CreateUserModalTrigger from '@/components/react/admin/CreateUserModalTrigger';
+import { StatsCard } from '@/components/react/admin/finance/StatsCard';
+import { LuSearch, LuUsers, LuChevronDown, LuUserCheck, LuUserX, LuStethoscope } from 'react-icons/lu';
+import type { User, UserRole, UserStatus } from '@/types/User';
+
+const ALL_ROLES: (UserRole | 'TODOS')[] = ['TODOS', 'ADMIN', 'DOCTOR', 'RECEPCIONISTA', 'PACIENTE'];
+
+const statusBadgeStyles = (status: UserStatus) => {
+    if (status === 'ACTIVO') return { bg: 'bg-primary-200/30', text: 'text-primary-700', border: 'border-primary-300' };
+    return { bg: 'bg-error/15', text: 'text-error', border: 'border-error/20' };
+};
+
+const roleBadgeStyles = (role: UserRole) => {
+    switch (role) {
+        case 'ADMIN': return { bg: 'bg-primary-100', text: 'text-primary-800', border: 'border-primary-600', borderWidth: 'border-2', font: 'font-bold' };
+        case 'DOCTOR': return { bg: 'bg-primary-100', text: 'text-primary-600', border: 'border-primary-400', font: 'font-semibold' };
+        case 'RECEPCIONISTA': return { bg: 'bg-primary-50', text: 'text-primary-500', border: 'border-primary-300' };
+        default: return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' };
+    }
+};
+
+const columns: Column<User>[] = [
+    { header: 'ID', accessorKey: 'id', align: 'left' },
+    {
+        header: 'Nombre / Correo',
+        cell: (item) => (
+            <div className="flex flex-col">
+                <span className="text-primary-900 font-medium">{item.name}</span>
+                <span className="text-xs text-primary-700">{item.email}</span>
+            </div>
+        ),
+    },
+    {
+        header: 'Rol',
+        align: 'center',
+        cell: (item) => <Badge styles={roleBadgeStyles(item.role)}>{item.role}</Badge>,
+    },
+    {
+        header: 'Estado',
+        align: 'center',
+        cell: (item) => <Badge styles={statusBadgeStyles(item.status)}>{item.status}</Badge>,
+    },
+    {
+        header: 'Acciones',
+        align: 'center',
+        cell: (item) => (
+            <div className="flex justify-center gap-3">
+                <EditUserModalTrigger user={item} />
+                <button className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
+                    Eliminar
+                </button>
+            </div>
+        ),
+    },
+];
+
+export default function UsersDashboard() {
+    const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState<UserRole | 'TODOS'>('TODOS');
+    const [summary, setSummary] = useState({ total: 0, activos: 0, inactivos: 0, doctores: 0 });
+
+    useEffect(() => {
+        fetch('/api/v1/admin/users-summary')
+            .then(res => res.json())
+            .then(data => setSummary(data))
+            .catch(() => { });
+    }, []);
+
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (roleFilter !== 'TODOS') params.set('role', roleFilter);
+    const endpoint = `/admin/users${params.toString() ? `?${params.toString()}` : ''}`;
+
+    return (
+        <div className="space-y-6">
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatsCard
+                    title="Total Usuarios"
+                    value={summary.total}
+                    color="primary"
+                    icon={<LuUsers size={18} />}
+                />
+                <StatsCard
+                    title="Usuarios Activos"
+                    value={summary.activos}
+                    color="success"
+                    icon={<LuUserCheck size={18} />}
+                />
+                <StatsCard
+                    title="Usuarios Inactivos"
+                    value={summary.inactivos}
+                    color="danger"
+                    icon={<LuUserX size={18} />}
+                />
+                <StatsCard
+                    title="Médicos"
+                    value={summary.doctores}
+                    color="primary"
+                    icon={<LuStethoscope size={18} />}
+                />
+            </div>
+
+            <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                            <LuUsers size={18} className="text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-semibold text-white leading-tight">Usuarios del Sistema</h2>
+                            <p className="text-xs text-primary-200 mt-0.5">Administra accesos, roles y estados del personal.</p>
+                        </div>
+                    </div>
+                    <CreateUserModalTrigger />
+                </div>
+
+                {/* Filters Bar */}
+                <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-primary-500/50 bg-primary-800/30">
+
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-48 max-w-sm">
+                        <LuSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Buscar por nombre o correo..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="w-full pl-9 pr-4 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow placeholder:text-gray-400"
+                        />
+                    </div>
+
+                    {/* Role filter select */}
+                    <div className="relative">
+                        <select
+                            value={roleFilter}
+                            onChange={e => setRoleFilter(e.target.value as UserRole | 'TODOS')}
+                            className="appearance-none pl-3 pr-8 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow cursor-pointer"
+                        >
+                            {ALL_ROLES.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                            ))}
+                        </select>
+                        <LuChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+
+                <DataTable<User>
+                    className="rounded-none! border-none!"
+                    endpoint={endpoint}
+                    columns={columns}
+                    businessId={1}
+                />
+            </section>
+        </div>
+    );
+}
