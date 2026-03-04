@@ -1,34 +1,45 @@
-import { CalendarDays, Users, FlaskConical } from "lucide-react";
+import { CalendarDays, Users, FlaskConical, UserCircle } from "lucide-react";
 
 export default function DashboardActions() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
       
-      {/* BOTÓN: AGENDAR CITAS - Único con enlace funcional */}
+
       <a 
         href="schedule" 
-        className="bg-[#2563eb] p-10 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-blue-700 transition-all cursor-pointer shadow-lg group active:scale-95 no-underline"
+        className="bg-[#2563eb] p-8 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-blue-700 transition-all cursor-pointer shadow-lg group active:scale-95 no-underline"
       >
-        <div className="bg-white/10 p-5 rounded-2xl group-hover:scale-110 transition-transform">
-          <CalendarDays size={40} className="text-white" />
+        <div className="bg-white/10 p-4 rounded-2xl group-hover:scale-110 transition-transform">
+          <CalendarDays size={32} className="text-white" />
         </div>
-        <span className="text-white font-black uppercase tracking-[0.2em] text-xs">Agendar Citas</span>
+        <span className="text-white font-black uppercase tracking-[0.2em] text-[10px]">Agendar Citas</span>
       </a>
 
-      {/* TARJETA: PACIENTES - Sin redirección */}
-      <div className="bg-[#22c55e] p-10 rounded-3xl flex flex-col items-center justify-center gap-4 shadow-lg opacity-90">
-        <div className="bg-white/10 p-5 rounded-2xl">
-          <Users size={40} className="text-white" />
+      <a 
+        href="profile" 
+        className="bg-[#8b5cf6] p-8 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-violet-700 transition-all cursor-pointer shadow-lg group active:scale-95 no-underline"
+      >
+        <div className="bg-white/10 p-4 rounded-2xl group-hover:scale-110 transition-transform">
+          <UserCircle size={32} className="text-white" />
         </div>
-        <span className="text-white font-black uppercase tracking-[0.2em] text-xs">Pacientes</span>
+        <span className="text-white font-black uppercase tracking-[0.2em] text-[10px]">Mi Perfil</span>
+      </a>
+
+
+      <div className="bg-[#22c55e] p-8 rounded-3xl flex flex-col items-center justify-center gap-4 shadow-lg opacity-90">
+        <div className="bg-white/10 p-4 rounded-2xl">
+          <Users size={32} className="text-white" />
+        </div>
+        <span className="text-white font-black uppercase tracking-[0.2em] text-[10px]">Pacientes</span>
       </div>
 
-      {/* TARJETA: RESULTADOS - Sin redirección */}
-      <div className="bg-[#f97316] p-10 rounded-3xl flex flex-col items-center justify-center gap-4 shadow-lg opacity-90">
-        <div className="bg-white/10 p-5 rounded-2xl">
-          <FlaskConical size={40} className="text-white" />
+
+      <div className="bg-[#f97316] p-8 rounded-3xl flex flex-col items-center justify-center gap-4 shadow-lg opacity-90">
+        <div className="bg-white/10 p-4 rounded-2xl">
+          <FlaskConical size={32} className="text-white" />
         </div>
-        <span className="text-white font-black uppercase tracking-[0.2em] text-[10px] text-center">Resultados de Laboratorio</span>
+        <span className="text-white font-black uppercase tracking-[0.2em] text-[9px] text-center">Resultados</span>
       </div>
 
     </div>
