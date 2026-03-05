@@ -5,12 +5,15 @@ interface StatsCardProps {
     value: string | number;
     trend?: string;
     trendUp?: boolean;
+    trendLabel?: string;
+    subText?: string;
+    subTextClass?: string;
     icon?: React.ReactNode;
     color?: "primary" | "success" | "danger" | "warning";
     variant?: "default" | "compact";
 }
 
-export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary", variant = "default" }: StatsCardProps) => {
+export const StatsCard = ({ title, value, trend, trendUp, trendLabel = "vs mes anterior", subText, subTextClass, icon, color = "primary", variant = "default" }: StatsCardProps) => {
     const colorClasses = {
         primary: "bg-primary-200 text-primary-700",
         success: "bg-green-50 text-green-700",
@@ -31,9 +34,14 @@ export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary
                 <div>
                     <p className="text-sm font-medium text-cool-gray-60 leading-tight">{title}</p>
                     <h3 className="text-2xl font-bold text-cool-gray-90 leading-tight">{value}</h3>
-                    {trend && (
+                    {trend && !subText && (
                         <span className={`text-xs font-medium ${trendUp ? "text-green-600" : "text-red-600"}`}>
                             {trendUp ? "↑" : "↓"} {trend}
+                        </span>
+                    )}
+                    {subText && (
+                        <span className={`text-xs font-medium ${subTextClass || "text-cool-gray-50"}`}>
+                            {subText}
                         </span>
                     )}
                 </div>
@@ -54,12 +62,17 @@ export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary
                     </div>
                 )}
             </div>
-            {trend && (
+            {trend && !subText && (
                 <div className="mt-4 flex items-center text-xs font-medium">
                     <span className={trendUp ? "text-green-600" : "text-red-600"}>
                         {trendUp ? "↑" : "↓"} {trend}
                     </span>
-                    <span className="text-cool-gray-50 ml-2">vs mes anterior</span>
+                    <span className="text-cool-gray-50 ml-2">{trendLabel}</span>
+                </div>
+            )}
+            {subText && (
+                <div className="mt-4 flex items-center text-xs font-medium">
+                    <span className={subTextClass || "text-cool-gray-50"}>{subText}</span>
                 </div>
             )}
         </article>
