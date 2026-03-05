@@ -1,25 +1,29 @@
 ---
-import PacientLayout from '@/layouts/PacientLayout.astro';
-import { BasicData } from '@/components/react/pacient/BasicData';
-import { ProfileTabs } from '@/components/react/pacient/ProfileTabs'; 
-import { UserPen } from 'lucide-react';
+import PacientLayout from "@/layouts/PacientLayout.astro";
+import { BasicData } from "@/components/react/pacient/BasicData";
+import { ProfileTabs } from "@/components/react/pacient/ProfileTabs";
+import { UserPen } from "lucide-react";
 ---
 
 <PacientLayout title="Perfil del Paciente">
   <main class="p-4 md:p-6 bg-[#f4f9ff] min-h-screen w-full">
-    
-    <header class="w-full mb-8 flex items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+    <header
+      class="w-full mb-8 flex items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400"
+    >
       <div class="bg-blue-100 p-3 rounded-xl">
         <UserPen className="w-8 h-8 text-blue-600" />
       </div>
       <div>
         <h1 class="text-2xl font-bold text-slate-800">Mi Perfil</h1>
-        <p class="text-slate-500 text-sm font-medium">Gestiona tu información personal y médica.</p>
+        <p class="text-slate-500 text-sm font-medium">
+          Gestiona tu información personal y médica.
+        </p>
       </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full items-stretch">
-      
+    <div
+      class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full items-stretch"
+    >
       <aside class="flex flex-col h-full">
         <BasicData client:load />
       </aside>
@@ -27,7 +31,6 @@ import { UserPen } from 'lucide-react';
       <section class="flex flex-col h-full">
         <ProfileTabs client:load />
       </section>
-
     </div>
   </main>
 </PacientLayout>

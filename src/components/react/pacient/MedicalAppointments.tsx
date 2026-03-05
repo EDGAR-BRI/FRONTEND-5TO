@@ -36,10 +36,10 @@ export const MedicalAppointments = () => {
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
       <h3 className="text-lg font-bold text-slate-800 px-2">Citas Programadas</h3>
-      
+
       {appointments.length > 0 ? (
         appointments.map((cita, i) => (
-          <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-blue-100/50">
+          <div key={i} className="bg-white p-6 rounded-lg border border-primary-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary-400">
             <div className="flex items-center gap-4">
               <div className="bg-blue-50 p-4 rounded-2xl text-blue-600">
                 <Calendar className="w-6 h-6" />
@@ -57,13 +57,13 @@ export const MedicalAppointments = () => {
                     </span>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                   <User className="w-3 h-3" /> {cita.doctor}
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg font-medium">
                 <Clock className="w-3 h-3 text-blue-400" /> {cita.hora}
@@ -73,7 +73,7 @@ export const MedicalAppointments = () => {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setSelectedAppointment(cita)}
               className="bg-blue-50 text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50"
             >
@@ -82,7 +82,7 @@ export const MedicalAppointments = () => {
           </div>
         ))
       ) : (
-        <div className="bg-white p-12 rounded-[2rem] border border-slate-100 border-dashed text-center flex flex-col items-center gap-4 shadow-sm">
+        <div className="bg-white p-12 rounded-lg border border-primary-200 border-dashed text-center flex flex-col items-center gap-4 shadow-sm transition-all hover:border-primary-400">
           <div className="bg-slate-50 p-6 rounded-full text-slate-300">
             <CalendarDays className="w-12 h-12" />
           </div>
@@ -95,9 +95,9 @@ export const MedicalAppointments = () => {
         </div>
       )}
 
-      <AppointmentDetailModal 
-        isOpen={selectedAppointment !== null} 
-        onClose={() => setSelectedAppointment(null)} 
+      <AppointmentDetailModal
+        isOpen={selectedAppointment !== null}
+        onClose={() => setSelectedAppointment(null)}
         appointment={selectedAppointment}
       />
     </div>

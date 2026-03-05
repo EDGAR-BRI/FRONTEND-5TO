@@ -16,8 +16,8 @@ export const CurrentMedication = () => {
   const [selectedMed, setSelectedMed] = useState<Medication | null>(null);
 
   // --- LÓGICA DE DATOS ---
-    const medications: Medication[] = [
-   {
+  const medications: Medication[] = [
+    {
       nombre: "Losartán Potásico",
       dosis: "50mg",
       frecuencia: "1 tableta cada 24h",
@@ -30,7 +30,7 @@ export const CurrentMedication = () => {
       frecuencia: "1 tableta diaria",
       duracion: "Continuo",
       doctor: "Dr. Mendoza"
-    } 
+    }
   ];
 
 
@@ -38,18 +38,18 @@ export const CurrentMedication = () => {
     <div className="space-y-4 animate-in fade-in duration-500">
       <div className="flex items-center justify-between px-2">
         <h3 className="text-lg font-bold text-slate-800">Medicación Actual</h3>
-        <button 
+        <button
           onClick={() => setIsAddOpen(true)}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-sm shadow-blue-100"
         >
           <Plus className="w-4 h-4" /> Añadir Medicamento
         </button>
       </div>
-      
+
       {medications.length > 0 ? (
         // CASO A: SI HAY MEDICAMENTOS
         medications.map((med, i) => (
-          <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-blue-100/50">
+          <div key={i} className="bg-white p-6 rounded-lg border border-primary-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary-400">
             <div className="flex items-center gap-4">
               <div className="bg-emerald-50 p-4 rounded-2xl text-emerald-600">
                 <Pill className="w-6 h-6" />
@@ -64,7 +64,7 @@ export const CurrentMedication = () => {
                 <p className="text-xs text-slate-500 mt-1 italic">Recetado por: {med.doctor}</p>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100/50">
                 <Clock className="w-3 h-3 text-emerald-500" /> {med.frecuencia}
@@ -74,7 +74,7 @@ export const CurrentMedication = () => {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setSelectedMed(med)}
               className="bg-blue-50 text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-100 hover:text-blue-700 transition-all border border-blue-100/50"
             >
@@ -84,7 +84,7 @@ export const CurrentMedication = () => {
         ))
       ) : (
         // CASO B: ESTADO VACÍO (LIMPIO)
-        <div className="bg-white p-16 rounded-[2.5rem] border border-slate-100 border-dashed text-center flex flex-col items-center gap-4 shadow-sm">
+        <div className="bg-white p-16 rounded-lg border border-primary-200 border-dashed text-center flex flex-col items-center gap-4 shadow-sm transition-all hover:border-primary-400">
           <div className="bg-slate-50 p-6 rounded-full text-slate-200">
             <Pill className="w-14 h-14" />
           </div>
@@ -98,10 +98,10 @@ export const CurrentMedication = () => {
       )}
 
       <AddMedicationModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
-      <EditMedicationModal 
-        isOpen={selectedMed !== null} 
-        onClose={() => setSelectedMed(null)} 
-        medication={selectedMed} 
+      <EditMedicationModal
+        isOpen={selectedMed !== null}
+        onClose={() => setSelectedMed(null)}
+        medication={selectedMed}
       />
     </div>
   );

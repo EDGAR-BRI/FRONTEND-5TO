@@ -19,9 +19,9 @@ export const PaymentsBills = () => {
       <div className="space-y-3">
         {payments.length > 0 ? (
           payments.map((pago, i) => (
-            <div 
-              key={i} 
-              className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:border-blue-100/50 gap-4"
+            <div
+              key={i}
+              className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white rounded-lg border border-primary-200 shadow-sm transition-all hover:border-primary-400 gap-4"
             >
               <div className="flex items-center gap-4">
                 <div className="bg-purple-50 p-4 rounded-2xl text-purple-500">
@@ -41,7 +41,7 @@ export const PaymentsBills = () => {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setSelectedBill(pago)}
                   className="bg-blue-50 text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50"
                 >
@@ -52,7 +52,7 @@ export const PaymentsBills = () => {
           ))
         ) : (
           /* ESTADO VACÍO */
-          <div className="bg-white p-12 rounded-[2rem] border border-slate-100 border-dashed text-center flex flex-col items-center gap-4 shadow-sm">
+          <div className="bg-white p-12 rounded-lg border border-primary-200 border-dashed text-center flex flex-col items-center gap-4 shadow-sm transition-all hover:border-primary-400">
             <div className="bg-slate-50 p-6 rounded-full text-slate-300">
               <Wallet className="w-12 h-12" />
             </div>
@@ -64,10 +64,10 @@ export const PaymentsBills = () => {
         )}
       </div>
 
-      <BillDetailModal 
-        isOpen={selectedBill !== null} 
-        onClose={() => setSelectedBill(null)} 
-        bill={selectedBill} 
+      <BillDetailModal
+        isOpen={selectedBill !== null}
+        onClose={() => setSelectedBill(null)}
+        bill={selectedBill}
       />
     </div>
   );

@@ -9,7 +9,7 @@ export const ContactInfo = () => {
   };
 
   return (
-    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 w-full flex flex-col h-[380px]">
+    <div className="bg-white rounded-lg p-8 shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full flex flex-col h-[380px]">
       <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-6">
         <Phone className="w-5 h-5 text-blue-500" /> Información de Contacto
       </h2>

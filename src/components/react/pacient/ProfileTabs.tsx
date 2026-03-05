@@ -5,9 +5,9 @@ import { MedicalAppointments } from './MedicalAppointments.tsx';
 import { CurrentMedication } from './CurrentMedication';
 import { PaymentsBills } from './PaymentsBills';
 
-import { 
-  UserCircle, CalendarDays, Pill, Receipt, Settings2, 
-  Mail, Phone, MapPin, User, ShieldAlert, X 
+import {
+  UserCircle, CalendarDays, Pill, Receipt, Settings2,
+  Mail, Phone, MapPin, User, ShieldAlert, X
 } from 'lucide-react';
 
 export const ProfileTabs = () => {
@@ -24,7 +24,7 @@ export const ProfileTabs = () => {
   return (
     <main className="flex flex-col gap-6 w-full h-full relative">
       {/* NAVEGACIÓN SEMÁNTICA */}
-      <nav className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 w-fit" aria-label="Menú de perfil">
+      <nav className="flex bg-white p-1.5 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-fit" aria-label="Menú de perfil">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -34,9 +34,8 @@ export const ProfileTabs = () => {
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                isActive ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-              }`}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                }`}
             >
               <Icon className="size-4" />
               {tab.label}
@@ -71,11 +70,11 @@ export const ProfileTabs = () => {
           )}
         </article>
       </section>
-      
+
       {/* PIE DE PÁGINA PARA ACCIONES */}
       {activeTab === 'personal' && (
         <footer className="pt-2 animate-in slide-in-from-bottom-2">
-          <button 
+          <button
             onClick={() => setShowModal(true)}
             className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3"
           >
@@ -87,9 +86,9 @@ export const ProfileTabs = () => {
       {showModal && (
         <dialog open className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto w-full h-full border-none">
           <section className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl relative animate-in zoom-in-95 duration-200 my-8 overflow-hidden">
-            
+
             <header className="p-8 pb-0">
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors"
                 aria-label="Cerrar modal"
@@ -101,11 +100,11 @@ export const ProfileTabs = () => {
             </header>
 
             <form className="p-8 space-y-8" onSubmit={(e) => e.preventDefault()}>
-                <fieldset className="space-y-4 border-none p-0 m-0 bg-red-50/30 p-4 rounded-2xl border border-red-50 mt-12">
+              <fieldset className="space-y-4 border-none p-0 m-0 bg-red-50/30 p-4 rounded-2xl border border-red-50 mt-12">
                 <legend className="text-xs font-black text-blue-600 uppercase tracking-widest flex items-center gap-2 mb-4">
                   <Phone className="w-3 h-3" /> Información de Contacto
                 </legend>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label htmlFor="email" className="text-[10px] font-bold text-slate-400 uppercase ml-1 italic">Correo Electrónico</label>
@@ -138,7 +137,7 @@ export const ProfileTabs = () => {
                 <legend className="text-xs font-black text-red-500 uppercase tracking-widest flex items-center gap-2 mb-2">
                   <ShieldAlert className="w-3 h-3" /> Contacto de Emergencia
                 </legend>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label htmlFor="emergency-name" className="text-[10px] font-bold text-slate-400 uppercase ml-1 italic">Nombre Completo</label>
@@ -160,14 +159,14 @@ export const ProfileTabs = () => {
               </fieldset>
 
               <footer className="flex gap-3 mt-10">
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-4 border border-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-slate-50 transition-all"
                 >
                   Cancelar
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
                 >

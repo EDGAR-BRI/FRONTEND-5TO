@@ -9,12 +9,12 @@ export const EmergencyContact = () => {
   };
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-red-50 w-full">
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full">
       <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
         <ShieldAlert className="w-4 h-4 text-red-500" />
         Contacto de Emergencia
       </h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
           <div className="bg-white p-2 rounded-lg shadow-sm">
