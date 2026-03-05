@@ -182,12 +182,12 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                         <div className="flex items-center border border-primary-200 rounded-lg overflow-hidden bg-cool-gray-10 px-2 py-1 gap-2">
                             <span className="text-xs font-semibold text-primary-700">Duración del ciclo:</span>
                             <div className="flex items-center gap-1">
-                                <button onClick={() => handleWeekCountChange(editingCycle.weeks.length - 1)} className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50" disabled={editingCycle.weeks.length <= 1}>
+                                <button onClick={() => handleWeekCountChange(editingCycle.weeks.length - 1)} className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50" disabled={editingCycle.weeks.length <= 1} aria-label="Disminuir semanas">
                                     <i className="fa-solid fa-minus text-xs"></i>
                                 </button>
                                 <span className="w-4 text-center text-sm font-bold text-primary-800">{editingCycle.weeks.length}</span>
                                 <span className="text-xs text-primary-700 font-medium">{editingCycle.weeks.length === 1 ? 'sem' : 'sems'}</span>
-                                <button onClick={() => handleWeekCountChange(editingCycle.weeks.length + 1)} className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50" disabled={editingCycle.weeks.length >= 4}>
+                                <button onClick={() => handleWeekCountChange(editingCycle.weeks.length + 1)} className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50" disabled={editingCycle.weeks.length >= 4} aria-label="Aumentar semanas">
                                     <i className="fa-solid fa-plus text-xs"></i>
                                 </button>
                             </div>
@@ -240,6 +240,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                                                         value={shift.starts_at}
                                                         onChange={(e) => handleUpdateShift(activeWeekTab, realIdx, 'starts_at', e.target.value)}
                                                         className="bg-white border border-primary-200 rounded px-2 py-1 text-primary-800 font-medium focus:ring-2 focus:ring-primary-400 outline-none"
+                                                        aria-label="Hora de inicio"
                                                     />
                                                     <span className="text-primary-600 font-medium">a</span>
                                                     <input
@@ -247,6 +248,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                                                         value={shift.ends_at}
                                                         onChange={(e) => handleUpdateShift(activeWeekTab, realIdx, 'ends_at', e.target.value)}
                                                         className="bg-white border border-primary-200 rounded px-2 py-1 text-primary-800 font-medium focus:ring-2 focus:ring-primary-400 outline-none"
+                                                        aria-label="Hora de fin"
                                                     />
                                                     <button
                                                         onClick={() => handleRemoveShift(activeWeekTab, realIdx)}
