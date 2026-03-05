@@ -6,6 +6,8 @@ import CreateUserModalTrigger from '@/components/react/admin/CreateUserModalTrig
 import { StatsCard } from '@/components/react/primary/StatsCard';
 import { LuSearch, LuUsers, LuChevronDown, LuUserCheck, LuUserX, LuStethoscope } from 'react-icons/lu';
 import type { User, UserRole, UserStatus } from '@/types/User';
+import { Select } from '../primary/Select';
+import { Field } from '../primary/Field';
 
 const ALL_ROLES: (UserRole | 'TODOS')[] = ['TODOS', 'ADMIN', 'DOCTOR', 'RECEPCIONISTA', 'PACIENTE'];
 
@@ -127,32 +129,28 @@ export default function UsersDashboard() {
                 </div>
 
                 {/* Filters Bar */}
-                <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-primary-500/50 bg-primary-800/30">
+                <div className="px-6 py-3 flex flex-wrap gap-3 items-center">
 
                     {/* Search */}
                     <div className="relative flex-1 min-w-48 max-w-sm">
-                        <LuSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                        <input
+                        <Field
+                            name='search'
                             type="text"
                             placeholder="Buscar por nombre o correo..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-4 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow placeholder:text-gray-400"
                         />
                     </div>
 
                     {/* Role filter select */}
-                    <div className="relative">
-                        <select
+                    <div className="relative min-w-48">
+                        <Select
+
                             value={roleFilter}
-                            onChange={e => setRoleFilter(e.target.value as UserRole | 'TODOS')}
-                            className="appearance-none pl-3 pr-8 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow cursor-pointer"
+                            onChange={value => setRoleFilter(value as UserRole | 'TODOS')}
+                            options={ALL_ROLES.map(role => ({ value: role, label: role }))}
                         >
-                            {ALL_ROLES.map(role => (
-                                <option key={role} value={role}>{role}</option>
-                            ))}
-                        </select>
-                        <LuChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </Select>
                     </div>
                 </div>
 
