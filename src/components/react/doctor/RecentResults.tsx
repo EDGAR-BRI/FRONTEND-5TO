@@ -44,7 +44,7 @@ export default function RecentResults() {
         {results.map((r, i) => (
           <div 
             key={i} 
-            className="group flex flex-col p-4 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+            className="group flex flex-col p-4 rounded-xl border border-primary-100 hover:border-primary-200 hover:bg-slate-50 transition-all cursor-pointer"
           >
             <div className="flex justify-between items-start mb-2">
               <div>

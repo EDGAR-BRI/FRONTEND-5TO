@@ -44,7 +44,7 @@ export default function UpcomingAppointments() {
         {appointments.map((a, i) => (
           <div 
             key={i} 
-            className="group flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+            className="group flex items-center justify-between p-4 rounded-xl border border-primary-100 hover:border-primary-200 hover:bg-slate-50 transition-all cursor-pointer"
           >
             <div className="flex items-center gap-4">
               {/* Avatar e Icono */}
