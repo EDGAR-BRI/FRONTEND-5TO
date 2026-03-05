@@ -4,7 +4,7 @@ import Input from "@/components/astro/Input.astro";
 import clinica from "@/assets/clinica.png";
 import fondo from "@/assets/fondo.avif";
 import UserLogo from "@/assets/User.png";
-import { Button } from "@/components/react/primary/Button";
+import { LoginRedirectButton } from "@/components/react/auth/LoginRedirectButton";
 ---
 
 <Layout>
@@ -51,10 +51,7 @@ import { Button } from "@/components/react/primary/Button";
                             name="contraseña"
                             id="contraseña"
                         />
-                        <Button
-                            label=""
-                            type="submit">Login</Button
-                        >
+                        <LoginRedirectButton client:load />
                     </form>
                     <footer class="flex flex-col gap-4 items-center">
                         <!-- <div class="border-t border-gray-400 w-full"></div> -->
