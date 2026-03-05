@@ -3,7 +3,7 @@ import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import EditUserModalTrigger from '@/components/react/admin/EditUserModalTrigger';
 import CreateUserModalTrigger from '@/components/react/admin/CreateUserModalTrigger';
-import { StatsCard } from '@/components/react/admin/finance/StatsCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
 import { LuSearch, LuUsers, LuChevronDown, LuUserCheck, LuUserX, LuStethoscope } from 'react-icons/lu';
 import type { User, UserRole, UserStatus } from '@/types/User';
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import { Button } from '@/components/react/primary/Button';
-import { StatsCard } from './StatsCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
 import { AddTransactionModal } from './AddTransactionModal';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';

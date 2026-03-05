@@ -18,7 +18,7 @@ export const StatsCard = ({ title, value, trend, trendUp, icon, color = "primary
         warning: "bg-yellow-50 text-yellow-700",
     };
 
-    const baseClasses = "bg-primary-100 rounded-xl border-2 border-primary-300 transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30";
+    const baseClasses = "bg-primary-100 rounded-xl border border-primary-200 transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30";
 
     if (variant === "compact") {
         return (
