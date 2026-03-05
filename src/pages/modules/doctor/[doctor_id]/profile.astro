@@ -1,6 +1,6 @@
 ---
-import MainLayout from '@/layouts/DoctorLayout.astro';
-import DoctorProfile from '@/components/astro/DoctorProfile.astro';
+import MainLayout from "@/layouts/DoctorLayout.astro";
+import DoctorProfile from "@/components/astro/DoctorProfile.astro";
 
 // Datos de ejemplo (Sustituir por: const doctor = await api.getDoctor(id))
 const doctor = {
@@ -12,8 +12,7 @@ const doctor = {
   licenseNumber: "#12345-REG-2023",
   experience: "12",
   clinic: "Torre Médica Sur, Consultorio 402",
-  photo: null // Si tienes URL, ponla aquí
-  
+  photo: null, // Si tienes URL, ponla aquí
 };
 ---
 
@@ -21,14 +20,23 @@ const doctor = {
   <section class="p-4 lg:p-8 max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-primary-800 tracking-tight">Mi Perfil</h1>
-        <p class="text-sm text-slate-500">Gestiona tu información pública y de contacto</p>
+        <h1 class="text-2xl font-bold text-primary-800 tracking-tight">
+          Mi Perfil
+        </h1>
+        <p class="text-sm text-slate-500">
+          Gestiona tu información pública y de contacto
+        </p>
       </div>
-      
-      <div class="hidden sm:flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
+
+      <div
+        class="hidden sm:flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200"
+      >
         <span class="relative flex h-2 w-2">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          <span
+            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+          ></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"
+          ></span>
         </span>
         Perfil Verificado
       </div>
@@ -36,51 +44,77 @@ const doctor = {
 
     <div class="space-y-6">
       <DoctorProfile doctor={doctor} />
-      
-      <div class="bg-white rounded-lg shadow-sm border border-primary-200 hover:border-primary-300 divide-y divide-primary-50 overflow-hidden">
+
+      <div
+        class="bg-primary-100 rounded-xl shadow-sm border border-primary-200 hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30 transition-all duration-200 divide-y divide-primary-50/50 overflow-hidden"
+      >
         <div class="p-4 bg-primary-50/50">
-          <h3 class="text-sm font-bold text-primary-800 flex items-center gap-2">
+          <h3
+            class="text-sm font-bold text-primary-800 flex items-center gap-2"
+          >
             <i class="fa-solid fa-gears"></i>
             Configuración de Cuenta
           </h3>
         </div>
-        
-        <button class="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+
+        <button
+          class="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group"
+        >
           <div class="flex items-center gap-3">
-            <div class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500 group-hover:text-primary-600 transition-colors">
+            <div
+              class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500 group-hover:text-primary-600 transition-colors"
+            >
               <i class="fa-solid fa-lock text-sm"></i>
             </div>
-            <span class="text-sm font-medium text-slate-700">Cambiar Contraseña</span>
+            <span class="text-sm font-medium text-slate-700"
+              >Cambiar Contraseña</span
+            >
           </div>
           <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
         </button>
 
         <div class="p-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500">
+            <div
+              class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500"
+            >
               <i class="fa-solid fa-bell text-sm"></i>
             </div>
-            <span class="text-sm font-medium text-slate-700">Notificaciones Push</span>
+            <span class="text-sm font-medium text-slate-700"
+              >Notificaciones Push</span
+            >
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" checked class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+            <input type="checkbox" checked class="sr-only peer" />
+            <div
+              class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"
+            >
+            </div>
           </label>
         </div>
 
         <div class="p-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500">
+            <div
+              class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500"
+            >
               <i class="fa-solid fa-language text-sm"></i>
             </div>
-            <span class="text-sm font-medium text-slate-700">Idioma del Sistema</span>
+            <span class="text-sm font-medium text-slate-700"
+              >Idioma del Sistema</span
+            >
           </div>
-          <span class="text-xs font-bold text-primary-700 bg-primary-50 px-2 py-1 rounded">Español</span>
+          <span
+            class="text-xs font-bold text-primary-700 bg-primary-50 px-2 py-1 rounded"
+            >Español</span
+          >
         </div>
       </div>
     </div>
-    
-    <p class="text-center text-[10px] text-slate-400 mt-10 mb-4 uppercase tracking-widest font-semibold">
+
+    <p
+      class="text-center text-[10px] text-slate-400 mt-10 mb-4 uppercase tracking-widest font-semibold"
+    >
       Medical Dashboard v2.0 • 2024
     </p>
   </section>
