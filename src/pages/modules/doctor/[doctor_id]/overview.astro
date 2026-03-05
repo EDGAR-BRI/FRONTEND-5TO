@@ -1,42 +1,50 @@
 ---
-import MainLayout from '@/layouts/DoctorLayout.astro';
+import MainLayout from "@/layouts/DoctorLayout.astro";
 
-import StatCard from '@/components/react/doctor/StatCard';
-import DashboardActions from '@/components/react/doctor/DashboardActions';
-import UpcomingAppointments from '@/components/react/doctor/UpcomingAppointments';
-import RecentResults from '@/components/react/doctor/RecentResults';
-import SpecialtyChart from '@/components/react/doctor/ActivityChart';
-import PatientStats from '@/components/react/doctor/PatientStats';
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import DashboardActions from "@/components/react/doctor/DashboardActions";
+import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments";
+import RecentResults from "@/components/react/doctor/RecentResults";
+import SpecialtyChart from "@/components/react/doctor/ActivityChart";
+import PatientStats from "@/components/react/doctor/PatientStats";
 
-
-import { 
-  Activity, 
-  Heart, 
-  Star, 
-  Stethoscope, 
-  ArrowRight 
-} from "lucide-react";
+import { Activity, Heart, Star, Stethoscope, ArrowRight } from "lucide-react";
 ---
 
 <MainLayout>
   <div class="bg-slate-50 min-h-screen p-8 font-sans">
-    
     <div class="mb-10">
       <div class="flex gap-6 items-center">
-        <div class="w-20 h-20 bg-[#1e3a8a] text-white rounded-2xl flex items-center justify-center font-black text-3xl shadow-xl border-4 border-white transition-transform hover:scale-105">
+        <div
+          class="w-20 h-20 bg-[#1e3a8a] text-white rounded-2xl flex items-center justify-center font-black text-3xl shadow-xl border-4 border-white transition-transform hover:scale-105"
+        >
           AP
         </div>
         <div>
-          <p class="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">Panel Médico Oficial</p>
-          <h1 class="text-4xl font-black text-slate-800 leading-none">Dra. Andrea Pérez</h1>
-          <div class="flex gap-5 mt-4 text-[11px] text-slate-500 font-bold uppercase tracking-wide">
-            <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+          <p
+            class="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1"
+          >
+            Panel Médico Oficial
+          </p>
+          <h1 class="text-4xl font-black text-slate-800 leading-none">
+            Dra. Andrea Pérez
+          </h1>
+          <div
+            class="flex gap-5 mt-4 text-[11px] text-slate-500 font-bold uppercase tracking-wide"
+          >
+            <span
+              class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"
+            >
               <Activity size={14} className="text-blue-500" /> V-12.345.678
             </span>
-            <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+            <span
+              class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"
+            >
               <Heart size={14} className="text-red-500" /> O Positivo
             </span>
-            <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-slate-700">
+            <span
+              class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-slate-700"
+            >
               <Star size={14} className="text-yellow-500 fill-current" /> Cardióloga
             </span>
           </div>
@@ -45,50 +53,86 @@ import {
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-      <StatCard client:load label="Consultas este mes" value="128" iconType="calendar" />
-      <StatCard client:load label="Pacientes Activos" value="1,240" iconType="users" />
-      <StatCard client:load label="Reportes Pendientes" value="7" iconType="beaker" />
+      <StatsCard
+        client:load
+        title="Consultas este mes"
+        value="128"
+        color="primary"
+      >
+        <i slot="icon" class="fa-solid fa-calendar"></i>
+      </StatsCard>
+      <StatsCard
+        client:load
+        title="Pacientes Activos"
+        value="1,240"
+        color="success"
+      >
+        <i slot="icon" class="fa-solid fa-users"></i>
+      </StatsCard>
+      <StatsCard
+        client:load
+        title="Reportes Pendientes"
+        value="7"
+        color="warning"
+      >
+        <i slot="icon" class="fa-solid fa-flask"></i>
+      </StatsCard>
     </div>
 
     <div class="mb-10">
-      <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Gestión de Consultorio</h3>
+      <h3
+        class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6"
+      >
+        Gestión de Consultorio
+      </h3>
       <DashboardActions client:load />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      
       <div class="lg:col-span-2 space-y-8">
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
-            <UpcomingAppointments client:load />
+        <div
+          class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300"
+        >
+          <UpcomingAppointments client:load />
         </div>
-        
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300">
-            <RecentResults client:load />
+
+        <div
+          class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300"
+        >
+          <RecentResults client:load />
         </div>
       </div>
 
       <div class="space-y-8">
-        
-        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+        <div
+          class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm transition-all hover:shadow-md"
+        >
           <div class="flex justify-between items-center mb-8">
-            <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
+            <h3
+              class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide"
+            >
               <Activity size={18} className="text-emerald-500" /> Resumen de Pacientes
             </h3>
           </div>
-          
+
           <PatientStats client:load />
 
-          <button class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group">
-            Descargar Reporte Mensual <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          <button
+            class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group"
+          >
+            Descargar Reporte Mensual <ArrowRight
+              size={14}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </button>
         </div>
 
-        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div
+          class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
+        >
           <SpecialtyChart client:load />
         </div>
-
       </div>
     </div>
-
   </div>
 </MainLayout>
