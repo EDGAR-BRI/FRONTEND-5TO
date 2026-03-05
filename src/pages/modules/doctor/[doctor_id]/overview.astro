@@ -91,13 +91,13 @@ import { Activity, Heart, Star, Stethoscope, ArrowRight } from "lucide-react";
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-2 space-y-8">
         <div
-          class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300"
+          class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-400"
         >
           <UpcomingAppointments client:load />
         </div>
 
         <div
-          class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-slate-300"
+          class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-400"
         >
           <RecentResults client:load />
         </div>
@@ -105,7 +105,7 @@ import { Activity, Heart, Star, Stethoscope, ArrowRight } from "lucide-react";
 
       <div class="space-y-8">
         <div
-          class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm transition-all hover:shadow-md"
+          class="bg-white p-8 rounded-lg border border-primary-200 shadow-sm transition-all hover:border-primary-400"
         >
           <div class="flex justify-between items-center mb-8">
             <h3
@@ -118,7 +118,7 @@ import { Activity, Heart, Star, Stethoscope, ArrowRight } from "lucide-react";
           <PatientStats client:load />
 
           <button
-            class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group"
+            class="w-full mt-8 py-4 rounded-xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-primary-700 hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group"
           >
             Descargar Reporte Mensual <ArrowRight
               size={14}
@@ -128,7 +128,7 @@ import { Activity, Heart, Star, Stethoscope, ArrowRight } from "lucide-react";
         </div>
 
         <div
-          class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
+          class="bg-white p-8 rounded-lg border border-primary-200 transition-all hover:border-primary-400 shadow-sm overflow-hidden"
         >
           <SpecialtyChart client:load />
         </div>

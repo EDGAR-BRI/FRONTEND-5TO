@@ -16,7 +16,7 @@ export default function ActivityChart() {
     <div className="bg-white p-2">
 
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
+        <h3 className="font-bold text-primary-800 text-sm flex items-center gap-2 uppercase tracking-wide">
           <BarChart3 size={18} className="text-blue-500" /> Flujo de Pacientes
         </h3>
         <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">Últimos 6 días</span>
