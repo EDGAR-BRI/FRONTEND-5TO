@@ -1,16 +1,19 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import '@/styles/global.css';
+import Layout from "@/layouts/Layout.astro";
+import "@/styles/global.css";
 
 // Import raw SVGs to manipulate them inline
-import userIconRaw from '@/assets/icons/user.svg?raw';
-import doctorIconRaw from '@/assets/icons/hospital.svg?raw';
-import adminIconRaw from '@/assets/icons/shield-security.svg?raw';
+import userIconRaw from "@/assets/icons/user.svg?raw";
+import doctorIconRaw from "@/assets/icons/hospital.svg?raw";
+import adminIconRaw from "@/assets/icons/shield-security.svg?raw";
 
 // Helper to make SVGs use currentColor
 const processSvg = (svg: string) => {
 	// Replaces any fill="..." with fill="currentColor" or adds it if missing (simplified for these specific icons which have fill)
-	return svg.replace(/fill="[^"]*"/g, 'fill="currentColor"').replace(/width="[^"]*"/g, 'width="100%"').replace(/height="[^"]*"/g, 'height="100%"');
+	return svg
+		.replace(/fill="[^"]*"/g, 'fill="currentColor"')
+		.replace(/width="[^"]*"/g, 'width="100%"')
+		.replace(/height="[^"]*"/g, 'height="100%"');
 };
 
 const UserIcon = processSvg(userIconRaw);
@@ -21,20 +24,51 @@ const AdminIcon = processSvg(adminIconRaw);
 <Layout>
 	<div class="min-h-screen bg-gray-50 text-gray-900 font-sans">
 		<!-- Navigation Bar -->
-		<nav class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
-			<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+		<nav
+			class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md"
+		>
+			<div
+				class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4"
+			>
 				<div class="flex items-center gap-2">
-					<div class="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold">V</div>
-					<span class="text-xl font-bold text-gray-800">VitalFe & Alegria</span>
+					<div
+						class="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold"
+					>
+						V
+					</div>
+					<span class="text-xl font-bold text-gray-800"
+						>VitalFe & Alegria</span
+					>
 				</div>
-				<div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-					<a href="#features" class="hover:text-primary-600 transition-colors">Características</a>
-					<a href="#modules" class="hover:text-primary-600 transition-colors">Módulos</a>
-					<a href="#about" class="hover:text-primary-600 transition-colors">Nosotros</a>
+				<div
+					class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600"
+				>
+					<a
+						href="#features"
+						class="hover:text-primary-600 transition-colors"
+						>Características</a
+					>
+					<a
+						href="#modules"
+						class="hover:text-primary-600 transition-colors"
+						>Módulos</a
+					>
+					<a
+						href="#about"
+						class="hover:text-primary-600 transition-colors"
+						>Nosotros</a
+					>
 				</div>
 				<div class="flex items-center gap-4">
-					<a href="/login" class="text-sm font-medium text-gray-600 hover:text-gray-900">Iniciar Sesión</a>
-					<a href="/login" class="rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-all">
+					<a
+						href="/login"
+						class="text-sm font-medium text-gray-600 hover:text-gray-900"
+						>Iniciar Sesión</a
+					>
+					<a
+						href="/login"
+						class="rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-all"
+					>
 						Empezar
 					</a>
 				</div>
@@ -46,29 +80,61 @@ const AdminIcon = processSvg(adminIconRaw);
 			<div class="mx-auto max-w-7xl px-6 lg:px-8">
 				<div class="grid lg:grid-cols-2 gap-12 items-center">
 					<div class="text-center lg:text-left">
-						<h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
-							Gestiona tu centro médico con <span class="text-primary-600">eficiencia</span>
+						<h1
+							class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6"
+						>
+							Gestiona tu centro médico con <span
+								class="text-primary-600">eficiencia</span
+							>
 						</h1>
-						<p class="text-lg leading-8 text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-							Una solución integral para la administración de pacientes, doctores e inventario. 
-							Optimiza los procesos de tu clínica o consultorio.
+						<p
+							class="text-lg leading-8 text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0"
+						>
+							Una solución integral para la administración de
+							pacientes, doctores e inventario. Optimiza los
+							procesos de tu clínica o consultorio.
 						</p>
-						<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-							<a href="/login" class="rounded-full bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-all">
+						<div
+							class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+						>
+							<a
+								href="/login"
+								class="rounded-full bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-all"
+							>
 								Ingresar al Sistema
 							</a>
-							<a href="#modules" class="rounded-full bg-white px-8 py-3.5 text-base font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all">
+							<a
+								href="#modules"
+								class="rounded-full bg-white px-8 py-3.5 text-base font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all"
+							>
 								Ver Módulos
 							</a>
 						</div>
 					</div>
 					<div class="relative mx-auto w-full max-w-lg lg:max-w-none">
-						<div class="relative rounded-2xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
-							<div class="rounded-xl bg-white shadow-2xl ring-1 ring-gray-900/10 overflow-hidden">
+						<div
+							class="relative rounded-2xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4"
+						>
+							<div
+								class="rounded-xl bg-white shadow-2xl ring-1 ring-gray-900/10 overflow-hidden"
+							>
 								<!-- Placeholder for Dashboard Image -->
-								<div class="aspect-video bg-linear-to-tr from-primary-200 to-primary-100 flex items-center justify-center text-gray-400">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-20 h-20 opacity-20">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+								<div
+									class="aspect-video bg-linear-to-tr from-primary-200 to-primary-100 flex items-center justify-center text-gray-400"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="1.5"
+										stroke="currentColor"
+										class="w-20 h-20 opacity-20"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605"
+										></path>
 									</svg>
 								</div>
 							</div>
@@ -82,68 +148,176 @@ const AdminIcon = processSvg(adminIconRaw);
 		<section id="modules" class="py-24 bg-gray-50">
 			<div class="mx-auto max-w-7xl px-6 lg:px-8">
 				<div class="mx-auto max-w-2xl text-center mb-16">
-					<h2 class="text-base font-semibold leading-7 text-primary-600">Ecosistema Completo</h2>
-					<p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Módulos Integrados</p>
+					<h2
+						class="text-base font-semibold leading-7 text-primary-600"
+					>
+						Ecosistema Completo
+					</h2>
+					<p
+						class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+					>
+						Módulos Integrados
+					</p>
 					<p class="mt-6 text-lg leading-8 text-gray-600">
-						Todo lo que necesitas para operar tu institución médica en una sola plataforma.
+						Todo lo que necesitas para operar tu institución médica
+						en una sola plataforma.
 					</p>
 				</div>
-				
-				<div class="grid md:grid-cols-3 gap-8">
+
+				<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
 					<!-- Admin Module -->
-					<div class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100">
-						<div class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl">
-							<div class="w-6 h-6 fill-current" set:html={AdminIcon} />
+					<div
+						class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100"
+					>
+						<div
+							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
+						>
+							<div
+								class="w-6 h-6 fill-current"
+								set:html={AdminIcon}
+							/>
 						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-3">Administración</h3>
+						<h3 class="text-xl font-bold text-gray-900 mb-3">
+							Administración
+						</h3>
 						<p class="text-gray-600 mb-6">
-							Gestión total de usuarios, suministros, reportes financieros y configuración del sistema.
+							Gestión total de usuarios, suministros, reportes
+							financieros y configuración del sistema.
 						</p>
 						<ul class="space-y-2 mb-8 text-sm text-gray-500">
-							<li class="flex items-center gap-2">✓ Gestión de Usuarios</li>
-							<li class="flex items-center gap-2">✓ Inventario y Suministros</li>
-							<li class="flex items-center gap-2">✓ Reportes y Finanzas</li>
+							<li class="flex items-center gap-2">
+								✓ Gestión de Usuarios
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Inventario y Suministros
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Reportes y Finanzas
+							</li>
 						</ul>
-						<a href="/modules/admin/overview" class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline">
+						<a
+							href="/modules/admin/overview"
+							class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline"
+						>
 							Ir al Dashboard <span class="ml-1">→</span>
 						</a>
 					</div>
 
 					<!-- Doctor Module -->
-					<div class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100">
-						<div class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl">
-							<div class="w-6 h-6 fill-current" set:html={DoctorIcon} />
+					<div
+						class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100"
+					>
+						<div
+							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
+						>
+							<div
+								class="w-6 h-6 fill-current"
+								set:html={DoctorIcon}
+							/>
 						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-3">Médicos</h3>
+						<h3 class="text-xl font-bold text-gray-900 mb-3">
+							Médicos
+						</h3>
 						<p class="text-gray-600 mb-6">
-							Portal exclusivo para doctores. Gestión de agenda, perfil profesional y atención de pacientes.
+							Portal exclusivo para doctores. Gestión de agenda,
+							perfil profesional y atención de pacientes.
 						</p>
 						<ul class="space-y-2 mb-8 text-sm text-gray-500">
-							<li class="flex items-center gap-2">✓ Agenda de Citas</li>
-							<li class="flex items-center gap-2">✓ Perfil Médico</li>
-							<li class="flex items-center gap-2">✓ Historial de Consultas</li>
+							<li class="flex items-center gap-2">
+								✓ Agenda de Citas
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Perfil Médico
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Historial de Consultas
+							</li>
 						</ul>
-						<a href="/modules/doctor/1/overview" class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline">
+						<a
+							href="/modules/doctor/1/overview"
+							class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline"
+						>
 							Ver Perfil (Demo ID: 1) <span class="ml-1">→</span>
 						</a>
 					</div>
 
 					<!-- Patient Module -->
-					<div class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100">
-						<div class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl">
-							<div class="w-6 h-6 fill-current" set:html={UserIcon} />
+					<div
+						class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100"
+					>
+						<div
+							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
+						>
+							<div
+								class="w-6 h-6 fill-current"
+								set:html={UserIcon}
+							/>
 						</div>
-						<h3 class="text-xl font-bold text-gray-900 mb-3">Pacientes</h3>
+						<h3 class="text-xl font-bold text-gray-900 mb-3">
+							Pacientes
+						</h3>
 						<p class="text-gray-600 mb-6">
-							Acceso seguro para pacientes. Historial clínico, reserva de citas y seguimiento de tratamientos.
+							Acceso seguro para pacientes. Historial clínico,
+							reserva de citas y seguimiento de tratamientos.
 						</p>
 						<ul class="space-y-2 mb-8 text-sm text-gray-500">
-							<li class="flex items-center gap-2">✓ Historial Clínico</li>
-							<li class="flex items-center gap-2">✓ Agendar Citas</li>
-							<li class="flex items-center gap-2">✓ Perfil Personal</li>
+							<li class="flex items-center gap-2">
+								✓ Historial Clínico
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Agendar Citas
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Perfil Personal
+							</li>
 						</ul>
-						<a href="/modules/pacient/1/overview" class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline">
-							Portal Paciente (Demo ID: 1) <span class="ml-1">→</span>
+						<a
+							href="/modules/pacient/1/overview"
+							class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline"
+						>
+							Portal Paciente (Demo ID: 1) <span class="ml-1"
+								>→</span
+							>
+						</a>
+					</div>
+
+					<!-- Receptionist Module -->
+					<div
+						class="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all border border-gray-100"
+					>
+						<div
+							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
+						>
+							<div
+								class="w-6 h-6 fill-current"
+								set:html={UserIcon}
+							/>
+						</div>
+						<h3 class="text-xl font-bold text-gray-900 mb-3">
+							Recepcionista
+						</h3>
+						<p class="text-gray-600 mb-6">
+							Portal de recepción. Registro de pacientes, gestión
+							de citas e información de agendas.
+						</p>
+						<ul class="space-y-2 mb-8 text-sm text-gray-500">
+							<li class="flex items-center gap-2">
+								✓ Gestión de Agendas
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Registro de Paciente
+							</li>
+							<li class="flex items-center gap-2">
+								✓ Asignación de Turnos
+							</li>
+						</ul>
+						<a
+							href="/modules/receptionist/1/overview"
+							class="inline-flex items-center text-primary-600 font-semibold text-sm hover:gap-2 transition-all group-hover:underline"
+						>
+							Portal Recepcionista (Demo ID: 1) <span class="ml-1"
+								>→</span
+							>
 						</a>
 					</div>
 				</div>
@@ -151,16 +325,29 @@ const AdminIcon = processSvg(adminIconRaw);
 		</section>
 
 		<!-- Call to Action -->
-		<section class="relative isolate overflow-hidden bg-primary-600 py-16 sm:py-24 lg:py-32">
+		<section
+			class="relative isolate overflow-hidden bg-primary-600 py-16 sm:py-24 lg:py-32"
+		>
 			<div class="mx-auto max-w-7xl px-6 lg:px-8">
-				<div class="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2">
+				<div
+					class="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2"
+				>
 					<div class="max-w-xl lg:max-w-lg">
-						<h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Comienza hoy mismo.</h2>
+						<h2
+							class="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+						>
+							Comienza hoy mismo.
+						</h2>
 						<p class="mt-4 text-lg leading-8 text-primary-100">
-							La plataforma está lista para recibir a nuevos usuarios. Administra tu clínica con las mejores herramientas del mercado.
+							La plataforma está lista para recibir a nuevos
+							usuarios. Administra tu clínica con las mejores
+							herramientas del mercado.
 						</p>
 						<div class="mt-6 flex max-w-md gap-x-4">
-							<a href="/login" class="flex-none rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-primary-600 shadow-sm hover:bg-primary-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white">
+							<a
+								href="/login"
+								class="flex-none rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-primary-600 shadow-sm hover:bg-primary-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white"
+							>
 								Iniciar Sesión Ahora
 							</a>
 						</div>
@@ -168,12 +355,15 @@ const AdminIcon = processSvg(adminIconRaw);
 				</div>
 			</div>
 		</section>
-		
+
 		<!-- Footer -->
 		<footer class="bg-white border-t border-gray-200">
-			<div class="mx-auto max-w-7xl overflow-hidden px-6 py-12 sm:py-16 lg:px-8">
+			<div
+				class="mx-auto max-w-7xl overflow-hidden px-6 py-12 sm:py-16 lg:px-8"
+			>
 				<p class="text-center text-xs leading-5 text-gray-500">
-					&copy; 2026 VitalFe & Alegria. Todos los derechos reservados.
+					&copy; 2026 VitalFe & Alegria. Todos los derechos
+					reservados.
 				</p>
 			</div>
 		</footer>
