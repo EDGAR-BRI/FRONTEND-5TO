@@ -1,0 +1,98 @@
+---
+import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+
+// Datos de ejemplo
+const facturas = [
+    { nro: 'FAC-2026-001', cliente: 'Ana Sofía Parra', fecha: '2026-03-02', total: 40.00, estado: 'Emitida' },
+    { nro: 'FAC-2026-002', cliente: 'Jorge Luis Rivas', fecha: '2026-03-02', total: 80.00, estado: 'Pendiente' },
+    { nro: 'FAC-2026-003', cliente: 'Carlos Méndez', fecha: '2026-03-01', total: 120.00, estado: 'Anulada' },
+];
+---
+
+<ReceptionistLayout title="Facturación">
+    <div class="p-8">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Facturación y Cobros</h1>
+            <p class="text-gray-500">Genera facturas legales y gestiona comprobantes pendientes.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <div class="bg-white border border-blue-100 p-6 rounded-2xl shadow-lg shadow-blue-500/10 flex items-center gap-4">
+                <div class="p-3 bg-red-50 rounded-xl text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-gray-800">4</p>
+                    <p class="text-sm text-gray-500 font-medium italic">Por Facturar</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-blue-100 p-6 rounded-2xl shadow-lg shadow-blue-500/10 flex items-center gap-4">
+                <div class="p-3 bg-blue-50 rounded-xl text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-gray-800">12</p>
+                    <p class="text-sm text-gray-500 font-medium italic">Emitidas Hoy</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4 justify-between mb-6">
+            <input 
+                type="text" 
+                placeholder="Buscar por cliente o Nro de factura..." 
+                class="border border-blue-100 rounded-xl px-4 py-3 w-full md:w-96 shadow-md shadow-blue-500/5 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all"
+            />
+            <div class="flex gap-3">
+                <button class="px-5 py-2 border border-blue-200 rounded-xl text-blue-600 font-medium hover:bg-blue-50 transition-all shadow-sm shadow-blue-500/10">
+                    Exportar PDF
+                </button>
+                <button class="px-5 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">
+                    + Nueva Factura
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-blue-100 shadow-xl shadow-blue-500/10 overflow-hidden text-primary-900">
+            <table class="w-full">
+                <thead class="bg-blue-50/50 border-b border-blue-100 text-left text-primary-900">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Nro. Factura</th>
+                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Cliente</th>
+                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Fecha</th>
+                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-blue-50">
+                    {facturas.map((fac) => (
+                        <tr class="text-sm text-gray-700 hover:bg-blue-50/40 transition-colors">
+                            <td class="px-6 py-4 font-mono font-semibold text-blue-600">{fac.nro}</td>
+                            <td class="px-6 py-4 font-medium text-gray-800">{fac.cliente}</td>
+                            <td class="px-6 py-4 text-gray-500">{fac.fecha}</td>
+                            <td class="px-6 py-4 font-bold text-gray-900">${fac.total.toFixed(2)}</td>
+                            <td class="px-6 py-4">
+                                <span class={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                                    fac.estado === 'Emitida' ? 'bg-green-100 text-green-700' : 
+                                    fac.estado === 'Pendiente' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                    {fac.estado}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-blue-600 hover:text-blue-800 font-semibold mr-4">Imprimir</button>
+                                <button class="text-gray-400 hover:text-red-500 transition-colors">Anular</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ReceptionistLayout>
