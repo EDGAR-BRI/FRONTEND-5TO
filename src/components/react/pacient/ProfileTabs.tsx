@@ -9,6 +9,7 @@ import {
   UserCircle, CalendarDays, Pill, Receipt, Settings2,
   Mail, Phone, MapPin, User, ShieldAlert, X
 } from 'lucide-react';
+import { Button } from '../primary/Button.tsx';
 
 export const ProfileTabs = () => {
   const [activeTab, setActiveTab] = useState('personal');
@@ -24,12 +25,13 @@ export const ProfileTabs = () => {
   return (
     <main className="flex flex-col gap-6 w-full h-full relative">
       {/* NAVEGACIÓN SEMÁNTICA */}
-      <nav className="flex bg-white p-1.5 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-fit" aria-label="Menú de perfil">
+      <nav className="flex bg-white p-1.5 gap-3 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-fit" aria-label="Menú de perfil">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <Button
+              label='s'
               key={tab.id}
               role="tab"
               aria-selected={isActive}
@@ -39,7 +41,7 @@ export const ProfileTabs = () => {
             >
               <Icon className="size-4" />
               {tab.label}
-            </button>
+            </Button>
           );
         })}
       </nav>
@@ -74,17 +76,18 @@ export const ProfileTabs = () => {
       {/* PIE DE PÁGINA PARA ACCIONES */}
       {activeTab === 'personal' && (
         <footer className="pt-2 animate-in slide-in-from-bottom-2">
-          <button
+          <Button
+            label='Gestionar Perfil Completo'
             onClick={() => setShowModal(true)}
             className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3"
           >
             <Settings2 className="w-5 h-5" />
             Gestionar y Editar Perfil Completo
-          </button>
+          </Button>
         </footer>
       )}
       {showModal && (
-        <dialog open className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto w-full h-full border-none">
+        <dialog open className="fixed inset-0 z-9999 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto w-full h-full border-none">
           <section className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl relative animate-in zoom-in-95 duration-200 my-8 overflow-hidden">
 
             <header className="p-8 pb-0">
@@ -100,7 +103,7 @@ export const ProfileTabs = () => {
             </header>
 
             <form className="p-8 space-y-8" onSubmit={(e) => e.preventDefault()}>
-              <fieldset className="space-y-4 border-none p-0 m-0 bg-red-50/30 p-4 rounded-2xl border border-red-50 mt-12">
+              <fieldset className="space-y-4 border-none p-0 m-0 bg-red-50/30 rounded-2xl border border-red-50 mt-12">
                 <legend className="text-xs font-black text-blue-600 uppercase tracking-widest flex items-center gap-2 mb-4">
                   <Phone className="w-3 h-3" /> Información de Contacto
                 </legend>
@@ -133,7 +136,7 @@ export const ProfileTabs = () => {
               </fieldset>
 
               {/* GRUPO: EMERGENCIA */}
-              <fieldset className="space-y-4 border-none p-0 m-0 bg-red-50/30 p-4 rounded-2xl border border-red-50">
+              <fieldset className="space-y-4 border-none m-0 bg-red-50/30 p-4 rounded-2xl border border-red-50">
                 <legend className="text-xs font-black text-red-500 uppercase tracking-widest flex items-center gap-2 mb-2">
                   <ShieldAlert className="w-3 h-3" /> Contacto de Emergencia
                 </legend>
