@@ -1,25 +1,25 @@
 import { FlaskConical, AlertCircle, CheckCircle2, FileText } from "lucide-react";
 
 const results = [
-  { 
-    test: "Troponina T I (Alta Sensibilidad)", 
-    patient: "Carlos Mendoza", 
+  {
+    test: "Troponina T I (Alta Sensibilidad)",
+    patient: "Carlos Mendoza",
     date: "Hace 2 horas",
     status: "Crítico",
     statusColor: "text-red-600 bg-red-50 border-red-100",
     icon: <AlertCircle size={14} />
   },
-  { 
-    test: "Perfil Lipídico Completo", 
-    patient: "Lucía Fernández", 
+  {
+    test: "Perfil Lipídico Completo",
+    patient: "Lucía Fernández",
     date: "Hoy, 08:30 AM",
     status: "Normal",
     statusColor: "text-emerald-600 bg-emerald-50 border-emerald-100",
     icon: <CheckCircle2 size={14} />
   },
-  { 
-    test: "Ecocardiograma Doppler Color", 
-    patient: "Roberto Gómez", 
+  {
+    test: "Ecocardiograma Doppler Color",
+    patient: "Roberto Gómez",
     date: "Ayer",
     status: "Pendiente Revisión",
     statusColor: "text-blue-600 bg-blue-50 border-blue-100",
@@ -42,9 +42,9 @@ export default function RecentResults() {
 
       <div className="space-y-3">
         {results.map((r, i) => (
-          <div 
-            key={i} 
-            className="group flex flex-col p-4 rounded-xl border border-primary-100 hover:border-primary-200 hover:bg-slate-50 transition-all cursor-pointer"
+          <div
+            key={i}
+            className="group flex flex-col p-4 bg-primary-100 rounded-xl border border-primary-200 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30"
           >
             <div className="flex justify-between items-start mb-2">
               <div>
