@@ -55,20 +55,14 @@ const coloresEstado: Record<string, string> = {
 
 		<div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div
-							client:load
+							
 				class="lg:col-span-2 bg-primary-100 rounded-xl  border border-primary-200 p-6"
-							onClick={() => {
-								window.location.href = "/modules/admin/manage-users";
-							}}
+							
 			>
 				<div class="flex justify-between items-center mb-6">
 					<h2 class="text-lg font-bold text-gray-800">
 						Usuarios Recientes
 					</h2>
-					<button
-						class="text-sm text-blue-600 font-medium hover:underline"
-						>Ver todos</button
-					>
 				</div>
 
 				<div class="overflow-x-auto">
@@ -123,6 +117,7 @@ const coloresEstado: Record<string, string> = {
 					<div class="space-y-3">
 						<Button
 							label="Usuario"
+							adaptive={true}
 						>
 							<i class="fa-solid fa-user text-blue-500"></i>
 							Crear Nuevo Usuario
@@ -130,6 +125,7 @@ const coloresEstado: Record<string, string> = {
 						<Button
 							label="Insumos"
 							variant="secondary"
+							adaptive={true}
 						>
 							<i class="fa-solid fa-box text-amber-500"></i> Actualizar
 							Insumos
