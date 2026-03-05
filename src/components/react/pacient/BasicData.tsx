@@ -14,7 +14,7 @@ export const BasicData = () => {
   };
 
   return (
-    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col items-center w-full h-full">
+    <div className="bg-white rounded-4xl p-8 shadow-sm border border-slate-100 flex flex-col items-center w-full h-full">
       <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 self-start mb-6">
         <User className="w-5 h-5 text-primary-600" /> Datos Médicos
       </h2>

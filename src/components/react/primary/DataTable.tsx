@@ -14,6 +14,7 @@ interface ApiResponse<T> {
     data: T[];
     pagination?: PaginationMeta;
     message?: string;
+    border?: string;
 }
 
 export interface Column<T> {
@@ -28,17 +29,19 @@ interface DataTableProps<T> {
     businessId: number;
     columns: Column<T>[];
     isLoading?: boolean;
+    className?: string;
     // Props opcionales para paginación (Solo las usará Ventas)
     currentPage?: number;
     onPageChange?: (page: number) => void;
 }
 
-export function DataTable<T>({ 
-    endpoint, 
-    columns, 
-    isLoading: externalLoading, 
-    currentPage, 
-    onPageChange 
+export function DataTable<T>({
+    endpoint,
+    columns,
+    isLoading: externalLoading,
+    className,
+    currentPage,
+    onPageChange
 }: DataTableProps<T>) {
 
     // Usamos 'any' en el tipo de respuesta para soportar ambos formatos (Array y Objeto)
@@ -57,7 +60,7 @@ export function DataTable<T>({
     // 1. Si es un array (Productos), úsalo directo.
     // 2. Si es un objeto (Ventas), extrae la propiedad .data
     const safeData = Array.isArray(response) ? response : (response?.data || []);
-    
+
     // Extraemos paginación solo si existe (Ventas)
     const pagination = response?.pagination;
 
@@ -66,7 +69,7 @@ export function DataTable<T>({
     }
 
     return (
-        <div className="bg-primary-100 border-2 border-primary-300 rounded-md overflow-hidden flex flex-col">
+        <div className={`bg-primary-100 border border-primary-300 rounded-md overflow-hidden flex flex-col ${className ?? ''}`}>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-primary-300">
                     <thead className="bg-primary-300">

@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "@/layouts/AdminLayout.astro";
+import { OverviewStats } from "@/components/react/admin/OverviewStats";
 
 //datos Mock bruh
 const usuariosRecientes = [
@@ -34,9 +35,9 @@ const usuariosRecientes = [
 ];
 // Colores para los estados
 const coloresEstado: Record<string, string> = {
-    "Activo": "bg-green-100 text-green-700",
-    "Pendiente": "bg-amber-100 text-amber-700",
-    "Inactivo": "bg-red-100 text-red-700",
+	Activo: "bg-green-100 text-green-700",
+	Pendiente: "bg-amber-100 text-amber-700",
+	Inactivo: "bg-red-100 text-red-700",
 };
 ---
 
@@ -49,71 +50,9 @@ const coloresEstado: Record<string, string> = {
 			</p>
 		</header>
 
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<div
-				class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow"
-			>
-				<div
-					class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl"
-				>
-					<i class="fa-solid fa-users"></i>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-500">Pacientes</h3>
-					<p class="text-2xl font-bold text-gray-800">8249</p>
-				</div>
-			</div>
+		<OverviewStats client:load />
 
-			<div
-				class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow"
-			>
-				<div
-					class="w-14 h-14 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-2xl"
-				>
-					<i class="fa-solid fa-boxes-stacked"></i>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-500">
-						Insumos Críticos
-					</h3>
-					<p class="text-2xl font-bold text-gray-800">12</p>
-				</div>
-			</div>
-
-			<div
-				class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow"
-			>
-				<div
-					class="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl"
-				>
-					<i class="fa-solid fa-money-bill-wave"></i>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-500">
-						Ingresos del Mes
-					</h3>
-					<p class="text-2xl font-bold text-gray-800">$45.200</p>
-				</div>
-			</div>
-
-			<div
-				class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow"
-			>
-				<div
-					class="w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl"
-				>
-					<i class="fa-solid fa-file-waveform"></i>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-500">
-						Nuevos Reportes
-					</h3>
-					<p class="text-2xl font-bold text-gray-800">34</p>
-				</div>
-			</div>
-		</div>
-
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div
 				class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
 			>
