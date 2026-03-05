@@ -1,5 +1,6 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+import { InvoicesDataTable } from '@/components/react/receptionist/InvoicesDataTable';
 
 // Datos de ejemplo
 const facturas = [
@@ -58,41 +59,6 @@ const facturas = [
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-blue-100 shadow-xl shadow-blue-500/10 overflow-hidden text-primary-900">
-            <table class="w-full">
-                <thead class="bg-blue-50/50 border-b border-blue-100 text-left text-primary-900">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Nro. Factura</th>
-                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Cliente</th>
-                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Fecha</th>
-                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Total</th>
-                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider">Estado</th>
-                        <th class="px-6 py-4 text-xs font-bold text-blue-800 uppercase tracking-wider text-right">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-blue-50">
-                    {facturas.map((fac) => (
-                        <tr class="text-sm text-gray-700 hover:bg-blue-50/40 transition-colors">
-                            <td class="px-6 py-4 font-mono font-semibold text-blue-600">{fac.nro}</td>
-                            <td class="px-6 py-4 font-medium text-gray-800">{fac.cliente}</td>
-                            <td class="px-6 py-4 text-gray-500">{fac.fecha}</td>
-                            <td class="px-6 py-4 font-bold text-gray-900">${fac.total.toFixed(2)}</td>
-                            <td class="px-6 py-4">
-                                <span class={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
-                                    fac.estado === 'Emitida' ? 'bg-green-100 text-green-700' : 
-                                    fac.estado === 'Pendiente' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                    {fac.estado}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="text-blue-600 hover:text-blue-800 font-semibold mr-4">Imprimir</button>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors">Anular</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <InvoicesDataTable client:load facturas={facturas} />
     </div>
 </ReceptionistLayout>
