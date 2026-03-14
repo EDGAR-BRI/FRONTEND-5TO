@@ -1,4 +1,5 @@
 import { CalendarClock, User, Clock, ChevronRight } from "lucide-react";
+import ActionCard from "../primary/ActionCard";
 
 const appointments = [
   {
@@ -42,10 +43,7 @@ export default function UpcomingAppointments() {
 
       <div className="space-y-4">
         {appointments.map((a, i) => (
-          <div
-            key={i}
-            className="group flex items-center justify-between p-4 bg-primary-100 rounded-xl border border-primary-200 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30"
-          >
+          <ActionCard key={i}>
             <div className="flex items-center gap-4">
               {/* Avatar e Icono */}
               <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-[#1e3a8a] group-hover:text-white transition-colors">
@@ -77,7 +75,7 @@ export default function UpcomingAppointments() {
               </span>
               <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-600 transition-colors" />
             </div>
-          </div>
+          </ActionCard>
         ))}
       </div>
     </div>
