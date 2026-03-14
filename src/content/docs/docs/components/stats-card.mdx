@@ -3,7 +3,10 @@ title: StatsCard
 description: Tarjeta de estadística con soporte para tendencias, íconos, colores semánticos y variante compacta.
 ---
 
-import StatsCardDemo from '@/components/docs/StatsCardDemo';
+import StatsCardDemo, { StatsCardDefaultDemo, StatsCardCompactDemo, StatsCardNegativeDemo, StatsCardGridDemo } from '@/components/docs/StatsCardDemo';
+import { StatsCard } from '@/components/react/primary/StatsCard';
+import { CodePreview } from '@/components/docs/CodePreview';
+import { UsersIcon, CalendarIcon, TrendingDownIcon } from 'lucide-react';
 
 ## Demo en vivo
 
@@ -36,8 +39,7 @@ import { StatsCard } from '@/components/react/primary/StatsCard';
 
 Layout vertical. Ideal para grids de estadísticas en la parte superior de un dashboard.
 
-```tsx
-<StatsCard
+<CodePreview code={`<StatsCard
   title="Total de pacientes"
   value="1,248"
   trend="8.3%"
@@ -45,15 +47,15 @@ Layout vertical. Ideal para grids de estadísticas en la parte superior de un da
   trendLabel="vs mes anterior"
   color="primary"
   icon={<UsersIcon className="w-5 h-5" />}
-/>
-```
+/>`} client:load>
+  <StatsCardDefaultDemo />
+</CodePreview>
 
 ## Variante `compact`
 
 Layout horizontal con ícono a la izquierda. Ideal para listas de stats o sidebars.
 
-```tsx
-<StatsCard
+<CodePreview code={`<StatsCard
   title="Citas de hoy"
   value={12}
   subText="3 pendientes"
@@ -61,29 +63,30 @@ Layout horizontal con ícono a la izquierda. Ideal para listas de stats o sideba
   color="warning"
   variant="compact"
   icon={<CalendarIcon className="w-5 h-5" />}
-/>
-```
+/>`} client:load>
+  <StatsCardCompactDemo />
+</CodePreview>
 
 ## Con tendencia negativa
 
-```tsx
-<StatsCard
+<CodePreview code={`<StatsCard
   title="Ingresos del mes"
   value="$4,200"
   trend="5.1%"
   trendUp={false}
   color="danger"
   icon={<TrendingDownIcon className="w-5 h-5" />}
-/>
-```
+/>`} client:load>
+  <StatsCardNegativeDemo />
+</CodePreview>
 
 ## Grid de estadísticas
 
-```tsx
-<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-  <StatsCard title="Pacientes" value="1,248" trend="8%" trendUp icon={...} />
-  <StatsCard title="Citas hoy" value={24} subText="6 pendientes" icon={...} color="warning" />
-  <StatsCard title="Ingresos" value="$12,400" trend="3%" trendUp={false} icon={...} color="danger" />
-  <StatsCard title="Doctores" value={8} subText="2 de guardia" icon={...} color="success" />
-</div>
-```
+<CodePreview code={`<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <StatsCard title="Pacientes" value="1,248" trend="8%" trendUp={true} icon={<UsersIcon className="w-5 h-5" />} />
+  <StatsCard title="Citas hoy" value={24} subText="6 pendientes" icon={<CalendarIcon className="w-5 h-5" />} color="warning" />
+  <StatsCard title="Ingresos" value="$12,400" trend="3%" trendUp={false} icon={<TrendingDownIcon className="w-5 h-5" />} color="danger" />
+  <StatsCard title="Doctores" value={8} subText="2 de guardia" icon={<UsersIcon className="w-5 h-5" />} color="success" />
+</div>`} client:load>
+  <StatsCardGridDemo />
+</CodePreview>

@@ -18,6 +18,12 @@ const MoneyIcon = () => (
   </svg>
 );
 
+const TrendingDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+    </svg>
+  );
+
 export default function StatsCardDemo() {
   return (
     <div className="not-content space-y-4">
@@ -58,4 +64,62 @@ export default function StatsCardDemo() {
 
     </div>
   );
+}
+
+export function StatsCardDefaultDemo() {
+    return (
+        <div className="w-full max-w-sm">
+            <StatsCard
+            title="Total de pacientes"
+            value="1,248"
+            trend="8.3%"
+            trendUp={true}
+            trendLabel="vs mes anterior"
+            color="primary"
+            icon={<UsersIcon className="w-5 h-5" />}
+            />
+        </div>
+    )
+}
+
+export function StatsCardCompactDemo() {
+    return (
+        <div className="w-full max-w-sm">
+            <StatsCard
+            title="Citas de hoy"
+            value={12}
+            subText="3 pendientes"
+            subTextClass="text-yellow-600"
+            color="warning"
+            variant="compact"
+            icon={<CalendarIcon className="w-5 h-5" />}
+            />
+        </div>
+    )
+}
+
+export function StatsCardNegativeDemo() {
+    return (
+        <div className="w-full max-w-sm">
+            <StatsCard
+            title="Ingresos del mes"
+            value="$4,200"
+            trend="5.1%"
+            trendUp={false}
+            color="danger"
+            icon={<TrendingDownIcon className="w-5 h-5" />}
+            />
+        </div>
+    )
+}
+
+export function StatsCardGridDemo() {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard title="Pacientes" value="1,248" trend="8%" trendUp={true} icon={<UsersIcon className="w-5 h-5" />} />
+            <StatsCard title="Citas hoy" value={24} subText="6 pendientes" icon={<CalendarIcon className="w-5 h-5" />} color="warning" />
+            <StatsCard title="Ingresos" value="$12,400" trend="3%" trendUp={false} icon={<TrendingDownIcon className="w-5 h-5" />} color="danger" />
+            <StatsCard title="Doctores" value={8} subText="2 de guardia" icon={<UsersIcon className="w-5 h-5" />} color="success" />
+        </div>
+    )
 }
