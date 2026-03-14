@@ -5,6 +5,8 @@ description: Input unificado para texto, número, contraseña, fecha y radio but
 
 import { Aside } from '@astrojs/starlight/components';
 import FieldDemo from '@/components/docs/FieldDemo';
+import { Field } from '@/components/react/primary/Field';
+import { CodePreview } from '@/components/docs/CodePreview';
 
 ## Demo en vivo
 
@@ -45,8 +47,7 @@ También acepta todos los atributos nativos de `<input>`.
 
 ### Input de texto simple
 
-```tsx
-const [nombre, setNombre] = useState('');
+<CodePreview code={`const [nombre, setNombre] = useState('');
 
 <Field
   name="nombre"
@@ -54,39 +55,56 @@ const [nombre, setNombre] = useState('');
   placeholder="Ej: Juan Pérez"
   value={nombre}
   onChange={(e) => setNombre(e.target.value)}
-/>
-```
+/>`} client:load>
+  <Field
+    name="nombre_demo"
+    label="Nombre del paciente"
+    placeholder="Ej: Juan Pérez"
+    defaultValue=""
+  />
+</CodePreview>
 
 ### Input de email
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="email"
   label="Correo electrónico"
   type="email"
   placeholder="doctor@clinica.com"
   value={email}
   onChange={(e) => setEmail(e.target.value)}
-/>
-```
+/>`} client:load>
+  <Field
+    name="email_demo"
+    label="Correo electrónico"
+    type="email"
+    placeholder="doctor@clinica.com"
+    defaultValue=""
+  />
+</CodePreview>
 
 ### Contraseña con toggle
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="password"
   label="Contraseña"
   type="password"
   showTogglePassword
   value={password}
   onChange={(e) => setPassword(e.target.value)}
-/>
-```
+/>`} client:load>
+  <Field
+    name="password_demo"
+    label="Contraseña"
+    type="password"
+    showTogglePassword
+    defaultValue=""
+  />
+</CodePreview>
 
 ### Número con decimales (sin negativos)
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="precio"
   label="Precio de consulta"
   type="number"
@@ -94,23 +112,39 @@ const [nombre, setNombre] = useState('');
   step="0.01"
   value={precio}
   onChange={(e) => setPrecio(e.target.value)}
-/>
-```
+/>`} client:load>
+  <Field
+    name="precio_demo"
+    label="Precio de consulta"
+    type="number"
+    placeholder="0.00"
+    step="0.01"
+    defaultValue=""
+  />
+</CodePreview>
 
 ### Fecha con calendario custom
 
 Cuando `useNativeDatePicker={false}`, se muestra un popover con un calendario visual estilizado.
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="fecha_cita"
   label="Fecha de la cita"
   type="date"
   useNativeDatePicker={false}
   value={fecha}         // Formato ISO: "2024-08-15"
   onChange={(e) => setFecha(e.target.value)}
-/>
-```
+/>`} client:load>
+  <div className="w-full h-96">
+    <Field
+      name="fecha_cita_demo"
+      label="Fecha de la cita"
+      type="date"
+      useNativeDatePicker={false}
+      defaultValue=""
+    />
+  </div>
+</CodePreview>
 
 <Aside type="note">
   El valor siempre se emite en formato ISO (`yyyy-MM-dd`) aunque el calendario muestre la fecha en formato `dd/MM/yyyy`.
@@ -118,8 +152,7 @@ Cuando `useNativeDatePicker={false}`, se muestra un popover con un calendario vi
 
 ### Radio buttons
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="genero"
   label="Género"
   type="radio"
@@ -130,32 +163,53 @@ Cuando `useNativeDatePicker={false}`, se muestra un popover con un calendario vi
   ]}
   value={genero}
   onChange={(e) => setGenero(e.target.value)}
-/>
-```
+/>`} client:load>
+  <Field
+    name="genero_demo"
+    label="Género"
+    type="radio"
+    options={[
+      { label: 'Masculino', value: 'M' },
+      { label: 'Femenino', value: 'F' },
+      { label: 'Otro', value: 'O' },
+    ]}
+    defaultValue="M"
+  />
+</CodePreview>
 
 ### Con tooltip
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="cedula"
   label="Cédula"
   tooltip="Ingresa el número de cédula sin guiones ni espacios."
   value={cedula}
   onChange={(e) => setCedula(e.target.value)}
-/>
-```
+/>`} client:load>
+  <Field
+    name="cedula_demo"
+    label="Cédula"
+    tooltip="Ingresa el número de cédula sin guiones ni espacios."
+    defaultValue=""
+  />
+</CodePreview>
 
 ### Acción al presionar Enter
 
-```tsx
-<Field
+<CodePreview code={`<Field
   name="busqueda"
   label="Buscar paciente"
   value={query}
   onChange={(e) => setQuery(e.target.value)}
   onEnter={handleSearch}
-/>
-```
+/>`} client:load>
+  <Field
+    name="busqueda_demo"
+    label="Buscar paciente"
+    defaultValue=""
+    onEnter={() => alert('¡Enter presionado!')}
+  />
+</CodePreview>
 
 <Aside type="tip">
   `Field` usa `forwardRef`, por lo que puedes pasarle una `ref` para integrarlo con React Hook Form u otras librerías de formularios.
