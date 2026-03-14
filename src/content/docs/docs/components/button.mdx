@@ -1,0 +1,116 @@
+---
+title: Button
+description: Botón principal del sistema con variantes de estilo, tamaños y soporte para estado de carga.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+El componente `Button` es el botón estándar del sistema. Soporta 4 variantes visuales, 4 tamaños, estado de carga con spinner y está construido con `forwardRef` para integrarse con bibliotecas de formularios.
+
+## Importación
+
+```tsx
+import { Button, ButtonTheme } from '@/components/react/primary/Button';
+```
+
+## Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `label` | `string` | — | **Requerido.** Texto del botón (se usa si no se pasan `children`). |
+| `variant` | `"primary" \| "secondary" \| "ghost" \| "danger-ghost"` | `"primary"` | Estilo visual del botón. |
+| `size` | `"default" \| "sm" \| "lg" \| "icon"` | `"default"` | Tamaño del botón. |
+| `loading` | `boolean` | `false` | Si es `true`, muestra un spinner y bloquea interacción. |
+| `adaptive` | `boolean` | `false` | Si es `true`, el botón ocupa el 100% del ancho (`w-full`). |
+| `disabled` | `boolean` | — | Deshabilita el botón. Se combina automáticamente con `loading`. |
+| `children` | `ReactNode` | — | Contenido alternativo. Si se pasa, reemplaza al `label`. |
+
+También acepta todos los atributos nativos de `<button>` (`onClick`, `type`, `form`, etc.).
+
+## Variantes
+
+### `primary` (default)
+Fondo sólido. Usar para la acción principal de la página.
+
+```tsx
+<Button label="Guardar cambios" variant="primary" />
+```
+
+### `secondary`
+Borde con fondo claro. Para acciones secundarias.
+
+```tsx
+<Button label="Cancelar" variant="secondary" />
+```
+
+### `ghost`
+Sin fondo. Para acciones terciarias o en barras de herramientas.
+
+```tsx
+<Button label="Ver detalle" variant="ghost" />
+```
+
+### `danger-ghost`
+Sin fondo, texto en rojo. Para acciones destructivas (eliminar, rechazar).
+
+```tsx
+<Button label="Eliminar" variant="danger-ghost" />
+```
+
+## Tamaños
+
+```tsx
+<Button label="Pequeño"  size="sm" />
+<Button label="Normal"   size="default" />
+<Button label="Grande"   size="lg" />
+<Button label="🔍"       size="icon" />   {/* Solo íconos */}
+```
+
+## Estado de carga
+
+Cuando `loading` es `true`, el botón muestra un `Spinner` y se bloquea la interacción.
+
+```tsx
+const [saving, setSaving] = useState(false);
+
+<Button
+  label="Guardar"
+  loading={saving}
+  onClick={async () => {
+    setSaving(true);
+    await saveData();
+    setSaving(false);
+  }}
+/>
+```
+
+## Ancho completo
+
+```tsx
+<Button label="Iniciar sesión" adaptive />
+```
+
+## Constante `ButtonTheme`
+
+Para evitar strings literales, usa la constante exportada:
+
+```tsx
+import { Button, ButtonTheme } from '@/components/react/primary/Button';
+
+<Button label="Enviar" variant={ButtonTheme.PRIMARY} />
+<Button label="Cancelar" variant={ButtonTheme.SECONDARY} />
+<Button label="Eliminar" variant={ButtonTheme.DANGER_GHOST} />
+```
+
+## Con íconos (vía `children`)
+
+```tsx
+<Button label="Descargar" variant="secondary">
+  <svg .../>
+  Descargar PDF
+</Button>
+```
+
+<Aside type="tip">
+  El componente usa `forwardRef`, por lo que puedes pasarle una `ref` directamente para integrarlo con bibliotecas como React Hook Form o para controlar el foco programáticamente.
+</Aside>

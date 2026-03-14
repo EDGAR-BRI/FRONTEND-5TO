@@ -1,34 +1,37 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
+title: Librería de Componentes
+description: Documentación de los componentes reutilizables de la librería primary.
 template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: Componentes React reutilizables para el sistema de gestión médica.
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Ver componentes
+      link: /docs/components/button/
       icon: right-arrow
       variant: primary
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Componentes disponibles
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.md` to see this page change.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+  <Card title="Button" icon="pencil">
+    Botón principal con variantes de estilo, tamaños y estado de carga.
+  </Card>
+  <Card title="Field" icon="add-document">
+    Input unificado para texto, número, fecha, contraseña y radio buttons.
+  </Card>
+  <Card title="Select & SearchableSelect" icon="setting">
+    Selectores con soporte para búsqueda y carga desde API.
+  </Card>
+  <Card title="DataTable" icon="open-book">
+    Tabla de datos genérica con SWR, paginación y skeleton de carga.
+  </Card>
+  <Card title="Modal & ModalTrigger" icon="star">
+    Modal accesible con portal, ESC y backdrop blur.
+  </Card>
+  <Card title="Cards, Badge, Avatar y más" icon="rocket">
+    Colección de componentes visuales y de utilidad.
+  </Card>
 </CardGrid>

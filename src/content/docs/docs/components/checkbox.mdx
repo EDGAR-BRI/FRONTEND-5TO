@@ -1,0 +1,74 @@
+---
+title: CheckBox
+description: Casilla de verificación con dos variantes de presentación visual — checkbox clásico y switch toggle.
+---
+
+`CheckBox` es un componente de entrada booleana que ofrece dos variantes de UI: el checkbox tradicional y un switch tipo toggle (estilo iOS). Ambas reciben las mismas props.
+
+## Importación
+
+```tsx
+import { CheckBox } from '@/components/react/primary/CheckBox';
+```
+
+## Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `label` | `string` | — | **Requerido.** Texto visible junto al control. |
+| `checked` | `boolean` | — | Estado controlado del checkbox. |
+| `onChange` | `(e: ChangeEvent<HTMLInputElement>) => void` | — | Handler de cambio. |
+| `name` | `string` | — | Nombre del campo (para formularios HTML). |
+| `variant` | `"checkbox" \| "switch"` | `"checkbox"` | Variante visual. |
+
+## Variante `checkbox`
+
+Casilla cuadrada clásica. Ideal para formularios de selección múltiple o filtros.
+
+```tsx
+const [notificaciones, setNotificaciones] = useState(false);
+
+<CheckBox
+  label="Recibir notificaciones por email"
+  checked={notificaciones}
+  onChange={(e) => setNotificaciones(e.target.checked)}
+  name="notificaciones"
+/>
+```
+
+## Variante `switch`
+
+Toggle estilo iOS con texto "No" / "Sí" animado. Ideal para configuraciones y preferencias.
+
+```tsx
+const [activo, setActivo] = useState(false);
+
+<CheckBox
+  label="Doctor activo"
+  variant="switch"
+  checked={activo}
+  onChange={(e) => setActivo(e.target.checked)}
+  name="activo"
+/>
+```
+
+## En un formulario
+
+```tsx
+<form>
+  <CheckBox
+    name="terms"
+    label="Acepto los términos y condiciones"
+    checked={form.terms}
+    onChange={(e) => setForm({ ...form, terms: e.target.checked })}
+  />
+
+  <CheckBox
+    name="modoOscuro"
+    label="Modo oscuro"
+    variant="switch"
+    checked={form.modoOscuro}
+    onChange={(e) => setForm({ ...form, modoOscuro: e.target.checked })}
+  />
+</form>
+```

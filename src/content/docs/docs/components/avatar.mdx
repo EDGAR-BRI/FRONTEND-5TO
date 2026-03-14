@@ -1,0 +1,101 @@
+---
+title: Avatar
+description: Componente compuesto para avatares de usuario con imagen y fallback.
+---
+
+`Avatar` es un componente compuesto (compound component) formado por tres piezas: el contenedor `Avatar`, la imagen `AvatarImage` y el fallback `AvatarFallback` para cuando no hay imagen disponible.
+
+## Importación
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/react/primary/Avatar';
+```
+
+## Componentes
+
+### `Avatar`
+
+Contenedor circular. Acepta todos los atributos de un `<div>`.
+
+| Prop | Tipo | Descripción |
+|------|------|-------------|
+| `className` | `string` | Clases adicionales (ej: para controlar el tamaño). |
+
+### `AvatarImage`
+
+Imagen que ocupa el 100% del contenedor con `object-cover`.
+
+| Prop | Tipo | Descripción |
+|------|------|-------------|
+| `src` | `string` | URL de la imagen. **Requerido.** |
+| `alt` | `string` | Texto alternativo. **Requerido.** |
+| `className` | `string` | Clases adicionales. |
+
+### `AvatarFallback`
+
+Contenido que se muestra cuando no hay imagen (ej: iniciales o ícono).
+
+| Prop | Tipo | Descripción |
+|------|------|-------------|
+| `className` | `string` | Clases adicionales (ej: color de fondo, color de texto). |
+| `children` | `ReactNode` | Contenido del fallback. |
+
+## Ejemplos de uso
+
+### Con imagen de perfil
+
+```tsx
+<Avatar className="w-10 h-10">
+  <AvatarImage
+    src={doctor.profilePhoto}
+    alt={`Foto de ${doctor.name}`}
+  />
+</Avatar>
+```
+
+### Con iniciales como fallback
+
+```tsx
+const getInitials = (name: string) =>
+  name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+<Avatar className="w-10 h-10">
+  <AvatarFallback className="bg-primary-300 text-primary-900 text-sm font-semibold">
+    {getInitials(doctor.name)}
+  </AvatarFallback>
+</Avatar>
+```
+
+### Tamaños
+
+El tamaño se controla con clases en el `Avatar`:
+
+```tsx
+{/* Pequeño */}
+<Avatar className="w-8 h-8">...</Avatar>
+
+{/* Mediano (default recomendado) */}
+<Avatar className="w-10 h-10">...</Avatar>
+
+{/* Grande */}
+<Avatar className="w-16 h-16">...</Avatar>
+```
+
+### En un listado de doctores
+
+```tsx
+{doctors.map(doctor => (
+  <div key={doctor.id} className="flex items-center gap-3">
+    <Avatar className="w-9 h-9 shrink-0">
+      {doctor.photo ? (
+        <AvatarImage src={doctor.photo} alt={doctor.name} />
+      ) : (
+        <AvatarFallback className="bg-primary-200 text-primary-800 text-xs font-bold">
+          {getInitials(doctor.name)}
+        </AvatarFallback>
+      )}
+    </Avatar>
+    <span className="text-sm font-medium">{doctor.name}</span>
+  </div>
+))}
+```

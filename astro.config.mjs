@@ -21,7 +21,28 @@ export default defineConfig({
   integrations: [
     react(),
     starlight({
-      title: 'Frontend 5TO Docs',
+      title: 'Docs · FRONTEND-5TO',
+      sidebar: [
+        {
+          label: 'Inicio',
+          link: '/docs/',
+        },
+        {
+          label: 'Componentes',
+          items: [
+            { label: 'Button',              link: '/docs/components/button/' },
+            { label: 'Field',               link: '/docs/components/field/' },
+            { label: 'CheckBox',            link: '/docs/components/checkbox/' },
+            { label: 'Modal y ModalTrigger',link: '/docs/components/modal/' },
+            { label: 'DataTable',           link: '/docs/components/data-table/' },
+            { label: 'StatsCard',           link: '/docs/components/stats-card/' },
+            { label: 'Badge',               link: '/docs/components/badge/' },
+            { label: 'Avatar',              link: '/docs/components/avatar/' },
+            { label: 'Cards',               link: '/docs/components/cards/' },
+            { label: 'Spinner y Tooltip',   link: '/docs/components/spinner-tooltip/' },
+          ],
+        },
+      ],
     }),
   ],
-});
+});

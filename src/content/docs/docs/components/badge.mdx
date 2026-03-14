@@ -1,0 +1,89 @@
+---
+title: Badge
+description: Etiqueta visual compacta para mostrar estados, categorías o etiquetas con estilos completamente personalizables.
+---
+
+`Badge` es un componente `<span>` estilizado para mostrar etiquetas compactas como estados (`Activo`, `Pendiente`), categorías, roles o cualquier información de clasificación.
+
+## Importación
+
+```tsx
+import { Badge } from '@/components/react/primary/Badge';
+import type { BadgeStyles } from '@/components/react/primary/Badge';
+```
+
+## Props
+
+| Prop | Tipo | Descripción |
+|------|------|-------------|
+| `children` | `ReactNode` | **Requerido.** Contenido del badge. |
+| `styles` | `BadgeStyles` | Objeto para personalizar el estilo visual. |
+| `className` | `string` | Clases adicionales. |
+
+### Tipo `BadgeStyles`
+
+Todos los campos son opcionales. Cada uno acepta clases de Tailwind:
+
+| Campo | Default | Descripción |
+|-------|---------|-------------|
+| `bg` | `"bg-primary-100"` | Color de fondo. |
+| `text` | `"text-cool-gray-30"` | Color del texto. |
+| `border` | `"border-cool-gray-70"` | Color del borde. |
+| `borderWidth` | `"border"` | Grosor del borde. |
+| `textSize` | `"text-[11px]"` | Tamaño del texto. |
+| `font` | — | Fuente / peso. Ej: `"font-semibold"`. |
+| `padding` | `"px-3 py-1"` | Padding interno. |
+| `rounded` | `"rounded-xl"` | Radio del borde. |
+
+## Ejemplos de uso
+
+### Default
+
+```tsx
+<Badge>Activo</Badge>
+```
+
+### Estado de cita
+
+```tsx
+// Confirmada
+<Badge styles={{ bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' }}>
+  Confirmada
+</Badge>
+
+// Pendiente
+<Badge styles={{ bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' }}>
+  Pendiente
+</Badge>
+
+// Cancelada
+<Badge styles={{ bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' }}>
+  Cancelada
+</Badge>
+```
+
+### Rol de usuario
+
+```tsx
+<Badge styles={{ bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', font: 'font-semibold' }}>
+  Doctor
+</Badge>
+```
+
+### Sin borde
+
+```tsx
+<Badge styles={{ borderWidth: 'border-0', bg: 'bg-primary-200', text: 'text-primary-900' }}>
+  Interno
+</Badge>
+```
+
+### En una tabla/lista
+
+```tsx
+{appointment.status === 'confirmed' && (
+  <Badge styles={{ bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' }}>
+    Confirmada
+  </Badge>
+)}
+```

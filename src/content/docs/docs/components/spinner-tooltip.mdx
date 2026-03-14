@@ -1,0 +1,93 @@
+---
+title: Spinner y Tooltip
+description: Componentes de utilidad — indicador de carga animado y tooltip informativo hover.
+---
+
+---
+
+## Spinner
+
+Indicador de carga circular animado. Usado internamente por `Button` cuando `loading={true}`, pero también disponible para uso independiente.
+
+### Importación
+
+```tsx
+import { Spinner } from '@/components/react/primary/Spinner';
+```
+
+### Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `className` | `string` | `""` | Clases para controlar el tamaño y color del SVG. |
+
+Por defecto es `h-5 w-5 text-white`. El color se hereda de `text-current`, por lo que cambiando el color de texto del contenedor se cambia el color del spinner.
+
+### Ejemplos
+
+```tsx
+{/* Default (blanco, para fondos oscuros) */}
+<Spinner />
+
+{/* En botón de carga */}
+<Spinner className="w-4 h-4 text-current" />
+
+{/* Spinner grande centrado en la página */}
+<div className="flex justify-center py-20">
+  <Spinner className="w-10 h-10 text-primary-600" />
+</div>
+
+{/* En el centro de una tabla vacía */}
+{isLoading && (
+  <div className="p-8 flex justify-center">
+    <Spinner className="w-6 h-6 text-primary-500" />
+  </div>
+)}
+```
+
+---
+
+## Tooltip
+
+Muestra un globo de información al hacer hover sobre un ícono `?`. Útil para campos de formulario complejos o acciones que necesitan aclaración.
+
+### Importación
+
+```tsx
+import { Tooltip } from '@/components/react/primary/Tooltip';
+```
+
+### Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `text` | `string` | — | **Requerido.** Texto del tooltip. |
+| `position` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Posición del globo. *(Actualmente solo se aplica `top`.)* |
+
+### Comportamiento
+
+- Muestra un ícono `?` con Font Awesome (`fa-circle-question`).
+- Al hacer hover, aparece un globo oscuro con el texto.
+- Incluye una pequeña flecha apuntando al ícono.
+- No bloquea interacciones (`pointer-events-none`).
+
+### Ejemplos
+
+```tsx
+{/* Junto a un label */}
+<div className="flex items-center gap-1">
+  <label>RFC</label>
+  <Tooltip text="Ingresa el RFC con homoclave, sin espacios." />
+</div>
+
+{/* Integrado en el componente Field (automático con prop tooltip) */}
+<Field
+  name="cedula"
+  label="Cédula"
+  tooltip="El número de cédula debe contener exactamente 10 dígitos."
+/>
+```
+
+:::note
+El componente `Tooltip` ya está integrado en `Field`. Si usas `Field`, simplemente pasa el prop `tooltip` con el texto y el ícono aparecerá automáticamente junto al label.
+:::

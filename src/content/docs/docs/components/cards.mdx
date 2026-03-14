@@ -1,0 +1,89 @@
+---
+title: Cards (ActionCard y StaticCard)
+description: Tarjetas contenedoras para organizar contenido, con variante interactiva y variante estática.
+---
+
+Existen dos variantes de card contenedora en el sistema:
+
+- **`ActionCard`**: Para contenido clickeable (navegar, seleccionar, expandir). Tiene hover de elevación y borde de color.
+- **`StaticCard`**: Para contenido informativo sin acción directa. Solo hover visual sutil.
+
+## Importación
+
+```tsx
+import ActionCard from '@/components/react/primary/ActionCard';
+import StaticCard from '@/components/react/primary/StaticCard';
+```
+
+---
+
+## `ActionCard`
+
+Tarjeta interactiva con cursor pointer, efecto de elevación y borde de acento al hover. **Úsala cuando la tarjeta entera es clickeable**.
+
+### Props de `ActionCard`
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | **Requerido.** Contenido. |
+| `onClick` | `() => void` | — | Handler del clic. |
+| `className` | `string` | `""` | Clases adicionales. |
+
+### Ejemplo
+
+```tsx
+<ActionCard onClick={() => navigate(`/patients/${patient.id}`)}>
+  <div className="flex items-center gap-3">
+    <Avatar className="w-9 h-9">
+      <AvatarFallback className="bg-primary-200 text-sm font-bold">
+        {getInitials(patient.name)}
+      </AvatarFallback>
+    </Avatar>
+    <div>
+      <p className="font-medium text-primary-900">{patient.name}</p>
+      <p className="text-xs text-cool-gray-50">{patient.cedula}</p>
+    </div>
+  </div>
+  <i className="fa-solid fa-chevron-right text-primary-600 text-sm" />
+</ActionCard>
+```
+
+---
+
+## `StaticCard`
+
+Tarjeta contenedora sin acción directa. **Úsala para agrupar y organizar información**.
+
+### Props de `StaticCard`
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | **Requerido.** Contenido. |
+| `className` | `string` | `""` | Clases adicionales. |
+
+### Ejemplo
+
+```tsx
+<StaticCard>
+  <h3 className="text-sm font-semibold text-primary-900 mb-3">
+    Información del paciente
+  </h3>
+  <div className="space-y-2">
+    <p><span className="text-cool-gray-50">Nombre:</span> Juan Pérez</p>
+    <p><span className="text-cool-gray-50">Edad:</span> 34 años</p>
+    <p><span className="text-cool-gray-50">Sangre:</span> O+</p>
+  </div>
+</StaticCard>
+```
+
+---
+
+## Diferencias clave
+
+| Característica | `ActionCard` | `StaticCard` |
+|---|---|---|
+| `cursor-pointer` | ✅ | ❌ |
+| `onClick` | ✅ | ❌ |
+| Hover de borde de color | `border-primary-500` | `border-primary-300` |
+| Hover de shadow coloreada | `shadow-primary-500/30` | `shadow-primary-300/30` |
+| Uso ideal | Navegar, seleccionar | Mostrar información |

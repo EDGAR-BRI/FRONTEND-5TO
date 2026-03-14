@@ -24,7 +24,7 @@ const AdminIcon = processSvg(adminIconRaw);
 <Layout>
 	<div class="min-h-screen bg-gray-50 text-gray-900 font-sans">
 		<!-- Navigation Bar -->
-		<nav
+		<header
 			class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md"
 		>
 			<div
@@ -40,7 +40,7 @@ const AdminIcon = processSvg(adminIconRaw);
 						>VitalFe & Alegria</span
 					>
 				</div>
-				<div
+				<nav
 					class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600"
 				>
 					<a
@@ -58,7 +58,12 @@ const AdminIcon = processSvg(adminIconRaw);
 						class="hover:text-primary-600 transition-colors"
 						>Nosotros</a
 					>
-				</div>
+					<a
+						href="/docs"
+						class="hover:text-primary-600 transition-colors"
+						>Documentación</a
+					>
+				</nav>
 				<div class="flex items-center gap-4">
 					<a
 						href="/login"
@@ -73,10 +78,10 @@ const AdminIcon = processSvg(adminIconRaw);
 					</a>
 				</div>
 			</div>
-		</nav>
+		</header>
 
 		<!-- Hero Section -->
-		<header class="relative overflow-hidden bg-white pt-16 pb-32 lg:pt-32">
+		<section class="relative overflow-hidden bg-white pt-16 pb-32 lg:pt-32">
 			<div class="mx-auto max-w-7xl px-6 lg:px-8">
 				<div class="grid lg:grid-cols-2 gap-12 items-center">
 					<div class="text-center lg:text-left">
@@ -104,10 +109,10 @@ const AdminIcon = processSvg(adminIconRaw);
 								Ingresar al Sistema
 							</a>
 							<a
-								href="#modules"
+								href="/docs"
 								class="rounded-full bg-white px-8 py-3.5 text-base font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all"
 							>
-								Ver Módulos
+								Ver Documentación
 							</a>
 						</div>
 					</div>
@@ -142,7 +147,7 @@ const AdminIcon = processSvg(adminIconRaw);
 					</div>
 				</div>
 			</div>
-		</header>
+		</section>
 
 		<!-- Features / Modules Section -->
 		<section id="modules" class="py-24 bg-gray-50">
