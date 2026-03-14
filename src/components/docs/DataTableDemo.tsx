@@ -63,3 +63,51 @@ export default function DataTableDemo() {
     </PreviewBox>
   );
 }
+
+export function SimpleTableDemo() {
+  const doctors = [
+    { id: 1, name: 'Dr. García', specialty: 'Cardiología' },
+    { id: 2, name: 'Dra. López', specialty: 'Pediatría' },
+    { id: 3, name: 'Dr. Martínez', specialty: 'Neurología' },
+  ];
+  
+  const simpleCols: Column<any>[] = [
+    { header: 'ID', accessorKey: 'id' },
+    { header: 'Nombre', accessorKey: 'name' },
+    { header: 'Especialidad', accessorKey: 'specialty' },
+  ];
+
+  return (
+      <DataTable
+        endpoint=""
+        data={doctors}
+        columns={simpleCols}
+        className="rounded-none border-0 shadow-none"
+      />
+  );
+}
+
+export function BadgeTableDemo() {
+    const doctors = [
+      { id: 1, name: 'Dr. García', active: true },
+      { id: 2, name: 'Dra. López', active: true },
+      { id: 3, name: 'Dr. Martínez', active: false },
+    ];
+
+    const badgeCols: Column<any>[] = [
+      { header: 'Nombre', accessorKey: 'name' },
+      { 
+        header: 'Estado', 
+        align: 'center',
+        cell: (item) => (
+          <Badge styles={{ bg: item.active ? 'bg-green-100' : 'bg-red-100', text: item.active ? 'text-green-700' : 'text-red-700', border: item.active ? 'border-green-300' : 'border-red-300' }}>
+            {item.active ? 'Activo' : 'Inactivo'}
+          </Badge>
+        )
+      },
+    ];
+
+    return (
+        <DataTable endpoint="" data={doctors} columns={badgeCols} className="rounded-none border-0 shadow-none" />
+    );
+}

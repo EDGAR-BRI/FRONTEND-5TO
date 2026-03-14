@@ -4,7 +4,11 @@ description: Tabla de datos genérica con fetching automático via SWR, soporte 
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import DataTableDemo from '@/components/docs/DataTableDemo';
+import DataTableDemo, { SimpleTableDemo, BadgeTableDemo } from '@/components/docs/DataTableDemo';
+import { DataTable } from '@/components/react/primary/DataTable';
+import { Button } from '@/components/react/primary/Button';
+import { Badge } from '@/components/react/primary/Badge';
+import { CodePreview } from '@/components/docs/CodePreview';
 
 ## Demo en vivo
 
@@ -76,13 +80,23 @@ const columns: Column<Doctor>[] = [
 
 ## Ejemplo: Modo local (datos ya obtenidos)
 
-```tsx
+<CodePreview code={`const doctors = [
+  { id: 1, name: 'Dr. García', specialty: 'Cardiología' },
+  { id: 2, name: 'Dra. López', specialty: 'Pediatría' },
+  { id: 3, name: 'Dr. Martínez', specialty: 'Neurología' },
+];
+
 <DataTable
   endpoint=""          // Requerido por tipo, pero ignorado cuando se pasa data
-  data={appointments}
-  columns={columns}
-/>
-```
+  data={doctors}
+  columns={[
+    { header: 'ID', accessorKey: 'id' },
+    { header: 'Nombre', accessorKey: 'name' },
+    { header: 'Especialidad', accessorKey: 'specialty' },
+  ]}
+/>`} client:load>
+  <SimpleTableDemo />
+</CodePreview>
 
 ## Ejemplo: Con paginación
 
@@ -115,17 +129,26 @@ La paginación se muestra automáticamente en el footer si la API retorna un obj
 
 Usa `cell` para mostrar cualquier elemento React en lugar del valor crudo:
 
-```tsx
-{
-  header: 'Estado',
-  align: 'center',
-  cell: (item) => (
-    <Badge styles={{ bg: item.active ? 'bg-green-100' : 'bg-red-100' }}>
-      {item.active ? 'Activo' : 'Inactivo'}
-    </Badge>
-  ),
-}
-```
+<CodePreview code={`const columns = [
+  { header: 'Nombre', accessorKey: 'name' },
+  {
+    header: 'Estado',
+    align: 'center',
+    cell: (item) => (
+      <Badge styles={{ bg: item.active ? 'bg-green-100' : 'bg-red-100', text: item.active ? 'text-green-700' : 'text-red-700', border: item.active ? 'border-green-300' : 'border-red-300' }}>
+        {item.active ? 'Activo' : 'Inactivo'}
+      </Badge>
+    ),
+  }
+];
+
+<DataTable
+  endpoint=""
+  data={doctors}
+  columns={columns}
+/>`} client:load>
+  <BadgeTableDemo />
+</CodePreview>
 
 <Aside type="note">
   El componente espera que la API retorne un **array directo** o un **objeto con propiedad `data`**. Ambos formatos son soportados automáticamente.
