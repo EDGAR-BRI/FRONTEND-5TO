@@ -158,7 +158,6 @@ export default function UsersDashboard() {
                     className="rounded-none! border-none!"
                     endpoint={endpoint}
                     columns={columns}
-                    businessId={1}
                 />
             </section>
         </div>

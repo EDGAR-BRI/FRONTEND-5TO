@@ -10,8 +10,6 @@ import DataTableDemo from '@/components/docs/DataTableDemo';
 
 <DataTableDemo client:load />
 
-import { Aside } from '@astrojs/starlight/components';
-
 `DataTable` es una tabla reutilizable y tipada que soporta dos modos de operación:
 
 1. **Modo API (SWR)**: Pasa un `endpoint` y la tabla fetcha los datos automáticamente.
@@ -33,7 +31,6 @@ import type { Column } from '@/components/react/primary/DataTable';
 | `columns` | `Column<T>[]` | **Requerido.** Definición de columnas. |
 | `endpoint` | `string` | URL del endpoint de la API. Se ignora si se pasa `data`. |
 | `data` | `T[]` | Datos locales. Si se pasa, no se hace fetch. |
-| `businessId` | `number` | ID del negocio (contextual). |
 | `isLoading` | `boolean` | Fuerza el estado de carga desde afuera. |
 | `className` | `string` | Clases adicionales para el contenedor. |
 | `currentPage` | `number` | Página actual (para paginación). |
@@ -73,7 +70,6 @@ const columns: Column<Doctor>[] = [
 
 <DataTable
   endpoint="/api/doctors"
-  businessId={1}
   columns={columns}
 />
 ```
@@ -83,7 +79,6 @@ const columns: Column<Doctor>[] = [
 ```tsx
 <DataTable
   endpoint=""          // Requerido por tipo, pero ignorado cuando se pasa data
-  businessId={1}
   data={appointments}
   columns={columns}
 />
@@ -96,7 +91,6 @@ const [page, setPage] = useState(1);
 
 <DataTable
   endpoint="/api/sales"
-  businessId={1}
   columns={salesColumns}
   currentPage={page}
   onPageChange={setPage}

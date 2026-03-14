@@ -93,8 +93,7 @@ export default function UsersTable() {
 
     return (
         <DataTable<User>
-            endpoint="/admin/users" // Mock endpoint
-            businessId={1} // Assuming businessId is required as in the existing tables
+            endpoint="/admin/users"
             columns={columns}
         />
     );

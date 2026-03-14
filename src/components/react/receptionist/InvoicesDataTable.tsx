@@ -65,7 +65,6 @@ export function InvoicesDataTable({ facturas = MOCK_FACTURAS }: { facturas?: Inv
             endpoint=""
             data={facturas}
             columns={columns}
-            businessId={1}
         />
     );
 }

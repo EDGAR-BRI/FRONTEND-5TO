@@ -27,7 +27,6 @@ export interface Column<T> {
 interface DataTableProps<T> {
     endpoint: string;
     data?: T[];
-    businessId: number;
     columns: Column<T>[];
     isLoading?: boolean;
     className?: string;

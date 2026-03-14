@@ -58,7 +58,7 @@ const typeBadgeStyles = (type: InventoryItemType) =>
 			font: "font-semibold",
 		};
 
-export default function SuppliesInventoryTable({ businessId = 1 }: { businessId?: number }) {
+export default function SuppliesInventoryTable() {
 	const columns: Column<InventoryItem>[] = [
 		{ header: "ID", accessorKey: "id", align: "left" },
 		{
@@ -130,7 +130,6 @@ export default function SuppliesInventoryTable({ businessId = 1 }: { businessId?
 	return (
 		<DataTable<InventoryItem>
 			endpoint="/admin/supplies"
-			businessId={businessId}
 			columns={columns}
 		/>
 	);

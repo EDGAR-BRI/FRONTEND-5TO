@@ -121,16 +121,11 @@ const mockInventory: InventoryItem[] = [
 ];
 
 export const GET: APIRoute = async ({ request }) => {
-	// El frontend envía el businessId en header x-business-id. Aquí lo ignoramos
-	// porque son mocks, pero lo dejamos accesible por si luego quieres filtrar.
-	const businessId = request.headers.get("x-business-id");
-
 	return new Response(JSON.stringify(mockInventory), {
 		status: 200,
 		headers: {
 			"Content-Type": "application/json",
 			"x-mock": "true",
-			...(businessId ? { "x-business-id": businessId } : {}),
 		},
 	});
 };

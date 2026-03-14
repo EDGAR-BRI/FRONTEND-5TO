@@ -210,7 +210,6 @@ export const FinanceDashboard = () => {
                     className="rounded-none! border-none!"
                     endpoint="/admin/transactions"
                     columns={columns}
-                    businessId={1}
                 />
             </section>
 

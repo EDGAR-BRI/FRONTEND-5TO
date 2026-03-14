@@ -56,7 +56,6 @@ export default function DataTableDemo() {
     <PreviewBox label="DataTable con datos locales y render personalizado" className="flex-col items-stretch p-0 overflow-hidden">
       <DataTable
         endpoint=""
-        businessId={1}
         data={mockDoctors}
         columns={columns}
         className="rounded-none border-0"
