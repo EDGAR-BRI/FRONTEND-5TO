@@ -42,6 +42,9 @@
       "@/hooks/*": [
         "src/hooks/*"
       ],
+      "@/components/primary/*": [
+        "src/components/react/primary/*"
+      ],
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react"
