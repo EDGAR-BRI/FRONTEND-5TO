@@ -4,6 +4,8 @@ description: Componente compuesto para avatares de usuario con imagen y fallback
 ---
 
 import AvatarDemo from '@/components/docs/AvatarDemo';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/react/primary/Avatar';
+import { CodePreview } from '@/components/docs/CodePreview';
 
 ## Demo en vivo
 
@@ -50,47 +52,71 @@ Contenido que se muestra cuando no hay imagen (ej: iniciales o ícono).
 
 ### Con imagen de perfil
 
-```tsx
-<Avatar className="w-10 h-10">
+<CodePreview code={`<Avatar className="w-10 h-10">
   <AvatarImage
-    src={doctor.profilePhoto}
-    alt={`Foto de ${doctor.name}`}
+    src="https://github.com/shadcn.png"
+    alt="Foto de perfil"
   />
-</Avatar>
-```
+</Avatar>`} client:load>
+  <Avatar className="w-10 h-10">
+    <AvatarImage
+      src="https://github.com/shadcn.png"
+      alt="Foto de perfil"
+    />
+  </Avatar>
+</CodePreview>
 
 ### Con iniciales como fallback
 
-```tsx
-const getInitials = (name: string) =>
+<CodePreview code={`const getInitials = (name: string) =>
   name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
 <Avatar className="w-10 h-10">
   <AvatarFallback className="bg-primary-300 text-primary-900 text-sm font-semibold">
     {getInitials(doctor.name)}
   </AvatarFallback>
-</Avatar>
-```
+</Avatar>`} client:load>
+  <Avatar className="w-10 h-10">
+    <AvatarFallback className="bg-primary-300 text-primary-900 text-sm font-semibold">
+      JP
+    </AvatarFallback>
+  </Avatar>
+</CodePreview>
 
 ### Tamaños
 
 El tamaño se controla con clases en el `Avatar`:
 
-```tsx
-{/* Pequeño */}
-<Avatar className="w-8 h-8">...</Avatar>
+<CodePreview code={`{/* Pequeño */}
+<Avatar className="w-8 h-8">
+  <AvatarFallback>SM</AvatarFallback>
+</Avatar>
 
 {/* Mediano (default recomendado) */}
-<Avatar className="w-10 h-10">...</Avatar>
+<Avatar className="w-10 h-10">
+  <AvatarFallback>MD</AvatarFallback>
+</Avatar>
 
 {/* Grande */}
-<Avatar className="w-16 h-16">...</Avatar>
-```
+<Avatar className="w-16 h-16">
+  <AvatarFallback>LG</AvatarFallback>
+</Avatar>`} client:load>
+  <div className="flex gap-4 items-end">
+    <Avatar className="w-8 h-8">
+      <AvatarFallback className="bg-primary-100 text-xs text-primary-900 border border-primary-200">SM</AvatarFallback>
+    </Avatar>
+    <Avatar className="w-10 h-10">
+       <AvatarFallback className="bg-primary-100 text-sm text-primary-900 border border-primary-200">MD</AvatarFallback>
+    </Avatar>
+    <Avatar className="w-16 h-16">
+       <AvatarFallback className="bg-primary-100 text-xl text-primary-900 border border-primary-200">LG</AvatarFallback>
+    </Avatar>
+  </div>
+</CodePreview>
 
 ### En un listado de doctores
 
-```tsx
-{doctors.map(doctor => (
+<CodePreview code={`{doctors.map(doctor => (
   <div key={doctor.id} className="flex items-center gap-3">
     <Avatar className="w-9 h-9 shrink-0">
       {doctor.photo ? (
@@ -103,5 +129,21 @@ El tamaño se controla con clases en el `Avatar`:
     </Avatar>
     <span className="text-sm font-medium">{doctor.name}</span>
   </div>
-))}
-```
+))}`} client:load>
+  <div className="flex flex-col gap-2">
+    <div className="flex items-center gap-3">
+        <Avatar className="w-9 h-9 shrink-0">
+            <AvatarImage src="https://github.com/shadcn.png" alt="Doctor 1" />
+        </Avatar>
+        <span className="text-sm font-medium">Dr. Juan Pérez</span>
+    </div>
+    <div className="flex items-center gap-3">
+        <Avatar className="w-9 h-9 shrink-0">
+             <AvatarFallback className="bg-primary-200 text-primary-800 text-xs font-bold">
+                MA
+             </AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium">Dra. María Antonieta</span>
+    </div>
+  </div>
+</CodePreview>
