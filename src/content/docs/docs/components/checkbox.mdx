@@ -3,7 +3,17 @@ title: CheckBox
 description: Casilla de verificación con dos variantes de presentación visual — checkbox clásico y switch toggle.
 ---
 
-`CheckBox` es un componente de entrada booleana que ofrece dos variantes de UI: el checkbox tradicional y un switch tipo toggle (estilo iOS). Ambas reciben las mismas props.
+import { CodePreview } from '@/components/docs/CodePreview';
+import { CheckBox } from '@/components/react/primary/CheckBox';
+import CheckBoxDemo from '@/components/docs/CheckBoxDemo';
+
+## Demo en vivo
+
+<CheckBoxDemo client:load />
+
+---
+
+`CheckBox` ofrece dos variantes: el checkbox tradicional y un switch tipo toggle animado.
 
 ## Importación
 
@@ -15,60 +25,35 @@ import { CheckBox } from '@/components/react/primary/CheckBox';
 
 | Prop | Tipo | Default | Descripción |
 |------|------|---------|-------------|
-| `label` | `string` | — | **Requerido.** Texto visible junto al control. |
-| `checked` | `boolean` | — | Estado controlado del checkbox. |
-| `onChange` | `(e: ChangeEvent<HTMLInputElement>) => void` | — | Handler de cambio. |
-| `name` | `string` | — | Nombre del campo (para formularios HTML). |
+| `label` | `string` | — | **Requerido.** Texto visible. |
+| `checked` | `boolean` | — | Estado controlado. |
+| `onChange` | `(e) => void` | — | Handler de cambio. |
+| `name` | `string` | — | Nombre del campo HTML. |
 | `variant` | `"checkbox" \| "switch"` | `"checkbox"` | Variante visual. |
+
+---
 
 ## Variante `checkbox`
 
-Casilla cuadrada clásica. Ideal para formularios de selección múltiple o filtros.
-
-```tsx
-const [notificaciones, setNotificaciones] = useState(false);
-
-<CheckBox
+<CodePreview code={`<CheckBox
   label="Recibir notificaciones por email"
-  checked={notificaciones}
-  onChange={(e) => setNotificaciones(e.target.checked)}
   name="notificaciones"
-/>
-```
+  checked={checked}
+  onChange={(e) => setChecked(e.target.checked)}
+/>`} client:load>
+  <CheckBox label="Recibir notificaciones por email" name="notif_ex1" checked={false} onChange={() => {}} />
+  <CheckBox label="Opción pre-seleccionada" name="notif_ex2" checked={true} onChange={() => {}} />
+</CodePreview>
 
 ## Variante `switch`
 
-Toggle estilo iOS con texto "No" / "Sí" animado. Ideal para configuraciones y preferencias.
-
-```tsx
-const [activo, setActivo] = useState(false);
-
-<CheckBox
-  label="Doctor activo"
+<CodePreview code={`<CheckBox
+  label="Doctor activo en el sistema"
   variant="switch"
+  name="activo"
   checked={activo}
   onChange={(e) => setActivo(e.target.checked)}
-  name="activo"
-/>
-```
-
-## En un formulario
-
-```tsx
-<form>
-  <CheckBox
-    name="terms"
-    label="Acepto los términos y condiciones"
-    checked={form.terms}
-    onChange={(e) => setForm({ ...form, terms: e.target.checked })}
-  />
-
-  <CheckBox
-    name="modoOscuro"
-    label="Modo oscuro"
-    variant="switch"
-    checked={form.modoOscuro}
-    onChange={(e) => setForm({ ...form, modoOscuro: e.target.checked })}
-  />
-</form>
-```
+/>`} client:load>
+  <CheckBox label="Doctor activo (OFF)" variant="switch" name="sw_ex1" checked={false} onChange={() => {}} />
+  <CheckBox label="Doctor activo (ON)" variant="switch" name="sw_ex2" checked={true} onChange={() => {}} />
+</CodePreview>

@@ -3,6 +3,15 @@ title: Spinner y Tooltip
 description: Componentes de utilidad — indicador de carga animado y tooltip informativo hover.
 ---
 
+import { CodePreview } from '@/components/docs/CodePreview';
+import { Spinner } from '@/components/react/primary/Spinner';
+import { Tooltip } from '@/components/react/primary/Tooltip';
+import SpinnerTooltipDemo from '@/components/docs/SpinnerTooltipDemo';
+
+## Demo en vivo
+
+<SpinnerTooltipDemo client:load />
+
 ---
 
 ## Spinner
@@ -19,37 +28,47 @@ import { Spinner } from '@/components/react/primary/Spinner';
 
 | Prop | Tipo | Default | Descripción |
 |------|------|---------|-------------|
-| `className` | `string` | `""` | Clases para controlar el tamaño y color del SVG. |
+| `className` | `string` | `""` | Clases para controlar el tamaño y color. |
 
-Por defecto es `h-5 w-5 text-white`. El color se hereda de `text-current`, por lo que cambiando el color de texto del contenedor se cambia el color del spinner.
+### Tamaños
 
-### Ejemplos
+<CodePreview code={`<Spinner className="w-4 h-4 text-primary-600" />
+<Spinner className="w-6 h-6 text-primary-600" />
+<Spinner className="w-8 h-8 text-primary-600" />
+<Spinner className="w-12 h-12 text-primary-600" />`} client:load>
+  <Spinner className="w-4 h-4 text-primary-600" />
+  <Spinner className="w-6 h-6 text-primary-600" />
+  <Spinner className="w-8 h-8 text-primary-600" />
+  <Spinner className="w-12 h-12 text-primary-600" />
+</CodePreview>
 
-```tsx
-{/* Default (blanco, para fondos oscuros) */}
-<Spinner />
+### Colores
 
-{/* En botón de carga */}
-<Spinner className="w-4 h-4 text-current" />
+<CodePreview code={`<Spinner className="w-6 h-6 text-primary-600" />
+<Spinner className="w-6 h-6 text-green-500" />
+<Spinner className="w-6 h-6 text-red-500" />
+<Spinner className="w-6 h-6 text-yellow-500" />`} client:load>
+  <Spinner className="w-6 h-6 text-primary-600" />
+  <Spinner className="w-6 h-6 text-green-500" />
+  <Spinner className="w-6 h-6 text-red-500" />
+  <Spinner className="w-6 h-6 text-yellow-500" />
+</CodePreview>
 
-{/* Spinner grande centrado en la página */}
-<div className="flex justify-center py-20">
+### Spinner grande centrado (loading de página)
+
+<CodePreview code={`<div className="flex justify-center py-20">
   <Spinner className="w-10 h-10 text-primary-600" />
-</div>
-
-{/* En el centro de una tabla vacía */}
-{isLoading && (
-  <div className="p-8 flex justify-center">
-    <Spinner className="w-6 h-6 text-primary-500" />
+</div>`} client:load>
+  <div className="flex justify-center w-full py-8">
+    <Spinner className="w-10 h-10 text-primary-600" />
   </div>
-)}
-```
+</CodePreview>
 
 ---
 
 ## Tooltip
 
-Muestra un globo de información al hacer hover sobre un ícono `?`. Útil para campos de formulario complejos o acciones que necesitan aclaración.
+Muestra un globo de información al hacer hover sobre un ícono `?`.
 
 ### Importación
 
@@ -62,32 +81,25 @@ import { Tooltip } from '@/components/react/primary/Tooltip';
 | Prop | Tipo | Default | Descripción |
 |------|------|---------|-------------|
 | `text` | `string` | — | **Requerido.** Texto del tooltip. |
-| `position` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Posición del globo. *(Actualmente solo se aplica `top`.)* |
+| `position` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Posición del globo. |
 
-### Comportamiento
+### Ejemplo junto a un label
 
-- Muestra un ícono `?` con Font Awesome (`fa-circle-question`).
-- Al hacer hover, aparece un globo oscuro con el texto.
-- Incluye una pequeña flecha apuntando al ícono.
-- No bloquea interacciones (`pointer-events-none`).
+<CodePreview code={`<div className="flex items-center gap-1">
+  <label>Cédula</label>
+  <Tooltip text="El número debe tener 10 dígitos, sin guiones." />
+</div>
 
-### Ejemplos
-
-```tsx
-{/* Junto a un label */}
 <div className="flex items-center gap-1">
   <label>RFC</label>
   <Tooltip text="Ingresa el RFC con homoclave, sin espacios." />
-</div>
-
-{/* Integrado en el componente Field (automático con prop tooltip) */}
-<Field
-  name="cedula"
-  label="Cédula"
-  tooltip="El número de cédula debe contener exactamente 10 dígitos."
-/>
-```
-
-:::note
-El componente `Tooltip` ya está integrado en `Field`. Si usas `Field`, simplemente pasa el prop `tooltip` con el texto y el ícono aparecerá automáticamente junto al label.
-:::
+</div>`} client:load>
+  <div className="flex items-center gap-1 text-sm text-primary-900">
+    <label>Cédula</label>
+    <Tooltip text="El número debe tener 10 dígitos, sin guiones." />
+  </div>
+  <div className="flex items-center gap-1 text-sm text-primary-900">
+    <label>RFC</label>
+    <Tooltip text="Ingresa el RFC con homoclave, sin espacios." />
+  </div>
+</CodePreview>

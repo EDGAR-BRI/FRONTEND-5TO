@@ -22,6 +22,7 @@ export default defineConfig({
     react(),
     starlight({
       title: 'Docs · FRONTEND-5TO',
+      customCss: ['./src/styles/global.css'],
       sidebar: [
         {
           label: 'Inicio',

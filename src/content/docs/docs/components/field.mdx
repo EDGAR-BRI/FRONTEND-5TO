@@ -4,6 +4,11 @@ description: Input unificado para texto, número, contraseña, fecha y radio but
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import FieldDemo from '@/components/docs/FieldDemo';
+
+## Demo en vivo
+
+<FieldDemo client:load />
 
 `Field` es el componente de entrada de datos principal del sistema. Unifica en un solo componente todos los tipos de input más comunes, con estilos consistentes y funcionalidades extra como mostrar/ocultar contraseña, validación de números decimales y un calendario custom (powered by `react-day-picker`).
 

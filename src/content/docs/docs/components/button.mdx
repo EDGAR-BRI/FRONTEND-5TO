@@ -4,6 +4,15 @@ description: Botón principal del sistema con variantes de estilo, tamaños y so
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import { CodePreview } from '@/components/docs/CodePreview';
+import { Button } from '@/components/react/primary/Button';
+import ButtonDemo from '@/components/docs/ButtonDemo';
+
+## Demo en vivo
+
+<ButtonDemo client:load />
+
+---
 
 El componente `Button` es el botón estándar del sistema. Soporta 4 variantes visuales, 4 tamaños, estado de carga con spinner y está construido con `forwardRef` para integrarse con bibliotecas de formularios.
 
@@ -27,68 +36,71 @@ import { Button, ButtonTheme } from '@/components/react/primary/Button';
 
 También acepta todos los atributos nativos de `<button>` (`onClick`, `type`, `form`, etc.).
 
+---
+
 ## Variantes
 
-### `primary` (default)
-Fondo sólido. Usar para la acción principal de la página.
+### `primary` — Acción principal
 
-```tsx
-<Button label="Guardar cambios" variant="primary" />
-```
+<CodePreview code={`<Button label="Guardar cambios" variant="primary" />`} client:load>
+  <Button label="Guardar cambios" variant="primary" />
+</CodePreview>
 
-### `secondary`
-Borde con fondo claro. Para acciones secundarias.
+### `secondary` — Acción secundaria
 
-```tsx
-<Button label="Cancelar" variant="secondary" />
-```
+<CodePreview code={`<Button label="Cancelar" variant="secondary" />`} client:load>
+  <Button label="Cancelar" variant="secondary" />
+</CodePreview>
 
-### `ghost`
-Sin fondo. Para acciones terciarias o en barras de herramientas.
+### `ghost` — Acción terciaria
 
-```tsx
-<Button label="Ver detalle" variant="ghost" />
-```
+<CodePreview code={`<Button label="Ver detalle" variant="ghost" />`} client:load>
+  <Button label="Ver detalle" variant="ghost" />
+</CodePreview>
 
-### `danger-ghost`
-Sin fondo, texto en rojo. Para acciones destructivas (eliminar, rechazar).
+### `danger-ghost` — Acción destructiva
 
-```tsx
-<Button label="Eliminar" variant="danger-ghost" />
-```
+<CodePreview code={`<Button label="Eliminar" variant="danger-ghost" />`} client:load>
+  <Button label="Eliminar" variant="danger-ghost" />
+</CodePreview>
+
+---
 
 ## Tamaños
 
-```tsx
-<Button label="Pequeño"  size="sm" />
+<CodePreview code={`<Button label="Pequeño"  size="sm" />
 <Button label="Normal"   size="default" />
 <Button label="Grande"   size="lg" />
-<Button label="🔍"       size="icon" />   {/* Solo íconos */}
-```
+<Button label="★"        size="icon" />`} client:load>
+  <Button label="Pequeño" size="sm" />
+  <Button label="Normal"  size="default" />
+  <Button label="Grande"  size="lg" />
+  <Button label="★"       size="icon" />
+</CodePreview>
+
+---
 
 ## Estado de carga
 
-Cuando `loading` es `true`, el botón muestra un `Spinner` y se bloquea la interacción.
+Cuando `loading` es `true`, el botón muestra un `Spinner` y bloquea la interacción.
 
-```tsx
-const [saving, setSaving] = useState(false);
+<CodePreview code={`<Button label="Guardando..."  loading={true} />
+<Button label="Deshabilitado" disabled />`} client:load>
+  <Button label="Guardando..."  loading={true} />
+  <Button label="Deshabilitado" disabled />
+</CodePreview>
 
-<Button
-  label="Guardar"
-  loading={saving}
-  onClick={async () => {
-    setSaving(true);
-    await saveData();
-    setSaving(false);
-  }}
-/>
-```
+---
 
 ## Ancho completo
 
-```tsx
-<Button label="Iniciar sesión" adaptive />
-```
+<CodePreview code={`<Button label="Iniciar sesión" adaptive />`} client:load>
+  <div className="w-full max-w-sm">
+    <Button label="Iniciar sesión" adaptive />
+  </div>
+</CodePreview>
+
+---
 
 ## Constante `ButtonTheme`
 
@@ -97,20 +109,11 @@ Para evitar strings literales, usa la constante exportada:
 ```tsx
 import { Button, ButtonTheme } from '@/components/react/primary/Button';
 
-<Button label="Enviar" variant={ButtonTheme.PRIMARY} />
-<Button label="Cancelar" variant={ButtonTheme.SECONDARY} />
-<Button label="Eliminar" variant={ButtonTheme.DANGER_GHOST} />
-```
-
-## Con íconos (vía `children`)
-
-```tsx
-<Button label="Descargar" variant="secondary">
-  <svg .../>
-  Descargar PDF
-</Button>
+<Button label="Enviar"    variant={ButtonTheme.PRIMARY} />
+<Button label="Cancelar"  variant={ButtonTheme.SECONDARY} />
+<Button label="Eliminar"  variant={ButtonTheme.DANGER_GHOST} />
 ```
 
 <Aside type="tip">
-  El componente usa `forwardRef`, por lo que puedes pasarle una `ref` directamente para integrarlo con bibliotecas como React Hook Form o para controlar el foco programáticamente.
+  El componente usa `forwardRef`, por lo que puedes pasarle una `ref` directamente para integrarlo con React Hook Form o para controlar el foco programáticamente.
 </Aside>

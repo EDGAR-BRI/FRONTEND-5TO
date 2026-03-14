@@ -3,13 +3,22 @@ title: Badge
 description: Etiqueta visual compacta para mostrar estados, categorías o etiquetas con estilos completamente personalizables.
 ---
 
+import BadgeDemo from '@/components/docs/BadgeDemo';
+import { CodePreview } from '@/components/docs/CodePreview';
+import { Badge } from '@/components/react/primary/Badge';
+
+## Demo en vivo
+
+<BadgeDemo client:load />
+
+---
+
 `Badge` es un componente `<span>` estilizado para mostrar etiquetas compactas como estados (`Activo`, `Pendiente`), categorías, roles o cualquier información de clasificación.
 
 ## Importación
 
 ```tsx
 import { Badge } from '@/components/react/primary/Badge';
-import type { BadgeStyles } from '@/components/react/primary/Badge';
 ```
 
 ## Props
@@ -22,8 +31,6 @@ import type { BadgeStyles } from '@/components/react/primary/Badge';
 
 ### Tipo `BadgeStyles`
 
-Todos los campos son opcionales. Cada uno acepta clases de Tailwind:
-
 | Campo | Default | Descripción |
 |-------|---------|-------------|
 | `bg` | `"bg-primary-100"` | Color de fondo. |
@@ -31,59 +38,60 @@ Todos los campos son opcionales. Cada uno acepta clases de Tailwind:
 | `border` | `"border-cool-gray-70"` | Color del borde. |
 | `borderWidth` | `"border"` | Grosor del borde. |
 | `textSize` | `"text-[11px]"` | Tamaño del texto. |
-| `font` | — | Fuente / peso. Ej: `"font-semibold"`. |
+| `font` | — | Peso de la fuente. |
 | `padding` | `"px-3 py-1"` | Padding interno. |
 | `rounded` | `"rounded-xl"` | Radio del borde. |
+
+---
 
 ## Ejemplos de uso
 
 ### Default
 
-```tsx
-<Badge>Activo</Badge>
-```
+<CodePreview code={`<Badge>Activo</Badge>`} client:load>
+  <Badge>Activo</Badge>
+</CodePreview>
 
-### Estado de cita
+### Estados de cita
 
-```tsx
-// Confirmada
-<Badge styles={{ bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' }}>
+<CodePreview code={`<Badge styles={{ bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' }}>
   Confirmada
 </Badge>
 
-// Pendiente
 <Badge styles={{ bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' }}>
   Pendiente
 </Badge>
 
-// Cancelada
 <Badge styles={{ bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' }}>
   Cancelada
-</Badge>
-```
+</Badge>`} client:load>
+  <Badge styles={{ bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' }}>Confirmada</Badge>
+  <Badge styles={{ bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' }}>Pendiente</Badge>
+  <Badge styles={{ bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' }}>Cancelada</Badge>
+</CodePreview>
 
-### Rol de usuario
+### Roles de usuario
 
-```tsx
-<Badge styles={{ bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', font: 'font-semibold' }}>
+<CodePreview code={`<Badge styles={{ bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', font: 'font-semibold' }}>
   Doctor
 </Badge>
-```
+
+<Badge styles={{ bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', font: 'font-semibold' }}>
+  Recepcionista
+</Badge>
+
+<Badge styles={{ bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', font: 'font-semibold' }}>
+  Admin
+</Badge>`} client:load>
+  <Badge styles={{ bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', font: 'font-semibold' }}>Doctor</Badge>
+  <Badge styles={{ bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', font: 'font-semibold' }}>Recepcionista</Badge>
+  <Badge styles={{ bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', font: 'font-semibold' }}>Admin</Badge>
+</CodePreview>
 
 ### Sin borde
 
-```tsx
-<Badge styles={{ borderWidth: 'border-0', bg: 'bg-primary-200', text: 'text-primary-900' }}>
-  Interno
-</Badge>
-```
-
-### En una tabla/lista
-
-```tsx
-{appointment.status === 'confirmed' && (
-  <Badge styles={{ bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' }}>
-    Confirmada
-  </Badge>
-)}
-```
+<CodePreview code={`<Badge styles={{ borderWidth: 'border-0', bg: 'bg-primary-200', text: 'text-primary-900' }}>
+  Sin borde
+</Badge>`} client:load>
+  <Badge styles={{ borderWidth: 'border-0', bg: 'bg-primary-200', text: 'text-primary-900', font: 'font-medium' }}>Sin borde</Badge>
+</CodePreview>
