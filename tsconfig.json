@@ -42,7 +42,7 @@
       "@/hooks/*": [
         "src/hooks/*"
       ],
-      "@/components/primary/*": [
+      "@/primary/*": [
         "src/components/react/primary/*"
       ],
     },
