@@ -8,7 +8,7 @@ import { CodePreview } from '@/components/docs/CodePreview';
 import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
 import { Button } from '@/components/react/primary/Button';
 import { Field } from '@/components/react/primary/Field';
-import ModalDemo from '@/components/docs/ModalDemo';
+import ModalDemo, { ModalSimpleDemo, ModalWithFormDemo, ModalConfirmDemo } from '@/components/docs/ModalDemo';
 
 ## Demo en vivo
 
@@ -71,9 +71,7 @@ import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
 >
   <p>Aquí va el contenido del historial...</p>
 </ModalTrigger>`} client:load>
-  <ModalTrigger buttonLabel="Ver historial" modalTitle="Historial del paciente">
-    <p className="text-sm text-primary-900">Aquí va el contenido del historial...</p>
-  </ModalTrigger>
+  <ModalSimpleDemo client:load />
 </CodePreview>
 
 ### Cerrar el modal desde dentro del contenido
@@ -95,17 +93,7 @@ Usa la forma de función en `children` para recibir `{ close }`:
     </div>
   )}
 </ModalTrigger>`} client:load>
-  <ModalTrigger buttonLabel="Nueva cita" buttonTheme="secondary" modalTitle="Agendar cita">
-    {({ close }) => (
-      <div className="space-y-4">
-        <Field name="fecha_doc" label="Fecha" type="date" useNativeDatePicker={false} value="" onChange={() => {}} />
-        <div className="flex justify-end gap-2">
-          <Button label="Cancelar" variant="secondary" onClick={close} />
-          <Button label="Guardar" onClick={close} />
-        </div>
-      </div>
-    )}
-  </ModalTrigger>
+  <ModalWithFormDemo client:load />
 </CodePreview>
 
 ### Modal de confirmación peligrosa
@@ -125,17 +113,7 @@ Usa la forma de función en `children` para recibir `{ close }`:
     </>
   )}
 </ModalTrigger>`} client:load>
-  <ModalTrigger buttonLabel="Eliminar doctor" buttonTheme="danger-ghost" modalTitle="¿Confirmar eliminación?">
-    {({ close }) => (
-      <div className="space-y-4">
-        <p className="text-sm text-primary-900">Esta acción es irreversible. ¿Estás seguro?</p>
-        <div className="flex justify-end gap-2">
-          <Button label="Cancelar" variant="ghost" onClick={close} />
-          <Button label="Sí, eliminar" variant="danger-ghost" onClick={close} />
-        </div>
-      </div>
-    )}
-  </ModalTrigger>
+  <ModalConfirmDemo client:load />
 </CodePreview>
 
 <Aside type="tip">

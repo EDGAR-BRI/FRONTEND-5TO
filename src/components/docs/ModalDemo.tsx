@@ -49,12 +49,63 @@ export default function ModalDemo() {
               </p>
               <div className="flex justify-end gap-2">
                 <Button label="Cancelar" variant="ghost" onClick={close} />
-                <Button label="Sí, eliminar" variant="danger-ghost" onClick={close} />
+                <Button label="Eliminar" variant="danger-ghost" onClick={close} />
               </div>
             </div>
           )}
         </ModalTrigger>
       </PreviewBox>
     </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// Individual Demos for MDX
+// ----------------------------------------------------------------------------
+
+export function ModalSimpleDemo() {
+  return (
+    <ModalTrigger buttonLabel="Ver historial" modalTitle="Historial del paciente">
+      <p className="text-sm text-primary-900">Aquí va el contenido del historial...</p>
+    </ModalTrigger>
+  );
+}
+
+export function ModalWithFormDemo() {
+  return (
+    <ModalTrigger buttonLabel="Nueva cita" buttonTheme="secondary" modalTitle="Agendar cita">
+      {({ close }) => (
+        <div className="space-y-4">
+          <Field 
+            name="fecha_doc" 
+            label="Fecha" 
+            type="date" 
+            useNativeDatePicker={false} 
+            value="" 
+            onChange={() => {}} 
+          />
+          <div className="flex justify-end gap-2">
+            <Button label="Cancelar" variant="secondary" onClick={close} />
+            <Button label="Guardar" onClick={close} />
+          </div>
+        </div>
+      )}
+    </ModalTrigger>
+  );
+}
+
+export function ModalConfirmDemo() {
+  return (
+    <ModalTrigger buttonLabel="Eliminar doctor" buttonTheme="danger-ghost" modalTitle="¿Confirmar eliminación?">
+      {({ close }) => (
+        <div className="space-y-4">
+          <p className="text-sm text-primary-900">Esta acción es irreversible. ¿Estás seguro?</p>
+          <div className="flex justify-end gap-2">
+            <Button label="Cancelar" variant="ghost" onClick={close} />
+            <Button label="Sí, eliminar" variant="danger-ghost" onClick={close} />
+          </div>
+        </div>
+      )}
+    </ModalTrigger>
   );
 }
