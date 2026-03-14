@@ -14,6 +14,7 @@ interface ApiResponse<T> {
     data: T[];
     pagination?: PaginationMeta;
     message?: string;
+    border?: string;
 }
 
 export interface Column<T> {
@@ -25,48 +26,59 @@ export interface Column<T> {
 
 interface DataTableProps<T> {
     endpoint: string;
+    data?: T[];
     businessId: number;
     columns: Column<T>[];
     isLoading?: boolean;
+    className?: string;
     // Props opcionales para paginación (Solo las usará Ventas)
     currentPage?: number;
     onPageChange?: (page: number) => void;
 }
 
-export function DataTable<T>({ 
-    endpoint, 
-    columns, 
-    isLoading: externalLoading, 
-    currentPage, 
-    onPageChange 
+export function DataTable<T>({
+    endpoint,
+    data,
+    columns,
+    isLoading: externalLoading,
+    className,
+    currentPage,
+    onPageChange
 }: DataTableProps<T>) {
+
+    const hasLocalData = Array.isArray(data);
+    const swrKey = hasLocalData
+        ? null
+        : endpoint + (currentPage ? `?page=${currentPage}` : '');
 
     // Usamos 'any' en el tipo de respuesta para soportar ambos formatos (Array y Objeto)
     const { data: response, error, isLoading: swrLoading } = useSWR<any>(
-        endpoint + (currentPage ? `?page=${currentPage}` : ''),
+        swrKey,
         fetcher
     );
 
-    const isLoading = externalLoading || swrLoading;
+    const isLoading = externalLoading || (!hasLocalData && swrLoading);
 
     if (isLoading) return <TableSkeleton columns={columns.length} />;
 
-    if (error) return <div className="text-red-500 p-4 bg-red-500/10 rounded border border-red-500/20">Error al cargar datos</div>;
+    if (!hasLocalData && error) return <div className="text-red-500 p-4 bg-red-500/10 rounded border border-red-500/20">Error al cargar datos</div>;
 
     // --- LA CORRECCIÓN CLAVE ---
     // 1. Si es un array (Productos), úsalo directo.
     // 2. Si es un objeto (Ventas), extrae la propiedad .data
-    const safeData = Array.isArray(response) ? response : (response?.data || []);
-    
+    const safeData = hasLocalData
+        ? (data as T[])
+        : (Array.isArray(response) ? response : (response?.data || []));
+
     // Extraemos paginación solo si existe (Ventas)
-    const pagination = response?.pagination;
+    const pagination = hasLocalData ? undefined : response?.pagination;
 
     if (safeData.length === 0) {
         return <div className="p-8 text-center text-cool-gray-40 bg-primary-400 rounded border border-primary-600">No hay datos que coincidan con tu búsqueda.</div>;
     }
 
     return (
-        <div className="bg-primary-100 border-2 border-primary-300 rounded-md overflow-hidden flex flex-col">
+        <div className={`bg-primary-100 border border-primary-300 rounded-md overflow-hidden flex flex-col ${className ?? ''}`}>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-primary-300">
                     <thead className="bg-primary-300">

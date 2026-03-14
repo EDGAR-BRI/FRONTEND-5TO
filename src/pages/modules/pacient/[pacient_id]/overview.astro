@@ -1,11 +1,415 @@
 ---
 import PacientLayout from '@/layouts/PacientLayout.astro';
+
+const { pacient_id } = Astro.params;
+
+// ─── Mock data derived from DB schema ──────────────────────────────────────
+const patient = {
+  id: pacient_id ?? '001',
+  fullName: 'María Rodríguez González',
+  ci: 'V-12.345.678',
+  age: 34,
+  bloodType: 'O+',
+  sex: 'Femenino',
+  email: 'maria.rodriguez@example.com',
+  phone: '+58 (414) 555-0192',
+  emergencyContact: 'Pedro González · +58 (212) 555-0198',
+  avatarInitials: 'MR',
+};
+
+const stats = [
+  {
+    label: 'Consultas realizadas',
+    value: '12',
+    icon: 'fa-solid fa-stethoscope',
+    color: 'text-primary-500',
+    bg: 'bg-primary-200',
+    trend: '+2 este mes',
+    trendUp: true,
+  },
+  {
+    label: 'Próximas citas',
+    value: '2',
+    icon: 'fa-solid fa-calendar-check',
+    color: 'text-success',
+    bg: 'bg-green-100',
+    trend: 'Confirmadas',
+    trendUp: true,
+  },
+  {
+    label: 'Medicamentos en dósis',
+    value: '3',
+    icon: 'fa-solid fa-pills',
+    color: 'text-warning',
+    bg: 'bg-yellow-100',
+    trend: 'En curso',
+    trendUp: null,
+  },
+  
+];
+
+const upcomingAppointments = [
+  {
+    id: 'APT-001',
+    date: '2026-03-10',
+    time: '09:00 – 09:30 AM',
+    specialty: 'Medicina General',
+    doctor: 'Dr. Carlos Méndez',
+    reason: 'Control de rutina',
+    status: 'Confirmada',
+    type: 'Presencial',
+    statusClass: 'bg-green-100 text-success',
+  },
+  {
+    id: 'APT-002',
+    date: '2026-03-18',
+    time: '02:00 – 02:30 PM',
+    specialty: 'Cardiología',
+    doctor: 'Dra. Luisa Vargas',
+    reason: 'Seguimiento electrocardiograma',
+    status: 'Pendiente',
+    type: 'Presencial',
+    statusClass: 'bg-yellow-100 text-warning',
+  },
+];
+
+const recentConsultations = [
+  {
+    date: '2026-02-20',
+    specialty: 'Medicina General',
+    doctor: 'Dr. Carlos Méndez',
+    diagnosis: 'Evolución favorable',
+    reason: 'Control mensual',
+    plan: 'Mantener tratamiento. Control en 4 semanas.',
+  },
+  {
+    date: '2026-01-10',
+    specialty: 'Urgencias',
+    doctor: 'Dr. Ramón Castillo',
+    diagnosis: 'Dolor musculoesquelético',
+    reason: 'Dolor torácico leve',
+    plan: 'AINEs y reposo. Signos de alarma explicados.',
+  },
+  {
+    date: '2025-12-05',
+    specialty: 'Cardiología',
+    doctor: 'Dra. Luisa Vargas',
+    diagnosis: 'Hipertensión leve controlada',
+    reason: 'Evaluación cardiovascular',
+    plan: 'Ajuste de dosis de Losartán. Dieta baja en sodio.',
+  },
+];
+
+const prescriptions = [
+  {
+    name: 'Losartán 50 mg',
+    sig: '1 tableta diaria (mañana)',
+    status: 'Activa',
+    statusClass: 'bg-green-100 text-success',
+    icon: 'fa-solid fa-capsules',
+  },
+  {
+    name: 'Atorvastatina 20 mg',
+    sig: '1 tableta diaria (noche)',
+    status: 'Activa',
+    statusClass: 'bg-green-100 text-success',
+    icon: 'fa-solid fa-pills',
+  },
+  {
+    name: 'Ibuprofeno 400 mg',
+    sig: 'Según dolor (máx. 3/día)',
+    status: 'PRN',
+    statusClass: 'bg-yellow-100 text-warning',
+    icon: 'fa-solid fa-tablets',
+  },
+];
+
+const labResults = [
+  { date: '2026-02-15', test: 'Hemograma completo', result: 'Sin alteraciones', status: 'Normal', statusClass: 'bg-green-100 text-success' },
+  { date: '2026-02-15', test: 'Glucosa en ayunas', result: '92 mg/dL', status: 'Normal', statusClass: 'bg-green-100 text-success' },
+  { date: '2026-02-15', test: 'Colesterol LDL', result: '118 mg/dL', status: 'Leve', statusClass: 'bg-yellow-100 text-warning' },
+  { date: '2026-01-22', test: 'Creatinina sérica', result: 'Pendiente lectura', status: 'Pendiente', statusClass: 'bg-red-100 text-error' },
+];
+
+const quickActions = [
+  { label: 'Agendar cita', icon: 'fa-solid fa-calendar-plus', href: 'schedule-appointment', color: 'from-primary-500 to-primary-700' },
+  { label: 'Historial clínico', icon: 'fa-solid fa-file-medical', href: 'history', color: 'from-teal-500 to-teal-700' },
+  { label: 'Mi perfil', icon: 'fa-solid fa-user-pen', href: 'profile', color: 'from-violet-500 to-violet-700' },
+  { label: 'Documentos', icon: 'fa-solid fa-folder-open', href: 'history', color: 'from-orange-400 to-orange-600' },
+];
+
+const alerts = [
+  { type: 'allergy', label: 'Penicilina', icon: 'fa-solid fa-triangle-exclamation', color: 'bg-red-100 text-error border-red-200' },
+  { type: 'condition', label: 'Hipertensión', icon: 'fa-solid fa-heart-pulse', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+];
 ---
 
-<PacientLayout>
-  <section class="p-8">
-    <h1 class="text-2xl font-semibold text-primary-800 mb-6">Dashboard General</h1>
-    
-    Vista de Dashboard del paciente, mostrando un resumen de su actividad, estadísticas y acceso rápido a funciones clave como agenda, historial clínico y resultados de laboratorio.
-  </section>
+<PacientLayout title={`Dashboard - ${patient.fullName}`}>
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
+
+    <!-- ─── Header / Welcome ──────────────────────────────────────────────── -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <!-- Avatar -->
+        <div class="w-14 h-14 rounded-full bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-xl shadow-md select-none shrink-0">
+          {patient.avatarInitials}
+        </div>
+        <div>
+          <p class="text-body-s text-primary-700 font-medium">Bienvenida de nuevo,</p>
+          <h1 class="text-heading-4 text-primary-800 leading-tight">{patient.fullName}</h1>
+          <p class="text-body-xs text-cool-gray-50 mt-0.5">
+            <i class="fa-solid fa-id-card mr-1"></i> {patient.ci}
+            &nbsp;·&nbsp;
+            <i class="fa-solid fa-droplet mr-1"></i> {patient.bloodType}
+            &nbsp;·&nbsp;
+            <i class="fa-solid fa-venus mr-1"></i> {patient.sex}
+          </p>
+        </div>
+      </div>
+
+      <!-- Alert badges (allergies / conditions) -->
+      <div class="flex flex-wrap gap-2">
+        {alerts.map(alert => (
+          <span class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${alert.color}`}>
+            <i class={alert.icon}></i>
+            {alert.type === 'allergy' ? 'Alergia:' : 'Dx:'} {alert.label}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <!-- ─── Stat Cards ────────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      {stats.map(stat => (
+        <div class="p-5 bg-primary-100 rounded-xl border border-primary-200 transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30">
+          <div class="flex items-center justify-between">
+            <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center`}>
+              <i class={`${stat.icon} ${stat.color} text-base`}></i>
+            </div>
+            {stat.trendUp !== null && (
+              <span class={`text-body-xxs font-medium px-2 py-0.5 rounded-full ${stat.trendUp ? 'bg-green-50 text-success' : 'bg-red-50 text-error'}`}>
+                <i class={`fa-solid ${stat.trendUp ? 'fa-arrow-up' : 'fa-arrow-down'} mr-0.5`}></i>
+                {stat.trend}
+              </span>
+            )}
+            {stat.trendUp === null && (
+              <span class="text-body-xxs font-medium px-2 py-0.5 rounded-full bg-cool-gray-10 text-cool-gray-60">
+                {stat.trend}
+              </span>
+            )}
+          </div>
+          <div>
+            <p class="text-3xl font-bold text-primary-800">{stat.value}</p>
+            <p class="text-body-xs text-cool-gray-50 mt-0.5">{stat.label}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- ─── Quick Actions ─────────────────────────────────────────────────── -->
+    <div>
+      <h2 class="text-heading-6 text-primary-800 mb-3">Acciones rápidas</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {quickActions.map(action => (
+          <a
+            href={action.href}
+            class={`group relative overflow-hidden rounded-xl bg-linear-to-br ${action.color} p-5 flex flex-col items-center gap-2 text-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer`}
+          >
+            <i class={`${action.icon} text-2xl opacity-90`}></i>
+            <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
+            <!-- Decorative circle -->
+            <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- ─── Two-column layout: Upcoming + Prescriptions ──────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+
+      <!-- Próximas citas (wider) -->
+      <div class="lg:col-span-3 bg-white rounded-xl border border-primary-200 flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
+          <h2 class="text-heading-6 text-primary-800">
+            <i class="fa-solid fa-calendar-days text-primary-500 mr-2"></i>
+            Próximas citas
+          </h2>
+          <a href="schedule-appointment" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
+            Agendar nueva <i class="fa-solid fa-plus ml-0.5"></i>
+          </a>
+        </div>
+
+        <div class="divide-y divide-primary-100 flex-1">
+          {upcomingAppointments.length === 0 && (
+            <div class="p-6 text-center text-cool-gray-50 text-body-s">
+              <i class="fa-regular fa-calendar-xmark text-2xl mb-2 block"></i>
+              No tienes citas próximas
+            </div>
+          )}
+          {upcomingAppointments.map(apt => (
+            <div class="px-5 py-4 hover:bg-primary-50 transition-colors">
+              <div class="flex items-start gap-4">
+                <!-- Date block -->
+                <div class="shrink-0 w-12 text-center">
+                  <div class="text-xs font-semibold text-primary-500 uppercase tracking-wider">
+                    {new Date(apt.date).toLocaleString('es', { month: 'short' })}
+                  </div>
+                  <div class="text-2xl font-bold text-primary-800 leading-none">
+                    {new Date(apt.date).getDate()}
+                  </div>
+                </div>
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center flex-wrap gap-2">
+                    <p class="text-subtitle-s text-primary-800 font-semibold">{apt.specialty}</p>
+                    <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${apt.statusClass}`}>
+                      {apt.status}
+                    </span>
+                    <span class="text-xs text-cool-gray-50 bg-cool-gray-10 px-2 py-0.5 rounded-full">
+                      {apt.type}
+                    </span>
+                  </div>
+                  <p class="text-body-xs text-cool-gray-50 mt-0.5">
+                    <i class="fa-regular fa-user-doctor mr-1"></i>{apt.doctor}
+                  </p>
+                  <p class="text-body-xs text-primary-700 mt-0.5">
+                    <i class="fa-regular fa-clock mr-1"></i>{apt.time}
+                    &nbsp;·&nbsp;
+                    <i class="fa-regular fa-note-sticky mr-1"></i>{apt.reason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Prescriptions -->
+      <div class="lg:col-span-2 bg-white rounded-xl border border-primary-200 flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
+          <h2 class="text-heading-6 text-primary-800">
+            <i class="fa-solid fa-pills text-warning mr-2"></i>
+            Medicamentos
+          </h2>
+          <span class="text-body-xxs text-cool-gray-50">Activos</span>
+        </div>
+
+        <div class="divide-y divide-primary-100 flex-1">
+          {prescriptions.map(med => (
+            <div class="px-5 py-4 hover:bg-primary-50 transition-colors flex items-start gap-3">
+              <div class="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
+                <i class={`${med.icon} text-primary-600 text-sm`}></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-body-s font-semibold text-primary-800 truncate">{med.name}</p>
+                  <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${med.statusClass}`}>
+                    {med.status}
+                  </span>
+                </div>
+                <p class="text-body-xs text-cool-gray-50 mt-0.5">{med.sig}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Lab Results + Recent Consultations ────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <!-- Lab Results -->
+      <div class="bg-white rounded-xl border border-primary-200 flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
+          <h2 class="text-heading-6 text-primary-800">
+            <i class="fa-solid fa-flask text-primary-500 mr-2"></i>
+            Resultados de laboratorio
+          </h2>
+          <a href="history" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
+            Ver todos
+          </a>
+        </div>
+
+        <div class="divide-y divide-primary-100 flex-1">
+          {labResults.map(lab => (
+            <div class="px-5 py-3 hover:bg-primary-50 transition-colors flex items-center gap-3">
+              <div class="flex-1 min-w-0">
+                <p class="text-body-s font-semibold text-primary-800">{lab.test}</p>
+                <p class="text-body-xs text-cool-gray-60 mt-0.5">{lab.result} &nbsp;·&nbsp; {lab.date}</p>
+              </div>
+              <span class={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${lab.statusClass}`}>
+                {lab.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Recent Consultations -->
+      <div class="bg-white rounded-xl border border-primary-200 flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
+          <h2 class="text-heading-6 text-primary-800">
+            <i class="fa-solid fa-stethoscope text-primary-500 mr-2"></i>
+            Consultas recientes
+          </h2>
+          <a href="history" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
+            Ver historial
+          </a>
+        </div>
+
+        <div class="divide-y divide-primary-100 flex-1">
+          {recentConsultations.map(c => (
+            <div class="px-5 py-4 hover:bg-primary-50 transition-colors">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <p class="text-body-s font-semibold text-primary-800">{c.specialty}</p>
+                <span class="text-body-xxs text-cool-gray-50">{c.date}</span>
+              </div>
+              <p class="text-body-xs text-cool-gray-60">
+                <i class="fa-regular fa-user-doctor mr-1"></i>{c.doctor}
+              </p>
+              <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-body-xs">
+                <div>
+                  <span class="text-cool-gray-50 font-medium">Motivo: </span>
+                  <span class="text-primary-800">{c.reason}</span>
+                </div>
+                <div>
+                  <span class="text-cool-gray-50 font-medium">Dx: </span>
+                  <span class="text-primary-800">{c.diagnosis}</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="text-cool-gray-50 font-medium">Plan: </span>
+                  <span class="text-primary-800">{c.plan}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Contact / Personal Info Banner ───────────────────────────────── -->
+    <div class="bg-linear-to-r from-primary-700 to-primary-800 rounded-xl p-5 text-white shadow-md">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 class="text-heading-6 font-semibold mb-1">
+            <i class="fa-solid fa-circle-info mr-2 opacity-80"></i>
+            Información de contacto
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-body-xs text-primary-200">
+            <span><i class="fa-solid fa-envelope mr-1.5"></i>{patient.email}</span>
+            <span><i class="fa-solid fa-phone mr-1.5"></i>{patient.phone}</span>
+            <span class="sm:col-span-2"><i class="fa-solid fa-heart mr-1.5"></i>Emergencia: {patient.emergencyContact}</span>
+          </div>
+        </div>
+        <a
+          href="profile"
+          class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-button-s font-medium transition-colors"
+        >
+          <i class="fa-solid fa-user-pen"></i>
+          Editar perfil
+        </a>
+      </div>
+    </div>
+
+  </div>
 </PacientLayout>

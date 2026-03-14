@@ -1,12 +1,13 @@
 ---
 import MainLayout from '@/layouts/AdminLayout.astro';
+import { FinanceDashboard } from '@/components/react/admin/finance/FinanceDashboard';
 ---
 
-<MainLayout title="Admin | Gastos e ingresos">
+<MainLayout title="Admin | Pagos y Facturación">
 	<section class="p-8">
 		<h1 class="text-2xl font-semibold text-primary-800 mb-6">
-			Gestión de gastos e ingresos
+			Gestión de Pagos y Facturación
 		</h1>
-		Vista para registrar y visualizar gastos/ingresos, categorías y balances.
+		<FinanceDashboard client:load />
 	</section>
 </MainLayout>

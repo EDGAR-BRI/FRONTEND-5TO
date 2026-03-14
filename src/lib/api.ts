@@ -63,7 +63,7 @@ interface ApiOptions extends RequestInit {
     headers?: Record<string, string>;
 }
 
-export const api = async (endpoint: string, businessId?: number, options: ApiOptions = {}, cookies?: AstroCookies) => {
+export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: AstroCookies) => {
     const token = getToken(cookies);
 
     const headers: Record<string, string> = {
@@ -73,10 +73,6 @@ export const api = async (endpoint: string, businessId?: number, options: ApiOpt
 
     if (token) {
         headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    if (businessId) {
-        headers["x-business-id"] = String(businessId);
     }
 
     const config: RequestInit = {

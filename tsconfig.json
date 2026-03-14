@@ -6,7 +6,6 @@
   ],
   "exclude": [
     "dist",
-    "src/components/ui prueba/**",
     "tailwind.config.mjs",
     "*.config.mjs"
   ],
@@ -18,6 +17,9 @@
       ],
       "@/components/*": [
         "src/components/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
       ],
       "@/layouts/*": [
         "src/layouts/*"
@@ -36,6 +38,12 @@
       ],
       "@/lib/*": [
         "src/lib/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/primary/*": [
+        "src/components/react/primary/*"
       ],
     },
     "jsx": "react-jsx",

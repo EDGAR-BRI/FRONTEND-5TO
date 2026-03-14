@@ -1,0 +1,41 @@
+---
+import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+import RegisterPatientForm from '@/components/react/RegisterPatientForm';
+---
+
+<ReceptionistLayout title="Registrar Paciente – Recepción">
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <a href="overview" class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors">
+            <i class="fa-solid fa-arrow-left mr-1"></i>Dashboard
+          </a>
+          <span class="text-cool-gray-30">/</span>
+          <span class="text-body-xs text-cool-gray-50">Registrar paciente</span>
+        </div>
+        <h1 class="text-heading-4 text-primary-800">
+          <i class="fa-solid fa-user-plus text-primary-500 mr-2"></i>
+          Registrar Nuevo Paciente
+        </h1>
+        <p class="text-body-s text-cool-gray-50 mt-0.5">
+          Complete el formulario para registrar un nuevo paciente en el sistema. Los campos marcados con * son obligatorios.
+        </p>
+      </div>
+
+      <a
+        href="appointments"
+        class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
+      >
+        <i class="fa-solid fa-calendar-plus"></i>
+        Ir a citas
+      </a>
+    </div>
+
+    <!-- Form -->
+    <RegisterPatientForm client:only="react" />
+
+  </div>
+</ReceptionistLayout>
