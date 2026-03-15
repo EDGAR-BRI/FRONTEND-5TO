@@ -1,5 +1,7 @@
 ---
 import PacientLayout from '@/layouts/PacientLayout.astro';
+import StaticCard from '@/components/react/primary/StaticCard';
+import ActionCard from '@/components/react/primary/ActionCard';
 
 const { pacient_id } = Astro.params;
 
@@ -181,7 +183,7 @@ const alerts = [
     <!-- ─── Stat Cards ────────────────────────────────────────────────────── -->
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
       {stats.map(stat => (
-        <div class="p-5 bg-primary-100 rounded-xl border border-primary-200 transition-all duration-200 cursor-default hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30">
+        <StaticCard client:load className="p-5 !bg-primary-100">
           <div class="flex items-center justify-between">
             <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center`}>
               <i class={`${stat.icon} ${stat.color} text-base`}></i>
@@ -202,7 +204,7 @@ const alerts = [
             <p class="text-3xl font-bold text-primary-800">{stat.value}</p>
             <p class="text-body-xs text-cool-gray-50 mt-0.5">{stat.label}</p>
           </div>
-        </div>
+        </StaticCard>
       ))}
     </div>
 
@@ -228,7 +230,7 @@ const alerts = [
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
       <!-- Próximas citas (wider) -->
-      <div class="lg:col-span-3 bg-white rounded-xl border border-primary-200 flex flex-col">
+      <StaticCard client:load className="lg:col-span-3 !bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
             <i class="fa-solid fa-calendar-days text-primary-500 mr-2"></i>
@@ -282,10 +284,10 @@ const alerts = [
             </div>
           ))}
         </div>
-      </div>
+      </StaticCard>
 
-      <!-- Prescriptions -->
-      <div class="lg:col-span-2 bg-white rounded-xl border border-primary-200 flex flex-col">
+      <!-- Medicamentos -->
+      <StaticCard client:load className="lg:col-span-2 !bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
             <i class="fa-solid fa-pills text-warning mr-2"></i>
@@ -312,14 +314,14 @@ const alerts = [
             </div>
           ))}
         </div>
-      </div>
+      </StaticCard>
     </div>
 
     <!-- ─── Lab Results + Recent Consultations ────────────────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
       <!-- Lab Results -->
-      <div class="bg-white rounded-xl border border-primary-200 flex flex-col">
+      <StaticCard client:load className="!bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
             <i class="fa-solid fa-flask text-primary-500 mr-2"></i>
@@ -343,10 +345,10 @@ const alerts = [
             </div>
           ))}
         </div>
-      </div>
+      </StaticCard>
 
       <!-- Recent Consultations -->
-      <div class="bg-white rounded-xl border border-primary-200 flex flex-col">
+      <StaticCard client:load className="!bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
             <i class="fa-solid fa-stethoscope text-primary-500 mr-2"></i>
@@ -384,7 +386,7 @@ const alerts = [
             </div>
           ))}
         </div>
-      </div>
+      </StaticCard>
     </div>
 
     <!-- ─── Contact / Personal Info Banner ───────────────────────────────── -->
