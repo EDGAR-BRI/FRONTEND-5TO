@@ -16,9 +16,9 @@ export function CodePreview({ code, children, label }: CodePreviewProps) {
   };
 
   return (
-    <div className="not-content my-5 overflow-hidden rounded-xl border border-primary-300">
+    <div className="not-content my-5 overflow-visible rounded-xl border border-primary-300">
       {/* — CODE BLOCK — */}
-      <div className="relative bg-cool-gray-90">
+      <div className="relative bg-cool-gray-90 overflow-hidden rounded-t-xl">
         <button
           onClick={handleCopy}
           title="Copiar código"
@@ -40,7 +40,7 @@ export function CodePreview({ code, children, label }: CodePreviewProps) {
 
       {/* — LIVE PREVIEW — */}
       {children && (
-        <div className="border-t border-primary-300">
+        <div className="border-t border-primary-300 rounded-b-xl overflow-hidden">
           {/* Header */}
           <div className="flex items-center gap-2 border-b border-primary-300 bg-primary-200 px-4 py-2">
             <span className="h-2 w-2 rounded-full bg-primary-400" />
@@ -50,7 +50,7 @@ export function CodePreview({ code, children, label }: CodePreviewProps) {
           </div>
           {/* Preview area */}
           <div
-            className="flex flex-wrap items-center gap-4 p-5 bg-primary-100"
+            className="flex flex-wrap items-center gap-4 p-5 bg-primary-100 overflow-visible"
             style={{
               backgroundImage: 'radial-gradient(circle, #BAE0FD 1px, transparent 1px)',
               backgroundSize: '20px 20px',
