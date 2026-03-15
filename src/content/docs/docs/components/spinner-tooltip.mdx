@@ -6,7 +6,12 @@ description: Componentes de utilidad — indicador de carga animado y tooltip in
 import { CodePreview } from '@/components/docs/CodePreview';
 import { Spinner } from '@/components/react/primary/Spinner';
 import { Tooltip } from '@/components/react/primary/Tooltip';
-import SpinnerTooltipDemo from '@/components/docs/SpinnerTooltipDemo';
+import SpinnerTooltipDemo, { 
+  SpinnerSizesDemo, 
+  SpinnerColorsDemo, 
+  SpinnerCenteredDemo, 
+  SpinnerTooltipExampleDemo 
+} from '@/components/docs/SpinnerTooltipDemo';
 
 ## Demo en vivo
 
@@ -36,10 +41,7 @@ import { Spinner } from '@/components/react/primary/Spinner';
 <Spinner className="w-6 h-6 text-primary-600" />
 <Spinner className="w-8 h-8 text-primary-600" />
 <Spinner className="w-12 h-12 text-primary-600" />`} client:load>
-  <Spinner className="w-4 h-4 text-primary-600" />
-  <Spinner className="w-6 h-6 text-primary-600" />
-  <Spinner className="w-8 h-8 text-primary-600" />
-  <Spinner className="w-12 h-12 text-primary-600" />
+  <SpinnerSizesDemo client:load />
 </CodePreview>
 
 ### Colores
@@ -48,10 +50,7 @@ import { Spinner } from '@/components/react/primary/Spinner';
 <Spinner className="w-6 h-6 text-green-500" />
 <Spinner className="w-6 h-6 text-red-500" />
 <Spinner className="w-6 h-6 text-yellow-500" />`} client:load>
-  <Spinner className="w-6 h-6 text-primary-600" />
-  <Spinner className="w-6 h-6 text-green-500" />
-  <Spinner className="w-6 h-6 text-red-500" />
-  <Spinner className="w-6 h-6 text-yellow-500" />
+  <SpinnerColorsDemo client:load />
 </CodePreview>
 
 ### Spinner grande centrado (loading de página)
@@ -59,9 +58,7 @@ import { Spinner } from '@/components/react/primary/Spinner';
 <CodePreview code={`<div className="flex justify-center py-20">
   <Spinner className="w-10 h-10 text-primary-600" />
 </div>`} client:load>
-  <div className="flex justify-center w-full py-8">
-    <Spinner className="w-10 h-10 text-primary-600" />
-  </div>
+  <SpinnerCenteredDemo client:load />
 </CodePreview>
 
 ---
@@ -94,12 +91,5 @@ import { Tooltip } from '@/components/react/primary/Tooltip';
   <label>RFC</label>
   <Tooltip text="Ingresa el RFC con homoclave, sin espacios." />
 </div>`} client:load>
-  <div className="flex items-center gap-1 text-sm text-primary-900">
-    <label>Cédula</label>
-    <Tooltip text="El número debe tener 10 dígitos, sin guiones." />
-  </div>
-  <div className="flex items-center gap-1 text-sm text-primary-900">
-    <label>RFC</label>
-    <Tooltip text="Ingresa el RFC con homoclave, sin espacios." />
-  </div>
+  <SpinnerTooltipExampleDemo client:load />
 </CodePreview>
