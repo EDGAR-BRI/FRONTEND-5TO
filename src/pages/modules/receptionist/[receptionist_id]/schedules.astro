@@ -312,7 +312,9 @@ const pendingApts = Object.values(appointmentsByDoctorId)
 </script>
 
 <ReceptionistLayout title="Horarios – Recepción">
-  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in w-full min-w-0 overflow-x-hidden">
+  <div
+    class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in w-full min-w-0 overflow-x-hidden"
+  >
     <!-- ─── Header ─────────────────────────────────────────────────────────── -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
@@ -334,143 +336,143 @@ const pendingApts = Object.values(appointmentsByDoctorId)
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <a
           href="manage-schedules"
-          class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
+          class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
         >
           <i class="fa-solid fa-sliders"></i>
           Configurar ciclos
         </a>
         <a
           href="appointments"
-          class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
+          class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
         >
           <i class="fa-solid fa-calendar-plus"></i>
           Nueva cita
         </a>
       </div>
     </div>
+</div>
 
-    <!-- ─── Mini stats ──────────────────────────────────────────────────────── -->
-    <ReceptionistStatsSummary
-      client:load
-      stats={[
-        {
-          label: "Médicos en turno",
-          value: String(totalShiftsToday),
-          icon: "fa-solid fa-user-doctor",
-          color: "primary",
-        },
-        {
-          label: "Total citas (semana)",
-          value: String(totalApts),
-          icon: "fa-solid fa-calendar-check",
-          color: "success",
-        },
-        {
-          label: "Confirmadas / Realizadas",
-          value: String(confirmedApts),
-          icon: "fa-solid fa-circle-check",
-          color: "success",
-        },
-        {
-          label: "Sin confirmar",
-          value: String(pendingApts),
-          icon: "fa-solid fa-clock",
-          color: "warning",
-        },
-      ]}
-    />
+  <!-- ─── Mini stats ──────────────────────────────────────────────────────── -->
+  <ReceptionistStatsSummary
+    client:load
+    stats={[
+      {
+        label: "Médicos en turno",
+        value: String(totalShiftsToday),
+        icon: "fa-solid fa-user-doctor",
+        color: "primary",
+      },
+      {
+        label: "Total citas (semana)",
+        value: String(totalApts),
+        icon: "fa-solid fa-calendar-check",
+        color: "success",
+      },
+      {
+        label: "Confirmadas / Realizadas",
+        value: String(confirmedApts),
+        icon: "fa-solid fa-circle-check",
+        color: "success",
+      },
+      {
+        label: "Sin confirmar",
+        value: String(pendingApts),
+        icon: "fa-solid fa-clock",
+        color: "warning",
+      },
+    ]}
+  />
 
-    <!-- ─── Doctor shift reference table ──────────────────────────────────── -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- ─── Doctor shift reference table ──────────────────────────────────── -->
+  <div
+    class="bg-white rounded-xl border mt-4 border-primary-200 shadow-sm overflow-hidden"
+  >
     <div
-      class="bg-white rounded-xl border mt-4 border-primary-200 shadow-sm overflow-hidden"
+      class="px-5 py-4 border-b border-primary-200 flex items-center justify-between"
     >
-      <div
-        class="px-5 py-4 border-b border-primary-200 flex items-center justify-between"
-      >
-        <h2 class="text-heading-6 text-primary-800">
-          <i class="fa-solid fa-table-cells-large text-primary-500 mr-2"></i>
-          Turnos de la semana
-        </h2>
-        <span class="text-body-xxs text-cool-gray-50"
-          >Ciclo semanal vigente</span
-        >
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-body-xs">
-          <thead>
-            <tr
-              class="text-left text-cool-gray-50 border-b border-primary-100 bg-primary-50"
-            >
-              <th class="px-4 py-2.5 font-semibold">Médico</th>
-              <th class="px-4 py-2.5 font-semibold">Especialidad</th>
-              <th class="px-4 py-2.5 font-semibold">Lun</th>
-              <th class="px-4 py-2.5 font-semibold">Mar</th>
-              <th class="px-4 py-2.5 font-semibold">Mié</th>
-              <th class="px-4 py-2.5 font-semibold">Jue</th>
-              <th class="px-4 py-2.5 font-semibold">Vie</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-primary-100">
-            {
-              doctors.map((doc) => {
-                const shifts = shiftsByDoctorId[doc.id] ?? [];
-                const byDay: { [key: number]: string } = {};
-                for (const s of shifts) {
-                  byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
-                }
-                return (
-                  <tr class="hover:bg-primary-50 transition-colors">
-                    <td class="px-4 py-3 font-semibold text-primary-800">
-                      {doc.name}
-                    </td>
-                    <td class="px-4 py-3 text-cool-gray-60">{doc.specialty}</td>
-                    {[1, 2, 3, 4, 5].map((d) => (
-                      <td class="px-4 py-3">
-                        {byDay[d] ? (
-                          <span class="font-mono text-primary-700 text-body-xxs">
-                            {byDay[d]}
-                          </span>
-                        ) : (
-                          <span class="text-cool-gray-30">—</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })
-            }
-          </tbody>
-        </table>
-      </div>
+      <h2 class="text-heading-6 text-primary-800">
+        <i class="fa-solid fa-table-cells-large text-primary-500 mr-2"></i>
+        Turnos de la semana
+      </h2>
+      <span class="text-body-xxs text-cool-gray-50">Ciclo semanal vigente</span>
     </div>
-
-    <!-- ─── Interactive calendar ────────────────────────────────────────────── -->
-    <div
-      id="calendar"
-      class="bg-white rounded-xl border border-primary-200 shadow-sm p-5"
-    >
-      <div class="mb-4">
-        <h2 class="text-heading-6 text-primary-800">
-          <i class="fa-solid fa-calendar-week text-primary-500 mr-2"></i>
-          Vista de citas por médico
-        </h2>
-        <p class="text-body-xs text-cool-gray-50 mt-0.5">
-          Las franjas azules representan el turno programado. Haz
-          clic en una cita para ver detalles.
-        </p>
-      </div>
-
-      <DoctorScheduleCalendar
-        client:only="react"
-        doctors={doctors}
-        shiftsByDoctorId={shiftsByDoctorId}
-        appointmentsByDoctorId={appointmentsByDoctorId}
-        heightPx={620}
-        initialView={initialView}
-      />
+    <div class="overflow-x-auto">
+      <table class="w-full text-body-xs">
+        <thead>
+          <tr
+            class="text-left text-cool-gray-50 border-b border-primary-100 bg-primary-50"
+          >
+            <th class="px-4 py-2.5 font-semibold">Médico</th>
+            <th class="px-4 py-2.5 font-semibold">Especialidad</th>
+            <th class="px-4 py-2.5 font-semibold">Lun</th>
+            <th class="px-4 py-2.5 font-semibold">Mar</th>
+            <th class="px-4 py-2.5 font-semibold">Mié</th>
+            <th class="px-4 py-2.5 font-semibold">Jue</th>
+            <th class="px-4 py-2.5 font-semibold">Vie</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-primary-100">
+          {
+            doctors.map((doc) => {
+              const shifts = shiftsByDoctorId[doc.id] ?? [];
+              const byDay: { [key: number]: string } = {};
+              for (const s of shifts) {
+                byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
+              }
+              return (
+                <tr class="hover:bg-primary-50 transition-colors">
+                  <td class="px-4 py-3 font-semibold text-primary-800">
+                    {doc.name}
+                  </td>
+                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty}</td>
+                  {[1, 2, 3, 4, 5].map((d) => (
+                    <td class="px-4 py-3">
+                      {byDay[d] ? (
+                        <span class="font-mono text-primary-700 text-body-xxs">
+                          {byDay[d]}
+                        </span>
+                      ) : (
+                        <span class="text-cool-gray-30">—</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
     </div>
   </div>
+
+  <!-- ─── Interactive calendar ────────────────────────────────────────────── -->
+  <div
+    id="calendar"
+    class="bg-white rounded-xl border border-primary-200 shadow-sm p-5 mt-4"
+  >
+    <div class="mb-4">
+      <h2 class="text-heading-6 text-primary-800">
+        <i class="fa-solid fa-calendar-week text-primary-500 mr-2"></i>
+        Vista de citas por médico
+      </h2>
+      <p class="text-body-xs text-cool-gray-50 mt-0.5">
+        Las franjas azules representan el turno programado. Haz clic en una cita
+        para ver detalles.
+      </p>
+    </div>
+
+    <DoctorScheduleCalendar
+      client:only="react"
+      doctors={doctors}
+      shiftsByDoctorId={shiftsByDoctorId}
+      appointmentsByDoctorId={appointmentsByDoctorId}
+      heightPx={620}
+      initialView={initialView}
+    />
+  </div>
+</div>
 </ReceptionistLayout>
