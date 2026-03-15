@@ -25,14 +25,14 @@ export const StatsCard = ({ title, value, trend, trendUp, trendLabel = "vs mes a
 
     if (variant === "compact") {
         return (
-            <article className={`${baseClasses} p-4 flex items-center gap-4`}>
+            <article className={`${baseClasses} p-4 flex items-center gap-4 overflow-hidden`}>
                 {icon && (
                     <div className={`p-3 rounded-xl shrink-0 ${colorClasses[color]}`}>
                         {icon}
                     </div>
                 )}
-                <div>
-                    <p className="text-sm font-medium text-cool-gray-60 leading-tight">{title}</p>
+                <div className="min-w-0">
+                    <p className="text-sm font-medium text-cool-gray-60 leading-tight truncate">{title}</p>
                     <h3 className="text-2xl font-bold text-cool-gray-90 leading-tight">{value}</h3>
                     {trend && !subText && (
                         <span className={`text-xs font-medium ${trendUp ? "text-green-600" : "text-red-600"}`}>

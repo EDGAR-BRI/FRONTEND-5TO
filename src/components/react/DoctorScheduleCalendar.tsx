@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import type { Formats, BackgroundEvent } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, addDays, setHours, setMinutes } from 'date-fns'
@@ -120,6 +120,17 @@ export default function DoctorScheduleCalendar({
   const [selectedApt, setSelectedApt] = useState<BookedAppointment | null>(null)
   const { isOpen, openModal, closeModal } = useModal(false)
 
+  // ── Responsive: lock to agenda view on narrow screens ──────────────────
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  const effectiveView = isMobile ? 'agenda' : undefined
+
   const closeAndClear = () => { closeModal(); setSelectedApt(null) }
 
   const doctor = doctors.find(d => d.id === selectedDoctorId)
@@ -217,6 +228,8 @@ export default function DoctorScheduleCalendar({
           .rbc-event { cursor: pointer; padding: 4px !important; }
           .rbc-event-content { white-space: normal !important; word-wrap: break-word; line-height: 1.2; display: flex; flex-direction: column; gap: 4px; }
           .rbc-event-label { font-size: 0.7rem; opacity: 0.85; margin-bottom: 2px; }
+          /* Prettier agenda empty state */
+          .rbc-agenda-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; gap: 0.75rem; color: #6B7280; }
         `}</style>
 
         <Calendar
@@ -226,18 +239,30 @@ export default function DoctorScheduleCalendar({
           startAccessor="start"
           endAccessor="end"
           culture="es"
-          messages={mensajes}
+          messages={{
+            ...mensajes,
+            noEventsInRange: (
+              <div className="flex flex-col items-center justify-center gap-3 py-12 px-4 text-center">
+                <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
+                  <i className="fa-regular fa-calendar-xmark text-2xl text-primary-400" />
+                </div>
+                <p className="text-sm font-semibold text-primary-700">Sin citas registradas</p>
+                <p className="text-xs text-cool-gray-50 max-w-xs">No hay citas programadas para este médico en el rango de fechas seleccionado.</p>
+              </div>
+            ) as unknown as string,
+          }}
           formats={formatos}
           eventPropGetter={eventStyleGetter}
           onSelectEvent={onSelectEvent}
           onNavigate={(date) => setReferenceDate(date)}
-          views={['week', 'day', 'agenda']}
-          defaultView={initialView}
+          views={isMobile ? ['agenda'] : ['week', 'day', 'agenda']}
+          defaultView={isMobile ? 'agenda' : initialView}
+          key={isMobile ? 'mobile' : 'desktop'}
           step={30}
           timeslots={2}
           min={setMinutes(setHours(new Date(), 6), 0)}
           max={setMinutes(setHours(new Date(), 20), 0)}
-          style={{ height: heightPx }}
+          style={{ height: isMobile ? 500 : heightPx }}
           showAllDay={false}
           showMultiDayTimes={false}
         />
