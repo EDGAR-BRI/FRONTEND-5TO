@@ -6,12 +6,14 @@ import "@/styles/global.css";
 import userIconRaw from "@/assets/icons/user.svg?raw";
 import doctorIconRaw from "@/assets/icons/hospital.svg?raw";
 import adminIconRaw from "@/assets/icons/shield-security.svg?raw";
+import clinicastsvg from "@/assets/clinicasintext.svg?raw";
 
 // Helper to make SVGs use currentColor
 const processSvg = (svg: string) => {
 	// Replaces any fill="..." with fill="currentColor" or adds it if missing (simplified for these specific icons which have fill)
 	return svg
 		.replace(/fill="[^"]*"/g, 'fill="currentColor"')
+		.replace(/stroke="[^"]*"/g, 'stroke="currentColor"')
 		.replace(/width="[^"]*"/g, 'width="100%"')
 		.replace(/height="[^"]*"/g, 'height="100%"');
 };
@@ -19,6 +21,7 @@ const processSvg = (svg: string) => {
 const UserIcon = processSvg(userIconRaw);
 const DoctorIcon = processSvg(doctorIconRaw);
 const AdminIcon = processSvg(adminIconRaw);
+const ClinicaLogo = processSvg(clinicastsvg);
 ---
 
 <Layout>
@@ -32,13 +35,12 @@ const AdminIcon = processSvg(adminIconRaw);
 			>
 				<div class="flex items-center gap-2">
 					<div
-						class="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold"
-					>
-						V
-					</div>
-					<span class="text-xl font-bold text-gray-800"
-						>VitalFe & Alegria</span
-					>
+						class="h-9 w-9 text-blue-600 flex items-center justify-center"
+						set:html={ClinicaLogo}
+					/>
+					<span class="text-xl font-bold text-gray-800">
+						VitalFe & Alegria
+					</span>
 				</div>
 				<nav
 					class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600"
