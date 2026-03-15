@@ -142,7 +142,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
     const activeWeek = editingCycle.weeks.find(w => w.week_number === activeWeekTab)
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
 
             {/* ── Sidebar: Select Doctor ─────────────────────────────────────── */}
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-4 overflow-hidden flex flex-col gap-3">
@@ -167,7 +167,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
             </div>
 
             {/* ── Main Panel: Schedule Editor ────────────────────────────────── */}
-            <div className="lg:col-span-3 bg-white rounded-xl border border-primary-200 shadow-sm flex flex-col">
+            <div className="lg:col-span-3 bg-white rounded-xl border border-primary-200 shadow-sm flex flex-col min-w-0">
 
                 {/* Header toolbar */}
                 <div className="p-5 border-b border-primary-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -234,7 +234,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                                             // find real index in the week's days array for updating/removing
                                             const realIdx = activeWeek!.days.findIndex(d => d === shift)
                                             return (
-                                                <div key={idx} className="flex items-center gap-2 bg-primary-50 rounded-md p-2 border border-primary-100 animate-fade-in text-sm">
+                                                <div key={idx} className="flex flex-wrap items-center gap-2 bg-primary-50 rounded-md p-2 border border-primary-100 animate-fade-in text-sm">
                                                     <input
                                                         type="time"
                                                         value={shift.starts_at}
@@ -283,7 +283,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                 </div>
 
                 {/* Footer actions */}
-                <div className="p-4 border-t border-primary-100 bg-cool-gray-10 flex items-center justify-end gap-3 rounded-b-xl">
+                <div className="p-4 border-t border-primary-100 bg-cool-gray-10 flex flex-wrap items-center justify-end gap-3 rounded-b-xl">
                     <Button
                         variant={ButtonTheme.SECONDARY}
                         label="Descartar cambios"
