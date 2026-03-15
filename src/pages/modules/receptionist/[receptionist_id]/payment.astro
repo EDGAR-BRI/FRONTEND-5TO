@@ -1,74 +1,51 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
-// Simulación de datos
-const pagos = [
-  { id: 'PAY-001', paciente: 'Ana Sofía Parra', monto: 40.00, metodo: 'Efectivo', fecha: '08:12 AM', estado: 'Completado' },
-  { id: 'PAY-002', paciente: 'Jorge Luis Rivas', monto: 80.00, metodo: 'Transferencia', fecha: '09:30 AM', estado: 'Completado' },
-  { id: 'PAY-003', paciente: 'Marta Sánchez', monto: 50.00, metodo: 'Tarjeta', fecha: '10:15 AM', estado: 'Pendiente' },
+import PaymentsTable from '@/components/react/receptionist/PaymentsTable';
+import type { Payment } from '@/components/react/receptionist/PaymentsTable';
+
+const payments: Payment[] = [
+  { id: 'PAY-001', patient: 'Ana Sofía Parra',     time: '08:12 AM', method: 'Efectivo',      amount: 40.00,  currency: 'USD', status: 'Completado', doctor: 'Dr. Carlos Méndez'  },
+  { id: 'PAY-002', patient: 'Jorge Luis Rivas',   time: '09:30 AM', method: 'Transferencia', amount: 150.00, currency: 'Bs',  status: 'Completado', doctor: 'Dra. Luisa Vargas'  },
+  { id: 'PAY-003', patient: 'Marta Sánchez',      time: '10:15 AM', method: 'Tarjeta',       amount: 55.00,  currency: 'USD', status: 'Pendiente',  doctor: 'Dra. Patricia Mora' },
+  { id: 'PAY-004', patient: 'Roberto Fuentes',    time: '11:00 AM', method: 'Efectivo',      amount: 40.00,  currency: 'USD', status: 'Completado', doctor: 'Dr. Héctor Torres'  },
+  { id: 'PAY-005', patient: 'Carmen López',       time: '11:45 AM', method: 'Transferencia', amount: 80.00,  currency: 'USD', status: 'Completado', doctor: 'Dra. Valentina Ríos'},
+  { id: 'PAY-006', patient: 'Luis Hernández',     time: '12:30 PM', method: 'Tarjeta',       amount: 65.00,  currency: 'USD', status: 'Pendiente',  doctor: 'Dr. Carlos Méndez'  },
+  { id: 'PAY-007', patient: 'Patricia Vásquez',   time: '01:00 PM', method: 'Efectivo',      amount: 40.00,  currency: 'USD', status: 'Anulado',    doctor: 'Dra. Luisa Vargas'  },
+  { id: 'PAY-008', patient: 'Miguel Ángel Torres',time: '02:15 PM', method: 'Transferencia', amount: 120.00, currency: 'Bs',  status: 'Completado', doctor: 'Dr. Héctor Torres'  },
 ];
 ---
 
-<ReceptionistLayout title="Gestión de Pagos">
-  <div class="p-8">
-    <div class="flex justify-between items-center mb-8">
+<ReceptionistLayout title="Gestión de Pagos – Recepción">
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in w-full min-w-0 overflow-x-hidden">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Gestión de Pagos</h1>
-        <p class="text-gray-500">Registra y monitorea los ingresos del día</p>
+        <div class="flex items-center gap-2 mb-1">
+          <a href="overview" class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors">
+            <i class="fa-solid fa-arrow-left mr-1"></i>Dashboard
+          </a>
+          <span class="text-cool-gray-30">/</span>
+          <span class="text-body-xs text-cool-gray-50">Pagos</span>
+        </div>
+        <h1 class="text-heading-4 text-primary-800">
+          <i class="fa-solid fa-dollar-sign text-primary-500 mr-2"></i>
+          Gestión de Pagos
+        </h1>
+        <p class="text-body-s text-cool-gray-50 mt-0.5">
+          Registra y monitorea los ingresos del día.
+        </p>
       </div>
-      <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-        </svg>
-        Registrar Nuevo Pago
+      <button
+        class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
+      >
+        <i class="fa-solid fa-plus"></i>
+        Registrar pago
       </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-        <div class="p-3 bg-purple-100 text-purple-600 rounded-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-500">Total Recaudado</p>
-          <p class="text-xl font-bold text-gray-800">$1,240.00</p>
-        </div>
-      </div>
-    </div>
+    <!-- Payments table component -->
+    <PaymentsTable client:only="react" payments={payments} />
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <table class="w-full text-left">
-        <thead class="bg-gray-50 border-b border-gray-100">
-          <tr>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-600">Paciente</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-600">Método</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-600">Monto</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-600">Estado</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-600">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          {pagos.map((pago) => (
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4">
-                <p class="font-medium text-gray-800">{pago.paciente}</p>
-                <p class="text-xs text-gray-400">{pago.fecha}</p>
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-600">{pago.metodo}</td>
-              <td class="px-6 py-4 font-semibold text-gray-800">${pago.monto.toFixed(2)}</td>
-              <td class="px-6 py-4">
-                <span class={`px-3 py-1 rounded-full text-xs font-medium ${pago.estado === 'Completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                  {pago.estado}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <button class="text-purple-600 hover:text-purple-800 text-sm font-medium">Ver recibo</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   </div>
 </ReceptionistLayout>
