@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, User, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { AppointmentDetailModal } from './AppointmentDetailModal';
 
+import StaticCard from '@/components/react/primary/StaticCard'; 
+
 interface Appointment {
   doctor: string;
   especialidad: string;
@@ -39,9 +41,10 @@ export const MedicalAppointments = () => {
 
       {appointments.length > 0 ? (
         appointments.map((cita, i) => (
-          <div key={i} className="bg-white p-6 rounded-lg border border-primary-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary-400">
+         
+          <StaticCard key={i} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="bg-blue-50 p-4 rounded-2xl text-blue-600">
+              <div className="bg-white p-4 rounded-2xl text-blue-600 shadow-sm">
                 <Calendar className="w-6 h-6" />
               </div>
               <div>
@@ -65,25 +68,26 @@ export const MedicalAppointments = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg font-medium">
+              <div className="flex items-center gap-2 text-xs text-slate-500 bg-white px-3 py-2 rounded-lg font-medium shadow-sm">
                 <Clock className="w-3 h-3 text-blue-400" /> {cita.hora}
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg font-medium">
+              <div className="flex items-center gap-2 text-xs text-slate-500 bg-white px-3 py-2 rounded-lg font-medium shadow-sm">
                 <MapPin className="w-3 h-3 text-red-400" /> {cita.lugar}
               </div>
             </div>
 
             <button
               onClick={() => setSelectedAppointment(cita)}
-              className="bg-blue-50 text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50"
+              className="bg-white text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
             >
               Ver Detalles
             </button>
-          </div>
+          </StaticCard>
         ))
       ) : (
-        <div className="bg-white p-12 rounded-lg border border-primary-200 border-dashed text-center flex flex-col items-center gap-4 shadow-sm transition-all hover:border-primary-400">
-          <div className="bg-slate-50 p-6 rounded-full text-slate-300">
+        
+        <StaticCard className="p-12 text-center flex flex-col items-center gap-4 border-dashed">
+          <div className="bg-white p-6 rounded-full text-slate-300 shadow-sm">
             <CalendarDays className="w-12 h-12" />
           </div>
           <div className="max-w-xs">
@@ -92,7 +96,7 @@ export const MedicalAppointments = () => {
               Aquí aparecerán las consultas médicas que programes en el futuro.
             </p>
           </div>
-        </div>
+        </StaticCard>
       )}
 
       <AppointmentDetailModal

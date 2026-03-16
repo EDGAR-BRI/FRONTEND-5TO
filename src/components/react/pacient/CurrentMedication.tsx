@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pill, Clock, Calendar, Plus } from 'lucide-react';
 import { AddMedicationModal } from './AddMedicationModal';
 import { EditMedicationModal } from './EditMedicationModal';
+import StaticCard from '@/components/react/primary/StaticCard'; 
 
 interface Medication {
   nombre: string;
@@ -15,7 +16,6 @@ export const CurrentMedication = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedMed, setSelectedMed] = useState<Medication | null>(null);
 
-  // --- LÓGICA DE DATOS ---
   const medications: Medication[] = [
     {
       nombre: "Losartán Potásico",
@@ -33,7 +33,6 @@ export const CurrentMedication = () => {
     }
   ];
 
-
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
       <div className="flex items-center justify-between px-2">
@@ -47,11 +46,10 @@ export const CurrentMedication = () => {
       </div>
 
       {medications.length > 0 ? (
-        // CASO A: SI HAY MEDICAMENTOS
         medications.map((med, i) => (
-          <div key={i} className="bg-white p-6 rounded-lg border border-primary-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary-400">
+          <StaticCard key={i} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="bg-emerald-50 p-4 rounded-2xl text-emerald-600">
+              <div className="bg-white p-4 rounded-2xl text-emerald-600 shadow-sm">
                 <Pill className="w-6 h-6" />
               </div>
               <div>
@@ -66,26 +64,25 @@ export const CurrentMedication = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100/50">
+              <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
                 <Clock className="w-3 h-3 text-emerald-500" /> {med.frecuencia}
               </div>
-              <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100/50">
+              <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
                 <Calendar className="w-3 h-3 text-blue-500" /> {med.duracion}
               </div>
             </div>
 
             <button
               onClick={() => setSelectedMed(med)}
-              className="bg-blue-50 text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-100 hover:text-blue-700 transition-all border border-blue-100/50"
+              className="bg-white text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition-all shadow-sm"
             >
               Gestionar
             </button>
-          </div>
+          </StaticCard>
         ))
       ) : (
-        // CASO B: ESTADO VACÍO (LIMPIO)
-        <div className="bg-white p-16 rounded-lg border border-primary-200 border-dashed text-center flex flex-col items-center gap-4 shadow-sm transition-all hover:border-primary-400">
-          <div className="bg-slate-50 p-6 rounded-full text-slate-200">
+        <StaticCard className="p-16 text-center flex flex-col items-center gap-4 border-dashed">
+          <div className="bg-white p-6 rounded-full text-slate-300 shadow-sm">
             <Pill className="w-14 h-14" />
           </div>
           <div className="max-w-xs">
@@ -94,7 +91,7 @@ export const CurrentMedication = () => {
               No tienes recetas o medicamentos registrados actualmente en tu historial médico digital.
             </p>
           </div>
-        </div>
+        </StaticCard>
       )}
 
       <AddMedicationModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
