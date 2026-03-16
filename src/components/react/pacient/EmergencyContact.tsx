@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldAlert, User, Phone } from 'lucide-react';
+import StaticCard from '@/components/react/primary/StaticCard';
 
 export const EmergencyContact = () => {
   const data = {
@@ -9,15 +10,15 @@ export const EmergencyContact = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full">
+    <StaticCard className="w-full p-6">
       <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
         <ShieldAlert className="w-4 h-4 text-red-500" />
         Contacto de Emergencia
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-          <div className="bg-white p-2 rounded-lg shadow-sm">
+        <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-slate-100 shadow-sm">
+          <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-50">
             <User className="w-4 h-4 text-slate-400" />
           </div>
           <div>
@@ -26,8 +27,8 @@ export const EmergencyContact = () => {
           </div>
         </div>
 
-        <section className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-          <div className="bg-white p-2 rounded-lg shadow-sm">
+        <section className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-slate-100 shadow-sm">
+          <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-50">
             <Phone className="w-4 h-4 text-slate-400" />
           </div>
           <section>
@@ -36,6 +37,6 @@ export const EmergencyContact = () => {
           </section>
         </section>
       </div>
-    </div>
+    </StaticCard>
   );
 };
