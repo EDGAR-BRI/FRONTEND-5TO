@@ -46,12 +46,12 @@ export default function RecentResults() {
             key={i}
             className="group flex flex-col p-4 bg-primary-100 rounded-xl border border-primary-200 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30"
           >
-            <div className="flex justify-between items-start mb-2">
-              <div>
+            <div className="flex flex-wrap justify-between items-start mb-2 gap-3 gap-y-2">
+              <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Prueba Realizada</p>
                 <h4 className="font-bold text-slate-800 text-sm group-hover:text-[#1e3a8a] transition-colors">{r.test}</h4>
               </div>
-              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase border ${r.statusColor}`}>
+              <div className={`flex shrink-0 items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase border whitespace-nowrap ${r.statusColor}`}>
                 {r.icon} {r.status}
               </div>
             </div>

@@ -70,8 +70,8 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransacti
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Nueva Transacción">
-            <form onSubmit={handleSubmit} className="space-y-4 min-w-[400px]">
-                <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Select
                         label="Tipo"
                         name="type"
@@ -99,7 +99,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransacti
                     required
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field 
                         label="Monto" 
                         name="amount" 

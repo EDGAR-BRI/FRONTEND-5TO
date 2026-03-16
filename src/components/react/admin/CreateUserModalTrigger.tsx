@@ -48,7 +48,7 @@ export default function CreateUserModalTrigger() {
         >
             {({ close }) => (
                 <form
-                    className="space-y-4"
+                    className="space-y-4 w-full"
                     onSubmit={(e) => {
                         e.preventDefault();
 
@@ -98,7 +98,7 @@ export default function CreateUserModalTrigger() {
                         required
                     />
 
-                    <div className="flex items-center justify-between gap-4 pt-2">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                         <CheckBox
                             label="Activo"
                             variant="switch"
@@ -107,7 +107,7 @@ export default function CreateUserModalTrigger() {
                             name="status"
                         />
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 shrink-0 ml-auto">
                             <Button
                                 label="Cancelar"
                                 variant={ButtonTheme.SECONDARY}
