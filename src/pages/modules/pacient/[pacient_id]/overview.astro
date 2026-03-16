@@ -184,8 +184,8 @@ const alerts = [
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
       {stats.map(stat => (
         <StaticCard client:load className="p-5 !bg-primary-100">
-          <div class="flex items-center justify-between">
-            <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center`}>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
               <i class={`${stat.icon} ${stat.color} text-base`}></i>
             </div>
             {stat.trendUp !== null && (
@@ -195,7 +195,7 @@ const alerts = [
               </span>
             )}
             {stat.trendUp === null && (
-              <span class="text-body-xxs font-medium px-2 py-0.5 rounded-full bg-cool-gray-10 text-cool-gray-60">
+              <span class="text-body-xxs font-medium px-2 py-0.5 rounded-full bg-cool-gray-10 text-cool-gray-60 whitespace-nowrap">
                 {stat.trend}
               </span>
             )}
