@@ -43,22 +43,22 @@ export default function UpcomingAppointments() {
 
       <div className="space-y-4">
         {appointments.map((a, i) => (
-          <ActionCard key={i}>
-            <div className="flex items-center gap-4">
+          <ActionCard key={i} className="!flex-wrap gap-y-3">
+            <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
               {/* Avatar e Icono */}
-              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-[#1e3a8a] group-hover:text-white transition-colors">
+              <div className="w-12 h-12 shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-[#1e3a8a] group-hover:text-white transition-colors">
                 <User size={20} />
               </div>
 
               {/* Información del Paciente */}
-              <div>
-                <h4 className="font-bold text-slate-800 text-sm">{a.patient}</h4>
-                <div className="flex items-center gap-3 mt-1">
+              <div className="min-w-0">
+                <h4 className="font-bold text-slate-800 text-sm truncate">{a.patient}</h4>
+                <div className="flex flex-wrap items-center gap-3 mt-1">
                   <span className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
                     <Clock size={12} className="text-blue-500" /> {a.time}
                   </span>
                   <span className="text-slate-300">•</span>
-                  <span className="text-[11px] text-slate-500 font-medium italic">
+                  <span className="text-[11px] text-slate-500 font-medium italic truncate">
                     {a.reason}
                   </span>
                 </div>
@@ -69,8 +69,8 @@ export default function UpcomingAppointments() {
             </div>
 
             {/* Estado y Acción */}
-            <div className="flex items-center gap-4">
-              <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${a.statusColor}`}>
+            <div className="flex items-center gap-4 shrink-0 ml-auto">
+              <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap ${a.statusColor}`}>
                 {a.status}
               </span>
               <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-600 transition-colors" />
