@@ -115,24 +115,26 @@ export default function UsersDashboard() {
             <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
                             <LuUsers size={18} className="text-white" />
                         </div>
-                        <div>
+                        <div className='min-w-0'>
                             <h2 className="text-base font-semibold text-white leading-tight">Usuarios del Sistema</h2>
                             <p className="text-xs text-primary-200 mt-0.5">Administra accesos, roles y estados del personal.</p>
                         </div>
                     </div>
-                    <CreateUserModalTrigger />
+                    <div className='shrink-0"'>
+                        <CreateUserModalTrigger />
+                    </div>
                 </div>
 
                 {/* Filters Bar */}
                 <div className="px-6 py-3 flex flex-wrap gap-3 items-center">
 
                     {/* Search */}
-                    <div className="relative flex-1 min-w-48 max-w-sm">
+                    <div className="relative flex-1 min-w-[180px] max-w-sm">
                         <Field
                             name='search'
                             type="text"
@@ -143,7 +145,7 @@ export default function UsersDashboard() {
                     </div>
 
                     {/* Role filter select */}
-                    <div className="relative min-w-48">
+                    <div className="relative min-w-[180px] flex-1 sm:flex-none">
                         <Select
 
                             value={roleFilter}
