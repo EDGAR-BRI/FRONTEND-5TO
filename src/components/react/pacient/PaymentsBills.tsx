@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CreditCard, CheckCircle2, Wallet } from 'lucide-react';
 import { BillDetailModal } from './BillDetailModal';
+import StaticCard from '@/components/react/primary/StaticCard';
 
 export const PaymentsBills = () => {
   const [selectedBill, setSelectedBill] = useState<any | null>(null);
@@ -19,12 +20,12 @@ export const PaymentsBills = () => {
       <div className="space-y-3">
         {payments.length > 0 ? (
           payments.map((pago, i) => (
-            <div
+            <StaticCard
               key={i}
-              className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white rounded-lg border border-primary-200 shadow-sm transition-all hover:border-primary-400 gap-4"
+              className="flex flex-col md:flex-row md:items-center justify-between p-6 gap-4"
             >
               <div className="flex items-center gap-4">
-                <div className="bg-purple-50 p-4 rounded-2xl text-purple-500">
+                <div className="bg-white p-4 rounded-2xl text-purple-500 shadow-sm">
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
@@ -43,24 +44,24 @@ export const PaymentsBills = () => {
 
                 <button
                   onClick={() => setSelectedBill(pago)}
-                  className="bg-blue-50 text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50"
+                  className="bg-white text-blue-600 text-xs font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition-all shadow-sm"
                 >
                   Ver Detalles
                 </button>
               </div>
-            </div>
+            </StaticCard>
           ))
         ) : (
           /* ESTADO VACÍO */
-          <div className="bg-white p-12 rounded-lg border border-primary-200 border-dashed text-center flex flex-col items-center gap-4 shadow-sm transition-all hover:border-primary-400">
-            <div className="bg-slate-50 p-6 rounded-full text-slate-300">
+          <StaticCard className="p-12 text-center flex flex-col items-center gap-4 border-dashed">
+            <div className="bg-white p-6 rounded-full text-slate-300 shadow-sm">
               <Wallet className="w-12 h-12" />
             </div>
             <div className="max-w-xs">
               <p className="text-slate-800 font-bold text-lg">No hay pagos registrados</p>
               <p className="text-slate-400 text-xs mt-1">Aquí aparecerá el historial de sus facturas.</p>
             </div>
-          </div>
+          </StaticCard>
         )}
       </div>
 
