@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ContactInfo } from './ContactInfo';
 import { EmergencyContact } from './EmergencyContact';
 import { MedicalAppointments } from './MedicalAppointments';
@@ -28,30 +28,34 @@ export const ProfileTabs = () => {
 
       {/* NAVEGACIÓN SEMÁNTICA */}
       <nav 
-  className="flex flex-wrap bg-white p-1.5 gap-2 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full" 
-  aria-label="Menú de perfil"
->
-  {tabs.map((tab) => {
-    const Icon = tab.icon;
-    const isActive = activeTab === tab.id;
-    return (
-      <Button
-        key={tab.id}
-        role="tab"
-        aria-selected={isActive}
-        onClick={() => setActiveTab(tab.id)}
-        label={tab.label}
-        className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold flex-1 min-w-[100px] transition-all ${
-          isActive 
-            ? 'bg-blue-600 text-white shadow-md' 
-            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-        }`}
+        className="flex flex-wrap bg-white p-1.5 gap-2 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full" 
+        aria-label="Menú de perfil"
       >
-        <Icon className="size-4" />
-      </Button>
-    );
-  })}
-</nav>
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <Button
+              key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveTab(tab.id)}
+              
+              label="" 
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold flex-1 min-w-[130px] transition-all border ${
+                isActive 
+                  ? '!bg-blue-600 !text-white shadow-md border-transparent' // AZUL SI ESTÁ ACTIVO
+                  : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50' // BLANCO SI NO LO ESTÁ
+              }`}
+            >
+              <Icon className={`size-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              <span className={isActive ? 'text-white' : 'text-slate-600'}>
+                {tab.label}
+              </span>
+            </Button>
+          );
+        })}
+      </nav>
 
       {/* CONTENIDO DE LAS PESTAÑAS */}
       <section className="flex-1">
@@ -94,7 +98,7 @@ export const ProfileTabs = () => {
         </footer>
       )}
 
-      {/* MODAL SIN FOTO REPETIDA */}
+      {/* MODAL */}
       {showModal && (
         <dialog open className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto w-full h-full border-none">
           <section className="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl relative animate-in zoom-in-95 duration-200 my-8 overflow-hidden">
