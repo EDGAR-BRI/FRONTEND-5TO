@@ -54,7 +54,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
       */}
       <div 
         ref={contentRef}
-        className="relative z-10 w-full max-w-lg bg-primary-100 border-2 border-primary-300 rounded-md shadow-2xl transform transition-all"
+        className="relative z-10 w-full max-w-lg bg-primary-100 border-2 border-primary-300 rounded-md shadow-2xl transform transition-all max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
