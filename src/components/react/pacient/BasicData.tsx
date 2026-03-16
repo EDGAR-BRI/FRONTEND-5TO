@@ -1,68 +1,71 @@
-import React from 'react';
-import { User, Droplets, Activity, Pill, Ban, Loader2, VenusAndMars } from 'lucide-react';
-import { Avatar, AvatarFallback } from "@/components/react/primary/Avatar";
+import React from "react";
+import { CalendarDays, User, Droplet, Scale, Phone, Mail, MapPin, CreditCard } from "lucide-react";
+import StaticCard from "@/components/react/primary/StaticCard"; 
 
 export const BasicData = () => {
-  const data = {
-    nombre: "Pedro Javier Sánchez López",
-    genero: "Masculino",
-    sangre: "O+",
-    alergias: "Niega alergias",
-    condiciones: "Diabetes Tipo 2",
-    medicamentos: "Metformina 500mg",
-    iniciales: "PS"
-  };
-
   return (
-    <div className="bg-white rounded-lg p-8 shadow-sm border border-primary-200 transition-all hover:border-primary-400 flex flex-col items-center w-full h-full">
-      <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 self-start mb-6">
-        <User className="w-5 h-5 text-primary-600" /> Datos Médicos
-      </h2>
-
-      <Avatar className="w-28 h-28 mb-8 border-4 border-white shadow-sm rounded-full overflow-hidden">
-        <AvatarFallback className="bg-slate-100 text-3xl font-bold text-primary-600 size-full flex items-center justify-center">
-          {data.iniciales}
-        </AvatarFallback>
-      </Avatar>
-
-      <div className="w-full space-y-5">
-        <div>
-          <label className="text-[10px] font-bold text-slate-400 uppercase italic">Nombre Completo</label>
-          <div className="bg-slate-50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3">{data.nombre}</div>
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full">
+      
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-24 h-24 rounded-full bg-slate-200 overflow-hidden">
+          <img 
+            src="https://i.pravatar.cc/150?img=11" 
+            alt="Perfil del paciente" 
+            className="w-full h-full object-cover" 
+          />
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3">
-            <VenusAndMars className="w-4 h-4 text-blue-400" /> {data.genero}
-          </div>
-          <div className="bg-red-50 p-3 rounded-xl flex items-center justify-center gap-2 text-sm text-red-600 font-bold">
-            <Droplets className="w-4 h-4" /> {data.sangre}
-          </div>
-        </div>
-
-        <hr className="border-slate-100" />
-
-        <div className="space-y-4">
-          <div>
-            <label className="text-[10px] font-bold text-red-500 uppercase italic">Alergias Detectadas</label>
-            <div className="bg-orange-50/50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3 border border-orange-100">
-              <Ban className="w-4 h-4 text-orange-500" /> {data.alergias}
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Diagnóstico Activo</label>
-            <div className="bg-slate-50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3">
-              <Activity className="w-4 h-4 text-primary-500" /> {data.condiciones}
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Tratamiento Farmacológico</label>
-            <div className="bg-emerald-50/50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3 border border-emerald-100">
-              <Pill className="w-4 h-4 text-emerald-600" /> {data.medicamentos}
-            </div>
-          </div>
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-slate-800">Juan Pérez</h2>
+          <p className="text-sm text-slate-500 flex items-center justify-center gap-1">
+            <CreditCard className="w-4 h-4" /> V-12.345.678
+          </p>
         </div>
       </div>
+
+      <div className="grid grid-cols-2 gap-4 w-full">
+        
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <CalendarDays className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-sm font-medium text-slate-500">Edad</span>
+          <span className="text-lg font-bold text-slate-800">45 años</span>
+        </StaticCard>
+
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <User className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-sm font-medium text-slate-500">Género</span>
+          <span className="text-lg font-bold text-slate-800">Masculino</span>
+        </StaticCard>
+
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <Droplet className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-sm font-medium text-slate-500">Sangre</span>
+          <span className="text-lg font-bold text-slate-800">O+</span>
+        </StaticCard>
+
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <Scale className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-sm font-medium text-slate-500">Peso</span>
+          <span className="text-lg font-bold text-slate-800">78 kg</span>
+        </StaticCard>
+
+      </div>
+
+      {/*Información de contacto */}
+      <div className="flex flex-col gap-2 mt-2 border-t border-slate-100 pt-4">
+        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+          <Phone className="w-5 h-5 text-slate-400" />
+          <span className="text-sm text-slate-600">+58 412 123 4567</span>
+        </div>
+        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+          <Mail className="w-5 h-5 text-slate-400" />
+          <span className="text-sm text-slate-600">juanperez@ejemplo.com</span>
+        </div>
+        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+          <MapPin className="w-5 h-5 text-slate-400" />
+          <span className="text-sm text-slate-600">Barquisimeto, Lara</span>
+        </div>
+      </div>
+
     </div>
   );
 };
