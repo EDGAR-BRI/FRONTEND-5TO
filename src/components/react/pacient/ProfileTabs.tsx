@@ -25,26 +25,31 @@ export const ProfileTabs = () => {
   return (
     <main className="flex flex-col gap-6 w-full h-full relative">
       {/* NAVEGACIÓN SEMÁNTICA */}
-      <nav className="flex bg-white p-1.5 gap-3 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-fit" aria-label="Menú de perfil">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <Button
-              label='s'
-              key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                }`}
-            >
-              <Icon className="size-4" />
-              {tab.label}
-            </Button>
-          );
-        })}
-      </nav>
+      <nav 
+  className="flex flex-wrap bg-white p-1.5 gap-2 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full" 
+  aria-label="Menú de perfil"
+>
+  {tabs.map((tab) => {
+    const Icon = tab.icon;
+    const isActive = activeTab === tab.id;
+    return (
+      <Button
+        key={tab.id}
+        role="tab"
+        aria-selected={isActive}
+        onClick={() => setActiveTab(tab.id)}
+        className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold flex-1 min-w-[100px] transition-all ${
+          isActive 
+            ? 'bg-blue-600 text-white shadow-md' 
+            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+        }`}
+      >
+        <Icon className="size-4" />
+        {tab.label}
+      </Button>
+    );
+  })}
+</nav>
 
       {/* CONTENIDO DINÁMICO COMO SECCIÓN */}
       <section className="flex-1">
