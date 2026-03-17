@@ -1,19 +1,27 @@
+import React from "react";
 import { CalendarDays, User, Droplet, Scale, ShieldAlert, HeartPulse, CreditCard, Activity } from "lucide-react";
 import StaticCard from "@/components/react/primary/StaticCard"; 
+// Importamos tu complemento de Avatar
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/react/primary/Avatar";
 
 export const BasicData = () => {
   return (
     <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full">
       
-      {/* CABECERA: FOTO Y NOMBRE */}
+      {/* CABECERA: AVATAR Y NOMBRE */}
       <div className="flex flex-col items-center gap-3">
-        <div className="w-24 h-24 rounded-full bg-slate-200 overflow-hidden ring-4 ring-slate-50">
-          <img 
+        {/* Implementación de tu componente Avatar */}
+        <Avatar className="w-24 h-24 ring-4 ring-slate-50 shadow-sm">
+          <AvatarImage 
             src="https://i.pravatar.cc/150?img=11" 
             alt="Perfil del paciente" 
-            className="w-full h-full object-cover" 
           />
-        </div>
+          {/* Fallback con iniciales por si falla la imagen */}
+          <AvatarFallback className="bg-slate-200 text-slate-600 font-bold text-xl">
+            JP
+          </AvatarFallback>
+        </Avatar>
+        
         <div className="text-center">
           <h2 className="text-xl font-bold text-slate-800">Juan Pérez</h2>
           <p className="text-sm text-slate-500 flex items-center justify-center gap-1">
@@ -49,7 +57,7 @@ export const BasicData = () => {
         </StaticCard>
       </div>
 
-      {/* NUEVA SECCIÓN: ALERTAS MÉDICAS (REEMPLAZA CONTACTO) */}
+      {/* NUEVA SECCIÓN: ALERTAS MÉDICAS */}
       <div className="flex flex-col gap-3 mt-2 border-t border-slate-100 pt-4">
         <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Resumen Médico</h4>
         
