@@ -1,8 +1,6 @@
 ---
 import MainLayout from '@/layouts/AdminLayout.astro';
-import SuppliesInventoryTable from '@/components/react/admin/SuppliesInventoryTable';
-import { Button } from '@/components/react/primary/Button';
-import CreateProductModalTrigger from '@/components/react/admin/CreateProductModalTrigger';
+import SuppliesInventoryDashboard from '@/components/react/admin/SuppliesInventoryDashboard';
 ---
 
 <MainLayout title="Admin | Insumos y servicios">
@@ -13,14 +11,7 @@ import CreateProductModalTrigger from '@/components/react/admin/CreateProductMod
 				Inventario de la clínica: precios, stock (insumos) y disponibilidad (servicios).
 			</p>
 		</header>
-		<div class="flex justify-end gap-4">
-			<Button
-				label='Ver categorías'
-				variant='secondary'
-			></Button>
-			<CreateProductModalTrigger client:load />
-		</div>
 
-		<SuppliesInventoryTable client:only="react" />
+		<SuppliesInventoryDashboard client:only="react" />
 	</section>
 </MainLayout>
