@@ -1,12 +1,12 @@
 ---
 import MainLayout from "@/layouts/DoctorLayout.astro";
-
 import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
 import DashboardActions from "@/components/react/doctor/DashboardActions";
 import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments";
 import RecentResults from "@/components/react/doctor/RecentResults";
 import SpecialtyChart from "@/components/react/doctor/ActivityChart";
 import PatientStats from "@/components/react/doctor/PatientStats";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/react/primary/Avatar";
 import { Badge } from "@/components/react/primary/Badge";
 
@@ -22,14 +22,19 @@ const summary = {
 
 <MainLayout>
   <div class="bg-slate-50 min-h-screen p-8 font-sans">
-    
+
     <div class="mb-10 p-6 bg-white rounded-xl border border-primary-200 shadow-sm">
       <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
         
-        {/* AVATAR CIRCULAR CON FOTO */}
-        <Avatar className="w-20 h-20 sm:w-24 sm:h-24 shadow-md border-2 border-slate-100 shrink-0">
-          <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt="Dra. Andrea Pérez" />
-          <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">AP</AvatarFallback>
+
+        <Avatar className="w-20 h-20 sm:w-28 sm:h-28 shadow-md border-2 border-slate-100 shrink-0">
+          <AvatarImage 
+            src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" 
+            alt="Dra. Andrea Pérez" 
+          />
+          <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">
+            AP
+          </AvatarFallback>
         </Avatar>
 
         <div class="flex-1 text-center sm:text-left">
@@ -45,10 +50,12 @@ const summary = {
               <Activity size={16} className="text-blue-500 shrink-0" />
               <span class="font-bold">V-12.345.678</span>
             </Badge>
+            
             <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
               <Heart size={16} className="text-red-500 shrink-0" />
               <span class="font-bold">O POSITIVO</span>
             </Badge>
+            
             <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
               <Star size={16} className="text-yellow-500 fill-current shrink-0" />
               <span class="font-bold">CARDIÓLOGA</span>
@@ -69,31 +76,28 @@ const summary = {
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-2 space-y-8">
-        <div class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
+        <div class="bg-white rounded-lg border border-primary-200 overflow-hidden shadow-sm">
           <UpcomingAppointments client:load />
         </div>
 
-        <div class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
+        <div class="bg-white rounded-lg border border-primary-200 overflow-hidden shadow-sm">
           <RecentResults client:load />
         </div>
       </div>
 
       <div class="space-y-8">
-        <div class="bg-white p-8 rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
-          <div class="flex justify-between items-center mb-8">
-            <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
-              <Activity size={18} className="text-emerald-500" /> Resumen de Pacientes
-            </h3>
-          </div>
-
+        <div class="bg-white p-8 rounded-lg border border-primary-200 shadow-sm">
+          <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide mb-8">
+            <Activity size={18} className="text-emerald-500" /> Resumen de Pacientes
+          </h3>
           <PatientStats client:load />
-
+          
           <button class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group">
             Descargar Reporte Mensual <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
-        <div class="bg-white p-8 rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
+        <div class="bg-white p-8 rounded-lg border border-primary-200 shadow-sm">
           <SpecialtyChart client:load />
         </div>
       </div>

@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { CalendarClock, User, Clock, ChevronRight, X, FileText, Stethoscope } from "lucide-react";
+import { CalendarClock, User, Clock, ChevronRight, Stethoscope, CalendarDays, FileText } from "lucide-react";
 import ActionCard from "../primary/ActionCard";
+import { Modal } from "../primary/Modal";
+import { Button } from "../primary/Button";
+import { StatsCard } from "../primary/StatsCard"; 
 
 const appointments = [
   {
@@ -36,28 +39,25 @@ const appointments = [
 ];
 
 export default function UpcomingAppointments() {
-  // Estado para controlar qué cita está seleccionada para el modal
   const [selectedAppt, setSelectedAppt] = useState<typeof appointments[0] | null>(null);
 
   return (
-    <div className="p-6 relative">
-      {/* Título de la sección */}
+    <div className="p-6 relative h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
-          <CalendarClock size={18} className="text-[#1e3a8a]" /> Próximas Consultas
+          <CalendarClock size={18} className="text-[#1e3a8a]" /> Próximas Consultas a realizar
         </h3>
         <button className="text-[10px] font-black text-blue-600 uppercase tracking-tighter hover:underline">
           Ver Agenda Completa
         </button>
       </div>
 
-      {/* Lista de Citas */}
       <div className="space-y-4">
         {appointments.map((a, i) => (
           <ActionCard 
             key={i} 
             className="!flex-wrap gap-y-3 cursor-pointer hover:border-blue-200"
-            onClick={() => setSelectedAppt(a)} // <-- Trigger del Modal
+            onClick={() => setSelectedAppt(a)}
           >
             <div className="flex flex-1 items-center gap-4 min-w-0 w-full sm:w-auto">
               <div className="w-12 h-12 shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-[#1e3a8a] group-hover:text-white transition-colors">
@@ -90,89 +90,69 @@ export default function UpcomingAppointments() {
           </ActionCard>
         ))}
       </div>
-
-      {/* MODAL DE DETALLE */}
-      {selectedAppt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+      {/* MODAL*/}
+      <Modal
+        isOpen={!!selectedAppt}
+        onClose={() => setSelectedAppt(null)}
+        title="Detalle de la Consulta"
+      >
+        {selectedAppt && (
+          <div className="space-y-6 animate-in fade-in duration-300">
             
-            {/* Header del Modal */}
-            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                <FileText size={18} className="text-[#1e3a8a]" />
-                Detalle de la Consulta
-              </h3>
-              <button 
-                onClick={() => setSelectedAppt(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Cuerpo del Modal */}
-            <div className="p-6 space-y-6">
-              {/* Info Paciente */}
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-[#1e3a8a]/10 rounded-full flex items-center justify-center text-[#1e3a8a]">
-                  <User size={24} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Paciente</p>
-                  <h4 className="text-lg font-bold text-slate-800 leading-none">{selectedAppt.patient}</h4>
-                  <span className={`inline-block mt-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${selectedAppt.statusColor}`}>
-                    {selectedAppt.status}
-                  </span>
-                </div>
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 shrink-0">
+                <User size={24} />
               </div>
-
-              <hr className="border-slate-100" />
-
-              {/* Detalles */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                    <CalendarClock size={12} /> Fecha y Hora
-                  </p>
-                  <p className="text-sm font-semibold text-slate-700">{selectedAppt.date}</p>
-                  <p className="text-xs font-medium text-slate-500">{selectedAppt.time}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                    <Stethoscope size={12} /> Médico
-                  </p>
-                  <p className="text-sm font-semibold text-slate-700">{selectedAppt.doctor}</p>
-                </div>
-              </div>
-
-              {/* Motivo y Notas */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Motivo de Consulta</p>
-                <p className="text-sm font-bold text-slate-800 mb-3">{selectedAppt.reason}</p>
-                
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Notas Previas</p>
-                <p className="text-xs text-slate-600 leading-relaxed italic">
-                  "{selectedAppt.notes}"
-                </p>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
+                <h4 className="text-xl font-black text-slate-800 leading-tight mb-1 truncate">{selectedAppt.patient}</h4>
+                <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${selectedAppt.statusColor}`}>
+                  {selectedAppt.status}
+                </span>
               </div>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <StatsCard
+                variant="compact"
+                title="FECHA Y HORA"
+                value={selectedAppt.date}
+                subText={selectedAppt.time}
+                subTextClass="text-slate-500 font-medium"
+                icon={<CalendarDays size={20} />}
+                color="primary"
+              />
+              <StatsCard
+                variant="compact"
+                title="MÉDICO"
+                value={selectedAppt.doctor}
+                icon={<Stethoscope size={20} />}
+                color="primary"
+              />
+            </div>
 
-            {/* Footer del Modal */}
-            <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-              <button 
-                onClick={() => setSelectedAppt(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
-              >
-                Cerrar
-              </button>
-              <button className="px-4 py-2 text-xs font-bold text-white bg-[#1e3a8a] hover:bg-blue-800 rounded-lg transition-colors shadow-sm">
-                Iniciar Consulta
-              </button>
+            <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                <FileText size={12}/> Motivo de Consulta
+              </p>
+              <p className="text-sm font-bold text-slate-800 mb-4">{selectedAppt.reason}</p>
+              
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Notas Previas</p>
+              <p className="text-xs text-slate-600 leading-relaxed italic">
+                "{selectedAppt.notes}"
+              </p>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <Button 
+                label="Cerrar" 
+                variant="secondary" 
+                onClick={() => setSelectedAppt(null)} 
+              />
             </div>
             
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }
