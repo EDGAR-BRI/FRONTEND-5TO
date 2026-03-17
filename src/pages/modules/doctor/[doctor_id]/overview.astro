@@ -7,8 +7,11 @@ import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments
 import RecentResults from "@/components/react/doctor/RecentResults";
 import SpecialtyChart from "@/components/react/doctor/ActivityChart";
 import PatientStats from "@/components/react/doctor/PatientStats";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/react/primary/Avatar";
+import { Badge } from "@/components/react/primary/Badge";
 
-import { Activity, Heart, Star, Stethoscope, ArrowRight } from "lucide-react";
+import { Activity, Heart, Star, ArrowRight } from "lucide-react";
+
 const summary = {
   totalIncome: 15420.5,
   totalExpenses: 3240.2,
@@ -19,63 +22,46 @@ const summary = {
 
 <MainLayout>
   <div class="bg-slate-50 min-h-screen p-8 font-sans">
-    <div class="mb-10">
-      <!-- Contenedor principal: columna en móvil, fila en desktop -->
-      <div
-        class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start"
-      >
-        <!-- Imagen responsive -->
-        <div
-          class="w-16 h-16 sm:w-20 sm:h-20 bg-[#1e3a8a] text-white rounded-2xl flex items-center justify-center font-black text-2xl sm:text-3xl shadow-xl border-4 border-white transition-transform hover:scale-105 flex-shrink-0"
-        >
-          AP
-        </div>
+    
+    <div class="mb-10 p-6 bg-white rounded-xl border border-primary-200 shadow-sm">
+      <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+        
+        {/* AVATAR CIRCULAR CON FOTO */}
+        <Avatar className="w-20 h-20 sm:w-24 sm:h-24 shadow-md border-2 border-slate-100 shrink-0">
+          <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt="Dra. Andrea Pérez" />
+          <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">AP</AvatarFallback>
+        </Avatar>
 
-        <!-- Bloque de texto y badges -->
         <div class="flex-1 text-center sm:text-left">
-          <p
-            class="text-[10px] sm:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1"
-          >
+          <p class="text-[10px] sm:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">
             Panel Médico Oficial
           </p>
-          <h1
-            class="text-3xl sm:text-4xl font-black text-slate-800 leading-none"
-          >
+          <h1 class="text-3xl sm:text-4xl font-black text-[#1e293b] leading-none mb-4">
             Dra. Andrea Pérez
           </h1>
 
-          <!-- Badges con wrap y espaciado adaptable -->
-          <div
-            class="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-5 mt-4"
-          >
-            <span
-              class="flex items-center gap-1 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[10px] sm:text-[11px] font-bold uppercase tracking-wide"
-            >
-              <Activity size={14} class="text-blue-500 flex-shrink-0" /> V-12.345.678
-            </span>
-            <span
-              class="flex items-center gap-1 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[10px] sm:text-[11px] font-bold uppercase tracking-wide"
-            >
-              <Heart size={14} class="text-red-500 flex-shrink-0" /> O Positivo
-            </span>
-            <span
-              class="flex items-center gap-1 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[10px] sm:text-[11px] font-bold uppercase tracking-wide"
-            >
-              <Star
-                size={14}
-                class="text-yellow-500 fill-current flex-shrink-0"
-              /> Cardióloga
-            </span>
+          <div class="flex flex-wrap justify-center sm:justify-start gap-3">
+            <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
+              <Activity size={16} className="text-blue-500 shrink-0" />
+              <span class="font-bold">V-12.345.678</span>
+            </Badge>
+            <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
+              <Heart size={16} className="text-red-500 shrink-0" />
+              <span class="font-bold">O POSITIVO</span>
+            </Badge>
+            <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
+              <Star size={16} className="text-yellow-500 fill-current shrink-0" />
+              <span class="font-bold">CARDIÓLOGA</span>
+            </Badge>
           </div>
         </div>
       </div>
     </div>
 
     <DoctorFinanceSummary client:load summary={summary} />
+    
     <div class="mb-10">
-      <h3
-        class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6"
-      >
+      <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
         Gestión de Consultorio
       </h3>
       <DashboardActions client:load />
@@ -83,46 +69,31 @@ const summary = {
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-2 space-y-8">
-        <div
-          class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300"
-        >
+        <div class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
           <UpcomingAppointments client:load />
         </div>
 
-        <div
-          class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300"
-        >
+        <div class="bg-white rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
           <RecentResults client:load />
         </div>
       </div>
 
       <div class="space-y-8">
-        <div
-          class="bg-white p-8 rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300"
-        >
+        <div class="bg-white p-8 rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
           <div class="flex justify-between items-center mb-8">
-            <h3
-              class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide"
-            >
+            <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
               <Activity size={18} className="text-emerald-500" /> Resumen de Pacientes
             </h3>
           </div>
 
           <PatientStats client:load />
 
-          <button
-            class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group"
-          >
-            Descargar Reporte Mensual <ArrowRight
-              size={14}
-              className="group-hover:translate-x-1 transition-transform"
-            />
+          <button class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group">
+            Descargar Reporte Mensual <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
-        <div
-          class="bg-white p-8 rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300"
-        >
+        <div class="bg-white p-8 rounded-lg border border-primary-200 overflow-hidden transition-all hover:border-primary-300">
           <SpecialtyChart client:load />
         </div>
       </div>
