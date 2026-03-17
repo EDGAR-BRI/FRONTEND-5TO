@@ -9,7 +9,6 @@ const money = (value: number) =>
         currency: "USD",
     }).format(value);
 
-// Estilos de Badge idénticos a UsersTable
 const statusBadgeStyles = (status: string) => {
     const s = status.toUpperCase();
     if (s === "ACTIVO" || s === "DISPONIBLE" || s === "SUCCESS") {
@@ -21,7 +20,7 @@ const statusBadgeStyles = (status: string) => {
     return { bg: "bg-primary-300/25", text: "text-primary-800", border: "border-primary-400" };
 };
 
-export default function SuppliesInventoryTable({ search, type }: { search: string, type: string }) {
+export default function SuppliesInventoryTable({ search, type }: { search: string; type: string }) {
     const columns: Column<InventoryItem>[] = [
         { header: "ID", accessorKey: "id", align: "left" },
         {
@@ -52,38 +51,23 @@ export default function SuppliesInventoryTable({ search, type }: { search: strin
             align: "center",
             cell: (item) => {
                 const isService = item.type === "SERVICIO";
-                const label = isService 
-                    ? (item.available ? "Disponible" : "No disponible")
-                    : (item.stock?.toString() ?? "0");
-
-                const statusKey = isService
-                    ? (item.available ? "SUCCESS" : "DANGER")
-                    : (item.stock !== undefined && item.minStock !== undefined && item.stock <= item.minStock ? "WARNING" : "SUCCESS");
-                
+                const label = isService ? (item.available ? "Disponible" : "No disponible") : (item.stock?.toString() ?? "0");
+                const statusKey = isService ? (item.available ? "SUCCESS" : "DANGER") : (item.stock !== undefined && item.minStock !== undefined && item.stock <= item.minStock ? "WARNING" : "SUCCESS");
                 return <Badge styles={statusBadgeStyles(statusKey)}>{label}</Badge>;
             },
         },
         {
             header: "Estado",
             align: "center",
-            cell: (item) => (
-                <Badge styles={statusBadgeStyles(item.status)}>
-                    {item.status}
-                </Badge>
-            ),
+            cell: (item) => <Badge styles={statusBadgeStyles(item.status)}>{item.status}</Badge>,
         },
         {
             header: "Acciones",
             align: "center",
             cell: (item) => (
                 <div className="flex justify-center gap-3">
-                    {/* Disparador de edición como texto azul simple */}
                     <EditProductModalTrigger item={item} />
-                    
-                    {/* Botón eliminar como texto rojo simple */}
-                    <button className="text-error hover:text-red-700 text-sm font-medium transition-colors">
-                        Eliminar
-                    </button>
+                    <button className="text-error hover:text-red-700 text-sm font-medium transition-colors">Eliminar</button>
                 </div>
             ),
         },

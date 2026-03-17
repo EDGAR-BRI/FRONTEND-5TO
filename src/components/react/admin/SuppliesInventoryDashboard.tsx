@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-// Usamos solo los que ya probamos que funcionan en tu entorno
-import { LuPackage, LuBoxes, LuStethoscope, LuSearch } from 'react-icons/lu';
+import React, { useState, useEffect } from 'react';
+import { LuPackage, LuBoxes, LuStethoscope, LuSearch, LuClipboardList } from 'react-icons/lu';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 import { Field } from '@/components/react/primary/Field';
 import { Select } from '@/components/react/primary/Select';
@@ -14,48 +13,31 @@ const TYPES = [
 ];
 
 export default function SuppliesInventoryDashboard() {
-    const [search, setSearch] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('TODOS');
+
+    // Control de rebote para evitar recargas constantes y parpadeos
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     return (
         <div className="space-y-6">
-            {/* Stats Cards - Usando iconos seguros */}
+            {/* Tarjetas de Estadísticas superiores */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatsCard
-                    title="Total Artículos"
-                    value={150}
-                    color="primary"
-                    icon={<LuBoxes size={18} />}
-                    variant="compact"
-                />
-                <StatsCard
-                    title="Insumos Críticos"
-                    value={12}
-                    color="danger"
-                    /* Cambiado a LuPackage para evitar el error de AlertCircle/Triangle */
-                    icon={<LuPackage size={18} />} 
-                    variant="compact"
-                />
-                <StatsCard
-                    title="Servicios Activos"
-                    value={45}
-                    color="success"
-                    icon={<LuStethoscope size={18} />}
-                    variant="compact"
-                />
-                <StatsCard
-                    title="Stock Total"
-                    value="2.4k"
-                    color="primary"
-                    icon={<LuPackage size={18} />}
-                    variant="compact"
-                />
+                <StatsCard title="Total Artículos" value={150} color="primary" icon={<LuBoxes size={18} />} variant="compact" />
+                <StatsCard title="Insumos Críticos" value={12} color="danger" icon={<LuClipboardList size={18} />} variant="compact" />
+                <StatsCard title="Servicios Activos" value={45} color="success" icon={<LuStethoscope size={18} />} variant="compact" />
+                <StatsCard title="Stock Total" value="2.4k" color="primary" icon={<LuPackage size={18} />} variant="compact" />
             </div>
 
-            {/* Contenedor Principal Estilo Usuarios */}
-            <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden">
+            {/* Contenedor Principal Azul (bg-primary-700) */}
+            <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden shadow-xl">
                 
-                {/* Header con botón Agregar */}
                 <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
@@ -71,14 +53,16 @@ export default function SuppliesInventoryDashboard() {
                     </div>
                 </div>
 
-                {/* Filtros */}
+                {/* Barra de Filtros con corrección de parpadeo negro */}
                 <div className="px-6 py-3 flex flex-wrap gap-3 items-center bg-white/5 border-b border-primary-400/30">
                     <div className="relative flex-1 min-w-[200px] max-w-sm">
                         <Field
                             name='search'
                             placeholder="Buscar por nombre..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            /* Forzamos la eliminación del contorno negro del navegador */
+                            className="!outline-none !ring-0 !border-transparent focus:!outline-none focus:!ring-0 focus:!border-transparent"
                         />
                     </div>
                     <div className="relative min-w-[180px]">
@@ -90,7 +74,7 @@ export default function SuppliesInventoryDashboard() {
                     </div>
                 </div>
 
-                <SuppliesInventoryTable search={search} type={typeFilter} />
+                <SuppliesInventoryTable search={debouncedSearch} type={typeFilter} />
             </section>
         </div>
     );
