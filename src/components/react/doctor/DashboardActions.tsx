@@ -6,25 +6,25 @@ export default function DashboardActions() {
     { 
       label: "Agendar Citas", 
       icon: <CalendarDays size={32} />, 
-      href: "/schedule", 
+      href: "schedule", 
       bg: "!bg-[#2563eb] hover:!bg-blue-700 !border-none" 
     },
     { 
       label: "Mi Perfil", 
       icon: <UserCircle size={32} />, 
-      href: "/profile", 
+      href: "profile", 
       bg: "!bg-[#8b5cf6] hover:!bg-violet-700 !border-none" 
     },
     { 
       label: "Pacientes", 
       icon: <Users size={32} />, 
-      href: "/patients", 
+      href: "patients", 
       bg: "!bg-[#22c55e] hover:!bg-green-600 !border-none" 
     },
     { 
       label: "Resultados", 
       icon: <FlaskConical size={32} />, 
-      href: "/results", 
+      href: "results", 
       bg: "!bg-[#f97316] hover:!bg-orange-600 !border-none" 
     }
   ];
