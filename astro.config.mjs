@@ -43,6 +43,12 @@ export default defineConfig({
             { label: 'Spinner y Tooltip',   link: '/docs/components/spinner-tooltip/' },
           ],
         },
+        {
+          label: 'Módulos Backend',
+          items: [
+            { label: 'Finanzas y Facturación', link: '/docs/finance-billing/' },
+          ],
+        },
       ],
     }),
   ],
