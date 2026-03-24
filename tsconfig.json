@@ -39,8 +39,8 @@
       "@/lib/*": [
         "src/lib/*"
       ],
-      "@/hooks/*": [
-        "src/hooks/*"
+      "@/primary/*": [
+        "src/components/react/primary/*"
       ],
     },
     "jsx": "react-jsx",

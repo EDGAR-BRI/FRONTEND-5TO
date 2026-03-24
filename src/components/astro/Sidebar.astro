@@ -1,7 +1,7 @@
 ---
 import SidebarMenu from "@/components/astro/SidebarMenu.astro";
 import type { MenuItems } from "@/types/MenuItemsTypes";
-import clinica from "@/assets/clinica.png";
+import clinica from "@/assets/clinica.svg";
 
 interface Props {
     menuItems: MenuItems[];
@@ -16,9 +16,9 @@ const { menuItems, currentPath } = Astro.props;
     id="app-sidebar"
     class="fixed left-0  h-full w-64 bg-primary-700 border-cool-gray-80 z-40 transform transition-transform duration-300 ease-in-out pt-4 overflow-y-auto -translate-x-full lg:translate-x-0"
 >   
-    <div>
+    <a href="/" class="flex items-center justify-center mb-6"   >
         <img src={clinica.src} alt="Logo de la clínica" class="h-30 w-auto mx-auto mb-6" />
-    </div>
+    </a>
 
     <SidebarMenu menuItems={menuItems} currentPath={currentPath} />
 

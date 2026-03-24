@@ -1,0 +1,59 @@
+---
+title: CheckBox
+description: Casilla de verificación con dos variantes de presentación visual — checkbox clásico y switch toggle.
+---
+
+import { CodePreview } from '@/components/docs/CodePreview';
+import { CheckBox } from '@/components/react/primary/CheckBox';
+import CheckBoxDemo from '@/components/docs/CheckBoxDemo';
+
+## Demo en vivo
+
+<CheckBoxDemo client:load />
+
+---
+
+`CheckBox` ofrece dos variantes: el checkbox tradicional y un switch tipo toggle animado.
+
+## Importación
+
+```tsx
+import { CheckBox } from '@/components/react/primary/CheckBox';
+```
+
+## Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `label` | `string` | — | **Requerido.** Texto visible. |
+| `checked` | `boolean` | — | Estado controlado. |
+| `onChange` | `(e) => void` | — | Handler de cambio. |
+| `name` | `string` | — | Nombre del campo HTML. |
+| `variant` | `"checkbox" \| "switch"` | `"checkbox"` | Variante visual. |
+
+---
+
+## Variante `checkbox`
+
+<CodePreview code={`<CheckBox
+  label="Recibir notificaciones por email"
+  name="notificaciones"
+  checked={checked}
+  onChange={(e) => setChecked(e.target.checked)}
+/>`} client:load>
+  <CheckBox label="Recibir notificaciones por email" name="notif_ex1" checked={false} onChange={() => {}} />
+  <CheckBox label="Opción pre-seleccionada" name="notif_ex2" checked={true} onChange={() => {}} />
+</CodePreview>
+
+## Variante `switch`
+
+<CodePreview code={`<CheckBox
+  label="Doctor activo en el sistema"
+  variant="switch"
+  name="activo"
+  checked={activo}
+  onChange={(e) => setActivo(e.target.checked)}
+/>`} client:load>
+  <CheckBox label="Doctor activo (OFF)" variant="switch" name="sw_ex1" checked={false} onChange={() => {}} />
+  <CheckBox label="Doctor activo (ON)" variant="switch" name="sw_ex2" checked={true} onChange={() => {}} />
+</CodePreview>

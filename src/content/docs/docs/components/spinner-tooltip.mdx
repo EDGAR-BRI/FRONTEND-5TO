@@ -1,0 +1,95 @@
+---
+title: Spinner y Tooltip
+description: Componentes de utilidad — indicador de carga animado y tooltip informativo hover.
+---
+
+import { CodePreview } from '@/components/docs/CodePreview';
+import { Spinner } from '@/components/react/primary/Spinner';
+import { Tooltip } from '@/components/react/primary/Tooltip';
+import SpinnerTooltipDemo, { 
+  SpinnerSizesDemo, 
+  SpinnerColorsDemo, 
+  SpinnerCenteredDemo, 
+  SpinnerTooltipExampleDemo 
+} from '@/components/docs/SpinnerTooltipDemo';
+
+## Demo en vivo
+
+<SpinnerTooltipDemo client:load />
+
+---
+
+## Spinner
+
+Indicador de carga circular animado. Usado internamente por `Button` cuando `loading={true}`, pero también disponible para uso independiente.
+
+### Importación
+
+```tsx
+import { Spinner } from '@/components/react/primary/Spinner';
+```
+
+### Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `className` | `string` | `""` | Clases para controlar el tamaño y color. |
+
+### Tamaños
+
+<CodePreview code={`<Spinner className="w-4 h-4 text-primary-600" />
+<Spinner className="w-6 h-6 text-primary-600" />
+<Spinner className="w-8 h-8 text-primary-600" />
+<Spinner className="w-12 h-12 text-primary-600" />`} client:load>
+  <SpinnerSizesDemo client:load />
+</CodePreview>
+
+### Colores
+
+<CodePreview code={`<Spinner className="w-6 h-6 text-primary-600" />
+<Spinner className="w-6 h-6 text-green-500" />
+<Spinner className="w-6 h-6 text-red-500" />
+<Spinner className="w-6 h-6 text-yellow-500" />`} client:load>
+  <SpinnerColorsDemo client:load />
+</CodePreview>
+
+### Spinner grande centrado (loading de página)
+
+<CodePreview code={`<div className="flex justify-center py-20">
+  <Spinner className="w-10 h-10 text-primary-600" />
+</div>`} client:load>
+  <SpinnerCenteredDemo client:load />
+</CodePreview>
+
+---
+
+## Tooltip
+
+Muestra un globo de información al hacer hover sobre un ícono `?`.
+
+### Importación
+
+```tsx
+import { Tooltip } from '@/components/react/primary/Tooltip';
+```
+
+### Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `text` | `string` | — | **Requerido.** Texto del tooltip. |
+| `position` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Posición del globo. |
+
+### Ejemplo junto a un label
+
+<CodePreview code={`<div className="flex items-center gap-1">
+  <label>Cédula</label>
+  <Tooltip text="El número debe tener 10 dígitos, sin guiones." />
+</div>
+
+<div className="flex items-center gap-1">
+  <label>RFC</label>
+  <Tooltip text="Ingresa el RFC con homoclave, sin espacios." />
+</div>`} client:load>
+  <SpinnerTooltipExampleDemo client:load />
+</CodePreview>

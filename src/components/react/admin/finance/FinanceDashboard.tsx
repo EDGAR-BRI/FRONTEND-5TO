@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import { Button } from '@/components/react/primary/Button';
-import { StatsCard } from './StatsCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
 import { AddTransactionModal } from './AddTransactionModal';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -174,13 +174,13 @@ export const FinanceDashboard = () => {
             <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4"> {/* ← flex-wrap gap-3 */}
+                    <div className="flex items-center gap-3 min-w-0"> {/* ← min-w-0 */}
+                        <div className="w-9 h-9 shrink-0 rounded-lg bg-white/10 flex items-center justify-center"> {/* ← shrink-0 */}
                             <LuDollarSign size={18} className="text-white" />
                         </div>
-                        <div>
-                            <h2 className="text-base font-semibold text-white leading-tight">Movimientos de Caja</h2>
+                        <div className="min-w-0"> {/* ← min-w-0 */}
+                            <h2 className="text-base font-semibold text-white leading-tight truncate">Movimientos de Caja</h2>
                             <p className="text-xs text-primary-200 mt-0.5">Ventas de farmacia y pagos de consultas médicas.</p>
                         </div>
                     </div>
@@ -188,13 +188,13 @@ export const FinanceDashboard = () => {
                         label="+ Nueva Factura"
                         variant="primary"
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-white! text-primary-700! hover:bg-primary-50! rounded-lg! text-sm! font-semibold! border-0! shadow-sm!"
+                        className="shrink-0 bg-white! text-primary-700! hover:bg-primary-50! rounded-lg! text-sm! font-semibold! border-0! shadow-sm!"
                     />
                 </div>
 
                 {/* Filters Bar */}
                 <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-gray-100">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                             Todos los ingresos
                             <LuChevronDown size={12} />
@@ -210,7 +210,6 @@ export const FinanceDashboard = () => {
                     className="rounded-none! border-none!"
                     endpoint="/admin/transactions"
                     columns={columns}
-                    businessId={1}
                 />
             </section>
 

@@ -1,0 +1,92 @@
+---
+title: StatsCard
+description: Tarjeta de estadística con soporte para tendencias, íconos, colores semánticos y variante compacta.
+---
+
+import StatsCardDemo, { StatsCardDefaultDemo, StatsCardCompactDemo, StatsCardNegativeDemo, StatsCardGridDemo } from '@/components/docs/StatsCardDemo';
+import { StatsCard } from '@/components/react/primary/StatsCard';
+import { CodePreview } from '@/components/docs/CodePreview';
+import { UsersIcon, CalendarIcon, TrendingDownIcon } from 'lucide-react';
+
+## Demo en vivo
+
+<StatsCardDemo client:load />
+
+`StatsCard` muestra una métrica numérica destacada junto con información contextual como tendencia (↑/↓), ícono y subtexto. Tiene dos variantes de layout: `default` (más grande, para grids de stats) y `compact` (horizontal, para listas o filas).
+
+## Importación
+
+```tsx
+import { StatsCard } from '@/components/react/primary/StatsCard';
+```
+
+## Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `title` | `string` | — | **Requerido.** Etiqueta de la métrica. |
+| `value` | `string \| number` | — | **Requerido.** El valor principal a destacar. |
+| `icon` | `ReactNode` | — | Ícono (SVG o componente) que se muestra en la esquina. |
+| `color` | `"primary" \| "success" \| "danger" \| "warning"` | `"primary"` | Color del fondo del ícono. |
+| `variant` | `"default" \| "compact"` | `"default"` | Layout de la tarjeta. |
+| `trend` | `string` | — | Texto del indicador de tendencia. Ej: `"12%"`. Requiere que `subText` esté vacío. |
+| `trendUp` | `boolean` | — | Si es `true`, la tendencia se muestra en verde (↑). Si es `false`, en rojo (↓). |
+| `trendLabel` | `string` | `"vs mes anterior"` | Texto auxiliar junto al trend. |
+| `subText` | `string` | — | Texto informativo alternativo al trend. Ej: `"3 activos hoy"`. |
+| `subTextClass` | `string` | — | Clases Tailwind para personalizar el color del subtexto. |
+
+## Variante `default`
+
+Layout vertical. Ideal para grids de estadísticas en la parte superior de un dashboard.
+
+<CodePreview code={`<StatsCard
+  title="Total de pacientes"
+  value="1,248"
+  trend="8.3%"
+  trendUp={true}
+  trendLabel="vs mes anterior"
+  color="primary"
+  icon={<UsersIcon className="w-5 h-5" />}
+/>`} client:load>
+  <StatsCardDefaultDemo />
+</CodePreview>
+
+## Variante `compact`
+
+Layout horizontal con ícono a la izquierda. Ideal para listas de stats o sidebars.
+
+<CodePreview code={`<StatsCard
+  title="Citas de hoy"
+  value={12}
+  subText="3 pendientes"
+  subTextClass="text-yellow-600"
+  color="warning"
+  variant="compact"
+  icon={<CalendarIcon className="w-5 h-5" />}
+/>`} client:load>
+  <StatsCardCompactDemo />
+</CodePreview>
+
+## Con tendencia negativa
+
+<CodePreview code={`<StatsCard
+  title="Ingresos del mes"
+  value="$4,200"
+  trend="5.1%"
+  trendUp={false}
+  color="danger"
+  icon={<TrendingDownIcon className="w-5 h-5" />}
+/>`} client:load>
+  <StatsCardNegativeDemo />
+</CodePreview>
+
+## Grid de estadísticas
+
+<CodePreview code={`<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <StatsCard title="Pacientes" value="1,248" trend="8%" trendUp={true} icon={<UsersIcon className="w-5 h-5" />} />
+  <StatsCard title="Citas hoy" value={24} subText="6 pendientes" icon={<CalendarIcon className="w-5 h-5" />} color="warning" />
+  <StatsCard title="Ingresos" value="$12,400" trend="3%" trendUp={false} icon={<TrendingDownIcon className="w-5 h-5" />} color="danger" />
+  <StatsCard title="Doctores" value={8} subText="2 de guardia" icon={<UsersIcon className="w-5 h-5" />} color="success" />
+</div>`} client:load>
+  <StatsCardGridDemo />
+</CodePreview>

@@ -81,14 +81,11 @@ const mockUsers: UserMock[] = [
 ];
 
 export const GET: APIRoute = async ({ request }) => {
-    const businessId = request.headers.get("x-business-id");
-
     return new Response(JSON.stringify(mockUsers), {
         status: 200,
         headers: {
             "Content-Type": "application/json",
             "x-mock": "true",
-            ...(businessId ? { "x-business-id": businessId } : {}),
         },
     });
 };

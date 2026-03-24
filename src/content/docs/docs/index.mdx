@@ -1,0 +1,37 @@
+---
+title: Librería de Componentes
+description: Documentación de los componentes reutilizables de la librería primary.
+template: splash
+hero:
+  tagline: Componentes React reutilizables para el sistema de gestión médica.
+  actions:
+    - text: Ver componentes
+      link: /docs/components/button/
+      icon: right-arrow
+      variant: primary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Componentes disponibles
+
+<CardGrid stagger>
+  <Card title="Button" icon="pencil">
+    Botón principal con variantes de estilo, tamaños y estado de carga.
+  </Card>
+  <Card title="Field" icon="add-document">
+    Input unificado para texto, número, fecha, contraseña y radio buttons.
+  </Card>
+  <Card title="Select & SearchableSelect" icon="setting">
+    Selectores con soporte para búsqueda y carga desde API.
+  </Card>
+  <Card title="DataTable" icon="open-book">
+    Tabla de datos genérica con SWR, paginación y skeleton de carga.
+  </Card>
+  <Card title="Modal & ModalTrigger" icon="star">
+    Modal accesible con portal, ESC y backdrop blur.
+  </Card>
+  <Card title="Cards, Badge, Avatar y más" icon="rocket">
+    Colección de componentes visuales y de utilidad.
+  </Card>
+</CardGrid>

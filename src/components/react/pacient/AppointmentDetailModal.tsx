@@ -1,114 +1,123 @@
-import { X, Calendar, Clock, MapPin, User, Info, FileText, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { Calendar, Clock, MapPin, User, Info, FileText, CheckCircle2 } from 'lucide-react';
+import { ModalTrigger } from '../primary/ModalTrigger';
+import { Button } from '../primary/Button';
+import { Badge } from '../primary/Badge';
+import StaticCard from '../primary/StaticCard';
 
-interface Appointment {
-  doctor: string;
-  especialidad: string;
-  fecha: string;
-  hora: string;
-  lugar: string;
-  status: 'asistio' | 'pendiente';
-}
 
-interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-  appointment: Appointment | null;
-}
+export const MedicalAppointments = () => {
+  const appointments = [
+    { 
+      especialidad: "Cardiología", 
+      doctor: "Dr. Alejandro Lira", 
+      fecha: "20 de Marzo, 2026",
+      hora: "09:30 AM", 
+      lugar: "Consultorio 402 - Clínica VitalFe & Alegría", 
+      status: "pendiente" 
+    },
+    { 
+      especialidad: "Medicina General", 
+      doctor: "Dra. Elena Rossi", 
+      fecha: "10 de Marzo, 2026",
+      hora: "11:00 AM", 
+      lugar: "Consultorio 105 - Clínica VitalFe & Alegría", 
+      status: "asistio" 
+    }
+  ];
 
-export const AppointmentDetailModal = ({ isOpen, onClose, appointment }: Props) => {
-  if (!isOpen || !appointment) return null;
+  return (
+    <div className="space-y-4 animate-in fade-in duration-500">
+      <h3 className="text-lg font-bold text-slate-800 px-2">Citas Programadas</h3>
+      {appointments.map((app, i) => (
+        <AppointmentDetailModal key={i} appointment={app as any} />
+      ))}
+    </div>
+  );
+};
 
+
+const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
   const isCompleted = appointment.status === 'asistio';
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <section className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-        
-
-        <div className="bg-[#0f172a] p-8 text-white relative">
-          <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
-            <X className="w-5 h-5 text-slate-400" />
-          </button>
-          <div className="flex items-center gap-4">
-
-            <div className="bg-emerald-500 p-3 rounded-2xl shadow-lg">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                {isCompleted ? 'Resumen de Cita' : 'Próxima Cita'}
-              </p>
-              <h2 className="text-2xl font-bold">{appointment.especialidad}</h2>
-            </div>
-          </div>
+    <StaticCard className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
+        <div className="bg-white p-4 rounded-2xl text-blue-600 shadow-sm border border-blue-50">
+          <Calendar className="w-6 h-6" />
         </div>
-
-        <div className="p-8 space-y-6">
-          {/* INFO DOCTOR */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Médico Especialista</label>
-            <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-              <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
-                <User className="w-5 h-5" />
-              </div>
-              <p className="text-sm font-bold text-slate-700">{appointment.doctor}</p>
-            </div>
+        <div className="text-left">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold text-slate-800">{appointment.especialidad}</p>
+            <Badge 
+              styles={{ 
+                bg: isCompleted ? 'bg-emerald-50' : 'bg-blue-50',
+                text: isCompleted ? 'text-emerald-600' : 'text-blue-600',
+                border: isCompleted ? 'border-emerald-100' : 'border-blue-100'
+              }}
+            >
+              {isCompleted ? 'Asistió' : 'Próxima'}
+            </Badge>
           </div>
-
-          {/* GRILLA DATOS */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Fecha</label>
-              <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-600 flex items-center gap-2 font-medium">
-                <Calendar className="w-4 h-4 text-emerald-500" /> {appointment.fecha}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Hora</label>
-              <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-600 flex items-center gap-2 font-medium">
-                <Clock className="w-4 h-4 text-emerald-500" /> {appointment.hora}
-              </div>
-            </div>
-          </div>
-
-          {/* UBICACIÓN */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Ubicación</label>
-            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-600 flex items-center gap-3 font-medium">
-              <div className="bg-white p-2 rounded-lg shadow-sm">
-                <MapPin className="w-4 h-4 text-red-500" />
-              </div>
-              <p className="leading-snug text-xs">{appointment.lugar}</p>
-            </div>
-          </div>
-
-          {/* MENSAJE CONDICIONAL */}
-          {!isCompleted ? (
-            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3">
-              <span className="bg-white p-1 rounded-lg shadow-sm h-fit">
-                <Info className="w-4 h-4 text-amber-600 shrink-0" />
-              </span>
-              <p className="text-[11px] text-amber-700 leading-tight">
-                Recuerde traer su carnet de seguro y estudios previos. Llegar 15 min antes.
-              </p>
-            </div>
-          ) : (
-            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <p className="text-[11px] text-emerald-700 leading-tight">
-                Consulta completada. La información ya está en su historial.
-              </p>
-            </div>
-          )}
-
-          <button 
-            onClick={onClose} 
-            className="w-full py-4 text-white font-bold rounded-2xl transition-all text-sm bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
-          >
-            {isCompleted ? 'Cerrar Registro' : 'Entendido'}
-          </button>
+          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            <User className="w-3 h-3" /> {appointment.doctor}
+          </p>
         </div>
-      </section>
-    </div>
+      </div>
+
+      <div className="flex flex-wrap gap-4">
+        <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
+          <Clock className="w-3 h-3 text-blue-500" /> {appointment.hora}
+        </div>
+        <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm max-w-[200px] truncate">
+          <MapPin className="w-3 h-3 text-red-400" /> {appointment.lugar}
+        </div>
+      </div>
+
+      <ModalTrigger
+        modalTitle={isCompleted ? "Resumen de Cita" : "Detalles de Próxima Cita"}
+        trigger={
+          <Button 
+            label="Ver Detalles" 
+            variant="secondary" 
+            className="px-8 py-3 h-auto text-xs font-bold shadow-none border border-primary-200" 
+          />
+        }
+      >
+        {({ close }) => (
+          <div className="space-y-6">
+            <div className={`flex items-center gap-4 p-6 rounded-2xl border ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100'}`}>
+              <div className={`${isCompleted ? 'bg-emerald-500' : 'bg-blue-600'} p-3 rounded-xl shadow-lg`}>
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-left">
+                <p className={`${isCompleted ? 'text-emerald-600' : 'text-blue-600'} text-[10px] font-black uppercase tracking-widest`}>
+                  {isCompleted ? 'Consulta Finalizada' : 'Cita Programada'}
+                </p>
+                <h2 className="text-xl font-bold text-slate-800 tracking-tight">{appointment.especialidad}</h2>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <StaticCard className="p-4 bg-white border-slate-100 shadow-none text-left">
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-2">Médico Especialista</label>
+                <p className="text-sm font-bold text-slate-700">{appointment.doctor}</p>
+              </StaticCard>
+
+              <div className="grid grid-cols-2 gap-4 text-left">
+                <StaticCard className="p-4 bg-white border-slate-100 shadow-none text-xs text-slate-600">
+                   <b>Fecha:</b> {appointment.fecha}
+                </StaticCard>
+                <StaticCard className="p-4 bg-white border-slate-100 shadow-none text-xs text-slate-600">
+                   <b>Hora:</b> {appointment.hora}
+                </StaticCard>
+              </div>
+            </div>
+
+            <Button label="Entendido" variant="primary" onClick={close} adaptive className="h-12 shadow-lg" />
+          </div>
+        )}
+      </ModalTrigger>
+    </StaticCard>
   );
 };

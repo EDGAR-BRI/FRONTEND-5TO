@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatsCard } from '@/components/react/admin/finance/StatsCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
 import { LuUsers, LuPackage, LuBanknote, LuFileText } from 'react-icons/lu';
 
 export const OverviewStats = () => {

@@ -1,0 +1,119 @@
+---
+title: Button
+description: Botón principal del sistema con variantes de estilo, tamaños y soporte para estado de carga.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { CodePreview } from '@/components/docs/CodePreview';
+import { Button } from '@/components/react/primary/Button';
+import ButtonDemo from '@/components/docs/ButtonDemo';
+
+## Demo en vivo
+
+<ButtonDemo client:load />
+
+---
+
+El componente `Button` es el botón estándar del sistema. Soporta 4 variantes visuales, 4 tamaños, estado de carga con spinner y está construido con `forwardRef` para integrarse con bibliotecas de formularios.
+
+## Importación
+
+```tsx
+import { Button, ButtonTheme } from '@/components/react/primary/Button';
+```
+
+## Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `label` | `string` | — | **Requerido.** Texto del botón (se usa si no se pasan `children`). |
+| `variant` | `"primary" \| "secondary" \| "ghost" \| "danger-ghost"` | `"primary"` | Estilo visual del botón. |
+| `size` | `"default" \| "sm" \| "lg" \| "icon"` | `"default"` | Tamaño del botón. |
+| `loading` | `boolean` | `false` | Si es `true`, muestra un spinner y bloquea interacción. |
+| `adaptive` | `boolean` | `false` | Si es `true`, el botón ocupa el 100% del ancho (`w-full`). |
+| `disabled` | `boolean` | — | Deshabilita el botón. Se combina automáticamente con `loading`. |
+| `children` | `ReactNode` | — | Contenido alternativo. Si se pasa, reemplaza al `label`. |
+
+También acepta todos los atributos nativos de `<button>` (`onClick`, `type`, `form`, etc.).
+
+---
+
+## Variantes
+
+### `primary` — Acción principal
+
+<CodePreview code={`<Button label="Guardar cambios" variant="primary" />`} client:load>
+  <Button label="Guardar cambios" variant="primary" />
+</CodePreview>
+
+### `secondary` — Acción secundaria
+
+<CodePreview code={`<Button label="Cancelar" variant="secondary" />`} client:load>
+  <Button label="Cancelar" variant="secondary" />
+</CodePreview>
+
+### `ghost` — Acción terciaria
+
+<CodePreview code={`<Button label="Ver detalle" variant="ghost" />`} client:load>
+  <Button label="Ver detalle" variant="ghost" />
+</CodePreview>
+
+### `danger-ghost` — Acción destructiva
+
+<CodePreview code={`<Button label="Eliminar" variant="danger-ghost" />`} client:load>
+  <Button label="Eliminar" variant="danger-ghost" />
+</CodePreview>
+
+---
+
+## Tamaños
+
+<CodePreview code={`<Button label="Pequeño"  size="sm" />
+<Button label="Normal"   size="default" />
+<Button label="Grande"   size="lg" />
+<Button label="★"        size="icon" />`} client:load>
+  <Button label="Pequeño" size="sm" />
+  <Button label="Normal"  size="default" />
+  <Button label="Grande"  size="lg" />
+  <Button label="★"       size="icon" />
+</CodePreview>
+
+---
+
+## Estado de carga
+
+Cuando `loading` es `true`, el botón muestra un `Spinner` y bloquea la interacción.
+
+<CodePreview code={`<Button label="Guardando..."  loading={true} />
+<Button label="Deshabilitado" disabled />`} client:load>
+  <Button label="Guardando..."  loading={true} />
+  <Button label="Deshabilitado" disabled />
+</CodePreview>
+
+---
+
+## Ancho completo
+
+<CodePreview code={`<Button label="Iniciar sesión" adaptive />`} client:load>
+  <div className="w-full max-w-sm">
+    <Button label="Iniciar sesión" adaptive />
+  </div>
+</CodePreview>
+
+---
+
+## Constante `ButtonTheme`
+
+Para evitar strings literales, usa la constante exportada:
+
+```tsx
+import { Button, ButtonTheme } from '@/components/react/primary/Button';
+
+<Button label="Enviar"    variant={ButtonTheme.PRIMARY} />
+<Button label="Cancelar"  variant={ButtonTheme.SECONDARY} />
+<Button label="Eliminar"  variant={ButtonTheme.DANGER_GHOST} />
+```
+
+<Aside type="tip">
+  El componente usa `forwardRef`, por lo que puedes pasarle una `ref` directamente para integrarlo con React Hook Form o para controlar el foco programáticamente.
+</Aside>

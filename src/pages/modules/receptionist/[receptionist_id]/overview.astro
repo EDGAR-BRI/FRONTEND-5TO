@@ -1,5 +1,6 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+import { ReceptionistStatsSummary } from '@/components/react/receptionist/ReceptionistStatsSummary';
 
 const { receptionist_id } = Astro.params;
 
@@ -20,8 +21,7 @@ const stats = [
     label: 'Citas hoy',
     value: '18',
     icon: 'fa-solid fa-calendar-check',
-    color: 'text-primary-500',
-    bg: 'bg-primary-200',
+    color: 'primary',
     sub: '3 pendientes de confirmar',
     subColor: 'text-warning',
   },
@@ -29,8 +29,7 @@ const stats = [
     label: 'Pacientes registrados',
     value: '5',
     icon: 'fa-solid fa-user-plus',
-    color: 'text-success',
-    bg: 'bg-green-100',
+    color: 'success',
     sub: 'Nuevos hoy',
     subColor: 'text-success',
   },
@@ -38,8 +37,7 @@ const stats = [
     label: 'Pagos cobrados',
     value: '$1,240',
     icon: 'fa-solid fa-money-bill-wave',
-    color: 'text-teal-600',
-    bg: 'bg-teal-100',
+    color: 'success',
     sub: '9 transacciones',
     subColor: 'text-cool-gray-50',
   },
@@ -47,8 +45,7 @@ const stats = [
     label: 'Facturas pendientes',
     value: '4',
     icon: 'fa-solid fa-file-invoice-dollar',
-    color: 'text-error',
-    bg: 'bg-red-100',
+    color: 'danger',
     sub: 'Requieren gestión',
     subColor: 'text-error',
   },
@@ -204,24 +201,11 @@ const paymentBreakdown = [
     </div>
 
     <!-- ─── Stat Cards ────────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map(stat => (
-        <div class="bg-white rounded-xl border border-primary-200 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3">
-          <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center`}>
-            <i class={`${stat.icon} ${stat.color} text-base`}></i>
-          </div>
-          <div>
-            <p class="text-3xl font-bold text-primary-800">{stat.value}</p>
-            <p class="text-body-xs text-cool-gray-50 mt-0.5">{stat.label}</p>
-            <p class={`text-body-xxs font-medium mt-1 ${stat.subColor}`}>{stat.sub}</p>
-          </div>
-        </div>
-      ))}
-    </div>
+    <ReceptionistStatsSummary client:load stats={stats as any} />
 
     <!-- ─── Quick Actions ─────────────────────────────────────────────────── -->
     <div>
-      <h2 class="text-heading-6 text-primary-800 mb-3">Acciones rápidas</h2>
+      <h2 class="text-heading-6 text-primary-800 mb-3"><br>Acciones rápidas</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickActions.map(action => (
           <a

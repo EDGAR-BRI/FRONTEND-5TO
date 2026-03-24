@@ -1,14 +1,26 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Input from "@/components/astro/Input.astro";
-import clinica from "@/assets/clinica.png";
+import clinica from "@/assets/clinica.svg";
+import fondo from "@/assets/fondo.avif";
 import UserLogo from "@/assets/User.png";
+import { LoginRedirectButton } from "@/components/react/auth/LoginRedirectButton";
 ---
 
 <Layout>
     <main class="flex flex-row bg-white h-screen w-screen">
-        <section class="bg-blue-500 w-3/5 flex items-center justify-center">
-            <img src={clinica.src} alt="Clinica" />
+        <section class="relative bg-primary-700 w-3/5 flex items-center justify-center overflow-hidden">
+            <img
+                class="absolute inset-0 w-full h-full object-cover opacity-40"
+                src={fondo.src}
+                alt="Fondo"
+            />
+            <div class="absolute inset-0 bg-primary-700/60" aria-hidden="true"></div>
+            <img
+                class="relative z-10 size-75 object-contain"
+                src={clinica.src}
+                alt="Clinica"
+            />
         </section>
         <section class="w-2/5 flex flex-col py-5 px-10 justify">
             <header class="flex flex-col gap-2">
@@ -18,10 +30,10 @@ import UserLogo from "@/assets/User.png";
                     sites
                 </p>
             </header>
-            <main class="flex-1 flex flex-col items-center justify-center">
+            <main class="flex-1 flex flex-col items-center justify-center px-16">
                 <div class="w-full max-w-md flex flex-col gap-2">
                     <div class="flex items-center justify-center mb-10">
-                        <img class="w-40" src={UserLogo.src} alt="" />
+                        <img class="w-40 h-auto object-contain" src={UserLogo.src} alt="" />
                     </div>
                     <form
                         class="flex flex-col gap-8 border-b-2 border-b-gray-400 pb-16"
@@ -39,10 +51,7 @@ import UserLogo from "@/assets/User.png";
                             name="contraseña"
                             id="contraseña"
                         />
-                        <button
-                            class="bg-blue-500 text-white mt-2 p-2 rounded-sm"
-                            type="submit">Login</button
-                        >
+                        <LoginRedirectButton client:load />
                     </form>
                     <footer class="flex flex-col gap-4 items-center">
                         <!-- <div class="border-t border-gray-400 w-full"></div> -->

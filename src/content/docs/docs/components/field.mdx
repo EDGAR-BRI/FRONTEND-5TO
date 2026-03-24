@@ -1,0 +1,216 @@
+---
+title: Field
+description: Input unificado para texto, número, contraseña, fecha y radio buttons con soporte para tooltips y calendario custom.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import FieldDemo from '@/components/docs/FieldDemo';
+import { Field } from '@/components/react/primary/Field';
+import { CodePreview } from '@/components/docs/CodePreview';
+
+## Demo en vivo
+
+<FieldDemo client:load />
+
+`Field` es el componente de entrada de datos principal del sistema. Unifica en un solo componente todos los tipos de input más comunes, con estilos consistentes y funcionalidades extra como mostrar/ocultar contraseña, validación de números decimales y un calendario custom (powered by `react-day-picker`).
+
+## Importación
+
+```tsx
+import { Field } from '@/components/react/primary/Field';
+```
+
+## Props
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `name` | `string` | — | **Requerido.** Nombre del campo (usado en `id` y `name` del input). |
+| `label` | `string` | — | Etiqueta visible sobre el campo. |
+| `type` | `"text" \| "email" \| "password" \| "number" \| "date" \| "radio"` | `"text"` | Tipo de input. |
+| `value` | `string \| number` | — | Valor controlado. |
+| `onChange` | `(e: ChangeEvent<HTMLInputElement>) => void` | — | Handler de cambio. |
+| `placeholder` | `string` | — | Texto de placeholder. |
+| `required` | `boolean` | — | Marca el campo como requerido. |
+| `disabled` | `boolean` | — | Deshabilita el campo. |
+| `variant` | `"primary" \| "secondary" \| "tertiary"` | `"primary"` | Controla el color de fondo del input. |
+| `tooltip` | `string` | — | Muestra un ícono `?` con tooltip al hover. |
+| `showTogglePassword` | `boolean` | `false` | Para `type="password"`: muestra botón de ojo para ver/ocultar. |
+| `allowNegative` | `boolean` | `false` | Para `type="number"`: permite valores negativos. |
+| `useNativeDatePicker` | `boolean` | `true` | Para `type="date"`: si es `false`, usa el calendario custom. |
+| `options` | `{ label: string; value: string \| number }[]` | — | Para `type="radio"`: lista de opciones. |
+| `onEnter` | `() => void` | — | Se llama al presionar `Enter`. |
+| `step` | `string \| number` | — | Para `type="number"`: incremento del valor. |
+
+También acepta todos los atributos nativos de `<input>`.
+
+## Ejemplos de uso
+
+### Input de texto simple
+
+<CodePreview code={`const [nombre, setNombre] = useState('');
+
+<Field
+  name="nombre"
+  label="Nombre del paciente"
+  placeholder="Ej: Juan Pérez"
+  value={nombre}
+  onChange={(e) => setNombre(e.target.value)}
+/>`} client:load>
+  <Field
+    name="nombre_demo"
+    label="Nombre del paciente"
+    placeholder="Ej: Juan Pérez"
+    defaultValue=""
+  />
+</CodePreview>
+
+### Input de email
+
+<CodePreview code={`<Field
+  name="email"
+  label="Correo electrónico"
+  type="email"
+  placeholder="doctor@clinica.com"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+/>`} client:load>
+  <Field
+    name="email_demo"
+    label="Correo electrónico"
+    type="email"
+    placeholder="doctor@clinica.com"
+    defaultValue=""
+  />
+</CodePreview>
+
+### Contraseña con toggle
+
+<CodePreview code={`<Field
+  name="password"
+  label="Contraseña"
+  type="password"
+  showTogglePassword
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+/>`} client:load>
+  <Field
+    name="password_demo"
+    label="Contraseña"
+    type="password"
+    showTogglePassword
+    defaultValue=""
+  />
+</CodePreview>
+
+### Número con decimales (sin negativos)
+
+<CodePreview code={`<Field
+  name="precio"
+  label="Precio de consulta"
+  type="number"
+  placeholder="0.00"
+  step="0.01"
+  value={precio}
+  onChange={(e) => setPrecio(e.target.value)}
+/>`} client:load>
+  <Field
+    name="precio_demo"
+    label="Precio de consulta"
+    type="number"
+    placeholder="0.00"
+    step="0.01"
+    defaultValue=""
+  />
+</CodePreview>
+
+### Fecha con calendario custom
+
+Cuando `useNativeDatePicker={false}`, se muestra un popover con un calendario visual estilizado.
+
+<CodePreview code={`<Field
+  name="fecha_cita"
+  label="Fecha de la cita"
+  type="date"
+  useNativeDatePicker={false}
+  value={fecha}         // Formato ISO: "2024-08-15"
+  onChange={(e) => setFecha(e.target.value)}
+/>`} client:load>
+  <div className="w-full h-96">
+    <Field
+      name="fecha_cita_demo"
+      label="Fecha de la cita"
+      type="date"
+      useNativeDatePicker={false}
+      defaultValue=""
+    />
+  </div>
+</CodePreview>
+
+<Aside type="note">
+  El valor siempre se emite en formato ISO (`yyyy-MM-dd`) aunque el calendario muestre la fecha en formato `dd/MM/yyyy`.
+</Aside>
+
+### Radio buttons
+
+<CodePreview code={`<Field
+  name="genero"
+  label="Género"
+  type="radio"
+  options={[
+    { label: 'Masculino', value: 'M' },
+    { label: 'Femenino', value: 'F' },
+    { label: 'Otro', value: 'O' },
+  ]}
+  value={genero}
+  onChange={(e) => setGenero(e.target.value)}
+/>`} client:load>
+  <Field
+    name="genero_demo"
+    label="Género"
+    type="radio"
+    options={[
+      { label: 'Masculino', value: 'M' },
+      { label: 'Femenino', value: 'F' },
+      { label: 'Otro', value: 'O' },
+    ]}
+    defaultValue="M"
+  />
+</CodePreview>
+
+### Con tooltip
+
+<CodePreview code={`<Field
+  name="cedula"
+  label="Cédula"
+  tooltip="Ingresa el número de cédula sin guiones ni espacios."
+  value={cedula}
+  onChange={(e) => setCedula(e.target.value)}
+/>`} client:load>
+  <Field
+    name="cedula_demo"
+    label="Cédula"
+    tooltip="Ingresa el número de cédula sin guiones ni espacios."
+    defaultValue=""
+  />
+</CodePreview>
+
+### Acción al presionar Enter
+
+<CodePreview code={`<Field
+  name="busqueda"
+  label="Buscar paciente"
+  value={query}
+  onChange={(e) => setQuery(e.target.value)}
+  onEnter={handleSearch}
+/>`} client:load>
+  <Field
+    name="busqueda_demo"
+    label="Buscar paciente"
+    defaultValue=""
+    onEnter={() => alert('¡Enter presionado!')}
+  />
+</CodePreview>
+
+<Aside type="tip">
+  `Field` usa `forwardRef`, por lo que puedes pasarle una `ref` para integrarlo con React Hook Form u otras librerías de formularios.
+</Aside>

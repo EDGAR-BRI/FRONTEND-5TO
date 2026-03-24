@@ -60,10 +60,10 @@
   input:-webkit-autofill:focus, 
   input:-webkit-autofill:active {
     /* Cambia #f3f4f6 por el color hexadecimal EXACTO de tu input (cool-gray-100) */
-    -webkit-box-shadow: 0 0 0 30px #121619 inset !important;
+    -webkit-box-shadow: 0 0 0 30px #FAFCFF inset !important;
     
     /* Cambia esto por el color de texto que deseas */
-    -webkit-text-fill-color: #e8e8e9 !important;
+    -webkit-text-fill-color: #001724 !important;
     
     /* Esto asegura que el borde no cambie de forma extraña */
     background-clip: content-box !important;

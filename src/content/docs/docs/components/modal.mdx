@@ -1,0 +1,121 @@
+---
+title: Modal y ModalTrigger
+description: Modal accesible con portal de React, cierre con ESC, backdrop blur y componente wrapper con trigger personalizable.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { CodePreview } from '@/components/docs/CodePreview';
+import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
+import { Button } from '@/components/react/primary/Button';
+import { Field } from '@/components/react/primary/Field';
+import ModalDemo, { ModalSimpleDemo, ModalWithFormDemo, ModalConfirmDemo } from '@/components/docs/ModalDemo';
+
+## Demo en vivo
+
+<ModalDemo client:load />
+
+---
+
+El sistema de modales está compuesto por dos componentes:
+
+- **`Modal`**: La ventana modal en sí (controlada externamente).
+- **`ModalTrigger`**: Un wrapper que encapsula el estado abierto/cerrado y provee un botón o trigger personalizado.
+
+## Importación
+
+```tsx
+import { Modal } from '@/components/react/primary/Modal';
+import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
+```
+
+---
+
+## `Modal`
+
+### Props de `Modal`
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `isOpen` | `boolean` | — | **Requerido.** Controla la visibilidad del modal. |
+| `onClose` | `() => void` | — | **Requerido.** Se llama al cerrar. |
+| `title` | `string` | — | Header con título y botón X. |
+| `children` | `ReactNode` | — | Cuerpo del modal. |
+
+### Comportamiento
+
+- Renderizado en **React Portal** sobre `document.body` — sin problemas de z-index.
+- Presionar **ESC** cierra el modal.
+- **Clic en el overlay** cierra el modal.
+- Bloquea el **scroll del body** mientras está abierto.
+- Atributos de accesibilidad (`role="dialog"`, `aria-modal`).
+
+---
+
+## `ModalTrigger`
+
+### Props de `ModalTrigger`
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `modalTitle` | `string` | — | **Requerido.** Título del modal. |
+| `buttonLabel` | `string` | `"Open Check definition"` | Texto del botón trigger. |
+| `buttonTheme` | `variant` | `"primary"` | Variante del botón trigger. |
+| `children` | `ReactNode \| ((props: { close }) => ReactNode)` | — | Contenido del modal. |
+| `trigger` | `ReactNode` | — | Elemento personalizado como trigger. |
+
+### Ejemplo simple
+
+<CodePreview code={`<ModalTrigger
+  buttonLabel="Ver historial"
+  modalTitle="Historial del paciente"
+>
+  <p>Aquí va el contenido del historial...</p>
+</ModalTrigger>`} client:load>
+  <ModalSimpleDemo client:load />
+</CodePreview>
+
+### Cerrar el modal desde dentro del contenido
+
+Usa la forma de función en `children` para recibir `{ close }`:
+
+<CodePreview code={`<ModalTrigger
+  buttonLabel="Nueva cita"
+  buttonTheme="secondary"
+  modalTitle="Agendar cita"
+>
+  {({ close }) => (
+    <div className="space-y-4">
+      <Field name="fecha" label="Fecha" type="date" ... />
+      <div className="flex justify-end gap-2">
+        <Button label="Cancelar" variant="secondary" onClick={close} />
+        <Button label="Guardar" />
+      </div>
+    </div>
+  )}
+</ModalTrigger>`} client:load>
+  <ModalWithFormDemo client:load />
+</CodePreview>
+
+### Modal de confirmación peligrosa
+
+<CodePreview code={`<ModalTrigger
+  buttonLabel="Eliminar doctor"
+  buttonTheme="danger-ghost"
+  modalTitle="¿Confirmar eliminación?"
+>
+  {({ close }) => (
+    <>
+      <p>Esta acción es irreversible. ¿Estás seguro?</p>
+      <div className="flex justify-end gap-2 mt-4">
+        <Button label="Cancelar" variant="ghost" onClick={close} />
+        <Button label="Sí, eliminar" variant="danger-ghost" onClick={close} />
+      </div>
+    </>
+  )}
+</ModalTrigger>`} client:load>
+  <ModalConfirmDemo client:load />
+</CodePreview>
+
+<Aside type="tip">
+  Usa `ModalTrigger` por defecto. Recurre a `Modal` directamente solo cuando necesites sincronizar el estado del modal con lógica externa (ej: abrir desde una tabla de datos).
+</Aside>
