@@ -1,10 +1,10 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import { ReceptionistStatsSummary } from '@/components/react/receptionist/ReceptionistStatsSummary';
+import StaticCard from '@/components/react/primary/StaticCard';
 
 const { receptionist_id } = Astro.params;
 
-// ─── Mock data derived from DB schema ──────────────────────────────────────
 const receptionist = {
   id: receptionist_id ?? '001',
   fullName: 'Laura Castillo Díaz',
@@ -14,7 +14,7 @@ const receptionist = {
   shift: '07:00 AM – 03:00 PM',
 };
 
-const todayStr = '2026-03-02'; // static mock date
+const todayStr = '2026-03-02';
 
 const stats = [
   {
@@ -51,7 +51,6 @@ const stats = [
   },
 ];
 
-// Today's appointment agenda — from Appoinment + Consultation + Form tables
 const agenda = [
   {
     id: 'APT-021',
@@ -133,25 +132,6 @@ const agenda = [
   },
 ];
 
-// Recent payments — from Invoice + InvoicePayment + PaymentMethod tables
-const recentPayments = [
-  { id: 'INV-201', patient: 'Ana Sofía Parra', amount: '$40.00', method: 'Efectivo', currency: 'USD', date: '08:12 AM', status: 'Pagado', statusClass: 'bg-green-100 text-success' },
-  { id: 'INV-202', patient: 'Jorge Luis Rivas', amount: '$80.00', method: 'Tarjeta débito', currency: 'USD', date: '08:47 AM', status: 'Pagado', statusClass: 'bg-green-100 text-success' },
-  { id: 'INV-199', patient: 'Beatriz Leal', amount: '$55.00', method: 'Pago Móvil', currency: 'VES', date: 'Ayer', status: 'Pagado', statusClass: 'bg-green-100 text-success' },
-  { id: 'INV-203', patient: 'Marta Elena Cruz', amount: '$60.00', method: '—', currency: '—', date: 'Pendiente', status: 'Pendiente', statusClass: 'bg-yellow-100 text-warning' },
-];
-
-// Doctors' schedule for today — from ScheduleDay + ScheduleCycle + UserDoctor
-// shiftHours = total length of scheduled shift; occupiedHours = hours covered by booked appointments
-const doctorSchedules = [
-  { doctor: 'Dr. Carlos Méndez', specialty: 'Medicina General', starts: '07:30', ends: '13:00', status: 'Activo', statusClass: 'bg-green-100 text-success', shiftHours: 5.5, occupiedHours: 5.5 },
-  { doctor: 'Dra. Luisa Vargas', specialty: 'Cardiología', starts: '08:00', ends: '14:00', status: 'Activo', statusClass: 'bg-green-100 text-success', shiftHours: 6, occupiedHours: 4 },
-  { doctor: 'Dra. Patricia Mora', specialty: 'Ginecología', starts: '09:00', ends: '13:00', status: 'Activo', statusClass: 'bg-green-100 text-success', shiftHours: 4, occupiedHours: 3 },
-  { doctor: 'Dr. Héctor Torres', specialty: 'Traumatología', starts: '08:30', ends: '12:30', status: 'Activo', statusClass: 'bg-green-100 text-success', shiftHours: 4, occupiedHours: 1.5 },
-  { doctor: 'Dra. Valentina Ríos', specialty: 'Pediatría', starts: '10:00', ends: '14:00', status: 'Activo', statusClass: 'bg-green-100 text-success', shiftHours: 4, occupiedHours: 0.5 },
-  { doctor: 'Dr. Manuel Ortega', specialty: 'Neurología', starts: '—', ends: '—', status: 'Ausente', statusClass: 'bg-red-100 text-error', shiftHours: 0, occupiedHours: 0 },
-];
-
 const quickActions = [
   { label: 'Registrar paciente', icon: 'fa-solid fa-user-plus', href: 'register-patient', color: 'from-primary-500 to-primary-700' },
   { label: 'Agendar cita', icon: 'fa-solid fa-calendar-plus', href: 'appointments', color: 'from-teal-500 to-teal-700' },
@@ -159,7 +139,6 @@ const quickActions = [
   { label: 'Configurar horarios', icon: 'fa-solid fa-clock', href: 'manage-schedules', color: 'from-orange-400 to-orange-600' },
 ];
 
-// Payment methods breakdown (from PaymentMethod table)
 const paymentBreakdown = [
   { method: 'Efectivo (USD)', amount: '$540', pct: 44, color: 'bg-primary-500' },
   { method: 'Tarjeta débito', amount: '$380', pct: 31, color: 'bg-teal-500' },
@@ -171,7 +150,6 @@ const paymentBreakdown = [
 <ReceptionistLayout title={`Dashboard – ${receptionist.fullName}`}>
   <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
 
-    <!-- ─── Header ─────────────────────────────────────────────────────────── -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
         <div class="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white font-bold text-xl shadow-md select-none flex-shrink-0">
@@ -190,7 +168,6 @@ const paymentBreakdown = [
         </div>
       </div>
 
-      <!-- Today's date badge -->
       <div class="flex-shrink-0 flex items-center gap-2 bg-white border border-primary-200 rounded-xl px-4 py-3 shadow-sm">
         <i class="fa-solid fa-calendar-day text-primary-500 text-lg"></i>
         <div>
@@ -200,225 +177,75 @@ const paymentBreakdown = [
       </div>
     </div>
 
-    <!-- ─── Stat Cards ────────────────────────────────────────────────────── -->
-    <ReceptionistStatsSummary client:load stats={stats as any} />
+    <ReceptionistStatsSummary client:load stats={stats} />
 
-    <!-- ─── Quick Actions ─────────────────────────────────────────────────── -->
-    <div>
-      <h2 class="text-heading-6 text-primary-800 mb-3"><br>Acciones rápidas</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {quickActions.map(action => (
-          <a
-            href={action.href}
-            class={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${action.color} p-5 flex flex-col items-center gap-2 text-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer`}
-          >
-            <i class={`${action.icon} text-2xl opacity-90`}></i>
-            <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
-            <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
-          </a>
-        ))}
-      </div>
-    </div>
-
-    <!-- ─── Agenda + Payments ──────────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-
-      <!-- Today's Appointment Agenda (wider) -->
-      <div class="xl:col-span-2 bg-white rounded-xl border border-primary-200 shadow-sm flex flex-col">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
-          <h2 class="text-heading-6 text-primary-800">
-            <i class="fa-solid fa-list-check text-primary-500 mr-2"></i>
-            Agenda del día
-          </h2>
-          <div class="flex items-center gap-2">
-            <span class="text-body-xxs text-cool-gray-50">{agenda.length} citas</span>
-            <a href="appointments" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors ml-2">
-              Ver todas <i class="fa-solid fa-arrow-right ml-0.5"></i>
-            </a>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <div class="lg:col-span-2 space-y-6">
+        <StaticCard>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-heading-6 text-primary-800">Agenda de hoy</h2>
+            <a href="/appointments" class="text-body-xs font-medium text-primary-600 hover:underline">Ver todo</a>
           </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-body-xs">
-            <thead>
-              <tr class="text-left text-cool-gray-50 border-b border-primary-100">
-                <th class="px-4 py-2.5 font-medium">Hora</th>
-                <th class="px-4 py-2.5 font-medium">Paciente</th>
-                <th class="px-4 py-2.5 font-medium hidden sm:table-cell">Especialidad · Médico</th>
-                <th class="px-4 py-2.5 font-medium hidden md:table-cell">Precio</th>
-                <th class="px-4 py-2.5 font-medium">Estado</th>
-                <th class="px-4 py-2.5 font-medium">Pago</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-primary-100">
-              {agenda.map(apt => (
-                <tr class="hover:bg-primary-50 transition-colors">
-                  <td class="px-4 py-3 font-mono font-semibold text-primary-700 whitespace-nowrap">{apt.time}</td>
-                  <td class="px-4 py-3">
-                    <p class="font-semibold text-primary-800 whitespace-nowrap">{apt.patient}</p>
-                    <p class="text-cool-gray-50 sm:hidden">{apt.specialty}</p>
-                  </td>
-                  <td class="px-4 py-3 hidden sm:table-cell">
-                    <p class="text-primary-800 font-medium">{apt.specialty}</p>
-                    <p class="text-cool-gray-50">{apt.doctor}</p>
-                  </td>
-                  <td class="px-4 py-3 hidden md:table-cell font-medium text-primary-800">{apt.price}</td>
-                  <td class="px-4 py-3">
-                    <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${apt.statusClass}`}>
-                      {apt.status}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3">
-                    {apt.paid ? (
-                      <span class="inline-flex items-center gap-1 text-success font-medium">
-                        <i class="fa-solid fa-circle-check"></i> OK
-                      </span>
-                    ) : (
-                      <button class="inline-flex items-center gap-1 text-primary-500 hover:text-primary-700 font-medium transition-colors">
-                        <i class="fa-solid fa-credit-card"></i> Cobrar
-                      </button>
-                    )}
-                  </td>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="text-body-xs font-semibold text-cool-gray-50 uppercase tracking-wider border-b border-primary-100">
+                  <th class="pb-3 px-2">Hora</th>
+                  <th class="pb-3 px-2">Paciente</th>
+                  <th class="pb-3 px-2">Especialidad</th>
+                  <th class="pb-3 px-2 text-right">Estado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody class="divide-y divide-primary-50">
+                {agenda.map((item) => (
+                  <tr class="text-body-s hover:bg-primary-50/50 transition-colors">
+                    <td class="py-3 px-2 font-medium text-primary-700">{item.time}</td>
+                    <td class="py-3 px-2 text-primary-800">{item.patient}</td>
+                    <td class="py-3 px-2 text-cool-gray-60">{item.specialty}</td>
+                    <td class="py-3 px-2 text-right">
+                      <span class={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${item.statusClass}`}>
+                        {item.status.toUpperCase()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </StaticCard>
       </div>
 
-      <!-- Recent Payments -->
-      <div class="bg-white rounded-xl border border-primary-200 shadow-sm flex flex-col">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
-          <h2 class="text-heading-6 text-primary-800">
-            <i class="fa-solid fa-receipt text-teal-500 mr-2"></i>
-            Últimos pagos
-          </h2>
-          <a href="payment" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
-            Ver todos
-          </a>
-        </div>
+      <div class="space-y-6">
+        <StaticCard>
+          <h3 class="text-subtitle-m text-primary-800 mb-4">Acciones rápidas</h3>
+          <div class="grid grid-cols-2 gap-3">
+            {quickActions.map(action => (
+              <a href={action.href} class="flex flex-col items-center p-3 rounded-lg bg-white border border-primary-100 hover:border-primary-300 transition-colors group">
+                <i class={`${action.icon} text-xl mb-2 text-primary-500 group-hover:scale-110 transition-transform`}></i>
+                <span class="text-body-xxs text-center font-medium text-primary-700">{action.label}</span>
+              </a>
+            ))}
+          </div>
+        </StaticCard>
 
-        <div class="divide-y divide-primary-100 flex-1">
-          {recentPayments.map(pay => (
-            <div class="px-5 py-3.5 hover:bg-primary-50 transition-colors">
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0">
-                  <p class="text-body-s font-semibold text-primary-800 truncate">{pay.patient}</p>
-                  <p class="text-body-xs text-cool-gray-50 mt-0.5">
-                    <i class="fa-regular fa-credit-card mr-1"></i>{pay.method}
-                    &nbsp;·&nbsp;{pay.date}
-                  </p>
-                  <p class="text-body-xxs text-cool-gray-40 mt-0.5">{pay.id}</p>
-                </div>
-                <div class="flex-shrink-0 flex flex-col items-end gap-1">
-                  <p class="text-subtitle-s font-bold text-primary-800">{pay.amount}</p>
-                  <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pay.statusClass}`}>
-                    {pay.status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <!-- Payment method breakdown mini-chart -->
-        <div class="px-5 py-4 border-t border-primary-100">
-          <p class="text-body-xs font-semibold text-primary-700 mb-2">Métodos de pago hoy</p>
-          <div class="space-y-2">
+        <StaticCard>
+          <h3 class="text-subtitle-m text-primary-800 mb-4">Métodos de pago (Hoy)</h3>
+          <div class="space-y-4">
             {paymentBreakdown.map(item => (
               <div>
-                <div class="flex justify-between text-body-xxs text-cool-gray-50 mb-0.5">
-                  <span>{item.method}</span>
+                <div class="flex justify-between text-body-xs mb-1">
+                  <span class="text-cool-gray-60">{item.method}</span>
                   <span class="font-semibold text-primary-800">{item.amount}</span>
                 </div>
-                <div class="h-1.5 w-full bg-cool-gray-10 rounded-full overflow-hidden">
-                  <div class={`h-full ${item.color} rounded-full`} style={`width: ${item.pct}%`}></div>
+                <div class="w-full bg-primary-50 rounded-full h-1.5">
+                  <div class={`${item.color} h-1.5 rounded-full`} style={`width: ${item.pct}%`}></div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ─── Doctor Schedules Today ─────────────────────────────────────────── -->
-    <div class="bg-white rounded-xl border border-primary-200 shadow-sm">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
-        <h2 class="text-heading-6 text-primary-800">
-          <i class="fa-solid fa-user-doctor text-primary-500 mr-2"></i>
-          Médicos en turno hoy
-        </h2>
-        <a href="schedules" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
-          Gestionar horarios <i class="fa-solid fa-arrow-right ml-0.5"></i>
-        </a>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-primary-100">
-        {doctorSchedules.map(doc => (
-          <div class="bg-white px-5 py-4 hover:bg-primary-50 transition-colors">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <p class="text-body-s font-semibold text-primary-800">{doc.doctor}</p>
-                <p class="text-body-xs text-cool-gray-50">{doc.specialty}</p>
-              </div>
-              <span class={`flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${doc.statusClass}`}>
-                {doc.status}
-              </span>
-            </div>
-            {doc.status !== 'Ausente' && (
-              <>
-                <p class="text-body-xs text-primary-700 mb-2">
-                  <i class="fa-regular fa-clock mr-1"></i>{doc.starts} – {doc.ends}
-                </p>
-                <!-- Hours-occupied bar -->
-                <div>
-                  <div class="flex justify-between text-body-xxs text-cool-gray-50 mb-1">
-                    <span>Horas con citas</span>
-                    <span class="font-semibold text-primary-800">{doc.occupiedHours}h / {doc.shiftHours}h</span>
-                  </div>
-                  <div class="h-1.5 w-full bg-cool-gray-10 rounded-full overflow-hidden">
-                    <div
-                      class={`h-full rounded-full transition-all ${doc.occupiedHours >= doc.shiftHours ? 'bg-error' : 'bg-primary-500'}`}
-                      style={`width: ${Math.round((doc.occupiedHours / doc.shiftHours) * 100)}%`}
-                    ></div>
-                  </div>
-                </div>
-              </>
-            )}
-            {doc.status === 'Ausente' && (
-              <p class="text-body-xs text-error mt-1">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Sin turno asignado hoy
-              </p>
-            )}
-          </div>
-        ))}
+        </StaticCard>
       </div>
     </div>
-
-    <!-- ─── Info Footer Banner ────────────────────────────────────────────── -->
-    <div class="bg-gradient-to-r from-teal-700 to-teal-900 rounded-xl p-5 text-white shadow-md">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 class="text-heading-6 font-semibold mb-1">
-            <i class="fa-solid fa-circle-info mr-2 opacity-80"></i>
-            Turno activo
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-1 text-body-xs text-teal-200">
-            <span><i class="fa-solid fa-user-tie mr-1.5"></i>{receptionist.fullName}</span>
-            <span><i class="fa-solid fa-clock mr-1.5"></i>{receptionist.shift}</span>
-            <span><i class="fa-solid fa-calendar-day mr-1.5"></i>{todayStr}</span>
-          </div>
-        </div>
-        <a
-          href="profile"
-          class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-button-s font-medium transition-colors"
-        >
-          <i class="fa-solid fa-user-pen"></i>
-          Ver perfil
-        </a>
-      </div>
-    </div>
-
   </div>
 </ReceptionistLayout>
