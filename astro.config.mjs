@@ -69,6 +69,7 @@ export default defineConfig({
                     { label: 'Lotes de stock', link: '/docs/api/inventory/stock-lot/' },
                     { label: 'Movimientos de stock', link: '/docs/api/inventory/stock-movement/' },
                     { label: 'Insumos por consulta', link: '/docs/api/inventory/supply-consultation/' },
+                    { label: 'Presentaciones de insumos', link: '/docs/api/inventory/supply-presentation/' },
                   ],
                 },
                 {

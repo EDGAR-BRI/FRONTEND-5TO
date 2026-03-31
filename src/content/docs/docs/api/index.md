@@ -59,3 +59,13 @@ Si la URL no existe, el servidor responde:
 
 - Fechas (`DateTime`) via JSON: string ISO (`"2026-03-22T12:34:56.000Z"`).
 - Campos `Decimal` de Prisma (precios, tasas, montos): normalmente se serializan como **string** en JSON.
+
+## Índice
+
+- [Auth](auth/)
+- [Inventory](inventory/)
+- [Medical](medical/)
+- [Scheduling](scheduling/)
+- [Expenses](expenses/)
+- [Finance](finance/)
+- [Procurement](procurement/)

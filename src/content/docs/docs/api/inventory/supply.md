@@ -1,10 +1,8 @@
 ---
-title: Productos
+title: Insumos
 ---
 
-Base URL: `/api/v1/inventory/product`
-
-> Nota: internamente en la base de datos (Prisma) este recurso se maneja como `supply`, pero el endpoint público se mantiene como `product`.
+Base URL: `/api/v1/inventory/supply`
 
 ## POST `/`
 
@@ -38,7 +36,7 @@ Response (201) (ejemplo, resumen):
 
 ```json
 {
-  "message": "Producto creado éxitosamente",
+  "message": "Insumo creado éxitosamente",
   "data": {
     "id": 1,
     "name": "Paracetamol",
@@ -55,15 +53,16 @@ Response (201) (ejemplo, resumen):
 }
 ```
 
+
 ## GET `/`
 
-Devuelve solo productos con `active: true`.
+Devuelve solo supplyos con `active: true`.
 
 Response (200) (ejemplo):
 
 ```json
 {
-  "message": "Productos encontrados éxitosamente",
+  "message": "Insumos encontrados éxitosamente",
   "data": [
     {
       "id": 1,
@@ -84,7 +83,7 @@ Response (200) (ejemplo):
 
 ## GET `/:id`
 
-Devuelve producto con `active: true`.
+Devuelve supplyo con `active: true`.
 
 ## PUT `/:id`
 
@@ -106,7 +105,7 @@ Response (200) (ejemplo):
 
 ```json
 {
-  "message": "Producto eliminado éxitosamente",
+  "message": "Insumo eliminado éxitosamente",
   "data": {
     "id": 1,
     "name": "Paracetamol",

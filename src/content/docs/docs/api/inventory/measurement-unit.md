@@ -21,7 +21,7 @@ Response (201):
 
 ```json
 {
-  "message": "Unidad creada éxitosamente",
+  "message": "Unidad de medida creada éxitosamente",
   "data": { "id": 1, "name": "Unidad", "symbol": "u" }
 }
 ```
@@ -32,7 +32,7 @@ Response (200) (ejemplo):
 
 ```json
 {
-  "message": "Unidades encontradas éxitosamente",
+  "message": "Unidades de medida encontradas éxitosamente",
   "data": [
     { "id": 1, "name": "Unidad", "symbol": "u" }
   ]
