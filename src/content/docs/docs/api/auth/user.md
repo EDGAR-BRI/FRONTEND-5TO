@@ -4,6 +4,8 @@ title: Usuarios
 
 Base URL: `/api/v1/auth/user`
 
+Nota: este recurso se usa para el **alta/registro** de usuarios (equivalente a “signup”). No existe un endpoint público separado tipo `/signup`.
+
 ## Modelo (Prisma: `User`)
 
 Campos principales del modelo según `schema.prisma`:

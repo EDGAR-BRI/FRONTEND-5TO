@@ -13,5 +13,6 @@ Este módulo corresponde al **Módulo de Identidad y Acceso** del `schema.prisma
 
 ## Recursos
 
+- [Login](login/)
 - [Roles](role/)
 - [Usuarios](user/)
