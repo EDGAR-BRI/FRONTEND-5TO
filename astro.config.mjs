@@ -65,7 +65,7 @@ export default defineConfig({
                   items: [
                     { label: 'Categorías', link: '/docs/api/inventory/category/' },
                     { label: 'Unidades de medida', link: '/docs/api/inventory/measurement-unit/' },
-                    { label: 'Productos', link: '/docs/api/inventory/product/' },
+                    { label: 'Insumos', link: '/docs/api/inventory/supply/' },
                     { label: 'Lotes de stock', link: '/docs/api/inventory/stock-lot/' },
                     { label: 'Movimientos de stock', link: '/docs/api/inventory/stock-movement/' },
                     { label: 'Insumos por consulta', link: '/docs/api/inventory/supply-consultation/' },
