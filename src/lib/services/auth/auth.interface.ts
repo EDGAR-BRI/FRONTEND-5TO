@@ -12,6 +12,16 @@ export type LoginUser = {
     role?: { id: number; name: string; code: string };
 };
 
+// DTO estándar que devuelve el backend para User (sin password)
+export type UserDto = {
+    id: number;
+    ci: string;
+    name: string;
+    roleId: number;
+    active: boolean;
+    role?: { id: number; name: string; code: string };
+};
+
 export type LoginResponseData = {
     user: LoginUser;
     token: string;
@@ -24,5 +34,8 @@ export type RegisterUserRequest = {
     password: string;
     roleId?: number;
 };
+
+// Response `data` de POST /api/v1/auth/user
+export type RegisterUserResponseData = UserDto;
 
 export type Role = { id: number; name: string; code: string; active?: boolean };

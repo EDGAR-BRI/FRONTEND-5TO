@@ -1,13 +1,8 @@
 import { api } from "@/lib/api";
 import { setToken, setUserName } from "@/lib/api";
-import type { LoginRequest, LoginResponseData, LoginUser, RegisterUserRequest, Role } from "./auth.interface";
+import type { LoginRequest, LoginResponseData, LoginUser, RegisterUserRequest, RegisterUserResponseData, Role } from "./auth.interface";
 
-
-const readEnvelopeData = async <T,>(response: Response): Promise<T> => {
-	const json = (await response.json()) as any;
-	if (json && typeof json === "object" && "data" in json) return json.data as T;
-	return json as T;
-};
+import { readEnvelopeData } from "../_shared/envelope";
 
 export const loginWithCredentials = async (payload: LoginRequest): Promise<LoginResponseData> => {
 	const response = await api("/auth/login", {
@@ -36,7 +31,7 @@ export const listRoles = async (): Promise<Role[]> => {
 	return readEnvelopeData<Role[]>(response);
 };
 
-export const registerUser = async (payload: RegisterUserRequest) => {
+export const registerUser = async (payload: RegisterUserRequest): Promise<RegisterUserResponseData> => {
 	const response = await api("/auth/user", {
 		method: "POST",
 		body: JSON.stringify(payload),
@@ -51,7 +46,7 @@ export const registerUser = async (payload: RegisterUserRequest) => {
 		}
 		throw new Error(message);
 	}
-	return readEnvelopeData<any>(response);
+	return readEnvelopeData<RegisterUserResponseData>(response);
 };
 
 const normalizeRoleCode = (value: string) =>
