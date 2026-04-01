@@ -11,7 +11,7 @@ hero:
       variant: primary
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Componentes disponibles
 
@@ -35,3 +35,8 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
     Colección de componentes visuales y de utilidad.
   </Card>
 </CardGrid>
+
+<Aside type="note">
+  La búsqueda de estas docs funciona solo en builds de producción (usa Pagefind).
+  Para probarla localmente ejecuta `npm run docs:preview`.
+</Aside>
