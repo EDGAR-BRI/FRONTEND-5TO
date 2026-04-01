@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:host": "npm run dev -- --host",
     "build": "astro build",
     "preview": "astro preview",
     "docs:preview": "astro build && astro preview --port 0",

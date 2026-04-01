@@ -1,20 +1,42 @@
 // Si no hay backend configurado, apuntamos a los endpoints locales de Astro.
 // Esto permite trabajar con mocks durante el desarrollo sin levantar un servidor aparte.
-const normalizeBackendBaseUrl = (raw: string): string => {
-    const trimmed = raw.trim().replace(/\/+$/, "");
+// const normalizeBackendBaseUrl = (raw: string): string => {
+//     const trimmed = raw.trim().replace(/\/+$/, "");
 
-    // Allow setting either:
-    // - http://localhost:3800
-    // - http://localhost:3800/api/v1
-    // - https://example.com/api/v2
-    if (/\/api\/v\d+$/i.test(trimmed)) return trimmed;
+//     // Allow setting either:
+//     // - http://localhost:3800
+//     // - http://localhost:3800/api/v1
+//     // - https://example.com/api/v2
+//     if (/\/api\/v\d+$/i.test(trimmed)) return trimmed;
 
-    return `${trimmed}/api/v1`;
+//     return `${trimmed}/api/v1`;
+// };
+
+// esto es para que la URL del backend se configure automáticamente según el entorno y la forma en que se accede al frontend.
+const resolveBackendUrl = (): string => {
+    const raw = import.meta.env.PUBLIC_BACKEND_URL?.trim();
+    if (!raw) return "/api/v1";
+
+    // Cuando se abre el frontend desde otra PC usando una IP/hostname de red,
+    // `localhost` en el navegador apunta a la PC cliente, no a la PC servidor.
+    // Si el backend está configurado como localhost, lo reescribimos al hostname actual.
+    if (typeof window !== "undefined") {
+        const browserHost = window.location.hostname;
+        const isRemoteBrowser = browserHost !== "localhost" && browserHost !== "127.0.0.1";
+
+        if (isRemoteBrowser && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(raw)) {
+            const rewritten = raw.replace(
+                /^((?:https?:\/\/))(localhost|127\.0\.0\.1)/i,
+                `$1${browserHost}`
+            );
+            return rewritten;
+        }
+    }
+
+    return raw;
 };
 
-export const API_URL = import.meta.env.PUBLIC_BACKEND_URL
-    ? normalizeBackendBaseUrl(import.meta.env.PUBLIC_BACKEND_URL)
-    : "/api/v1";
+export const API_URL = resolveBackendUrl();
 import Cookies from "js-cookie";
 import type { AstroCookies } from "astro";
 
