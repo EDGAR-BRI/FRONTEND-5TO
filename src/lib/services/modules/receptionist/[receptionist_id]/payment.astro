@@ -1,0 +1,46 @@
+---
+import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+import PaymentsTable from '@/components/react/receptionist/PaymentsTable';
+import type { Payment } from '@/components/react/receptionist/PaymentsTable';
+import PaymentAction from '@/components/react/receptionist/PaymentAction';
+
+const payments: Payment[] = [
+  { id: 'PAY-001', patient: 'Ana Sofía Parra',     time: '08:12 AM', method: 'Efectivo',       amount: 40.00,  currency: 'USD', status: 'Completado', doctor: 'Dr. Carlos Méndez'  },
+  { id: 'PAY-002', patient: 'Jorge Luis Rivas',   time: '09:30 AM', method: 'Transferencia', amount: 150.00, currency: 'Bs',  status: 'Completado', doctor: 'Dra. Luisa Vargas'  },
+  { id: 'PAY-003', patient: 'Marta Sánchez',      time: '10:15 AM', method: 'Tarjeta',       amount: 55.00,  currency: 'USD', status: 'Pendiente',  doctor: 'Dra. Patricia Mora' },
+  { id: 'PAY-004', patient: 'Roberto Fuentes',    time: '11:00 AM', method: 'Efectivo',       amount: 40.00,  currency: 'USD', status: 'Completado', doctor: 'Dr. Héctor Torres'  },
+  { id: 'PAY-005', patient: 'Carmen López',       time: '11:45 AM', method: 'Transferencia', amount: 80.00,  currency: 'USD', status: 'Completado', doctor: 'Dra. Valentina Ríos'},
+  { id: 'PAY-006', patient: 'Luis Hernández',     time: '12:30 PM', method: 'Tarjeta',       amount: 65.00,  currency: 'USD', status: 'Pendiente',  doctor: 'Dr. Carlos Méndez'  },
+  { id: 'PAY-007', patient: 'Patricia Vásquez',   time: '01:00 PM', method: 'Efectivo',       amount: 40.00,  currency: 'USD', status: 'Anulado',    doctor: 'Dra. Luisa Vargas'  },
+  { id: 'PAY-008', patient: 'Miguel Ángel Torres',time: '02:15 PM', method: 'Transferencia', amount: 120.00, currency: 'Bs',  status: 'Completado', doctor: 'Dr. Héctor Torres'  },
+];
+---
+
+<ReceptionistLayout title="Gestión de Pagos – Recepción">
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in w-full min-w-0 overflow-x-hidden">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <a href="overview" class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors">
+            <i class="fa-solid fa-arrow-left mr-1"></i>Dashboard
+          </a>
+          <span class="text-cool-gray-30">/</span>
+          <span class="text-body-xs text-cool-gray-50">Pagos</span>
+        </div>
+        <h1 class="text-heading-4 text-primary-800">
+          <i class="fa-solid fa-dollar-sign text-primary-500 mr-2"></i>
+          Gestión de Pagos
+        </h1>
+        <p class="text-body-s text-cool-gray-50 mt-0.5">
+          Registra y monitorea los ingresos del día.
+        </p>
+      </div>
+
+      <PaymentAction client:load />
+    </div>
+
+    <PaymentsTable client:only="react" payments={payments} />
+
+  </div>
+</ReceptionistLayout>

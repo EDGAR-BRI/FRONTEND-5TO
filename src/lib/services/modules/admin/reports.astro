@@ -1,0 +1,244 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { Button } from "@/components/react/primary/Button";
+import { LuTrendingUp, LuStethoscope, LuUserPlus, LuBan } from "react-icons/lu";
+
+// Fake data for charts
+const monthlyRevenue = [
+	{ month: "Ene", value: 12500 },
+	{ month: "Feb", value: 15200 },
+	{ month: "Mar", value: 14800 },
+	{ month: "Abr", value: 18500 },
+	{ month: "May", value: 17200 },
+	{ month: "Jun", value: 21000 },
+];
+
+const maxRevenue = Math.max(...monthlyRevenue.map((d) => d.value));
+
+const specialtiesStats = [
+	{ name: "Cardiología", percentage: 35, color: "bg-primary-500" },
+	{ name: "Pediatría", percentage: 25, color: "bg-success" },
+	{ name: "Medicina General", percentage: 20, color: "bg-warning" },
+	{ name: "Dermatología", percentage: 15, color: "bg-cool-gray-50" },
+	{ name: "Otros", percentage: 5, color: "bg-cool-gray-30" },
+];
+
+const printStats = () => {
+	window.print();
+};
+---
+
+<AdminLayout title="Reportes y Estadísticas | Admin">
+	<div class="p-6 md:p-8 space-y-8">
+		{/* Header */}
+		<header
+			class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+		>
+			<div>
+				<h1 class="text-3xl font-bold text-gray-800">
+					Reportes Financieros y de Uso
+				</h1>
+				<p class="text-gray-500 mt-1">
+					Análisis de rendimiento, ingresos y distribución de
+					pacientes.
+				</p>
+			</div>
+			<div class="flex gap-3">
+				<Button label="Exportar PDF" variant="secondary">
+					<i class="fa-solid fa-file-pdf"></i>
+					Exportar PDF
+				</Button>
+				<Button label="Imprimir Reporte" variant="primary">
+					<i class="fa-solid fa-print"></i>
+					Imprimir Reporte
+				</Button>
+			</div>
+		</header>
+
+		{/* Summary Cards */}
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard
+				title="Ingresos Totales (Mes)"
+				value="$21,000"
+				trend="12.5%"
+				trendUp={true}
+				color="success"
+			>
+				<LuTrendingUp slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard
+				title="Consultas Atendidas"
+				value="1,420"
+				trend="5.2%"
+				trendUp={true}
+				color="primary"
+			>
+				<LuStethoscope slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard
+				title="Pacientes Nuevos"
+				value="84"
+				trend="2.1%"
+				trendUp={false}
+				color="warning"
+			>
+				<LuUserPlus slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard
+				title="Cancelaciones"
+				value="12"
+				trend="0.5%"
+				trendUp={false}
+				color="danger"
+			>
+				<LuBan slot="icon" size={20} />
+			</StatsCard>
+		</section>
+
+		{/* Charts Section */}
+		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			{/* Bar Chart: Ingresos por Mes */}
+			<div
+				class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6"
+			>
+				<div class="flex justify-between items-center mb-6">
+					<h2 class="text-lg font-bold text-gray-800">
+						Evolución de Ingresos
+					</h2>
+					<select
+						class="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-primary-500 focus:border-primary-500"
+					>
+						<option>Últimos 6 meses</option>
+						<option>Este año</option>
+					</select>
+				</div>
+
+				{/* CSS Bar Chart */}
+				<div
+					class="h-64 flex items-end justify-between gap-2 sm:gap-4 pt-4 border-b border-gray-100 pb-2"
+				>
+					{
+						monthlyRevenue.map((data) => (
+							<div class="relative flex flex-col items-center flex-1 group">
+								{/* Tooltip on hover */}
+								<div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10">
+									${data.value.toLocaleString()}
+								</div>
+								{/* Bar */}
+								<div
+									class="w-full bg-primary-200 hover:bg-primary-400 transition-colors rounded-t-md"
+									style={`height: ${(data.value / maxRevenue) * 100}%`}
+								/>
+								{/* X-axis label */}
+								<span class="text-xs text-gray-500 mt-2">
+									{data.month}
+								</span>
+							</div>
+						))
+					}
+				</div>
+			</div>
+
+			{/* Progress Bars: Specialties Distribution */}
+			<div
+				class="bg-primary-100 rounded-xl border border-primary-200 p-6 flex flex-col"
+			>
+				<h2 class="text-lg font-bold text-gray-800 mb-6">
+					Demanda por Especialidad
+				</h2>
+
+				<div class="space-y-6 flex-1 justify-center flex flex-col">
+					{
+						specialtiesStats.map((stat) => (
+							<div>
+								<div class="flex justify-between items-center mb-1">
+									<span class="text-sm font-medium text-gray-700">
+										{stat.name}
+									</span>
+									<span class="text-sm font-bold text-gray-900">
+										{stat.percentage}%
+									</span>
+								</div>
+								<div class="w-full bg-gray-100 rounded-full h-2.5">
+									<div
+										class={`h-2.5 rounded-full ${stat.color}`}
+										style={`width: ${stat.percentage}%`}
+									/>
+								</div>
+							</div>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		{/* Bottom Section: Recent Activity / Usage */}
+		<section
+			class="bg-primary-100 rounded-xl border border-primary-200 p-6"
+		>
+			<h2 class="text-lg font-bold text-gray-800 mb-6">
+				Ocupación del Centro Médico (Citas)
+			</h2>
+
+			{/* Fake Heatmap / Activity Grid */}
+			<div class="flex gap-2 overflow-x-auto pb-2">
+				{/* Days Column */}
+				<div
+					class="flex flex-col gap-2 pt-6 text-xs text-gray-500 font-medium justify-around pr-2"
+				>
+					<span>Lun</span>
+					<span>Mié</span>
+					<span>Vie</span>
+				</div>
+
+				{/* Activity Blocks */}
+				<div class="flex flex-1 gap-1">
+					{
+						Array.from({ length: 12 }).map((_, colIndex) => (
+							<div class="flex flex-col gap-1 flex-1">
+								{/* Column Header (e.g. Weeks) */}
+								<span class="text-[10px] text-gray-400 mb-1 text-center">
+									Sem {colIndex + 1}
+								</span>
+								{Array.from({ length: 7 }).map(
+									(_, rowIndex) => {
+										// Randomize intensity based on position
+										const intensity =
+											Math.random() > 0.6
+												? "bg-primary-500"
+												: Math.random() > 0.4
+													? "bg-primary-300"
+													: Math.random() > 0.2
+														? "bg-primary-200"
+														: "bg-gray-100";
+										return (
+											<div
+												class={`w-full aspect-square rounded-sm ${intensity} hover:ring-2 hover:ring-gray-300 cursor-pointer transition-all`}
+												title={`Densidad estimada de citas`}
+											/>
+										);
+									},
+								)}
+							</div>
+						))
+					}
+				</div>
+			</div>
+			<div
+				class="mt-4 flex items-center justify-end gap-2 text-xs text-gray-500"
+			>
+				<span>Menos</span>
+				<div class="flex gap-1">
+					<div class="w-3 h-3 rounded-sm bg-gray-100"></div>
+					<div class="w-3 h-3 rounded-sm bg-primary-200"></div>
+					<div class="w-3 h-3 rounded-sm bg-primary-300"></div>
+					<div class="w-3 h-3 rounded-sm bg-primary-500"></div>
+				</div>
+				<span>Más</span>
+			</div>
+		</section>
+	</div>
+</AdminLayout>

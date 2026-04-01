@@ -1,0 +1,34 @@
+---
+export const prerender = true;
+
+import Layout from "@/layouts/Layout.astro";
+import clinica from "@/assets/clinica.svg";
+import fondo from "@/assets/fondo.avif";
+import UserLogo from "@/assets/User.png";
+import RegisterForm from "@/components/react/auth/RegisterForm";
+---
+
+<Layout>
+	<main class="flex flex-row bg-white h-screen w-screen">
+		<section class="relative bg-primary-700 w-3/5 flex items-center justify-center overflow-hidden">
+			<img class="absolute inset-0 w-full h-full object-cover opacity-40" src={fondo.src} alt="Fondo" />
+			<div class="absolute inset-0 bg-primary-700/60" aria-hidden="true"></div>
+			<img class="relative z-10 size-75 object-contain" src={clinica.src} alt="Clinica" />
+		</section>
+		<section class="w-2/5 flex flex-col py-5 px-10 justify">
+			<header class="flex flex-col gap-2">
+				<h2 class="text-xl font-bold">Crear cuenta</h2>
+				<p class="text-gray-400 text-sm">Completa los datos para registrar un usuario.</p>
+			</header>
+			<main class="flex-1 flex flex-col items-center justify-center px-16">
+				<div class="w-full max-w-md flex flex-col gap-2">
+					<div class="flex items-center justify-center mb-10">
+						<img class="w-40 h-auto object-contain" src={UserLogo.src} alt="" />
+					</div>
+
+					<RegisterForm client:load className="flex flex-col gap-6 border-b-2 border-b-gray-400 pb-10" />
+				</div>
+			</main>
+		</section>
+	</main>
+</Layout>
