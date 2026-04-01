@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "docs:preview": "astro build && astro preview --port 0",
     "astro": "astro"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@astrojs/node": "^9.5.5",
     "@types/js-cookie": "^3.0.6",
     "@types/react-big-calendar": "^1.16.3",
     "js-cookie": "^3.0.5",
