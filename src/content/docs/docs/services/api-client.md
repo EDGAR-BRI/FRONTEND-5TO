@@ -14,6 +14,9 @@ Esta página documenta el helper `src/lib/api.ts` que centraliza:
 ## Advertencia (cómo se deben crear los services)
 
 - Crea tus services en `src/lib/services/`.
+- Mantén la estructura **subcarpeta + interface + service**:
+  - `src/lib/services/<modulo>/<modulo>.interface.ts`
+  - `src/lib/services/<modulo>/<modulo>.service.ts`
 - Dentro del service usa `api()` desde `src/lib/api.ts` (compila a `api.js`).
 - En el frontend (React/Astro) importa y usa el service; evita hacer `fetch()` directo.
 
@@ -86,37 +89,35 @@ Si el backend responde `401`:
 
 Nota: para otros status codes (400/404/500), `api()` **no** lanza error; devuelve el `Response` y el caller decide.
 
+Tip: si el backend responde con un envelope `{ message, data, error }`, centraliza el parseo con `readEnvelopeData` en `src/lib/services/_shared/envelope.ts`.
+
 ## Ejemplos de uso
 
-### Ejemplo recomendado: crear un service y usarlo en la UI
+### Ejemplo real (Auth): service + interface
 
-Service (ejemplo):
+Estructura:
+
+```
+src/lib/services/auth/
+  auth.service.ts
+  auth.interface.ts
+```
+
+En `auth.service.ts` se usa `api()` para llamar al backend, y los tipos viven en `auth.interface.ts`.
+
+### Ejemplo recomendado: usar el service desde la UI
+
+Uso en React/Astro (ejemplo):
 
 ```ts
-// src/lib/services/finance/invoices.service.ts
-import { api } from "@/lib/api";
+import { loginWithCredentials } from "@/lib/services/auth/auth.service";
 
-export async function listInvoices() {
-  const res = await api("/finance/invoices", { method: "GET" });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Failed to load invoices (${res.status}): ${text}`);
-  }
-  return res.json();
+export async function doLogin(ci: string, password: string) {
+  return loginWithCredentials({ ci, password });
 }
 ```
 
-Uso en React (ejemplo):
-
-```ts
-import { listInvoices } from "@/lib/services/finance/invoices.service";
-
-export async function loadInvoices() {
-  return listInvoices();
-}
-```
-
-### SSR (Astro): pasar cookies al service
+### SSR (Astro): pasar cookies al service (cuando aplique)
 
 Service (ejemplo):
 

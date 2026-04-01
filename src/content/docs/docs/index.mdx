@@ -21,7 +21,7 @@ import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Empezar
 
-<Aside type="warning">
+<Aside type="caution">
   Para consumir el backend desde el frontend: **no** hagas `fetch()` directo en componentes.
   Debes crear un **service** en `src/lib/services/` y ese service debe usar el cliente HTTP `src/lib/api.ts` (en runtime es `api.js`).
 </Aside>
