@@ -6,6 +6,7 @@ import { StatsCard } from '@/components/react/primary/StatsCard';
 import { AddTransactionModal } from './AddTransactionModal';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { api } from '@/lib/api';
 import {
     LuTrendingUp, LuTrendingDown, LuDollarSign, LuClock,
     LuDownload, LuEllipsisVertical, LuChevronDown, LuCircleDollarSign
@@ -127,11 +128,23 @@ export const FinanceDashboard = () => {
     });
 
     useEffect(() => {
-        // Fetch summary data
-        fetch('/api/v1/admin/financial-summary')
-            .then(res => res.json())
-            .then(data => setSummary(data))
-            .catch(err => console.error("Error fetching summary:", err));
+        let mounted = true;
+        (async () => {
+            try {
+                const res = await api('/admin/financial-summary', { method: 'GET' });
+                if (!res.ok) return;
+                const json = await res.json();
+                const data = (json && typeof json === 'object' && 'data' in json) ? (json as any).data : json;
+                if (mounted) setSummary(data);
+            } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error('Error fetching summary:', err);
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
     }, []);
 
     return (

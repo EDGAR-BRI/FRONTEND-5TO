@@ -8,6 +8,7 @@ import { LuSearch, LuUsers, LuChevronDown, LuUserCheck, LuUserX, LuStethoscope }
 import type { User, UserRole, UserStatus } from '@/types/User';
 import { Select } from '../primary/Select';
 import { Field } from '../primary/Field';
+import { api } from '@/lib/api';
 
 const ALL_ROLES: (UserRole | 'TODOS')[] = ['TODOS', 'ADMIN', 'DOCTOR', 'RECEPCIONISTA', 'PACIENTE'];
 
@@ -66,10 +67,22 @@ export default function UsersDashboard() {
     const [summary, setSummary] = useState({ total: 0, activos: 0, inactivos: 0, doctores: 0 });
 
     useEffect(() => {
-        fetch('/api/v1/admin/users-summary')
-            .then(res => res.json())
-            .then(data => setSummary(data))
-            .catch(() => { });
+        let mounted = true;
+        (async () => {
+            try {
+                const res = await api('/admin/users-summary', { method: 'GET' });
+                if (!res.ok) return;
+                const json = await res.json();
+                const data = (json && typeof json === 'object' && 'data' in json) ? (json as any).data : json;
+                if (mounted) setSummary(data);
+            } catch {
+                // ignore
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
     }, []);
 
     const params = new URLSearchParams();
