@@ -1,21 +1,16 @@
-// Si no hay backend configurado, apuntamos a los endpoints locales de Astro.
-// Esto permite trabajar con mocks durante el desarrollo sin levantar un servidor aparte.
-// const normalizeBackendBaseUrl = (raw: string): string => {
-//     const trimmed = raw.trim().replace(/\/+$/, "");
-
-//     // Allow setting either:
-//     // - http://localhost:3800
-//     // - http://localhost:3800/api/v1
-//     // - https://example.com/api/v2
-//     if (/\/api\/v\d+$/i.test(trimmed)) return trimmed;
-
-//     return `${trimmed}/api/v1`;
-// };
-
-// esto es para que la URL del backend se configure automáticamente según el entorno y la forma en que se accede al frontend.
+// La URL del backend debe apuntar al backend real (no mocks locales de Astro).
+// Se configura con `PUBLIC_BACKEND_URL` (ej: http://localhost:3800/api/v1).
 const resolveBackendUrl = (): string => {
     const raw = import.meta.env.PUBLIC_BACKEND_URL?.trim();
-    if (!raw) return "/api/v1";
+
+    // En desarrollo, si no se configuró explícitamente, usamos el backend local real.
+    // En producción, exigimos que venga configurado.
+    const resolved = raw || (import.meta.env.DEV ? "http://localhost:3800/api/v1" : "");
+    if (!resolved) {
+        throw new Error(
+            "Missing PUBLIC_BACKEND_URL. Set it to your backend base URL (e.g. http://localhost:3800/api/v1)."
+        );
+    }
 
     // Cuando se abre el frontend desde otra PC usando una IP/hostname de red,
     // `localhost` en el navegador apunta a la PC cliente, no a la PC servidor.
@@ -24,8 +19,8 @@ const resolveBackendUrl = (): string => {
         const browserHost = window.location.hostname;
         const isRemoteBrowser = browserHost !== "localhost" && browserHost !== "127.0.0.1";
 
-        if (isRemoteBrowser && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(raw)) {
-            const rewritten = raw.replace(
+        if (isRemoteBrowser && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(resolved)) {
+            const rewritten = resolved.replace(
                 /^((?:https?:\/\/))(localhost|127\.0\.0\.1)/i,
                 `$1${browserHost}`
             );
@@ -33,7 +28,7 @@ const resolveBackendUrl = (): string => {
         }
     }
 
-    return raw;
+    return resolved;
 };
 
 export const API_URL = resolveBackendUrl();
