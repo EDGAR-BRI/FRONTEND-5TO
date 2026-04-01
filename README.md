@@ -1,46 +1,39 @@
-# Astro Starter Kit: Basics
+# FRONTEND-5TO
+
+Frontend del proyecto (Astro + React) con documentación en Starlight.
+
+## Requisitos
+
+- Node.js (recomendado: LTS)
+
+## Instalación
+
+Importante: este workspace tiene múltiples carpetas (`BACKEND-5TO` y `FRONTEND-5TO`).
+Los comandos de npm deben ejecutarse dentro de cada carpeta.
 
 ```sh
-npm create astro@latest -- --template basics
+cd FRONTEND-5TO
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Desarrollo
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```sh
+cd FRONTEND-5TO
+npm run dev
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+Por defecto corre en `http://localhost:4321` (o el puerto que indique Astro).
 
-## 🧞 Commands
+## Build / Preview
 
-All commands are run from the root of the project, from a terminal:
+```sh
+cd FRONTEND-5TO
+npm run build
+npm run preview
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Documentación
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- La doc vive en `src/content/docs/docs/`.
+- El sitio de docs se sirve con el mismo `npm run dev`.

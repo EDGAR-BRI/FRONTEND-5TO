@@ -1,6 +1,37 @@
-// Si no hay backend configurado, apuntamos a los endpoints locales de Astro.
-// Esto permite trabajar con mocks durante el desarrollo sin levantar un servidor aparte.
-export const API_URL = import.meta.env.PUBLIC_BACKEND_URL || "/api/v1";
+// La URL del backend debe apuntar al backend real (no mocks locales de Astro).
+// Se configura con `PUBLIC_BACKEND_URL` (ej: http://localhost:3800/api/v1).
+const resolveBackendUrl = (): string => {
+    const raw = import.meta.env.PUBLIC_BACKEND_URL?.trim();
+
+    // En desarrollo, si no se configuró explícitamente, usamos el backend local real.
+    // En producción, exigimos que venga configurado.
+    const resolved = raw || (import.meta.env.DEV ? "http://localhost:3800/api/v1" : "");
+    if (!resolved) {
+        throw new Error(
+            "Missing PUBLIC_BACKEND_URL. Set it to your backend base URL (e.g. http://localhost:3800/api/v1)."
+        );
+    }
+
+    // Cuando se abre el frontend desde otra PC usando una IP/hostname de red,
+    // `localhost` en el navegador apunta a la PC cliente, no a la PC servidor.
+    // Si el backend está configurado como localhost, lo reescribimos al hostname actual.
+    if (typeof window !== "undefined") {
+        const browserHost = window.location.hostname;
+        const isRemoteBrowser = browserHost !== "localhost" && browserHost !== "127.0.0.1";
+
+        if (isRemoteBrowser && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(resolved)) {
+            const rewritten = resolved.replace(
+                /^((?:https?:\/\/))(localhost|127\.0\.0\.1)/i,
+                `$1${browserHost}`
+            );
+            return rewritten;
+        }
+    }
+
+    return resolved;
+};
+
+export const API_URL = resolveBackendUrl();
 import Cookies from "js-cookie";
 import type { AstroCookies } from "astro";
 

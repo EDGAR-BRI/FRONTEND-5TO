@@ -46,6 +46,13 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Services',
+          items: [
+            { label: 'Introducción', link: '/docs/services/' },
+            { label: 'Cliente HTTP del Frontend', link: '/docs/services/api-client/' },
+          ],
+        },
+        {
           label: 'Módulos Backend',
           items: [
             { label: 'Introducción al Backend', link: '/docs/api/' },
