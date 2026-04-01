@@ -1,6 +1,20 @@
 // Si no hay backend configurado, apuntamos a los endpoints locales de Astro.
 // Esto permite trabajar con mocks durante el desarrollo sin levantar un servidor aparte.
-export const API_URL = import.meta.env.PUBLIC_BACKEND_URL || "/api/v1";
+const normalizeBackendBaseUrl = (raw: string): string => {
+    const trimmed = raw.trim().replace(/\/+$/, "");
+
+    // Allow setting either:
+    // - http://localhost:3800
+    // - http://localhost:3800/api/v1
+    // - https://example.com/api/v2
+    if (/\/api\/v\d+$/i.test(trimmed)) return trimmed;
+
+    return `${trimmed}/api/v1`;
+};
+
+export const API_URL = import.meta.env.PUBLIC_BACKEND_URL
+    ? normalizeBackendBaseUrl(import.meta.env.PUBLIC_BACKEND_URL)
+    : "/api/v1";
 import Cookies from "js-cookie";
 import type { AstroCookies } from "astro";
 
