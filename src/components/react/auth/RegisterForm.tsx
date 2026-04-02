@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Button } from "@/components/react/primary/Button";
+import { Field } from "@/components/react/primary/Field";
+import { Badge } from "@/components/react/primary/Badge";
 import { registerUser } from "@/lib/services/auth/auth.service";
 
 type Props = {
@@ -10,21 +12,31 @@ export default function RegisterForm({ className }: Props) {
 	const [ci, setCi] = useState("");
 	const [name, setName] = useState("");
 	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
 
-	const patientRoleLabel = useMemo(() => "Paciente (PACIENTE)", []);
+	const passwordMismatch = useMemo(() => {
+		if (!password || !confirmPassword) return false;
+		return password !== confirmPassword;
+	}, [password, confirmPassword]);
 
 	const disabled = useMemo(() => {
-		return loading || !ci.trim() || !name.trim() || !password;
-	}, [loading, ci, name, password]);
+		return loading || !ci.trim() || !name.trim() || !password || !confirmPassword;
+	}, [loading, ci, name, password, confirmPassword]);
 
 	const onSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError(null);
 		setSuccess(null);
+
+		if (password !== confirmPassword) {
+			setError("Las contraseñas no coinciden");
+			return;
+		}
+
 		setLoading(true);
 
 		try {
@@ -36,6 +48,7 @@ export default function RegisterForm({ className }: Props) {
 
 			setSuccess("Usuario creado. Ya puedes iniciar sesión.");
 			setPassword("");
+			setConfirmPassword("");
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "No se pudo crear el usuario");
 		} finally {
@@ -45,76 +58,77 @@ export default function RegisterForm({ className }: Props) {
 
 	return (
 		<form className={className} onSubmit={onSubmit}>
-			<div className="flex flex-col gap-1">
-				<label className="text-sm font-semibold text-gray-500" htmlFor="ci">
-					CI
-				</label>
-				<input
-					className="p-2 border placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-primary-600 focus:border-2 focus:outline-none"
-					type="text"
-					name="ci"
-					id="ci"
-					placeholder="Ej: 12345678"
-					inputMode="numeric"
-					autoComplete="username"
-					value={ci}
-					onChange={(e) => setCi(e.target.value)}
-					disabled={loading}
-					required
-				/>
-			</div>
+			<Field
+				name="ci"
+				label="CI"
+				placeholder="Ej: 12345678"
+				value={ci}
+				onChange={(e) => setCi(e.target.value)}
+				disabled={loading}
+				required
+				inputMode="numeric"
+				pattern="^[0-9]{6,10}$"
+				minLength={6}
+				maxLength={10}
+				title="La cédula debe contener solo números (entre 6 y 10 dígitos)"
+				autoComplete="username"
+			/>
 
-			<div className="flex flex-col gap-1">
-				<label className="text-sm font-semibold text-gray-500" htmlFor="name">
-					Nombre
-				</label>
-				<input
-					className="p-2 border placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-primary-600 focus:border-2 focus:outline-none"
-					type="text"
-					name="name"
-					id="name"
-					placeholder="Ej: Juan Pérez"
-					autoComplete="name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					disabled={loading}
-					required
-				/>
-			</div>
+			<Field
+				name="name"
+				label="Nombre"
+				placeholder="Ej: Juan Pérez"
+				value={name}
+				onChange={(e) => setName(e.target.value)}
+				disabled={loading}
+				required
+				minLength={2}
+				maxLength={100}
+				autoComplete="name"
+			/>
 
-			<div className="flex flex-col gap-1">
-				<label className="text-sm font-semibold text-gray-500" htmlFor="password">
-					Contraseña
-				</label>
-				<input
-					className="p-2 border placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-primary-600 focus:border-2 focus:outline-none"
-					type="password"
-					name="password"
-					id="password"
-					placeholder="Mínimo 6 caracteres"
-					autoComplete="new-password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					disabled={loading}
-					required
-				/>
-			</div>
+			<Field
+				name="password"
+				label="Contraseña"
+				type="password"
+				placeholder="Mínimo 6 caracteres"
+				value={password}
+				onChange={(e) => setPassword(e.target.value)}
+				disabled={loading}
+				required
+				minLength={6}
+				autoComplete="new-password"
+				showTogglePassword
+			/>
 
-			<div className="flex flex-col gap-1">
-				<label className="text-sm font-semibold text-gray-500">Rol</label>
-				<div className="p-2 border rounded-md border-gray-400 bg-gray-50 text-gray-600 font-semibold">
-					{patientRoleLabel}
-				</div>
-			</div>
+			<Field
+				name="confirmPassword"
+				label="Confirmar contraseña"
+				type="password"
+				placeholder="Repite la contraseña"
+				value={confirmPassword}
+				onChange={(e) => setConfirmPassword(e.target.value)}
+				disabled={loading}
+				required
+				minLength={6}
+				autoComplete="new-password"
+				showTogglePassword
+			/>
 
-			{error ? <p className="text-sm text-error font-semibold">{error}</p> : null}
-			{success ? <p className="text-sm text-primary-700 font-semibold">{success}</p> : null}
+			{passwordMismatch ? (
+				<Badge className="w-fit" styles={{ bg: "bg-error/10", text: "text-error", border: "border-error/30" }}>
+					Las contraseñas no coinciden
+				</Badge>
+			) : null}
+			{error ? (
+				<Badge className="w-fit" styles={{ bg: "bg-error/10", text: "text-error", border: "border-error/30" }}>
+					{error}
+				</Badge>
+			) : null}
+			{success ? <Badge className="w-fit">{success}</Badge> : null}
 
 			<div className="flex flex-col gap-3">
 				<Button label="Crear cuenta" type="submit" adaptive loading={loading} disabled={disabled} />
-				<a className="text-center text-sm font-bold text-gray-400" href="/login">
-					Volver a login
-				</a>
 			</div>
 		</form>
 	);

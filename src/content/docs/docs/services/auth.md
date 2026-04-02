@@ -20,7 +20,7 @@ src/lib/services/auth/
 
 - `POST /api/v1/auth/login`
 - `GET /api/v1/auth/role`
-- `POST /api/v1/auth/user`
+- `POST /api/v1/auth/register`
 
 ## Funciones disponibles
 
@@ -44,6 +44,10 @@ Uso típico: después de un login exitoso.
 - Return: `Promise<RegisterUserResponseData>`
 
 Crea un usuario (signup) usando `POST /auth/user`.
+
+Crea un usuario (signup) usando `POST /auth/register`.
+
+Nota: el recurso `POST /auth/user` queda para casos administrativos/CRUD de usuarios.
 
 Nota: el service devuelve el tipo del `data` del backend (no `any`).
 

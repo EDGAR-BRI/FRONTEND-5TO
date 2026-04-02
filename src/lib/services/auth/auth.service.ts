@@ -32,7 +32,7 @@ export const listRoles = async (): Promise<Role[]> => {
 };
 
 export const registerUser = async (payload: RegisterUserRequest): Promise<RegisterUserResponseData> => {
-	const response = await api("/auth/user", {
+	const response = await api("/auth/register", {
 		method: "POST",
 		body: JSON.stringify(payload),
 	});
