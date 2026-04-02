@@ -6,7 +6,7 @@ description: Tarjeta de estadística con soporte para tendencias, íconos, color
 import StatsCardDemo, { StatsCardDefaultDemo, StatsCardCompactDemo, StatsCardNegativeDemo, StatsCardGridDemo } from '@/components/docs/StatsCardDemo';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 import { CodePreview } from '@/components/docs/CodePreview';
-import { UsersIcon, CalendarIcon, TrendingDownIcon } from 'lucide-react';
+import { FaUsers, FaCalendarDays, FaArrowTrendDown } from 'react-icons/fa6';
 
 ## Demo en vivo
 
@@ -46,7 +46,7 @@ Layout vertical. Ideal para grids de estadísticas en la parte superior de un da
   trendUp={true}
   trendLabel="vs mes anterior"
   color="primary"
-  icon={<UsersIcon className="w-5 h-5" />}
+  icon={<FaUsers className="w-5 h-5" />}
 />`} client:load>
   <StatsCardDefaultDemo />
 </CodePreview>
@@ -62,7 +62,7 @@ Layout horizontal con ícono a la izquierda. Ideal para listas de stats o sideba
   subTextClass="text-yellow-600"
   color="warning"
   variant="compact"
-  icon={<CalendarIcon className="w-5 h-5" />}
+  icon={<FaCalendarDays className="w-5 h-5" />}
 />`} client:load>
   <StatsCardCompactDemo />
 </CodePreview>
@@ -75,7 +75,7 @@ Layout horizontal con ícono a la izquierda. Ideal para listas de stats o sideba
   trend="5.1%"
   trendUp={false}
   color="danger"
-  icon={<TrendingDownIcon className="w-5 h-5" />}
+  icon={<FaArrowTrendDown className="w-5 h-5" />}
 />`} client:load>
   <StatsCardNegativeDemo />
 </CodePreview>
@@ -83,10 +83,10 @@ Layout horizontal con ícono a la izquierda. Ideal para listas de stats o sideba
 ## Grid de estadísticas
 
 <CodePreview code={`<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-  <StatsCard title="Pacientes" value="1,248" trend="8%" trendUp={true} icon={<UsersIcon className="w-5 h-5" />} />
-  <StatsCard title="Citas hoy" value={24} subText="6 pendientes" icon={<CalendarIcon className="w-5 h-5" />} color="warning" />
-  <StatsCard title="Ingresos" value="$12,400" trend="3%" trendUp={false} icon={<TrendingDownIcon className="w-5 h-5" />} color="danger" />
-  <StatsCard title="Doctores" value={8} subText="2 de guardia" icon={<UsersIcon className="w-5 h-5" />} color="success" />
+  <StatsCard title="Pacientes" value="1,248" trend="8%" trendUp={true} icon={<FaUsers className="w-5 h-5" />} />
+  <StatsCard title="Citas hoy" value={24} subText="6 pendientes" icon={<FaCalendarDays className="w-5 h-5" />} color="warning" />
+  <StatsCard title="Ingresos" value="$12,400" trend="3%" trendUp={false} icon={<FaArrowTrendDown className="w-5 h-5" />} color="danger" />
+  <StatsCard title="Doctores" value={8} subText="2 de guardia" icon={<FaUsers className="w-5 h-5" />} color="success" />
 </div>`} client:load>
   <StatsCardGridDemo />
 </CodePreview>

@@ -1,0 +1,112 @@
+---
+title: Íconos
+description: Estándar de iconos del proyecto (solo react-icons/fa6), con ejemplos y links oficiales.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Estándar del proyecto
+
+En este proyecto **todos los iconos de UI** deben venir de:
+
+```ts
+import { ... } from 'react-icons/fa6';
+```
+
+Esto evita mezclar fuentes distintas (CDN/clases de FontAwesome, `lucide-react`, `react-icons/lu`, SVG inline, etc.) y hace que los iconos sean consistentes en todo el frontend.
+
+<Aside type="note">
+  Se permiten SVGs como archivos **solo para assets de marca** (por ejemplo el logo), no para iconos de UI.
+</Aside>
+
+---
+
+## Uso en React (TSX)
+
+### Importar y renderizar
+
+```tsx
+import { FaCalendarDays, FaCircleUser } from 'react-icons/fa6';
+
+export function Example() {
+  return (
+    <div className="flex items-center gap-2">
+      <FaCalendarDays className="text-lg" />
+      <span>Agenda</span>
+
+      <FaCircleUser className="text-lg" />
+      <span>Perfil</span>
+    </div>
+  );
+}
+```
+
+### Tamaño y estilos
+
+- Usa `className` con Tailwind para color/tamaño (`text-*`).
+- Si quieres un tamaño fijo, usa `size={20}` (en px).
+
+```tsx
+import { FaSpinner } from 'react-icons/fa6';
+
+<FaSpinner className="animate-spin text-xl" aria-hidden="true" />
+```
+
+---
+
+## Uso en Astro (.astro)
+
+Puedes importar los iconos en el frontmatter y usarlos como componentes en el template:
+
+```astro
+---
+import { FaUserDoctor, FaUsers } from 'react-icons/fa6';
+---
+
+<div class="flex items-center gap-2">
+  <FaUserDoctor className="text-lg" />
+  <span>Doctor</span>
+
+  <FaUsers className="text-lg" />
+  <span>Pacientes</span>
+</div>
+```
+
+---
+
+## Uso en MDX (documentación)
+
+En páginas `.mdx` también puedes importar y renderizar iconos:
+
+```mdx
+import { FaCircleInfo } from 'react-icons/fa6';
+
+<FaCircleInfo className="inline-block align-middle" /> Texto informativo
+```
+
+---
+
+## Accesibilidad (rápido)
+
+- Icono **decorativo**: usa `aria-hidden="true"`.
+- Icono como **única señal** (ej. botón solo con icono): pon el texto accesible en el botón (`aria-label`).
+
+```tsx
+import { FaXmark } from 'react-icons/fa6';
+
+<button type="button" aria-label="Cerrar">
+  <FaXmark aria-hidden="true" />
+</button>
+```
+
+---
+
+## Buscar iconos (links oficiales)
+
+- React Icons (docs oficial): https://react-icons.github.io/react-icons/
+- Catálogo de iconos FA6 en React Icons: https://react-icons.github.io/react-icons/icons/fa6/
+- Catálogo de Font Awesome (para inspirarte y ubicar nombres/variantes): https://fontawesome.com/icons
+
+<Aside type="tip">
+  Tip: en el catálogo de React Icons (FA6) puedes buscar por nombre y luego copiar el export (ej. `FaCalendarDays`) para importarlo desde `react-icons/fa6`.
+</Aside>
