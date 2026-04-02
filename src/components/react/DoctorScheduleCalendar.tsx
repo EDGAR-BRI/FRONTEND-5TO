@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
-import type { Formats, BackgroundEvent } from 'react-big-calendar'
+import type { Formats } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, addDays, setHours, setMinutes } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -32,6 +32,14 @@ export interface BookedAppointment {
   status: 'Realizada' | 'Confirmada' | 'Sin Confirmar' | 'Cancelada'
   type: string
   price: string
+}
+
+type CalendarEvent = {
+  id?: number
+  title: string
+  start: Date
+  end: Date
+  resource?: BookedAppointment
 }
 
 export interface DoctorScheduleCalendarProps {
@@ -91,7 +99,7 @@ function parseDateTime(str: string): Date {
 
 function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
   const monday = startOfWeek(referenceDate, { weekStartsOn: 1 })
-  const events: { start: Date; end: Date; title: string }[] = []
+  const events: CalendarEvent[] = []
 
   for (const shift of shifts) {
     // dayOfWeek:1=Mon…7=Sun → addDays from monday: Mon=0, Tue=1…
@@ -137,7 +145,7 @@ export default function DoctorScheduleCalendar({
 
   const aptEvents = useMemo(() => {
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
-    return apts.map(apt => ({
+    return apts.map<CalendarEvent>(apt => ({
       id: apt.id,
       title: apt.patientName,
       start: parseDateTime(apt.scheduledStart),
@@ -151,7 +159,7 @@ export default function DoctorScheduleCalendar({
     return buildShiftEvents(shifts, referenceDate)
   }, [selectedDoctorId, shiftsByDoctorId, referenceDate])
 
-  const eventStyleGetter = (event: { resource?: BookedAppointment }) => {
+  const eventStyleGetter = (event: CalendarEvent) => {
     const status = event.resource?.status ?? ''
     const bg = STATUS_COLORS[status] ?? '#6b7280'
     return {
@@ -168,7 +176,7 @@ export default function DoctorScheduleCalendar({
     }
   }
 
-  const onSelectEvent = (event: { resource?: BookedAppointment }) => {
+  const onSelectEvent = (event: CalendarEvent) => {
     if (event.resource) {
       setSelectedApt(event.resource)
       openModal()
@@ -232,10 +240,10 @@ export default function DoctorScheduleCalendar({
           .rbc-agenda-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; gap: 0.75rem; color: #6B7280; }
         `}</style>
 
-        <Calendar
+        <Calendar<CalendarEvent, object>
           localizer={localizer}
           events={aptEvents}
-          backgroundEvents={shiftEvents as unknown as BackgroundEvent[]}
+          backgroundEvents={shiftEvents}
           startAccessor="start"
           endAccessor="end"
           culture="es"
@@ -263,7 +271,6 @@ export default function DoctorScheduleCalendar({
           min={setMinutes(setHours(new Date(), 6), 0)}
           max={setMinutes(setHours(new Date(), 20), 0)}
           style={{ height: isMobile ? 500 : heightPx }}
-          showAllDay={false}
           showMultiDayTimes={false}
         />
       </div>
