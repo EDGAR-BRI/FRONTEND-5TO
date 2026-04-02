@@ -1,8 +1,8 @@
-import { useMemo, useState, type SyntheticEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/react/primary/Button";
 import { Field } from "@/components/react/primary/Field";
-import { Badge } from "@/components/react/primary/Badge";
 import { registerUser } from "@/lib/services/auth/auth.service";
+import { Alert } from "@/utils/alerts";
 
 type Props = {
 	className?: string;
@@ -15,25 +15,11 @@ export default function RegisterForm({ className }: Props) {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [success, setSuccess] = useState<string | null>(null);
-
-	const passwordMismatch = useMemo(() => {
-		if (!password || !confirmPassword) return false;
-		return password !== confirmPassword;
-	}, [password, confirmPassword]);
-
-	const disabled = useMemo(() => {
-		return loading || !ci.trim() || !name.trim() || !password || !confirmPassword;
-	}, [loading, ci, name, password, confirmPassword]);
 
 	const onSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setError(null);
-		setSuccess(null);
-
 		if (password !== confirmPassword) {
-			setError("Las contraseñas no coinciden");
+			await Alert.error("Las contraseñas no coinciden", "Por favor verifica e inténtalo de nuevo.");
 			return;
 		}
 
@@ -46,11 +32,13 @@ export default function RegisterForm({ className }: Props) {
 				password,
 			});
 
-			setSuccess("Usuario creado. Ya puedes iniciar sesión.");
-			setPassword("");
-			setConfirmPassword("");
+			await Alert.success("Cuenta creada", "Ya puedes iniciar sesión.", 1400);
+			window.location.href = "/login";
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "No se pudo crear el usuario");
+			await Alert.error(
+				"No se pudo crear el usuario",
+				err instanceof Error ? err.message : "Inténtalo nuevamente más tarde."
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -115,20 +103,8 @@ export default function RegisterForm({ className }: Props) {
 				showTogglePassword
 			/>
 
-			{passwordMismatch ? (
-				<Badge className="w-fit" styles={{ bg: "bg-error/10", text: "text-error", border: "border-error/30" }}>
-					Las contraseñas no coinciden
-				</Badge>
-			) : null}
-			{error ? (
-				<Badge className="w-fit" styles={{ bg: "bg-error/10", text: "text-error", border: "border-error/30" }}>
-					{error}
-				</Badge>
-			) : null}
-			{success ? <Badge className="w-fit">{success}</Badge> : null}
-
 			<div className="flex flex-col gap-3">
-				<Button label="Crear cuenta" type="submit" adaptive loading={loading} disabled={disabled} />
+				<Button label="Crear cuenta" type="submit" adaptive loading={loading} />
 			</div>
 		</form>
 	);

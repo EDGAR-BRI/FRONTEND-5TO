@@ -1,6 +1,8 @@
-import { useMemo, useState, type SyntheticEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/react/primary/Button";
+import { Field } from "@/components/react/primary/Field";
 import { listRoles, loginWithCredentials, dashboardPathForUser, persistLogin } from "@/lib/services/auth/auth.service";
+import { Alert } from "@/utils/alerts";
 
 type Props = {
 	className?: string;
@@ -11,13 +13,9 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 	const [ci, setCi] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	const disabled = useMemo(() => loading || !ci.trim() || !password, [loading, ci, password]);
 
 	const onSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setError(null);
 		setLoading(true);
 
 		try {
@@ -36,9 +34,14 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 
 			const nextFromQuery = new URLSearchParams(window.location.search).get("next");
 			const nextPath = nextFromQuery || dashboardPathForUser(data.user, roleCode);
+
+			await Alert.success("Inicio de sesión exitoso", `Bienvenido/a, ${data.user.name}`, 900);
 			window.location.href = nextPath;
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "No se pudo iniciar sesión");
+			await Alert.error(
+				"No se pudo iniciar sesión",
+				err instanceof Error ? err.message : "Verifica tus credenciales e inténtalo nuevamente."
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -47,14 +50,10 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 	return (
 		<form className={className} onSubmit={onSubmit}>
 			<div className="flex flex-col gap-1">
-				<label className="text-sm font-semibold text-gray-500" htmlFor="ci">
-					CI
-				</label>
-				<input
-					className="p-2 border placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-primary-600 focus:border-2 focus:outline-none"
-					type="text"
+				<Field
 					name="ci"
-					id="ci"
+					label="CI"
+					type="text"
 					placeholder="Ej: 12345678"
 					autoComplete="username"
 					inputMode="numeric"
@@ -66,26 +65,22 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 			</div>
 
 			<div className="flex flex-col gap-1">
-				<label className="text-sm font-semibold text-gray-500" htmlFor="password">
-					Contraseña
-				</label>
-				<input
-					className="p-2 border placeholder:text-gray-300 placeholder:font-semibold transition-all rounded-md border-gray-400 focus:border-primary-600 focus:border-2 focus:outline-none"
-					type="password"
+				<Field
 					name="password"
-					id="password"
+					label="Contraseña"
+					type="password"
 					placeholder="••••••"
 					autoComplete="current-password"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 					disabled={loading}
 					required
+					showTogglePassword
+					className="mt-1"
 				/>
 			</div>
 
-			{error ? <p className="text-sm text-error font-semibold">{error}</p> : null}
-
-			<Button label={buttonLabel} type="submit" adaptive loading={loading} disabled={disabled} />
+			<Button label={buttonLabel} type="submit" adaptive loading={loading} />
 		</form>
 	);
 }
