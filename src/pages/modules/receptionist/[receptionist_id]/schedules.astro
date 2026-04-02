@@ -3,7 +3,7 @@ import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
 import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
 
-const { receptionist_id } = Astro.params;
+const { receptionist_id: _receptionist_id } = Astro.params;
 const viewParam = Astro.url.searchParams.get("view");
 const initialView =
   viewParam === "day" || viewParam === "agenda" ? viewParam : "week";
