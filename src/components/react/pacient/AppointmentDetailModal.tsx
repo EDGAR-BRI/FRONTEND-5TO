@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, Clock, MapPin, User, Info, FileText, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, FileText } from 'lucide-react';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
 import { Badge } from '../primary/Badge';

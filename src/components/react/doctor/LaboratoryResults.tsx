@@ -2,7 +2,6 @@ import { useState } from "react";
 import { FlaskConical, AlertCircle, CheckCircle2, FileText, Activity, Clock, Search, Filter } from "lucide-react";
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
-import { Button } from "../primary/Button";
 
 const resultsData = [
   {

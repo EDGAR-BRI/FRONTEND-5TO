@@ -1,4 +1,3 @@
-import React from "react";
 import { CalendarDays, User, Droplet, Scale, ShieldAlert, HeartPulse, CreditCard, Activity } from "lucide-react";
 import StaticCard from "@/components/react/primary/StaticCard"; 
 // Importamos tu complemento de Avatar

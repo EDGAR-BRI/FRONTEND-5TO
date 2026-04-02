@@ -1,4 +1,3 @@
-import React from 'react';
 import { FileText, CreditCard, CheckCircle2, Calendar, Hash, Receipt } from 'lucide-react';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';

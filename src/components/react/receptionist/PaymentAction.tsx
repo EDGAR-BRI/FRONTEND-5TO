@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import RegisterPaymentModal from '@/components/react/receptionist/RegisterPaymentModal'; 
 
 export default function PaymentAction() {

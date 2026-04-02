@@ -1,8 +1,6 @@
-import React from 'react';
-import { Calendar, Clock, MapPin, User, FileText, CheckCircle2, Info } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, CheckCircle2, Info } from 'lucide-react';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
-import { Badge } from '../primary/Badge';
 import StaticCard from '../primary/StaticCard';
 
 export const MedicalAppointments = () => {

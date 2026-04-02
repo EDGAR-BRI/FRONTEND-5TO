@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pill, Save, Info, Plus } from 'lucide-react';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Field } from '../primary/Field';

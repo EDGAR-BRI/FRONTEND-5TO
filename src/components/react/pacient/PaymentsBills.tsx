@@ -1,5 +1,4 @@
-import React from 'react';
-import { CreditCard, Wallet } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 import { BillDetailModal } from './BillDetailModal';
 import StaticCard from '@/components/react/primary/StaticCard';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { ShieldAlert, User, Phone } from 'lucide-react';
 import StaticCard from '@/components/react/primary/StaticCard';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 
 export interface StatItem {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pill, Clock, Calendar } from 'lucide-react';
 import { AddMedicationModal } from './AddMedicationModal';
 import { EditMedicationModal } from './EditMedicationModal';

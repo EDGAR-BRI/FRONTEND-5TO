@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { DataTable } from '@/components/react/primary/DataTable'
 import type { Column } from '@/components/react/primary/DataTable'
 import { Badge } from '@/components/react/primary/Badge'
