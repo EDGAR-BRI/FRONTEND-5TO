@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
+import { FaCheck, FaMinus, FaPlus, FaXmark } from 'react-icons/fa6'
 
 // ─── Interfaces matching DB Schema ─────────────────────────────────────────
 export interface DoctorInfo {
@@ -174,7 +175,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                     <div>
                         <h2 className="text-lg font-bold text-primary-800 flex items-center gap-2">
                             Configuración de Turnos
-                            {showSuccess && <span className="text-xs bg-green-100 text-success px-2 py-0.5 rounded-full animate-fade-in"><i className="fa-solid fa-check mr-1"></i>Guardado</span>}
+                            {showSuccess && <span className="text-xs bg-green-100 text-success px-2 py-0.5 rounded-full animate-fade-in"><FaCheck className="mr-1 inline-block" />Guardado</span>}
                         </h2>
                         <p className="text-sm text-cool-gray-50 mt-1">Configura el ciclo de horarios. Puedes alternar turnos creando ciclos de varias semanas.</p>
                     </div>
@@ -183,12 +184,12 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                             <span className="text-xs font-semibold text-primary-700">Duración del ciclo:</span>
                             <div className="flex items-center gap-1">
                                 <button onClick={() => handleWeekCountChange(editingCycle.weeks.length - 1)} className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50" disabled={editingCycle.weeks.length <= 1} aria-label="Disminuir semanas">
-                                    <i className="fa-solid fa-minus text-xs"></i>
+                                    <FaMinus className="text-xs" />
                                 </button>
                                 <span className="w-4 text-center text-sm font-bold text-primary-800">{editingCycle.weeks.length}</span>
                                 <span className="text-xs text-primary-700 font-medium">{editingCycle.weeks.length === 1 ? 'sem' : 'sems'}</span>
                                 <button onClick={() => handleWeekCountChange(editingCycle.weeks.length + 1)} className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50" disabled={editingCycle.weeks.length >= 4} aria-label="Aumentar semanas">
-                                    <i className="fa-solid fa-plus text-xs"></i>
+                                    <FaPlus className="text-xs" />
                                 </button>
                             </div>
                         </div>
@@ -255,7 +256,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                                                         className="ml-auto w-7 h-7 flex flex-center items-center justify-center rounded text-cool-gray-50 hover:text-error hover:bg-red-50 transition-colors"
                                                         title="Eliminar turno"
                                                     >
-                                                        <i className="fa-solid fa-xmark"></i>
+                                                        <FaXmark />
                                                     </button>
                                                 </div>
                                             )
@@ -270,7 +271,7 @@ export default function DoctorScheduleManager({ doctors, initialCycles }: Doctor
                                                     : 'text-cool-gray-50 border-cool-gray-30 hover:text-primary-600 hover:border-primary-300 w-full text-center hover:bg-white'
                                                     }`}
                                             >
-                                                <i className="fa-solid fa-plus mr-1.5"></i>
+                                                <FaPlus className="mr-1.5 inline-block" />
                                                 {hasShifts ? 'Añadir otro turno' : 'Habilitar día'}
                                             </button>
                                         </div>

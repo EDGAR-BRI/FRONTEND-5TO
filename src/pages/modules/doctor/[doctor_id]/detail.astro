@@ -2,6 +2,7 @@
 import MainLayout from '@/layouts/DoctorLayout.astro';
 import ActionCard from '@/components/react/primary/ActionCard';
 import StaticCard from '@/components/react/primary/StaticCard';
+import { FaFloppyDisk, FaTriangleExclamation } from 'react-icons/fa6';
 
 const { doctor_id: _doctor_id } = Astro.params;
 
@@ -33,7 +34,7 @@ const fechaHoy = "2026-03-14";
           Cancelar
         </button>
         <button type="button" class="px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors shadow-sm flex items-center gap-2">
-          <i class="fa-solid fa-floppy-disk"></i> Guardar Consulta
+          <FaFloppyDisk /> Guardar Consulta
         </button>
       </div>
     </header>
@@ -55,7 +56,7 @@ const fechaHoy = "2026-03-14";
             <div class="pt-3 mt-3 border-t border-primary-200/60">
               <span class="font-semibold text-slate-700 block mb-1">Alergias Registradas:</span>
               <span class="inline-block bg-red-100 text-red-700 text-xs px-2 py-1 rounded-md font-semibold">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> {pacienteMock.alergias}
+                <FaTriangleExclamation className="mr-1 inline-block" /> {pacienteMock.alergias}
               </span>
             </div>
           </div>

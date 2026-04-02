@@ -8,6 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
+import { FaRegCalendarXmark, FaUserDoctor } from 'react-icons/fa6'
 
 
 export interface DoctorInfo {
@@ -203,7 +204,7 @@ export default function DoctorScheduleCalendar({
 
       <div className="flex flex-wrap items-center gap-4 text-xs text-primary-700">
         <span className="font-semibold text-primary-800">
-          <i className="fa-solid fa-user-doctor mr-1 text-primary-500" />
+          <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
           {doctor?.name} — {doctor?.specialty}
         </span>
         <span className="ml-auto flex flex-wrap gap-3">
@@ -250,7 +251,7 @@ export default function DoctorScheduleCalendar({
             noEventsInRange: (
               <div className="flex flex-col items-center justify-center gap-3 py-12 px-4 text-center">
                 <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
-                  <i className="fa-regular fa-calendar-xmark text-2xl text-primary-400" />
+                  <FaRegCalendarXmark className="text-2xl text-primary-400" />
                 </div>
                 <p className="text-sm font-semibold text-primary-700">Sin citas registradas</p>
                 <p className="text-xs text-cool-gray-50 max-w-xs">No hay citas programadas para este médico en el rango de fechas seleccionado.</p>

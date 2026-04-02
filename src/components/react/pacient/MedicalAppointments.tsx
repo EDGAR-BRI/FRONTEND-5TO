@@ -1,4 +1,11 @@
-import { Calendar, Clock, MapPin, FileText, CheckCircle2, Info } from 'lucide-react';
+import {
+  FaCalendarDays,
+  FaClock,
+  FaLocationDot,
+  FaFileLines,
+  FaCircleCheck,
+  FaCircleInfo,
+} from 'react-icons/fa6';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
 import StaticCard from '../primary/StaticCard';
@@ -43,7 +50,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
     <StaticCard className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="flex items-center gap-4">
         <div className="bg-white p-4 rounded-2xl text-blue-600 shadow-sm border border-blue-50">
-          <Calendar className="w-6 h-6" />
+          <FaCalendarDays className="w-6 h-6" />
         </div>
         <div className="text-left">
           <div className="flex items-center gap-2">
@@ -66,10 +73,10 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
 
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-          <Clock className="w-3 h-3 text-blue-500" /> {appointment.hora}
+          <FaClock className="w-3 h-3 text-blue-500" /> {appointment.hora}
         </div>
         <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-          <MapPin className="w-3 h-3 text-red-400" /> {appointment.lugar.split('-')[0]}
+          <FaLocationDot className="w-3 h-3 text-red-400" /> {appointment.lugar.split('-')[0]}
         </div>
       </div>
 
@@ -85,7 +92,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
           <div className="space-y-6">
             <div className={`flex items-center gap-4 p-6 rounded-2xl border ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100'}`}>
               <div className={`${isCompleted ? 'bg-emerald-500' : 'bg-blue-600'} p-3 rounded-xl shadow-lg shadow-emerald-500/20`}>
-                <FileText className="w-6 h-6 text-white" />
+                <FaFileLines className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
                 <p className={`${isCompleted ? 'text-emerald-600' : 'text-blue-600'} text-[10px] font-black uppercase tracking-widest`}>
@@ -113,7 +120,11 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
               </div>
 
               <div className={`p-4 rounded-2xl border flex gap-3 ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>
-                {isCompleted ? <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5" /> : <Info className="w-5 h-5 text-amber-600 mt-0.5" />}
+                {isCompleted ? (
+                  <FaCircleCheck className="w-5 h-5 text-emerald-600 mt-0.5" />
+                ) : (
+                  <FaCircleInfo className="w-5 h-5 text-amber-600 mt-0.5" />
+                )}
                 <p className={`text-[11px] leading-tight font-medium ${isCompleted ? 'text-emerald-700' : 'text-amber-700'}`}>
                   {isCompleted ? 'Esta consulta ya fue procesada y se encuentra en su historial.' : 'Recuerde llegar 15 minutos antes con su identificación vigente.'}
                 </p>

@@ -8,9 +8,15 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { api } from '@/lib/api';
 import {
-    LuTrendingUp, LuTrendingDown, LuDollarSign, LuClock,
-    LuDownload, LuEllipsisVertical, LuChevronDown, LuCircleDollarSign
-} from 'react-icons/lu';
+    FaArrowTrendUp,
+    FaArrowTrendDown,
+    FaDollarSign,
+    FaClock,
+    FaDownload,
+    FaEllipsisVertical,
+    FaChevronDown,
+    FaSackDollar,
+} from 'react-icons/fa6';
 
 interface Transaction {
     id: number;
@@ -108,10 +114,10 @@ const columns: Column<Transaction>[] = [
         cell: () => (
             <div className="flex items-center justify-end gap-2 text-gray-400">
                 <button className="hover:text-primary transition-colors p-1" title="Descargar">
-                    <LuDownload size={16} />
+                    <FaDownload size={16} />
                 </button>
                 <button className="hover:text-primary transition-colors p-1" title="Más opciones">
-                    <LuEllipsisVertical size={16} />
+                    <FaEllipsisVertical size={16} />
                 </button>
             </div>
         )
@@ -159,7 +165,7 @@ export const FinanceDashboard = () => {
                     trend="12%"
                     trendUp={true}
                     color="success"
-                    icon={<LuTrendingUp size={18} />}
+                    icon={<FaArrowTrendUp size={18} />}
                 />
                 <StatsCard
                     title="Gastos Totales"
@@ -167,19 +173,19 @@ export const FinanceDashboard = () => {
                     trend="5%"
                     trendUp={false}
                     color="danger"
-                    icon={<LuTrendingDown size={18} />}
+                    icon={<FaArrowTrendDown size={18} />}
                 />
                 <StatsCard
                     title="Balance Neto"
                     value={`$${summary.netBalance.toFixed(2)}`}
                     color="primary"
-                    icon={<LuCircleDollarSign size={18} />}
+                    icon={<FaSackDollar size={18} />}
                 />
                 <StatsCard
                     title="Pagos Pendientes"
                     value={summary.pendingPayments}
                     color="warning"
-                    icon={<LuClock size={18} />}
+                    icon={<FaClock size={18} />}
                 />
             </div>
 
@@ -190,7 +196,7 @@ export const FinanceDashboard = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4"> {/* ← flex-wrap gap-3 */}
                     <div className="flex items-center gap-3 min-w-0"> {/* ← min-w-0 */}
                         <div className="w-9 h-9 shrink-0 rounded-lg bg-white/10 flex items-center justify-center"> {/* ← shrink-0 */}
-                            <LuDollarSign size={18} className="text-white" />
+                            <FaDollarSign size={18} className="text-white" />
                         </div>
                         <div className="min-w-0"> {/* ← min-w-0 */}
                             <h2 className="text-base font-semibold text-white leading-tight truncate">Movimientos de Caja</h2>
@@ -210,11 +216,11 @@ export const FinanceDashboard = () => {
                     <div className="flex flex-wrap gap-2">
                         <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                             Todos los ingresos
-                            <LuChevronDown size={12} />
+                            <FaChevronDown size={12} />
                         </button>
                         <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                             Todos los estados
-                            <LuChevronDown size={12} />
+                            <FaChevronDown size={12} />
                         </button>
                     </div>
                 </div>

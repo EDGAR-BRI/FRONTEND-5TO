@@ -4,6 +4,7 @@ export const prerender = true;
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { OverviewStats } from "@/components/react/admin/OverviewStats";
 import { Button } from "@/components/react/primary/Button";
+import { FaBox, FaUser } from "react-icons/fa6";
 
 //datos Mock bruh
 const usuariosRecientes = [
@@ -121,7 +122,7 @@ const coloresEstado: Record<string, string> = {
 							label="Usuario"
 							adaptive={true}
 						>
-							<i class="fa-solid fa-user text-blue-500"></i>
+							<FaUser className="text-blue-500" />
 							Crear Nuevo Usuario
 						</Button>
 						<Button
@@ -129,7 +130,7 @@ const coloresEstado: Record<string, string> = {
 							variant="secondary"
 							adaptive={true}
 						>
-							<i class="fa-solid fa-box text-amber-500"></i> Actualizar Insumos
+							<FaBox className="text-amber-500" /> Actualizar Insumos
 						</Button>
 					</div>
 				</div>

@@ -2,6 +2,7 @@
 import PacientLayout from "@/layouts/PacientLayout.astro";
 import AppointmentCalendar from "@/components/react/AppointmentCalendar";
 import StaticCard from "@/components/react/primary/StaticCard";
+import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
 
 const { pacient_id } = Astro.params;
 
@@ -74,7 +75,7 @@ const citasMock = [
         <h2
           class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"
         >
-          <i class="fa-solid fa-calendar-plus text-blue-600"></i> Nueva Cita
+          <FaCalendarPlus className="text-blue-600" /> Nueva Cita
         </h2>
 
         <form class="space-y-4">
@@ -142,7 +143,7 @@ const citasMock = [
             Verificar y Agendar
           </button>
           <p class="text-xs text-gray-400 text-center mt-2">
-            <i class="fa-solid fa-circle-info"></i> El sistema validará la disponibilidad
+            <FaCircleInfo className="inline-block" /> El sistema validará la disponibilidad
             del doctor.
           </p>
         </form>

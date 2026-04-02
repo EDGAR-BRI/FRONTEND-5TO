@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaCheckToSlot, FaUser, FaXmark } from 'react-icons/fa6';
 
 interface Props {
   isOpen: boolean;
@@ -22,7 +23,7 @@ const RegisterPaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
             onClick={onClose} 
             className="text-slate-400 hover:text-primary-600 transition-colors text-2xl p-2"
           >
-            <i className="fa-solid fa-xmark"></i>
+            <FaXmark />
           </button>
         </div>
 
@@ -35,7 +36,7 @@ const RegisterPaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
               Paciente
             </label>
             <div className="relative">
-              <i className="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
               <input 
                 type="text" 
                 placeholder="Ej. Ana Sofía Parra" 
@@ -111,7 +112,7 @@ const RegisterPaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
               type="submit" 
               className="flex-[2] py-3 bg-primary-600 text-white rounded-xl font-bold text-sm hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all transform active:scale-95 flex items-center justify-center gap-2 order-1 sm:order-2"
             >
-              <i className="fa-solid fa-check-to-slot"></i>
+              <FaCheckToSlot />
               Confirmar Registro
             </button>
           </div>

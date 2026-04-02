@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { CalendarClock, User, Clock, ChevronRight, Stethoscope, CalendarDays, FileText } from "lucide-react";
+import {
+  FaCalendarDays,
+  FaChevronRight,
+  FaRegClock,
+  FaStethoscope,
+  FaUser,
+  FaFileLines,
+} from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 import { Button } from "../primary/Button";
@@ -45,7 +52,7 @@ export default function UpcomingAppointments() {
     <div className="p-6 relative h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
-          <CalendarClock size={18} className="text-[#1e3a8a]" /> Próximas Consultas a realizar
+			<FaCalendarDays size={18} className="text-[#1e3a8a]" /> Próximas Consultas a realizar
         </h3>
         <button className="text-[10px] font-black text-blue-600 uppercase tracking-tighter hover:underline">
           Ver Agenda Completa
@@ -61,14 +68,14 @@ export default function UpcomingAppointments() {
           >
             <div className="flex flex-1 items-center gap-4 min-w-0 w-full sm:w-auto">
               <div className="w-12 h-12 shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-[#1e3a8a] group-hover:text-white transition-colors">
-                <User size={20} />
+				<FaUser size={20} />
               </div>
 
               <div className="min-w-0">
                 <h4 className="font-bold text-slate-800 text-sm truncate">{a.patient}</h4>
                 <div className="flex flex-wrap items-center gap-3 mt-1">
                   <span className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
-                    <Clock size={12} className="text-blue-500" /> {a.time}
+					<FaRegClock size={12} className="text-blue-500" /> {a.time}
                   </span>
                   <span className="text-slate-300">•</span>
                   <span className="text-[11px] text-slate-500 font-medium italic truncate">
@@ -85,7 +92,7 @@ export default function UpcomingAppointments() {
               <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap ${a.statusColor}`}>
                 {a.status}
               </span>
-              <ChevronRight size={16} className="text-slate-300 group-hover:text-[#1e3a8a] transition-colors" />
+				<FaChevronRight size={16} className="text-slate-300 group-hover:text-[#1e3a8a] transition-colors" />
             </div>
           </ActionCard>
         ))}
@@ -101,7 +108,7 @@ export default function UpcomingAppointments() {
             
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 shrink-0">
-                <User size={24} />
+				<FaUser size={24} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
@@ -118,21 +125,21 @@ export default function UpcomingAppointments() {
                 value={selectedAppt.date}
                 subText={selectedAppt.time}
                 subTextClass="text-slate-500 font-medium"
-                icon={<CalendarDays size={20} />}
+				icon={<FaCalendarDays size={20} />}
                 color="primary"
               />
               <StatsCard
                 variant="compact"
                 title="MÉDICO"
                 value={selectedAppt.doctor}
-                icon={<Stethoscope size={20} />}
+				icon={<FaStethoscope size={20} />}
                 color="primary"
               />
             </div>
 
             <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                <FileText size={12}/> Motivo de Consulta
+				<FaFileLines size={12}/> Motivo de Consulta
               </p>
               <p className="text-sm font-bold text-slate-800 mb-4">{selectedAppt.reason}</p>
               

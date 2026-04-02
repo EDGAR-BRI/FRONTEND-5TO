@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { FlaskConical, AlertCircle, CheckCircle2, FileText, Activity, Clock, Search, Filter } from "lucide-react";
+import {
+  FaChartLine,
+  FaCircleCheck,
+  FaCircleExclamation,
+  FaFileLines,
+  FaFilter,
+  FaFlask,
+  FaMagnifyingGlass,
+  FaRegClock,
+} from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 
@@ -10,7 +19,7 @@ const resultsData = [
     date: "Hace 2 horas",
     status: "CRÍTICO",
     statusColor: "text-red-600 bg-red-50 border-red-100",
-    icon: <AlertCircle size={14} />,
+    icon: <FaCircleExclamation size={14} />,
     value: "52.4 ng/L",
     reference: "< 14.0 ng/L",
     notes: "Niveles significativamente elevados. Sugiere daño miocárdico agudo. Requiere atención inmediata y correlación con ECG."
@@ -21,7 +30,7 @@ const resultsData = [
     date: "Hoy, 08:30 AM",
     status: "NORMAL",
     statusColor: "text-emerald-600 bg-emerald-50 border-emerald-100",
-    icon: <CheckCircle2 size={14} />,
+    icon: <FaCircleCheck size={14} />,
     value: "Colesterol: 175 mg/dL",
     reference: "< 200.0 mg/dL",
     notes: "Todos los valores lipídicos se encuentran dentro del rango normal. Mantener dieta y estilo de vida actual."
@@ -32,7 +41,7 @@ const resultsData = [
     date: "Ayer",
     status: "PENDIENTE REVISIÓN",
     statusColor: "text-blue-600 bg-blue-50 border-blue-100",
-    icon: <FileText size={14} />,
+    icon: <FaFileLines size={14} />,
     value: "Imágenes capturadas",
     reference: "N/A",
     notes: "Estudio completado por el equipo técnico. A la espera de la revisión y el informe detallado por el médico cardiólogo."
@@ -43,7 +52,7 @@ const resultsData = [
     date: "12 Oct, 04:15 PM",
     status: "NORMAL",
     statusColor: "text-emerald-600 bg-emerald-50 border-emerald-100",
-    icon: <CheckCircle2 size={14} />,
+    icon: <FaCircleCheck size={14} />,
     value: "5.4 %",
     reference: "4.0 - 5.6 %",
     notes: "Control glucémico excelente. Continuar con el tratamiento establecido."
@@ -60,7 +69,7 @@ export default function LaboratoryResults() {
       {/* BARRA DE BÚSQUEDA Y FILTROS*/}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="relative w-full sm:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+			<FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             type="text" 
             placeholder="Buscar por prueba o paciente..." 
@@ -69,7 +78,7 @@ export default function LaboratoryResults() {
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-            <Filter size={16} /> Filtros
+			<FaFilter size={16} /> Filtros
           </button>
         </div>
       </div>
@@ -78,7 +87,7 @@ export default function LaboratoryResults() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-bold text-[#1e293b] text-base flex items-center gap-2 uppercase tracking-wide">
-            <FlaskConical size={20} className="text-purple-500" /> Resultados de Laboratorio
+			<FaFlask size={20} className="text-purple-500" /> Resultados de Laboratorio
           </h2>
           <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-wider">
             {resultsData.length} Totales
@@ -131,7 +140,7 @@ export default function LaboratoryResults() {
             
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 shrink-0 border border-purple-100">
-                <FlaskConical size={24} />
+				<FaFlask size={24} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
@@ -145,7 +154,7 @@ export default function LaboratoryResults() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/50">
-                  <Clock size={20} />
+					<FaRegClock size={20} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Fecha</p>
@@ -155,7 +164,7 @@ export default function LaboratoryResults() {
               
               <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/50">
-                  <Activity size={20} />
+					<FaChartLine size={20} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Prueba</p>
@@ -168,7 +177,7 @@ export default function LaboratoryResults() {
               <div className="flex justify-between items-center gap-4">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                    <FlaskConical size={12}/> Valor Obtenido
+					<FaFlask size={12}/> Valor Obtenido
                   </p>
                   <p className="text-3xl font-black text-[#1e293b] leading-none">{selectedResult.value}</p>
                 </div>
@@ -180,7 +189,7 @@ export default function LaboratoryResults() {
 
               <div className="pt-4 border-t border-slate-200/70">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                  <FileText size={12}/> Observaciones / Conclusión
+				<FaFileLines size={12}/> Observaciones / Conclusión
                 </p>
                 <p className="text-[13px] text-slate-600 leading-relaxed italic">
                   "{selectedResult.notes}"

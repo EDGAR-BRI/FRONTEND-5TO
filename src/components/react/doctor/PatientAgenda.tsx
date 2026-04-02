@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { CalendarClock, User, Clock, ChevronRight, Stethoscope, CalendarDays, FileText, Search, Filter } from "lucide-react";
+import {
+  FaCalendarDays,
+  FaChevronRight,
+  FaFileLines,
+  FaFilter,
+  FaMagnifyingGlass,
+  FaRegClock,
+  FaStethoscope,
+  FaUser,
+} from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 
@@ -65,7 +74,7 @@ export default function PatientAgenda() {
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="relative w-full sm:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+			<FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             type="text" 
             placeholder="Buscar por paciente o motivo..." 
@@ -74,7 +83,7 @@ export default function PatientAgenda() {
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-            <Filter size={16} /> Filtros
+			<FaFilter size={16} /> Filtros
           </button>
           <button className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-white bg-[#1e3a8a] rounded-lg hover:bg-blue-800 transition-colors shadow-sm">
             + Nueva Cita
@@ -84,7 +93,7 @@ export default function PatientAgenda() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-bold text-[#1e293b] text-base flex items-center gap-2 uppercase tracking-wide">
-            <CalendarClock size={20} className="text-[#1e3a8a]" /> Agenda de Consultas
+			<FaCalendarDays size={20} className="text-[#1e3a8a]" /> Agenda de Consultas
           </h2>
         </div>
 
@@ -97,13 +106,13 @@ export default function PatientAgenda() {
             >
               <div className="flex flex-1 items-center gap-5 min-w-0 w-full sm:w-auto">
                 <div className="w-12 h-12 shrink-0 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-[#1e3a8a] group-hover:text-white transition-colors">
-                  <User size={22} />
+					<FaUser size={22} />
                 </div>
 
                 <div className="min-w-0 flex flex-col gap-1.5">
                   <h4 className="font-black text-[#1e293b] text-[15px] truncate">{a.patient}</h4>
                   <div className="flex items-center gap-2 text-[12px] text-slate-500 font-medium">
-                    <Clock size={14} className="text-[#3b82f6]" /> {a.time}
+					<FaRegClock size={14} className="text-[#3b82f6]" /> {a.time}
                     <span className="text-slate-300">•</span>
                     <span className="italic truncate">{a.reason}</span>
                   </div>
@@ -117,7 +126,7 @@ export default function PatientAgenda() {
                 <span className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${a.statusColor}`}>
                   {a.status}
                 </span>
-                <ChevronRight size={18} className="text-slate-300 group-hover:text-[#1e3a8a] transition-colors" />
+				<FaChevronRight size={18} className="text-slate-300 group-hover:text-[#1e3a8a] transition-colors" />
               </div>
             </ActionCard>
           ))}
@@ -133,7 +142,7 @@ export default function PatientAgenda() {
             
             <div className="flex items-center gap-4">
               <div className="text-[#1e3a8a] shrink-0 p-2">
-                <User size={28} />
+				<FaUser size={28} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
@@ -147,7 +156,7 @@ export default function PatientAgenda() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white">
                 <div className="w-12 h-12 rounded-xl bg-[#e0f2fe] text-[#0284c7] flex items-center justify-center shrink-0">
-                  <CalendarDays size={20} />
+					<FaCalendarDays size={20} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Fecha y Hora</p>
@@ -158,7 +167,7 @@ export default function PatientAgenda() {
 
               <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white">
                 <div className="w-12 h-12 rounded-xl bg-[#e0f2fe] text-[#0284c7] flex items-center justify-center shrink-0">
-                  <Stethoscope size={20} />
+					<FaStethoscope size={20} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Médico</p>
@@ -169,7 +178,7 @@ export default function PatientAgenda() {
 
             <div className="bg-[#f8fafc] p-5 rounded-xl border border-slate-100">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                <FileText size={12}/> Motivo de Consulta
+				<FaFileLines size={12}/> Motivo de Consulta
               </p>
               <p className="text-sm font-bold text-[#1e293b] mb-5">{selectedAppt.reason}</p>
               

@@ -1,5 +1,6 @@
 ---
 import type { MenuItems } from "@/types/MenuItemsTypes";
+import { FaChevronDown } from "react-icons/fa6";
 
 interface Props {
     menuItems: MenuItems[];
@@ -20,26 +21,18 @@ const { menuItems, currentPath } = Astro.props;
                             aria-expanded="false"
                         >
                             <div class="flex items-center gap-3">
-                                <i
-                                       class={`${item.icon} text-lg text-primary-100 group-hover:text-primary-600 transition-colors`}
-                                />
+                                {(() => {
+                                    const Icon = item.icon;
+                                    if (!Icon || typeof Icon === "string") return null;
+                                    return (
+                                        <Icon className="text-lg text-primary-100 group-hover:text-primary-600 transition-colors" />
+                                    );
+                                })()}
                                 <span class="font-medium text-sm tracking-wide">
                                     {item.label}
                                 </span>
                             </div>
-                            <svg
-                                class="arrow-icon h-4 w-4 transition-transform duration-200"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
+							<FaChevronDown className="arrow-icon h-4 w-4 transition-transform duration-200" />
                         </button>
                         <div class="hidden pl-4 mt-1 space-y-1 border-l-2 border-cool-gray-80 ml-6 sidebar-dropdown-content">
                             {item.subItems.map((subItem) => (
@@ -51,7 +44,11 @@ const { menuItems, currentPath } = Astro.props;
                                             : "text-primary-100 hover:text-primary-100 hover:bg-cool-gray-80"
                                     }`}
                                 >
-                                    <i class={`${subItem.icon} text-sm`} />
+								{(() => {
+									const Icon = subItem.icon;
+									if (!Icon || typeof Icon === "string") return null;
+									return <Icon className="text-sm" />;
+								})()}
                                     <span>{subItem.label}</span>
                                 </a>
                             ))}
@@ -67,13 +64,19 @@ const { menuItems, currentPath } = Astro.props;
                                     : "text-primary-100 hover:bg-cool-gray-90 hover:text-white"
                             }`}
                         >
-                            <i
-                                class={`${item.icon} text-lg transition-colors ${
-                                    currentPath === item.href
-                                           ? "text-primary-600"
-                                           : "text-primary-100 group-hover:text-primary-600"
-                                }`}
-                            />
+                        {(() => {
+                            const Icon = item.icon;
+                            if (!Icon || typeof Icon === "string") return null;
+                            return (
+                                <Icon
+                                    className={`text-lg transition-colors ${
+                                        currentPath === item.href
+                                            ? "text-primary-600"
+                                            : "text-primary-100 group-hover:text-primary-600"
+                                    }`}
+                                />
+                            );
+                        })()}
                             <span class="font-semibold text-sm tracking-wide">
                                 {item.label}
                             </span>

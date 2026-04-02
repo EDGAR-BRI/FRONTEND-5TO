@@ -5,13 +5,23 @@ import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { CheckBox } from '@/components/react/primary/CheckBox'
 import { Modal } from '@/components/react/primary/Modal'
 import { useModal } from '@/hooks/UseModal'
+import type { IconType } from 'react-icons'
+import {
+    FaCircleExclamation,
+    FaHeartPulse,
+    FaIdCard,
+    FaNotesMedical,
+    FaPhone,
+    FaUserCheck,
+    FaUserLock,
+} from 'react-icons/fa6'
 
 // ─── Section Header ──────────────────────────────────────────────────────────
-function SectionHeader({ icon, title, subtitle }: { icon: string; title: string; subtitle?: string }) {
+function SectionHeader({ icon: Icon, title, subtitle }: { icon: IconType; title: string; subtitle?: string }) {
     return (
         <div className="flex items-center gap-3 border-b border-primary-100 pb-3 mb-5">
             <div className="w-9 h-9 rounded-lg bg-primary-200 flex items-center justify-center flex-shrink-0">
-                <i className={`${icon} text-primary-600 text-sm`}></i>
+                <Icon className="text-primary-600 text-sm" />
             </div>
             <div>
                 <h3 className="text-sm font-bold text-primary-800">{title}</h3>
@@ -127,7 +137,7 @@ export default function RegisterPatientForm() {
         <div className="flex flex-col gap-6">
 
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon="fa-solid fa-id-card" title="Identificación Personal" subtitle="Datos básicos del paciente" />
+                <SectionHeader icon={FaIdCard} title="Identificación Personal" subtitle="Datos básicos del paciente" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Field
                         name="firstName" label="Primer nombre *"
@@ -176,14 +186,14 @@ export default function RegisterPatientForm() {
                 </div>
                 {Object.values(errors).some(Boolean) && (
                     <p className="mt-3 text-xs text-error flex items-center gap-1">
-                        <i className="fa-solid fa-circle-exclamation"></i>
+                        <FaCircleExclamation />
                         Por favor completa los campos requeridos marcados con *.
                     </p>
                 )}
             </div>
 
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon="fa-solid fa-phone" title="Información de Contacto" />
+                <SectionHeader icon={FaPhone} title="Información de Contacto" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Field
                         name="phone" label="Teléfono principal *"
@@ -213,7 +223,7 @@ export default function RegisterPatientForm() {
             </div>
 
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon="fa-solid fa-heart-pulse" title="Contacto de Emergencia" subtitle="Persona a quien llamar en caso de urgencia" />
+                <SectionHeader icon={FaHeartPulse} title="Contacto de Emergencia" subtitle="Persona a quien llamar en caso de urgencia" />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <Field
                         name="emergencyName" label="Nombre completo"
@@ -238,7 +248,7 @@ export default function RegisterPatientForm() {
             </div>
 
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon="fa-solid fa-notes-medical" title="Antecedentes de Salud" subtitle="Información clínica relevante para el expediente" />
+                <SectionHeader icon={FaNotesMedical} title="Antecedentes de Salud" subtitle="Información clínica relevante para el expediente" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                         <label className="font-medium text-sm text-primary-700 px-1">Alergias conocidas</label>
@@ -294,7 +304,7 @@ export default function RegisterPatientForm() {
             </div>
 
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon="fa-solid fa-user-lock" title="Acceso al Sistema" subtitle="Opcional: crea un usuario para que el paciente pueda iniciar sesión" />
+                <SectionHeader icon={FaUserLock} title="Acceso al Sistema" subtitle="Opcional: crea un usuario para que el paciente pueda iniciar sesión" />
                 <div className="space-y-4">
                     <CheckBox
                         name="createUser"
@@ -328,7 +338,7 @@ export default function RegisterPatientForm() {
                 <div className="space-y-4 text-sm text-primary-800">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                            <i className="fa-solid fa-user-check text-success text-xl"></i>
+                            <FaUserCheck className="text-success text-xl" />
                         </div>
                         <div>
                             <p className="font-bold text-base">{form.firstName} {form.lastName}</p>

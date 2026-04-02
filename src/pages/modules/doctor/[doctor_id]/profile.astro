@@ -1,6 +1,7 @@
 ---
 import MainLayout from "@/layouts/DoctorLayout.astro";
 import DoctorProfile from "@/components/astro/DoctorProfile.astro";
+import { FaBell, FaChevronRight, FaGears, FaLanguage, FaLock } from "react-icons/fa6";
 
 // Datos de ejemplo (Sustituir por: const doctor = await api.getDoctor(id))
 const doctor = {
@@ -52,7 +53,7 @@ const doctor = {
           <h3
             class="text-sm font-bold text-primary-800 flex items-center gap-2"
           >
-            <i class="fa-solid fa-gears"></i>
+            <FaGears />
             Configuración de Cuenta
           </h3>
         </div>
@@ -64,13 +65,13 @@ const doctor = {
             <div
               class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500 group-hover:text-primary-600 transition-colors"
             >
-              <i class="fa-solid fa-lock text-sm"></i>
+              <FaLock className="text-sm" />
             </div>
             <span class="text-sm font-medium text-slate-700"
               >Cambiar Contraseña</span
             >
           </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+          <FaChevronRight className="text-xs text-slate-300" />
         </button>
 
         <div class="p-4 flex items-center justify-between">
@@ -78,7 +79,7 @@ const doctor = {
             <div
               class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500"
             >
-              <i class="fa-solid fa-bell text-sm"></i>
+              <FaBell className="text-sm" />
             </div>
             <span class="text-sm font-medium text-slate-700"
               >Notificaciones Push</span
@@ -98,7 +99,7 @@ const doctor = {
             <div
               class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500"
             >
-              <i class="fa-solid fa-language text-sm"></i>
+              <FaLanguage className="text-sm" />
             </div>
             <span class="text-sm font-medium text-slate-700"
               >Idioma del Sistema</span

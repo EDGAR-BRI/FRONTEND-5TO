@@ -1,4 +1,4 @@
-import { Pill, Save, Trash2, AlertCircle } from 'lucide-react';
+import { FaPills, FaFloppyDisk, FaTrashCan, FaCircleExclamation } from 'react-icons/fa6';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Field } from '../primary/Field';
 import { Button } from '../primary/Button';
@@ -18,7 +18,7 @@ export const EditMedicationModal = ({ medication }: any) => {
 
           <div className="flex items-center gap-4 bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
             <div className="bg-emerald-500 p-3 rounded-xl shadow-lg shadow-emerald-500/20">
-              <Pill className="w-6 h-6 text-white" />
+              <FaPills className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
               <p className="text-emerald-600 text-[10px] font-black uppercase tracking-widest">
@@ -49,7 +49,7 @@ export const EditMedicationModal = ({ medication }: any) => {
 
 
             <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 items-start text-left">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <FaCircleExclamation className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <p className="text-[11px] text-amber-700 leading-relaxed">
                 <b className="block mb-0.5">Atención Médica:</b> 
                 Cualquier cambio en la dosis debe ser validado por su doctor para evitar complicaciones en su tratamiento.
@@ -65,7 +65,7 @@ export const EditMedicationModal = ({ medication }: any) => {
               adaptive
               className="h-12 shadow-md shadow-blue-200"
             >
-              <Save className="w-4 h-4" />
+              <FaFloppyDisk className="w-4 h-4" />
             </Button>
             
             <div className="grid grid-cols-2 gap-3">
@@ -81,7 +81,7 @@ export const EditMedicationModal = ({ medication }: any) => {
                 onClick={close}
                 className="h-12 w-full flex items-center justify-center gap-2 rounded-xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-all text-sm border border-red-100/50"
               >
-                <Trash2 className="w-4 h-4" />
+                <FaTrashCan className="w-4 h-4" />
                 Suspender
               </button>
             </div>

@@ -1,5 +1,13 @@
 ---
 import MainLayout from '@/layouts/AdminLayout.astro';
+import {
+    FaArrowTrendUp,
+    FaArrowTrendDown,
+    FaCalculator,
+    FaDownload,
+    FaPlus,
+    FaMinus,
+} from 'react-icons/fa6';
 ---
 
 <MainLayout title="recepcionista | Gastos e Ingresos">
@@ -13,9 +21,7 @@ import MainLayout from '@/layouts/AdminLayout.astro';
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="flex items-center gap-4">
                     <div class="bg-green-100 p-3 rounded-xl text-green-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
+                        <FaArrowTrendUp className="w-6 h-6" />
                     </div>
                     <div>
                         <p class="text-sm text-slate-500 font-medium">Ingresos del Mes</p>
@@ -27,9 +33,7 @@ import MainLayout from '@/layouts/AdminLayout.astro';
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="flex items-center gap-4">
                     <div class="bg-red-100 p-3 rounded-xl text-red-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
-                        </svg>
+                        <FaArrowTrendDown className="w-6 h-6" />
                     </div>
                     <div>
                         <p class="text-sm text-slate-500 font-medium">Gastos del Mes</p>
@@ -41,9 +45,7 @@ import MainLayout from '@/layouts/AdminLayout.astro';
             <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
                 <div class="flex items-center gap-4">
                     <div class="bg-blue-500/20 p-3 rounded-xl text-blue-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
+                        <FaCalculator className="w-6 h-6" />
                     </div>
                     <div>
                         <p class="text-sm text-slate-400 font-medium">Balance Disponible</p>
@@ -65,7 +67,7 @@ import MainLayout from '@/layouts/AdminLayout.astro';
                             <option>Año actual</option>
                         </select>
                         <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            <FaDownload className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
@@ -117,10 +119,10 @@ import MainLayout from '@/layouts/AdminLayout.astro';
                     <h3 class="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest">Operaciones</h3>
                     <div class="grid grid-cols-1 gap-3">
                         <button class="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-sm shadow-blue-200">
-                            <span>+</span> Registrar Ingreso
+                            <FaPlus className="w-4 h-4" /> Registrar Ingreso
                         </button>
                         <button class="flex items-center justify-center gap-2 w-full py-3 bg-white text-red-600 border border-red-100 rounded-xl font-bold text-sm hover:bg-red-50 transition-all">
-                            <span>-</span> Registrar Gasto
+                            <FaMinus className="w-4 h-4" /> Registrar Gasto
                         </button>
                     </div>
                 </div>
