@@ -1,4 +1,3 @@
-import React from 'react';
 import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
 import { Button } from '@/components/react/primary/Button';
 import { Field } from '@/components/react/primary/Field';

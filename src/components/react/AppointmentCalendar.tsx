@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import type { Formats } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'

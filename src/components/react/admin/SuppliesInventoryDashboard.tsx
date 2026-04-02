@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { LuPackage, LuBoxes, LuStethoscope, LuSearch, LuClipboardList } from 'react-icons/lu';
+import { useState, useEffect } from 'react';
+import { LuPackage, LuBoxes, LuStethoscope, LuClipboardList } from 'react-icons/lu';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 import { Field } from '@/components/react/primary/Field';
 import { Select } from '@/components/react/primary/Select';

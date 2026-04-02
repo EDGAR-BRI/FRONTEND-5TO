@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import { Button } from '@/components/react/primary/Button';
@@ -105,7 +105,7 @@ const columns: Column<Transaction>[] = [
         header: "ACCIONES",
         accessorKey: "id", // Dummy key
         align: "right",
-        cell: (item) => (
+        cell: () => (
             <div className="flex items-center justify-end gap-2 text-gray-400">
                 <button className="hover:text-primary transition-colors p-1" title="Descargar">
                     <LuDownload size={16} />

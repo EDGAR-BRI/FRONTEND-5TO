@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CheckBox } from '@/components/react/primary/CheckBox';
 import PreviewBox from './PreviewBox';
 

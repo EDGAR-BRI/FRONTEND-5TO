@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import type { Formats } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, addDays, setHours, setMinutes } from 'date-fns'
@@ -137,8 +137,6 @@ export default function DoctorScheduleCalendar({
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
-  const effectiveView = isMobile ? 'agenda' : undefined
-
   const closeAndClear = () => { closeModal(); setSelectedApt(null) }
 
   const doctor = doctors.find(d => d.id === selectedDoctorId)

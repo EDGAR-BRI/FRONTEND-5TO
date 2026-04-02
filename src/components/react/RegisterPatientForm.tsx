@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Field } from '@/components/react/primary/Field'
 import { Select } from '@/components/react/primary/Select'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
@@ -96,10 +96,6 @@ export default function RegisterPatientForm() {
 
     const setEcontact = (field: keyof EmergencyContact, value: string) =>
         setForm(prev => ({ ...prev, emergencyContact: { ...prev.emergencyContact, [field]: value } }))
-
-    const fakeInput = (field: keyof PatientForm, value: string) => ({
-        target: { value }
-    } as React.ChangeEvent<HTMLInputElement>)
 
     const validate = () => {
         const e: Partial<Record<keyof PatientForm, string>> = {}

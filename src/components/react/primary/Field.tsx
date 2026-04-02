@@ -277,8 +277,8 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                                     weekStartsOn={1}
                                     locale={es}
                                     captionLayout="dropdown"
-                                    fromYear={1990}
-                                    toYear={new Date().getFullYear() + 10}
+                                    startMonth={new Date(1990, 0)}
+                                    endMonth={new Date(new Date().getFullYear() + 10, 11)}
                                     classNames={{
                                         months: 'flex flex-col',
                                         month: 'space-y-3',

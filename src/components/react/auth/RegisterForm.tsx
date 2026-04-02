@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/react/primary/Button";
 import { Field } from "@/components/react/primary/Field";
 import { Badge } from "@/components/react/primary/Badge";
@@ -27,7 +27,7 @@ export default function RegisterForm({ className }: Props) {
 		return loading || !ci.trim() || !name.trim() || !password || !confirmPassword;
 	}, [loading, ci, name, password, confirmPassword]);
 
-	const onSubmit = async (e: React.FormEvent) => {
+	const onSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError(null);
 		setSuccess(null);

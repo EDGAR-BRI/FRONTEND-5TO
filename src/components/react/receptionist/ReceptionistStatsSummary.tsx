@@ -1,7 +1,7 @@
 import React from 'react';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 
-interface StatItem {
+export interface StatItem {
     label: string;
     value: string;
     icon: string;

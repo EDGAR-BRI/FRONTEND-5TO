@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import EditUserModalTrigger from '@/components/react/admin/EditUserModalTrigger';
 import CreateUserModalTrigger from '@/components/react/admin/CreateUserModalTrigger';
 import { StatsCard } from '@/components/react/primary/StatsCard';
-import { LuSearch, LuUsers, LuChevronDown, LuUserCheck, LuUserX, LuStethoscope } from 'react-icons/lu';
+import { LuUsers, LuUserCheck, LuUserX, LuStethoscope } from 'react-icons/lu';
 import type { User, UserRole, UserStatus } from '@/types/User';
 import { Select } from '../primary/Select';
 import { Field } from '../primary/Field';

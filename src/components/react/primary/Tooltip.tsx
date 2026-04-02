@@ -1,11 +1,9 @@
-import React from 'react';
-
 interface TooltipProps {
     text: string;
     position?: 'top' | 'bottom' | 'left' | 'right';
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({ text, position = 'top' }) => {
+export const Tooltip = ({ text, position: _position = 'top' }: TooltipProps) => {
     return (
         <div className="relative group ml-1 flex items-center">
             <svg

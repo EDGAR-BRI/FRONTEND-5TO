@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState, type SyntheticEvent } from "react";
 import { Button } from "@/components/react/primary/Button";
 import { listRoles, loginWithCredentials, dashboardPathForUser, persistLogin } from "@/lib/services/auth/auth.service";
 
@@ -15,7 +15,7 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 
 	const disabled = useMemo(() => loading || !ci.trim() || !password, [loading, ci, password]);
 
-	const onSubmit = async (e: React.FormEvent) => {
+	const onSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError(null);
 		setLoading(true);
