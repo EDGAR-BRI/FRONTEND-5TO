@@ -1,24 +1,17 @@
-import { api } from "@/lib/api";
-import { setToken, setUserName } from "@/lib/api";
+import { api, setToken, setUserName } from "@/lib/api";
 import type { LoginRequest, LoginResponseData, LoginUser, RegisterUserRequest, RegisterUserResponseData, Role } from "./auth.interface";
+import { readEnvelopeData, readEnvelopeErrorMessage } from "../_shared/envelope";
 
-import { readEnvelopeData } from "../_shared/envelope";
+const BASE_PATH = "/auth";
 
 export const loginWithCredentials = async (payload: LoginRequest): Promise<LoginResponseData> => {
-	const response = await api("/auth/login", {
+	const response = await api(`${BASE_PATH}/login`, {
 		method: "POST",
 		body: JSON.stringify(payload),
 	});
 
 	if (!response.ok) {
-		let message = `Error ${response.status}: ${response.statusText}`;
-		try {
-			const json = (await response.json()) as any;
-			message = json?.message || json?.error || json?.data?.message || message;
-		} catch {
-			// ignore
-		}
-		throw new Error(message);
+		throw new Error(await readEnvelopeErrorMessage(response));
 	}
 
 	return readEnvelopeData<LoginResponseData>(response);
@@ -26,25 +19,18 @@ export const loginWithCredentials = async (payload: LoginRequest): Promise<Login
 
 
 export const listRoles = async (): Promise<Role[]> => {
-	const response = await api("/auth/role", { method: "GET" });
+	const response = await api(`${BASE_PATH}/role`, { method: "GET" });
 	if (!response.ok) return [];
 	return readEnvelopeData<Role[]>(response);
 };
 
 export const registerUser = async (payload: RegisterUserRequest): Promise<RegisterUserResponseData> => {
-	const response = await api("/auth/register", {
+	const response = await api(`${BASE_PATH}/register`, {
 		method: "POST",
 		body: JSON.stringify(payload),
 	});
 	if (!response.ok) {
-		let message = `Error ${response.status}: ${response.statusText}`;
-		try {
-			const json = (await response.json()) as any;
-			message = json?.message || json?.error || json?.data?.message || message;
-		} catch {
-			// ignore
-		}
-		throw new Error(message);
+		throw new Error(await readEnvelopeErrorMessage(response));
 	}
 	return readEnvelopeData<RegisterUserResponseData>(response);
 };
@@ -92,4 +78,10 @@ export const dashboardPathForUser = (user: LoginUser, roleCodeOverride?: string)
 export const persistLogin = (data: LoginResponseData) => {
 	setToken(data.token);
 	setUserName(data.user.name);
+};
+
+export const logout = () => {
+	setToken("");
+	setUserName("");
+	window.location.href = "/auth/login";
 };
