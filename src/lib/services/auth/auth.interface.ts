@@ -35,7 +35,7 @@ export type RegisterUserRequest = {
     roleId?: number;
 };
 
-// Response `data` de POST /api/v1/auth/user
+// Response `data` de POST /api/v1/auth/register
 export type RegisterUserResponseData = UserDto;
 
 export type Role = { id: number; name: string; code: string; active?: boolean };
