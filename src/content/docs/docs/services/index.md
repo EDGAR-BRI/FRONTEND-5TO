@@ -93,6 +93,8 @@ Muchos endpoints del backend responden un envelope como:
 Para mantener los services consistentes, usa un helper para extraer `data` cuando exista.
 Este patrón ya está implementado en `src/lib/services/_shared/envelope.ts` y se usa en `src/lib/services/auth/auth.service.ts`.
 
+Además, el mismo archivo expone `readEnvelopeErrorMessage(response)` para estandarizar el parseo de errores del backend.
+
 Implementación recomendada:
 
 ```ts
@@ -107,11 +109,11 @@ export const readEnvelopeData = async <T,>(response: Response): Promise<T> => {
 };
 ```
 
-Uso dentro de un service:
+Uso dentro de un service (estándar actual):
 
 ```ts
 import { api } from "@/lib/api";
-import { readEnvelopeData } from "@/lib/services/_shared/envelope";
+import { readEnvelopeData, readEnvelopeErrorMessage } from "@/lib/services/_shared/envelope";
 import type { LoginRequest, LoginResponseData } from "./auth.interface";
 
 export async function loginWithCredentials(
@@ -123,17 +125,26 @@ export async function loginWithCredentials(
 	});
 
 	if (!response.ok) {
-		let message = `Error ${response.status}: ${response.statusText}`;
-		try {
-			const json = (await response.json()) as any;
-			message = json?.message || json?.error || json?.data?.message || message;
-		} catch {
-			// ignore
-		}
-		throw new Error(message);
+		throw new Error(await readEnvelopeErrorMessage(response));
 	}
 
 	return readEnvelopeData<LoginResponseData>(response);
+}
+
+```
+
+## Estándar: `BASE_PATH` por service
+
+Para evitar strings repetidos en cada función, cada service debe declarar un `BASE_PATH` (en mayúsculas) con el path base del recurso.
+
+Ejemplo:
+
+```ts
+const BASE_PATH = "/auth/user";
+
+export async function listUsers() {
+	const res = await api(BASE_PATH, { method: "GET" });
+	// ...
 }
 ```
 
@@ -146,3 +157,4 @@ Recomendación práctica:
 
 - [Cliente HTTP del Frontend](api-client/)
 - [Auth Service](auth/)
+- [User Service](user/)

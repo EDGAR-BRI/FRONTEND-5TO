@@ -43,9 +43,7 @@ Uso típico: después de un login exitoso.
 - Input: `RegisterUserRequest`
 - Return: `Promise<RegisterUserResponseData>`
 
-Crea un usuario (signup) usando `POST /auth/user`.
-
-Crea un usuario (signup) usando `POST /auth/register`.
+Este service crea un usuario (signup) usando `POST /auth/register`.
 
 Nota: el recurso `POST /auth/user` queda para casos administrativos/CRUD de usuarios.
 

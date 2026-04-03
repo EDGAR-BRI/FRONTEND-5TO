@@ -52,6 +52,7 @@ export default defineConfig({
             { label: 'Introducción', link: '/docs/services/' },
             { label: 'Cliente HTTP del Frontend', link: '/docs/services/api-client/' },
             { label: 'Auth', link: '/docs/services/auth/' },
+			{ label: 'User', link: '/docs/services/user/' },
           ],
         },
         {
