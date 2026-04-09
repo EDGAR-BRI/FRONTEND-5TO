@@ -3,7 +3,7 @@ export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { StatsCard } from "@/components/react/primary/StatsCard";
-import { FaCartFlatbed, FaFileInvoiceDollar, FaMoneyBillTrendUp, FaSackDollar } from "react-icons/fa6";
+import { FaCartFlatbed, FaFileInvoiceDollar, FaSackDollar, FaBoxesStacked, FaScaleBalanced } from "react-icons/fa6";
 
 const pagoDoctores = [
     {
@@ -35,6 +35,16 @@ const pagoDoctores = [
     }
 ];
 
+const insumosFrecuentes = [
+    { id: 1, item: "Gasa Estéril", cantidad: 450, tendencia: "Alta" },
+    { id: 2, item: "Guantes de Látex", cantidad: 320, tendencia: "Media" },
+    { id: 3, item: "Jeringas 5ml", cantidad: 210, tendencia: "Alta" }
+];
+
+const ingresosTotales = 25000;
+const gastosTotales = 12450;
+const utilidadNeta = ingresosTotales - gastosTotales;
+
 const coloresEstado: Record<string, string> = {
     Pagado: "bg-emerald-100 text-emerald-700",
     Pendiente: "bg-amber-100 text-amber-700",
@@ -45,12 +55,15 @@ const coloresEstado: Record<string, string> = {
     <div class="p-6 md:p-8 space-y-8">
         <header class="space-y-2">
             <h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
-            <p class="text-gray-500 mt-1">Control y analisis de egresos operativos, compras y variaciones mensuales.</p>
+            <p class="text-gray-500 mt-1">Control y análisis de egresos operativos, compras y variaciones mensuales.</p>
         </header>
 
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
+            <StatsCard title="Gasto Total (Mes)" value={`$${gastosTotales.toLocaleString()}`} trend="4.1%" trendUp={false} color="danger">
                 <FaSackDollar slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Utilidad Neta" value={`$${utilidadNeta.toLocaleString()}`} trend="12.5%" trendUp={true} color="success">
+                <FaScaleBalanced slot="icon" size={20} />
             </StatsCard>
             <StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
                 <FaCartFlatbed slot="icon" size={20} />
@@ -58,62 +71,78 @@ const coloresEstado: Record<string, string> = {
             <StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
                 <FaFileInvoiceDollar slot="icon" size={20} />
             </StatsCard>
-            <StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
-                <FaMoneyBillTrendUp slot="icon" size={20} />
-            </StatsCard>
         </section>
 
-        <div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold text-gray-800">
-                    Pago de Doctores (Honorarios)
-                </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <FaFileInvoiceDollar className="text-primary-600" />
+                        Pago de Doctores (Honorarios)
+                    </h2>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-primary-200 text-sm text-gray-500">
+                                <th class="pb-3 font-medium">Médico</th>
+                                <th class="pb-3 font-medium text-right">Facturado</th>
+                                <th class="pb-3 font-medium text-right">Clínica (30%)</th>
+                                <th class="pb-3 font-medium text-right">A Liquidar</th>
+                                <th class="pb-3 font-medium text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            {
+                                pagoDoctores.map((doc) => (
+                                    <tr class="border-b border-primary-50 last:border-0 hover:bg-white/50 transition-colors">
+                                        <td class="py-4">
+                                            <p class="text-gray-800 font-medium">{doc.nombre}</p>
+                                            <p class="text-xs text-gray-500 mt-0.5">{doc.especialidad}</p>
+                                        </td>
+                                        <td class="py-4 text-gray-500 text-right">${doc.totalFacturado.toLocaleString()}</td>
+                                        <td class="py-4 text-amber-600 text-right">-${doc.porcentajeClinica.toLocaleString()}</td>
+                                        <td class="py-4 text-primary-600 font-bold text-right">${doc.montoPagar.toLocaleString()}</td>
+                                        <td class="py-4 text-center">
+                                            <span class={`px-2 py-1 rounded-full text-xs font-semibold ${coloresEstado[doc.estado] || "bg-gray-100 text-gray-700"}`}>
+                                                {doc.estado}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-gray-100 text-sm text-gray-500">
-                            <th class="pb-3 font-medium">Médico</th>
-                            <th class="pb-3 font-medium text-right">Facturado</th>
-                            <th class="pb-3 font-medium text-right">Clínica (30%)</th>
-                            <th class="pb-3 font-medium text-right">A Liquidar (70%)</th>
-                            <th class="pb-3 font-medium text-center">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm">
-                        {
-                            pagoDoctores.map((doc) => (
-                                <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
-                                    <td class="py-4">
-                                        <p class="text-gray-800 font-medium">{doc.nombre}</p>
-                                        <p class="text-xs text-gray-500 mt-0.5">{doc.especialidad}</p>
-                                    </td>
-                                    
-                                    <td class="py-4 text-gray-500 text-right">
-                                        ${doc.totalFacturado.toLocaleString()}
-                                    </td>
-
-                                    <td class="py-4 text-amber-600 text-right">
-                                        -${doc.porcentajeClinica.toLocaleString()}
-                                    </td>
-
-                                    <td class="py-4 text-primary-600 font-bold text-right">
-                                        ${doc.montoPagar.toLocaleString()}
-                                    </td>
-
-                                    <td class="py-4 text-center">
-                                        <span
-                                            class={`px-2 py-1 rounded-full text-xs font-semibold ${coloresEstado[doc.estado] || "bg-gray-100 text-gray-700"}`}
-                                        >
-                                            {doc.estado}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
+			
+            <div class="bg-primary-100 rounded-xl border border-primary-200 p-6 shadow-sm">
+    			<h2 class="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+                    <FaBoxesStacked className="text-warning-500" />
+                    Consumo de Insumos
+                </h2>
+                <div class="space-y-6">
+                    {
+                        insumosFrecuentes.map((insumo) => (
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800">{insumo.item}</p>
+                                    <p class="text-xs text-gray-500">Uso: {insumo.cantidad} unidades</p>
+                                </div>
+                                <span class={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${insumo.tendencia === 'Alta' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    {insumo.tendencia}
+                                </span>
+                            </div>
+                        ))
+                    }
+                </div>
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-500 font-medium">Balance Flujo de Caja</span>
+                        <span class="font-bold text-emerald-600 text-lg">${utilidadNeta.toLocaleString()}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
