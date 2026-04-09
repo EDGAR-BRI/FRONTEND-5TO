@@ -32,6 +32,17 @@ const specialtiesStats = [
 	{ name: "Dermatología", percentage: 15, color: "bg-cool-gray-50" },
 	{ name: "Otros", percentage: 5, color: "bg-cool-gray-30" },
 ];
+// Data para Ocupación de Agenda por Doctor
+const doctorOccupancyStats = [
+    { doctor: "Dr. Pérez (Cardiología)", horasDisponibles: 160, horasAgendadas: 144, percentage: 90, color: "bg-primary-500" }, 
+    { doctor: "Dra. Gómez (Pediatría)", horasDisponibles: 160, horasAgendadas: 120, percentage: 75, color: "bg-success" },
+    { doctor: "Dr. Ruiz (Medicina General)", horasDisponibles: 160, horasAgendadas: 152, percentage: 95, color: "bg-warning" },
+    { doctor: "Dra. Silva (Dermatología)", horasDisponibles: 120, horasAgendadas: 60, percentage: 50, color: "bg-slate-400" },
+    { doctor: "Dr. Mendoza (Cardiología)", horasDisponibles: 160, horasAgendadas: 80, percentage: 50, color: "bg-primary-500" },
+    { doctor: "Dra. Rivas (Pediatría)", horasDisponibles: 140, horasAgendadas: 133, percentage: 95, color: "bg-success" },
+    { doctor: "Dr. Castro (Medicina General)", horasDisponibles: 160, horasAgendadas: 112, percentage: 70, color: "bg-warning" },
+    { doctor: "Dra. Morales (Ginecología)", horasDisponibles: 120, horasAgendadas: 108, percentage: 90, color: "bg-cool-gray-30" },
+];
 ---
 
 <AdminLayout title="Reportes y Estadísticas | Admin">
@@ -60,6 +71,18 @@ const specialtiesStats = [
 				</Button>
 			</div>
 		</header>
+		{/* Menú de Navegación de Reportes */}
+        <div class="flex gap-6 border-b border-gray-200 pb-2 overflow-x-auto mt-6">
+            <a href="/modules/admin/reports" class="text-primary-600 font-bold border-b-2 border-primary-600 pb-2 whitespace-nowrap">
+                1. Operativos
+            </a>
+            <a href="/modules/admin/reports-financial" class="text-gray-500 hover:text-gray-700 font-medium pb-2 whitespace-nowrap transition-colors">
+                2. Financieros y Facturación
+            </a>
+            <a href="/modules/admin/reports-fees" class="text-gray-500 hover:text-gray-700 font-medium pb-2 whitespace-nowrap transition-colors">
+                3. Honorarios y Gastos
+            </a>
+        </div>
 
 		{/* Summary Cards */}
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -243,5 +266,37 @@ const specialtiesStats = [
 				<span>Más</span>
 			</div>
 		</section>
+
+		{/* Ocupación de Agenda por Doctor */}
+        <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 mt-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-6">
+                Ocupación de Agenda por Doctor
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {
+                    doctorOccupancyStats.map((doc) => (
+                        <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-semibold text-gray-800">
+                                    {doc.doctor}
+                                </span>
+                                <span class="text-xs font-bold px-2 py-1 bg-gray-100 rounded-md text-gray-700">
+                                    {doc.percentage}% Ocupado
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div
+                                    class={`h-2 rounded-full ${doc.color}`}
+                                    style={`width: ${doc.percentage}%`}
+                                />
+                            </div>
+                            <p class="text-[11px] text-gray-500 text-right">
+                                {doc.horasAgendadas} hrs agendadas vs {doc.horasDisponibles} hrs disp.
+                            </p>
+                        </div>
+                    ))
+                }
+            </div>
+        </section>
 	</div>
 </AdminLayout>
