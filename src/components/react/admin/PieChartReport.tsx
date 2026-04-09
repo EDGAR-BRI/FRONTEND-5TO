@@ -9,8 +9,10 @@ export const PieChartReport = ({ data }: Props) => {
   const chartData = data.map(item => ({
     name: item.metodo,
     value: item.monto,
-    color: item.color
+    color: item.color,
   }));
+
+  const totalCaja = chartData.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
     <div className="w-full h-[350px]">
@@ -20,12 +22,13 @@ export const PieChartReport = ({ data }: Props) => {
             data={chartData}
             cx="50%"
             cy="50%"
-            innerRadius={80}
-            outerRadius={120}
-            paddingAngle={5}
+            innerRadius={90}
+            outerRadius={135}
+            paddingAngle={0}
             dataKey="value"
             animationBegin={0}
             animationDuration={1500}
+            label={false} 
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />

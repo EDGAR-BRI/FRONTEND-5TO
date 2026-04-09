@@ -60,42 +60,47 @@ const totalCaja = cajaMetodosPago.reduce((acc, curr) => acc + curr.monto, 0);
             </StatsCard>
         </section>
 
-        {/* Sección de Cierre de Caja con Recharts */}
+        {/* Sección de Cierre de Caja */}
         <section class="bg-primary-100 rounded-2xl border border-primary-200 p-8 shadow-sm">
             <header class="mb-10 text-center lg:text-left">
-                <h2 class="text-xl font-extrabold text-gray-800">Distribución de Ingresos por Canal</h2>
+                <h2 class="text-lg font-bold text-gray-800">Distribución de Ingresos por Canal</h2>
                 <p class="text-sm text-gray-500 font-medium">Cierre de caja desglosado por moneda y plataforma.</p>
             </header>
             
             <div class="flex flex-col lg:flex-row items-center justify-around gap-12">
                 
-
+                {/* GRÁFICO DONUT*/}
                 <div class="relative w-full max-w-md group">
-
                     <PieChartReport client:load data={cajaMetodosPago} />
                     
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-[11px] uppercase font-black text-gray-400 tracking-[0.2em]">Cierre Total</span>
-                        <span class="text-4xl font-black text-gray-800 mt-1">${totalCaja.toLocaleString()}</span>
-                        <Badge className="mt-2">Hoy</Badge>
+                  
+                        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-[0.2em] mb-1">Cierre Total</span>
+
+                        <span class="text-4xl font-black text-gray-800 leading-none">${totalCaja.toLocaleString()}</span>
+                        <Badge className="mt-3">Hoy</Badge>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 w-full lg:max-w-md">
                     {cajaMetodosPago.map((item) => (
-                        <article class="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-white shadow-sm flex items-center justify-between group hover:bg-white hover:shadow-md transition-all duration-300">
+                        <article class="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-white shadow-sm flex items-center justify-between group transition-all duration-300">
                             <div class="flex items-center gap-4">
                                 <div class="p-2.5 rounded-lg text-white shadow-sm" style={`background-color: ${item.color}`}>
                                     <item.icon size={18} />
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-bold text-gray-700">{item.metodo}</h3>
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{item.ops} transacciones</p>
+                           
+                                    <h3 class="text-sm font-medium text-gray-700">{item.metodo}</h3>
+                               
+                                    <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{item.ops} transacciones</p>
                                 </div>
                             </div>
                             <div class="text-right">
+       
                                 <p class="text-base font-black text-gray-800">${item.monto}</p>
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">
+                           
+                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">
                                     {item.percentage}%
                                 </span>
                             </div>
