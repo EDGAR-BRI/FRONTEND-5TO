@@ -1,0 +1,162 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { Button } from "@/components/react/primary/Button";
+import { Badge } from "@/components/react/primary/Badge";
+import StaticCard from "@/components/react/primary/StaticCard";
+import {
+	FaCartFlatbed,
+	FaDownload,
+	FaFileInvoiceDollar,
+	FaMoneyBillTrendUp,
+	FaSackDollar,
+	FaScaleBalanced,
+} from "react-icons/fa6";
+
+const monthlySpend = [
+	{ month: "Ene", spend: 10400, budget: 11000 },
+	{ month: "Feb", spend: 11200, budget: 11500 },
+	{ month: "Mar", spend: 10900, budget: 11500 },
+	{ month: "Abr", spend: 12100, budget: 11800 },
+	{ month: "May", spend: 11750, budget: 12000 },
+	{ month: "Jun", spend: 12450, budget: 12300 },
+];
+
+const categorySplit = [
+	{ name: "Insumos", value: 38, tone: "bg-primary-500" },
+	{ name: "Servicios", value: 24, tone: "bg-success" },
+	{ name: "Mantenimiento", value: 19, tone: "bg-warning" },
+	{ name: "Administrativo", value: 12, tone: "bg-cool-gray-50" },
+	{ name: "Otros", value: 7, tone: "bg-primary-300" },
+];
+
+const supplierImpact = [
+	{ supplier: "BioSupply", invoices: 16, amount: "$2,940" },
+	{ supplier: "MediGroup", invoices: 11, amount: "$2,140" },
+	{ supplier: "LabCore", invoices: 9, amount: "$1,880" },
+	{ supplier: "ServiTec", invoices: 8, amount: "$1,460" },
+];
+
+const maxAmount = Math.max(...monthlySpend.map((item) => Math.max(item.spend, item.budget)));
+---
+
+<AdminLayout title="Reporte de Gastos | Admin">
+	<div class="p-6 md:p-8 space-y-8">
+		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div class="space-y-2">
+				<h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
+				<p class="text-gray-500">Control de egresos, desviacion de presupuesto y peso por categoria.</p>
+			</div>
+			<Button label="Descargar analisis" variant="primary">
+				<FaDownload size={14} />
+				Descargar analisis
+			</Button>
+		</header>
+
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
+				<FaSackDollar slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
+				<FaCartFlatbed slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
+				<FaFileInvoiceDollar slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
+				<FaMoneyBillTrendUp slot="icon" size={20} />
+			</StatsCard>
+		</section>
+
+		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-lg font-bold text-gray-800">Gasto vs presupuesto mensual</h2>
+					<Badge styles={{ bg: "bg-warning/20", text: "text-warning", border: "border-transparent" }}>
+						Corte semestral
+					</Badge>
+				</div>
+				<div class="h-72 flex items-end gap-3 border-b border-primary-300 pb-2 overflow-x-auto">
+					{
+						monthlySpend.map((item) => (
+							<div class="h-full flex flex-col items-center justify-end min-w-16">
+								<div class="w-full h-full flex items-end gap-1">
+									<div
+										class="w-1/2 min-h-2 bg-primary-500 rounded-t-sm"
+										style={`height: ${(item.spend / maxAmount) * 100}%`}
+										title={`Gasto ${item.month}: $${item.spend}`}
+									/>
+									<div
+										class="w-1/2 min-h-2 bg-cool-gray-40 rounded-t-sm"
+										style={`height: ${(item.budget / maxAmount) * 100}%`}
+										title={`Presupuesto ${item.month}: $${item.budget}`}
+									/>
+								</div>
+								<span class="text-[11px] text-cool-gray-50 mt-2">{item.month}</span>
+							</div>
+						))
+					}
+				</div>
+				<div class="mt-4 flex items-center gap-4 text-xs text-cool-gray-50">
+					<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-500" /> Gasto real</span>
+					<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cool-gray-40" /> Presupuesto</span>
+				</div>
+			</div>
+
+			<div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<h2 class="text-lg font-bold text-gray-800 mb-5">Participacion por categoria</h2>
+				<div class="space-y-4">
+					{
+						categorySplit.map((item) => (
+							<div>
+								<div class="flex items-center justify-between mb-1">
+									<span class="inline-flex items-center gap-2 text-sm text-cool-gray-60">
+										<span class:list={["w-2.5 h-2.5 rounded-full", item.tone]} />
+										{item.name}
+									</span>
+									<span class="text-xs font-semibold text-cool-gray-90">{item.value}%</span>
+								</div>
+								<div class="w-full h-2.5 rounded-full bg-primary-200 overflow-hidden">
+									<div class:list={["h-2.5 rounded-full", item.tone]} style={`width: ${item.value}%`} />
+								</div>
+							</div>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+			<StaticCard className="p-6">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-lg font-bold text-gray-800">Proveedores con mayor impacto</h3>
+					<FaScaleBalanced className="text-primary-600" />
+				</div>
+				<div class="space-y-3">
+					{
+						supplierImpact.map((supplier) => (
+							<div class="flex items-center justify-between rounded-lg border border-primary-200 p-3 bg-primary-50/40">
+								<div>
+									<p class="text-sm font-semibold text-cool-gray-90">{supplier.supplier}</p>
+									<p class="text-xs text-cool-gray-50">{supplier.invoices} facturas</p>
+								</div>
+								<p class="text-sm font-bold text-cool-gray-90">{supplier.amount}</p>
+							</div>
+						))
+					}
+				</div>
+			</StaticCard>
+
+			<StaticCard className="p-6">
+				<h3 class="text-lg font-bold text-gray-800 mb-4">Observaciones financieras</h3>
+				<ul class="space-y-3 text-sm text-cool-gray-60">
+					<li class="border-l-2 border-warning pl-3">Abril y junio superaron el presupuesto en 2.5% y 1.2%.</li>
+					<li class="border-l-2 border-primary-500 pl-3">Insumos concentra el 38% del gasto mensual acumulado.</li>
+					<li class="border-l-2 border-success pl-3">Mantenimiento se mantiene estable por debajo del objetivo trimestral.</li>
+				</ul>
+			</StaticCard>
+		</section>
+	</div>
+</AdminLayout>
