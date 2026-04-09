@@ -1,0 +1,31 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowTrendUp, FaChartLine, FaFileCircleCheck, FaUserCheck } from "react-icons/fa6";
+---
+
+<AdminLayout title="Reporte de Resultados | Admin">
+	<div class="p-6 md:p-8 space-y-8">
+		<header class="space-y-2">
+			<h1 class="text-3xl font-bold text-gray-800">Reporte de Resultados</h1>
+			<p class="text-gray-500">Indicadores clave de rendimiento clinico y satisfaccion de atencion.</p>
+		</header>
+
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard title="Atenciones Exitosas" value="94%" trend="2.3%" trendUp={true} color="success">
+				<FaFileCircleCheck slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Pacientes Satisfechos" value="89%" trend="1.7%" trendUp={true} color="primary">
+				<FaUserCheck slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Crecimiento Mensual" value="11.2%" trend="0.9%" trendUp={true} color="success">
+				<FaArrowTrendUp slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Meta Cumplida" value="92%" trend="3.0%" trendUp={true} color="warning">
+				<FaChartLine slot="icon" size={20} />
+			</StatsCard>
+		</section>
+	</div>
+</AdminLayout>

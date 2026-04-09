@@ -1,0 +1,31 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaCartFlatbed, FaFileInvoiceDollar, FaMoneyBillTrendUp, FaSackDollar } from "react-icons/fa6";
+---
+
+<AdminLayout title="Reporte de Gastos | Admin">
+	<div class="p-6 md:p-8 space-y-8">
+		<header class="space-y-2">
+			<h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
+			<p class="text-gray-500">Control y analisis de egresos operativos, compras y variaciones mensuales.</p>
+		</header>
+
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
+				<FaSackDollar slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
+				<FaCartFlatbed slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
+				<FaFileInvoiceDollar slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
+				<FaMoneyBillTrendUp slot="icon" size={20} />
+			</StatsCard>
+		</section>
+	</div>
+</AdminLayout>
