@@ -4,28 +4,117 @@ export const prerender = true;
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaCartFlatbed, FaFileInvoiceDollar, FaMoneyBillTrendUp, FaSackDollar } from "react-icons/fa6";
+
+const pagoDoctores = [
+    {
+        id: 1,
+        nombre: "Dr. Carlos Pérez",
+        especialidad: "Cardiología",
+        totalFacturado: 4500,
+        porcentajeClinica: 1350,
+        montoPagar: 3150,
+        estado: "Pendiente"
+    },
+    {
+        id: 2,
+        nombre: "Dr. Enrique Ruiz",
+        especialidad: "Medicina General",
+        totalFacturado: 2800,
+        porcentajeClinica: 840,
+        montoPagar: 1960,
+        estado: "Pagado"
+    },
+    {
+        id: 3,
+        nombre: "Dra. Susej Viscaya",
+        especialidad: "Pediatría",
+        totalFacturado: 3200,
+        porcentajeClinica: 960,
+        montoPagar: 2240,
+        estado: "Pendiente"
+    }
+];
+
+const coloresEstado: Record<string, string> = {
+    Pagado: "bg-emerald-100 text-emerald-700",
+    Pendiente: "bg-amber-100 text-amber-700",
+};
 ---
 
 <AdminLayout title="Reporte de Gastos | Admin">
-	<div class="p-6 md:p-8 space-y-8">
-		<header class="space-y-2">
-			<h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
-			<p class="text-gray-500">Control y analisis de egresos operativos, compras y variaciones mensuales.</p>
-		</header>
+    <div class="p-6 md:p-8 space-y-8">
+        <header class="space-y-2">
+            <h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
+            <p class="text-gray-500 mt-1">Control y analisis de egresos operativos, compras y variaciones mensuales.</p>
+        </header>
 
-		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
-				<FaSackDollar slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
-				<FaCartFlatbed slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
-				<FaFileInvoiceDollar slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
-				<FaMoneyBillTrendUp slot="icon" size={20} />
-			</StatsCard>
-		</section>
-	</div>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
+                <FaSackDollar slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
+                <FaCartFlatbed slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
+                <FaFileInvoiceDollar slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
+                <FaMoneyBillTrendUp slot="icon" size={20} />
+            </StatsCard>
+        </section>
+
+        <div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-gray-800">
+                    Pago de Doctores (Honorarios)
+                </h2>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-100 text-sm text-gray-500">
+                            <th class="pb-3 font-medium">Médico</th>
+                            <th class="pb-3 font-medium text-right">Facturado</th>
+                            <th class="pb-3 font-medium text-right">Clínica (30%)</th>
+                            <th class="pb-3 font-medium text-right">A Liquidar (70%)</th>
+                            <th class="pb-3 font-medium text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        {
+                            pagoDoctores.map((doc) => (
+                                <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                                    <td class="py-4">
+                                        <p class="text-gray-800 font-medium">{doc.nombre}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">{doc.especialidad}</p>
+                                    </td>
+                                    
+                                    <td class="py-4 text-gray-500 text-right">
+                                        ${doc.totalFacturado.toLocaleString()}
+                                    </td>
+
+                                    <td class="py-4 text-amber-600 text-right">
+                                        -${doc.porcentajeClinica.toLocaleString()}
+                                    </td>
+
+                                    <td class="py-4 text-primary-600 font-bold text-right">
+                                        ${doc.montoPagar.toLocaleString()}
+                                    </td>
+
+                                    <td class="py-4 text-center">
+                                        <span
+                                            class={`px-2 py-1 rounded-full text-xs font-semibold ${coloresEstado[doc.estado] || "bg-gray-100 text-gray-700"}`}
+                                        >
+                                            {doc.estado}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </AdminLayout>
