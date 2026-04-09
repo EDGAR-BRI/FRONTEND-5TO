@@ -3,29 +3,78 @@ export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { StatsCard } from "@/components/react/primary/StatsCard";
-import { FaArrowTrendUp, FaChartLine, FaFileCircleCheck, FaUserCheck } from "react-icons/fa6";
+import { Button } from "@/components/react/primary/Button";
+import {
+    FaFilePdf,
+    FaPrint,
+    FaMobileScreenButton,
+    FaBuildingColumns,
+    FaFileInvoiceDollar,
+    FaArrowTrendUp
+} from "react-icons/fa6";
+
+const cajaMetodosPago = [
+    { metodo: "Efectivo (USD)", monto: 540, ops: 12, percentage: 35, color: "bg-primary-500" },
+    { metodo: "Tarjeta Débito", monto: 380, ops: 8, percentage: 25, color: "bg-success" },
+    { metodo: "Pago Móvil (VES)", monto: 200, ops: 15, percentage: 13, color: "bg-warning" },
+    { metodo: "Zelle", monto: 120, ops: 2, percentage: 8, color: "bg-slate-400" },
+    { metodo: "Transferencia", monto: 300, ops: 5, percentage: 19, color: "bg-cyan-500" },
+];
 ---
 
-<AdminLayout title="Reporte de Resultados | Admin">
-	<div class="p-6 md:p-8 space-y-8">
-		<header class="space-y-2">
-			<h1 class="text-3xl font-bold text-gray-800">Reporte de Resultados</h1>
-			<p class="text-gray-500">Indicadores clave de rendimiento clinico y satisfaccion de atencion.</p>
-		</header>
+<AdminLayout title="Reportes Financieros | Admin">
+    <div class="p-6 md:p-8 space-y-8">
 
-		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<StatsCard title="Atenciones Exitosas" value="94%" trend="2.3%" trendUp={true} color="success">
-				<FaFileCircleCheck slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Pacientes Satisfechos" value="89%" trend="1.7%" trendUp={true} color="primary">
-				<FaUserCheck slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Crecimiento Mensual" value="11.2%" trend="0.9%" trendUp={true} color="success">
-				<FaArrowTrendUp slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Meta Cumplida" value="92%" trend="3.0%" trendUp={true} color="warning">
-				<FaChartLine slot="icon" size={20} />
-			</StatsCard>
-		</section>
-	</div>
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Reporte de Caja y Facturación</h1>
+                <p class="text-gray-500 mt-1">Cierre diario de ingresos desglosado por métodos de pago y estado contable.</p>
+            </div>
+            <div class="flex gap-3">
+                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
+                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+            </div>
+        </header>
+
+        {/* Tarjetas de Resumen*/}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard title="Recaudado Hoy" value="$1,540" trend="15%" trendUp={true} color="success">
+                <FaFileInvoiceDollar slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Total Transacciones" value="42" trend="8%" trendUp={true} color="primary">
+                <FaMobileScreenButton slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Pendiente Conciliar" value="$45.00" trend="Sincronizado" trendUp={true} color="warning">
+                <FaBuildingColumns slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Utilidad Estimada" value="82%" trend="1.2%" trendUp={true} color="primary">
+                <FaArrowTrendUp slot="icon" size={20} />
+            </StatsCard>
+        </section>
+
+        {/* Cierre de Caja */}
+        <section class="bg-primary-100 rounded-xl border border-primary-200 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-6">Cierre de Caja Diario (Métodos de Pago)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {cajaMetodosPago.map((item) => (
+                    <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-semibold text-gray-800">{item.metodo}</span>
+                            <span class="text-xs font-bold px-2 py-1 bg-gray-50 rounded-md text-gray-700 border border-gray-100">
+                                {item.ops} Operaciones
+                            </span>
+                        </div>
+                        {/* Barra de progreso*/}
+                        <div class="w-full bg-gray-100 rounded-full h-2 mb-2">
+                            <div class={`h-2 rounded-full ${item.color}`} style={`width: ${item.percentage}%`} />
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                             <p class="text-[10px] text-gray-400 font-medium italic">Representa el {item.percentage}% del total</p>
+                             <p class="text-sm font-bold text-primary-600">${item.monto.toLocaleString()}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+    </div>
 </AdminLayout>
