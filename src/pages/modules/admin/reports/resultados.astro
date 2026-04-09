@@ -4,31 +4,45 @@ export const prerender = true;
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { Button } from "@/components/react/primary/Button";
+import { Badge } from "@/components/react/primary/Badge";
 import {
     FaFilePdf,
     FaPrint,
     FaMobileScreenButton,
     FaBuildingColumns,
     FaFileInvoiceDollar,
-    FaArrowTrendUp
+    FaArrowTrendUp,
+    FaMoneyBill1Wave,
+    FaCreditCard,
+    FaWallet
 } from "react-icons/fa6";
 
 const cajaMetodosPago = [
-    { metodo: "Efectivo (USD)", monto: 540, ops: 12, percentage: 35, color: "bg-primary-500" },
-    { metodo: "Tarjeta Débito", monto: 380, ops: 8, percentage: 25, color: "bg-success" },
-    { metodo: "Pago Móvil (VES)", monto: 200, ops: 15, percentage: 13, color: "bg-warning" },
-    { metodo: "Zelle", monto: 120, ops: 2, percentage: 8, color: "bg-slate-400" },
-    { metodo: "Transferencia", monto: 300, ops: 5, percentage: 19, color: "bg-cyan-500" },
+    { metodo: "Efectivo (USD)", monto: 540, ops: 12, percentage: 35, color: "#3b82f6", icon: FaMoneyBill1Wave }, // blue-500
+    { metodo: "Tarjeta Débito", monto: 380, ops: 8, percentage: 25, color: "#10b981", icon: FaCreditCard },     // emerald-500
+    { metodo: "Pago Móvil (VES)", monto: 200, ops: 15, percentage: 13, color: "#f59e0b", icon: FaMobileScreenButton }, // amber-500
+    { metodo: "Zelle", monto: 120, ops: 2, percentage: 8, color: "#94a3b8", icon: FaWallet },              // slate-400
+    { metodo: "Transferencia", monto: 300, ops: 5, percentage: 19, color: "#6366f1", icon: FaBuildingColumns }, // indigo-500
 ];
+
+const totalCaja = cajaMetodosPago.reduce((acc, curr) => acc + curr.monto, 0);
+
+
+let currentPercent = 0;
+const gradientString = cajaMetodosPago.map(item => {
+    const start = currentPercent;
+    currentPercent += item.percentage;
+    return `${item.color} ${start}% ${currentPercent}%`;
+}).join(", ");
 ---
 
 <AdminLayout title="Reportes Financieros | Admin">
-    <div class="p-6 md:p-8 space-y-8">
+    <div class="p-6 md:p-8 space-y-10">
 
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Reporte de Caja y Facturación</h1>
-                <p class="text-gray-500 mt-1">Cierre diario de ingresos desglosado por métodos de pago y estado contable.</p>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte de Caja y Facturación</h1>
+                <p class="text-gray-500 mt-1 font-medium">Análisis consolidado de ingresos y métodos de pago.</p>
             </div>
             <div class="flex gap-3">
                 <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
@@ -36,45 +50,69 @@ const cajaMetodosPago = [
             </div>
         </header>
 
-        {/* Tarjetas de Resumen*/}
+        {/* Tarjetas de Resumen */}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Recaudado Hoy" value="$1,540" trend="15%" trendUp={true} color="success">
+            <StatsCard title="Recaudado Hoy" value={`$${totalCaja.toLocaleString()}`} trend="15%" trendUp={true} color="success">
                 <FaFileInvoiceDollar slot="icon" size={20} />
             </StatsCard>
-            <StatsCard title="Total Transacciones" value="42" trend="8%" trendUp={true} color="primary">
+            <StatsCard title="Transacciones" value="42" trend="8%" trendUp={true} color="primary">
                 <FaMobileScreenButton slot="icon" size={20} />
             </StatsCard>
             <StatsCard title="Pendiente Conciliar" value="$45.00" trend="Sincronizado" trendUp={true} color="warning">
                 <FaBuildingColumns slot="icon" size={20} />
             </StatsCard>
-            <StatsCard title="Utilidad Estimada" value="82%" trend="1.2%" trendUp={true} color="primary">
+            <StatsCard title="Utilidad Bruta" value="82%" trend="1.2%" trendUp={true} color="primary">
                 <FaArrowTrendUp slot="icon" size={20} />
             </StatsCard>
         </section>
 
-        {/* Cierre de Caja */}
-        <section class="bg-primary-100 rounded-xl border border-primary-200 p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-6">Cierre de Caja Diario (Métodos de Pago)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {cajaMetodosPago.map((item) => (
-                    <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-semibold text-gray-800">{item.metodo}</span>
-                            <span class="text-xs font-bold px-2 py-1 bg-gray-50 rounded-md text-gray-700 border border-gray-100">
-                                {item.ops} Operaciones
-                            </span>
-                        </div>
-                        {/* Barra de progreso*/}
-                        <div class="w-full bg-gray-100 rounded-full h-2 mb-2">
-                            <div class={`h-2 rounded-full ${item.color}`} style={`width: ${item.percentage}%`} />
-                        </div>
-                        <div class="flex justify-between items-center mt-1">
-                             <p class="text-[10px] text-gray-400 font-medium italic">Representa el {item.percentage}% del total</p>
-                             <p class="text-sm font-bold text-primary-600">${item.monto.toLocaleString()}</p>
+        {/* Sección de Cierre de Caja */}
+        <section class="bg-primary-100 rounded-2xl border border-primary-200 p-8 shadow-sm">
+            <header class="mb-10 text-center lg:text-left">
+                <h2 class="text-xl font-extrabold text-gray-800">Distribución de Ingresos por Canal</h2>
+                <p class="text-sm text-gray-500 font-medium">Cierre de caja desglosado por moneda y plataforma.</p>
+            </header>
+            
+            <div class="flex flex-col lg:flex-row items-center justify-around gap-12">
+                
+                {/* GRÁFICO DONUT*/}
+                <div class="relative group">
+                    {/* El anillo exterior con sombra */}
+                    <div 
+                        class="w-72 h-72 rounded-full shadow-[0_0_50px_-12px_rgba(0,0,0,0.15)] flex items-center justify-center transition-transform duration-500 group-hover:scale-105"
+                        style={`background: conic-gradient(${gradientString});`}
+                    >
+                        <div class="w-48 h-48 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
+                            <span class="text-[11px] uppercase font-black text-gray-400 tracking-[0.2em]">Cierre Total</span>
+                            <span class="text-4xl font-black text-gray-800 mt-1">${totalCaja.toLocaleString()}</span>
+                            <Badge className="mt-2">Hoy</Badge>
                         </div>
                     </div>
-                ))}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 w-full lg:max-w-md">
+                    {cajaMetodosPago.map((item) => (
+                        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-white shadow-sm flex items-center justify-between group hover:bg-white hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center gap-4">
+                                <div class="p-2.5 rounded-lg text-white shadow-sm" style={`background-color: ${item.color}`}>
+                                    <item.icon size={18} />
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-gray-700">{item.metodo}</h3>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{item.ops} transacciones</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-base font-black text-gray-800">${item.monto}</p>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">
+                                    {item.percentage}%
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </section>
+
     </div>
 </AdminLayout>
