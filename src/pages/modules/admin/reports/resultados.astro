@@ -3,14 +3,55 @@ export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { StatsCard } from "@/components/react/primary/StatsCard";
-import { FaArrowTrendUp, FaChartLine, FaFileCircleCheck, FaUserCheck } from "react-icons/fa6";
+import { Button } from "@/components/react/primary/Button";
+import { Badge } from "@/components/react/primary/Badge";
+import StaticCard from "@/components/react/primary/StaticCard";
+import {
+	FaArrowTrendUp,
+	FaBullseye,
+	FaChartLine,
+	FaDownload,
+	FaFileCircleCheck,
+	FaFlask,
+	FaUserCheck,
+} from "react-icons/fa6";
+
+const monthlyOutcome = [
+	{ month: "Ene", score: 82 },
+	{ month: "Feb", score: 84 },
+	{ month: "Mar", score: 85 },
+	{ month: "Abr", score: 88 },
+	{ month: "May", score: 90 },
+	{ month: "Jun", score: 92 },
+];
+
+const qualityByService = [
+	{ service: "Consulta externa", success: 94, target: 90 },
+	{ service: "Laboratorio", success: 89, target: 87 },
+	{ service: "Imagenologia", success: 86, target: 85 },
+	{ service: "Hospitalizacion", success: 91, target: 88 },
+];
+
+const followUpStats = [
+	{ label: "Reingresos 30 dias", value: "4.2%", state: "estable" },
+	{ label: "Entrega de resultados a tiempo", value: "96%", state: "positivo" },
+	{ label: "Casos con seguimiento completo", value: "91%", state: "positivo" },
+];
+
+const maxOutcome = Math.max(...monthlyOutcome.map((item) => item.score));
 ---
 
 <AdminLayout title="Reporte de Resultados | Admin">
 	<div class="p-6 md:p-8 space-y-8">
-		<header class="space-y-2">
-			<h1 class="text-3xl font-bold text-gray-800">Reporte de Resultados</h1>
-			<p class="text-gray-500">Indicadores clave de rendimiento clinico y satisfaccion de atencion.</p>
+		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div class="space-y-2">
+				<h1 class="text-3xl font-bold text-gray-800">Reporte de Resultados</h1>
+				<p class="text-gray-500">Indicadores de efectividad clinica, metas de calidad y satisfaccion del paciente.</p>
+			</div>
+			<Button label="Exportar resumen" variant="primary">
+				<FaDownload size={14} />
+				Exportar resumen
+			</Button>
 		</header>
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -26,6 +67,96 @@ import { FaArrowTrendUp, FaChartLine, FaFileCircleCheck, FaUserCheck } from "rea
 			<StatsCard title="Meta Cumplida" value="92%" trend="3.0%" trendUp={true} color="warning">
 				<FaChartLine slot="icon" size={20} />
 			</StatsCard>
+		</section>
+
+		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-lg font-bold text-gray-800">Indice de resultados por mes</h2>
+					<Badge styles={{ bg: "bg-success/20", text: "text-success", border: "border-transparent" }}>
+						Tendencia positiva
+					</Badge>
+				</div>
+				<div class="h-64 flex items-end gap-3 border-b border-primary-300 pb-2">
+					{
+						monthlyOutcome.map((point) => (
+							<div class="flex-1 h-full flex flex-col items-center justify-end group relative">
+								<div class="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] bg-cool-gray-90 text-white px-2 py-1 rounded">
+									{point.score}% efectividad
+								</div>
+								<div
+									class="w-full min-h-2 rounded-t-md bg-success hover:brightness-110 transition-all"
+									style={`height: ${(point.score / maxOutcome) * 100}%`}
+								/>
+								<span class="text-[11px] text-cool-gray-50 mt-2">{point.month}</span>
+							</div>
+						))
+					}
+				</div>
+			</div>
+
+			<div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<h2 class="text-lg font-bold text-gray-800 mb-5">Semaforo de seguimiento</h2>
+				<div class="space-y-4">
+					{
+						followUpStats.map((item) => (
+							<div class="p-3 rounded-lg border border-primary-200 bg-primary-50/40">
+								<p class="text-sm text-cool-gray-60">{item.label}</p>
+								<div class="mt-2 flex items-center justify-between">
+									<span class="text-xl font-bold text-cool-gray-90">{item.value}</span>
+									<Badge
+										styles={{
+											bg: item.state === "positivo" ? "bg-success/20" : "bg-warning/20",
+											text: item.state === "positivo" ? "text-success" : "text-warning",
+											border: "border-transparent",
+										}}
+									>
+										{item.state}
+									</Badge>
+								</div>
+							</div>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+			<StaticCard className="p-6">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-lg font-bold text-gray-800">Cumplimiento por servicio</h3>
+					<FaBullseye className="text-primary-600" />
+				</div>
+				<div class="space-y-4">
+					{
+						qualityByService.map((item) => (
+							<div>
+								<div class="flex items-center justify-between mb-1">
+									<p class="text-sm text-cool-gray-60">{item.service}</p>
+									<p class="text-xs text-cool-gray-50">Meta {item.target}%</p>
+								</div>
+								<div class="w-full h-2.5 rounded-full bg-primary-200 overflow-hidden">
+									<div class="h-2.5 rounded-full bg-primary-500" style={`width: ${item.success}%`} />
+								</div>
+								<p class="text-xs text-cool-gray-50 mt-1">Resultado actual: {item.success}%</p>
+							</div>
+						))
+					}
+				</div>
+			</StaticCard>
+
+			<StaticCard className="p-6">
+				<h3 class="text-lg font-bold text-gray-800 mb-4">Hallazgos del periodo</h3>
+				<ul class="space-y-3 text-sm text-cool-gray-60">
+					<li class="border-l-2 border-success pl-3">Subio la adherencia a protocolos clinicos en +4.6%.</li>
+					<li class="border-l-2 border-primary-500 pl-3">El servicio de laboratorio alcanzo 89% de resultados validados en tiempo.</li>
+					<li class="border-l-2 border-warning pl-3">Se identificaron 6 casos para reforzar seguimiento post-consulta.</li>
+				</ul>
+				<div class="mt-5 flex items-center gap-2 text-xs text-cool-gray-50">
+					<FaFlask className="text-primary-600" />
+					Revision basada en corte semanal del area de calidad.
+				</div>
+			</StaticCard>
 		</section>
 	</div>
 </AdminLayout>

@@ -3,14 +3,66 @@ export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { StatsCard } from "@/components/react/primary/StatsCard";
-import { FaCalendarCheck, FaClock, FaHospitalUser, FaUserDoctor } from "react-icons/fa6";
+import { Button } from "@/components/react/primary/Button";
+import { Badge } from "@/components/react/primary/Badge";
+import StaticCard from "@/components/react/primary/StaticCard";
+import {
+	FaCalendarCheck,
+	FaClock,
+	FaDownload,
+	FaFilter,
+	FaHospitalUser,
+	FaStethoscope,
+	FaUserDoctor,
+} from "react-icons/fa6";
+
+const hourlyLoad = [
+	{ hour: "07:00", visits: 10 },
+	{ hour: "08:00", visits: 14 },
+	{ hour: "09:00", visits: 18 },
+	{ hour: "10:00", visits: 22 },
+	{ hour: "11:00", visits: 19 },
+	{ hour: "12:00", visits: 16 },
+	{ hour: "13:00", visits: 13 },
+	{ hour: "14:00", visits: 20 },
+	{ hour: "15:00", visits: 24 },
+	{ hour: "16:00", visits: 17 },
+];
+
+const areaDistribution = [
+	{ area: "Consulta general", value: 42, tone: "bg-primary-500" },
+	{ area: "Laboratorio", value: 23, tone: "bg-success" },
+	{ area: "Imagenologia", value: 19, tone: "bg-warning" },
+	{ area: "Urgencias", value: 16, tone: "bg-cool-gray-50" },
+];
+
+const roomPerformance = [
+	{ room: "Consultorio 1", occupancy: 92, waiting: "14 min", status: "alto" },
+	{ room: "Consultorio 2", occupancy: 86, waiting: "18 min", status: "alto" },
+	{ room: "Consultorio 3", occupancy: 71, waiting: "21 min", status: "medio" },
+	{ room: "Consultorio 4", occupancy: 63, waiting: "17 min", status: "estable" },
+];
+
+const maxVisits = Math.max(...hourlyLoad.map((item) => item.visits));
 ---
 
 <AdminLayout title="Reporte Operativo | Admin">
 	<div class="p-6 md:p-8 space-y-8">
-		<header class="space-y-2">
-			<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
-			<p class="text-gray-500">Seguimiento diario de actividad asistencial y uso del centro médico.</p>
+		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div class="space-y-2">
+				<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
+				<p class="text-gray-500">Seguimiento de actividad diaria, flujo por horario y rendimiento por area.</p>
+			</div>
+			<div class="flex flex-wrap gap-3">
+				<Button label="Filtrar" variant="secondary">
+					<FaFilter size={14} />
+					Filtrar
+				</Button>
+				<Button label="Exportar" variant="primary">
+					<FaDownload size={14} />
+					Exportar
+				</Button>
+			</div>
 		</header>
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -26,6 +78,94 @@ import { FaCalendarCheck, FaClock, FaHospitalUser, FaUserDoctor } from "react-ic
 			<StatsCard title="Médicos Activos" value="18" trend="0.0%" trendUp={true} color="primary">
 				<FaUserDoctor slot="icon" size={20} />
 			</StatsCard>
+		</section>
+
+		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-lg font-bold text-gray-800">Flujo de pacientes por hora</h2>
+					<Badge styles={{ bg: "bg-primary-200", text: "text-primary-700", border: "border-primary-400" }}>
+						Turno manana
+					</Badge>
+				</div>
+				<div class="h-64 flex items-end gap-2 sm:gap-3 border-b border-primary-300 pb-2">
+					{
+						hourlyLoad.map((slot) => (
+							<div class="flex-1 h-full flex flex-col items-center justify-end group relative">
+								<div class="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] bg-cool-gray-90 text-white px-2 py-1 rounded">
+									{slot.visits} citas
+								</div>
+								<div
+									class="w-full min-h-2 rounded-t-md bg-primary-400 hover:bg-primary-500 transition-colors"
+									style={`height: ${(slot.visits / maxVisits) * 100}%`}
+								/>
+								<span class="text-[11px] text-cool-gray-50 mt-2">{slot.hour}</span>
+							</div>
+						))
+					}
+				</div>
+			</div>
+
+			<div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<h2 class="text-lg font-bold text-gray-800 mb-5">Distribucion por area</h2>
+				<div class="space-y-4">
+					{
+						areaDistribution.map((area) => (
+							<div>
+								<div class="flex items-center justify-between mb-1">
+									<span class="text-sm text-cool-gray-60">{area.area}</span>
+									<span class="text-xs font-semibold text-cool-gray-90">{area.value}%</span>
+								</div>
+								<div class="w-full h-2.5 rounded-full bg-primary-200 overflow-hidden">
+									<div class:list={["h-2.5 rounded-full", area.tone]} style={`width: ${area.value}%`} />
+								</div>
+							</div>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+			<StaticCard className="p-6">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-lg font-bold text-gray-800">Rendimiento por consultorio</h3>
+					<FaStethoscope className="text-primary-600" />
+				</div>
+				<div class="space-y-4">
+					{
+						roomPerformance.map((room) => (
+							<div class="p-3 rounded-lg border border-primary-200 bg-primary-50/40">
+								<div class="flex items-center justify-between mb-2">
+									<p class="text-sm font-semibold text-cool-gray-90">{room.room}</p>
+									<Badge
+										styles={{
+											bg: room.status === "alto" ? "bg-success/20" : room.status === "medio" ? "bg-warning/20" : "bg-primary-200",
+											text: room.status === "alto" ? "text-success" : room.status === "medio" ? "text-warning" : "text-primary-700",
+											border: "border-transparent",
+										}}
+									>
+										{room.status}
+									</Badge>
+								</div>
+								<div class="w-full h-2 rounded-full bg-primary-200 overflow-hidden mb-2">
+									<div class="h-2 rounded-full bg-primary-500" style={`width: ${room.occupancy}%`} />
+								</div>
+								<p class="text-xs text-cool-gray-50">Ocupacion: {room.occupancy}% | Espera: {room.waiting}</p>
+							</div>
+						))
+					}
+				</div>
+			</StaticCard>
+
+			<StaticCard className="p-6">
+				<h3 class="text-lg font-bold text-gray-800 mb-4">Alertas operativas</h3>
+				<ul class="space-y-3">
+					<li class="text-sm text-cool-gray-60 border-l-2 border-warning pl-3">Incremento de demanda entre 10:00 y 11:00 (+22%).</li>
+					<li class="text-sm text-cool-gray-60 border-l-2 border-primary-500 pl-3">Consultorio 1 mantiene ocupacion superior al 90% por 3 dias.</li>
+					<li class="text-sm text-cool-gray-60 border-l-2 border-success pl-3">Tiempo de espera promedio bajo objetivo (&lt;25 min).</li>
+				</ul>
+			</StaticCard>
 		</section>
 	</div>
 </AdminLayout>
