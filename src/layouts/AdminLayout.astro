@@ -57,7 +57,7 @@ const currentPath = Astro.url.pathname;
 			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300"
 		>
 			<Sidebar menuItems={menuItems} currentPath={currentPath} />
-			<div class="flex-1 pb-16 lg:pb-0">
+			<div class="flex-1 pb-16 lg:pb-0 p-6 md:p-8 space-y-8">
 				<!-- Bottom padding for mobile navbar -->
 				<slot />
 			</div>
