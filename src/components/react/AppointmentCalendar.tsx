@@ -21,6 +21,7 @@ export interface Cita {
   fecha: string
   hora: string
   estado: string
+  [key: string]: any
 }
 
 interface EventoCalendario {
@@ -257,12 +258,8 @@ export default function AppointmentCalendar({
 
     const ctx: Record<string, string | number | undefined> = {
       role,
+      ...citaSeleccionada,
       citaId: citaSeleccionada.id,
-      estado: citaSeleccionada.estado,
-      doctor: citaSeleccionada.doctor,
-      especialidad: citaSeleccionada.especialidad,
-      fecha: citaSeleccionada.fecha,
-      hora: citaSeleccionada.hora,
       ...context,
     }
 

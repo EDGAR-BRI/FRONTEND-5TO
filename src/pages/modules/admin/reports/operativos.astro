@@ -1,0 +1,31 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaCalendarCheck, FaClock, FaHospitalUser, FaUserDoctor } from "react-icons/fa6";
+---
+
+<AdminLayout title="Reporte Operativo | Admin">
+	<div class="p-6 md:p-8 space-y-8">
+		<header class="space-y-2">
+			<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
+			<p class="text-gray-500">Seguimiento diario de actividad asistencial y uso del centro médico.</p>
+		</header>
+
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">
+				<FaCalendarCheck slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Tiempo Promedio" value="23 min" trend="1.1%" trendUp={false} color="warning">
+				<FaClock slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Pacientes Atendidos" value="127" trend="6.4%" trendUp={true} color="success">
+				<FaHospitalUser slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Médicos Activos" value="18" trend="0.0%" trendUp={true} color="primary">
+				<FaUserDoctor slot="icon" size={20} />
+			</StatsCard>
+		</section>
+	</div>
+</AdminLayout>
