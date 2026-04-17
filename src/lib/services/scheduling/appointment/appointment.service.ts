@@ -5,7 +5,7 @@ import type { DashboardSchedule, PaymentAcumulators } from "./appointment.interf
 //const BASE_PATH = "";
 
 export const getScheduleOverview = async (): Promise<DashboardSchedule[]> => {
-    const response = await api("scheduling/appointment", { // CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
+    const response = await api("scheduling/appointment", { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
         method: "GET"
     });
     if(!response.ok){
