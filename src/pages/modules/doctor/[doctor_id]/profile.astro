@@ -1,8 +1,18 @@
 ---
 import MainLayout from "@/layouts/DoctorLayout.astro";
-import DoctorProfile from "@/components/astro/DoctorProfile.astro";
+import DoctorProfile from "@/components/astro/DoctorProfile.astro"; // Asumiendo que es el sidebar de datos básicos
+import ActionCard from "@/components/react/primary/ActionCard";
+import StaticCard from "@/components/react/primary/StaticCard";
+import { 
+  FaBell, 
+  FaChevronRight, 
+  FaGears, 
+  FaLanguage, 
+  FaLock, 
+  FaUser,
+  FaCircleCheck 
+} from "react-icons/fa6";
 
-// Datos de ejemplo (Sustituir por: const doctor = await api.getDoctor(id))
 const doctor = {
   id: "123",
   name: "Dr. Samuel Rosales",
@@ -12,110 +22,106 @@ const doctor = {
   licenseNumber: "#12345-REG-2023",
   experience: "12",
   clinic: "Torre Médica Sur, Consultorio 402",
-  photo: null, // Si tienes URL, ponla aquí
+  photo: null,
 };
 ---
 
 <MainLayout title="Perfil Médico | Dashboard">
-  <section class="p-4 lg:p-8 max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-primary-800 tracking-tight">
-          Mi Perfil
-        </h1>
-        <p class="text-sm text-slate-500">
-          Gestiona tu información pública y de contacto
-        </p>
+  <main class="p-4 md:p-6 bg-[#f4f9ff] min-h-screen w-full">
+    
+    <header
+      class="w-full mb-8 flex items-center justify-between bg-white p-6 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400"
+    >
+      <div class="flex items-center gap-4">
+        <div class="bg-primary-100 p-3 rounded-xl">
+          <FaUser className="w-8 h-8 text-primary-600" />
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">Mi Perfil</h1>
+          <p class="text-slate-500 text-sm font-medium">
+            Gestiona tu información pública, clínica y de contacto.
+          </p>
+        </div>
       </div>
 
-      <div
-        class="hidden sm:flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200"
-      >
+      <div class="hidden sm:flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-xs font-bold border border-green-200 shadow-sm">
         <span class="relative flex h-2 w-2">
-          <span
-            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-          ></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"
-          ></span>
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
         </span>
         Perfil Verificado
       </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full items-stretch">
+      
+      <aside class="flex flex-col h-full gap-6">
+        <DoctorProfile doctor={doctor} />
+      </aside>
+
+      <section class="flex flex-col h-full gap-6">
+        
+        <StaticCard className="bg-white">
+          <div class="flex items-center gap-2 mb-6">
+            <FaGears className="text-primary-600 w-5 h-5" />
+            <h3 class="text-lg font-bold text-slate-800">Configuración de Cuenta</h3>
+          </div>
+
+          <div class="grid gap-4">
+            
+            <ActionCard className="bg-slate-50/50 border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="size-10 rounded-lg bg-white flex items-center justify-center text-slate-500 group-hover:text-primary-600 shadow-sm transition-colors">
+                  <FaLock />
+                </div>
+                <div>
+                  <span class="text-sm font-bold text-slate-700 block">Seguridad</span>
+                  <span class="text-xs text-slate-500">Cambiar contraseña de acceso</span>
+                </div>
+              </div>
+              <FaChevronRight className="text-xs text-slate-300 group-hover:text-primary-500 transition-colors" />
+            </ActionCard>
+
+            <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div class="flex items-center gap-3">
+                <div class="size-10 rounded-lg bg-white flex items-center justify-center text-slate-500 shadow-sm">
+                  <FaBell />
+                </div>
+                <div>
+                   <span class="text-sm font-bold text-slate-700 block">Notificaciones Push</span>
+                   <span class="text-xs text-slate-500">Alertas de nuevas citas</span>
+                </div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer" />
+                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div class="flex items-center gap-3">
+                <div class="size-10 rounded-lg bg-white flex items-center justify-center text-slate-500 shadow-sm">
+                  <FaLanguage />
+                </div>
+                <div>
+                   <span class="text-sm font-bold text-slate-700 block">Idioma del Sistema</span>
+                   <span class="text-xs text-slate-500">Localización de la interfaz</span>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-primary-700 bg-primary-100 px-3 py-1.5 rounded-lg border border-primary-200">
+                Español (ES)
+              </span>
+            </div>
+
+          </div>
+        </StaticCard>
+
+        <div class="mt-auto">
+             <p class="text-center text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
+                Medical Dashboard v2.0 • 2024
+             </p>
+        </div>
+      </section>
     </div>
-
-    <div class="space-y-6">
-      <DoctorProfile doctor={doctor} />
-
-      <div
-        class="bg-primary-100 rounded-xl shadow-sm border border-primary-200 hover:-translate-y-0.5 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/30 hover:bg-primary-50/30 transition-all duration-200 divide-y divide-primary-50/50 overflow-hidden"
-      >
-        <div class="p-4 bg-primary-50/50">
-          <h3
-            class="text-sm font-bold text-primary-800 flex items-center gap-2"
-          >
-            <i class="fa-solid fa-gears"></i>
-            Configuración de Cuenta
-          </h3>
-        </div>
-
-        <button
-          class="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group"
-        >
-          <div class="flex items-center gap-3">
-            <div
-              class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500 group-hover:text-primary-600 transition-colors"
-            >
-              <i class="fa-solid fa-lock text-sm"></i>
-            </div>
-            <span class="text-sm font-medium text-slate-700"
-              >Cambiar Contraseña</span
-            >
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
-        </button>
-
-        <div class="p-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div
-              class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500"
-            >
-              <i class="fa-solid fa-bell text-sm"></i>
-            </div>
-            <span class="text-sm font-medium text-slate-700"
-              >Notificaciones Push</span
-            >
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" checked class="sr-only peer" />
-            <div
-              class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"
-            >
-            </div>
-          </label>
-        </div>
-
-        <div class="p-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div
-              class="size-8 rounded bg-slate-100 flex items-center justify-center text-slate-500"
-            >
-              <i class="fa-solid fa-language text-sm"></i>
-            </div>
-            <span class="text-sm font-medium text-slate-700"
-              >Idioma del Sistema</span
-            >
-          </div>
-          <span
-            class="text-xs font-bold text-primary-700 bg-primary-50 px-2 py-1 rounded"
-            >Español</span
-          >
-        </div>
-      </div>
-    </div>
-
-    <p
-      class="text-center text-[10px] text-slate-400 mt-10 mb-4 uppercase tracking-widest font-semibold"
-    >
-      Medical Dashboard v2.0 • 2024
-    </p>
-  </section>
+  </main>
 </MainLayout>

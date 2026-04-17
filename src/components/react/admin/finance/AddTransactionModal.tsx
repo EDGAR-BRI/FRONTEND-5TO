@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import { Modal } from '@/components/react/primary/Modal';
 import { Field } from '@/components/react/primary/Field';
 import { Select } from '@/components/react/primary/Select';
@@ -21,7 +21,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransacti
     });
     const [loading, setLoading] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -30,7 +30,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransacti
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         try {

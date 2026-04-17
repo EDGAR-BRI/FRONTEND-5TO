@@ -1,0 +1,143 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ActionCard from "@/components/react/primary/ActionCard";
+import { Badge } from "@/components/react/primary/Badge";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import StaticCard from "@/components/react/primary/StaticCard";
+import {
+	FaArrowRight,
+	FaCalendarCheck,
+	FaClock,
+	FaHospitalUser,
+	FaStethoscope,
+	FaUserDoctor,
+} from "react-icons/fa6";
+
+const concreteReports = [
+	{
+		title: "Carga y puntualidad de citas",
+		description: "Horas de mayor demanda, ausencias y cumplimiento por turno.",
+		href: "/modules/admin/reports/operativos-citas",
+		badge: "Agenda",
+	},
+	{
+		title: "Tiempos de atencion",
+		description: "Duracion por especialidad y tiempo promedio de espera por bloque.",
+		href: "/modules/admin/reports/operativos-tiempos",
+		badge: "Flujo",
+	},
+	{
+		title: "Productividad medica",
+		description: "Atenciones por medico, saturacion y capacidad disponible.",
+		href: "/modules/admin/reports/operativos-productividad",
+		badge: "Equipo",
+	},
+];
+
+const slotsByTime = [
+	{ slot: "07:00 - 09:00", occupancy: "71%", status: "Normal" },
+	{ slot: "09:00 - 11:00", occupancy: "88%", status: "Alto" },
+	{ slot: "11:00 - 13:00", occupancy: "93%", status: "Critico" },
+	{ slot: "14:00 - 16:00", occupancy: "82%", status: "Alto" },
+];
+---
+
+<AdminLayout title="Reporte Operativo | Admin">
+	<div class="space-y-8">
+		<header class="space-y-2">
+			<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
+			<p class="text-gray-500">Seguimiento de capacidad, tiempos y productividad con acceso a reportes detallados.</p>
+		</header>
+
+		<ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
+
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">
+				<FaCalendarCheck slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Tiempo Promedio" value="23 min" trend="1.1%" trendUp={false} color="warning">
+				<FaClock slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Pacientes Atendidos" value="127" trend="6.4%" trendUp={true} color="success">
+				<FaHospitalUser slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Médicos Activos" value="18" trend="0.0%" trendUp={true} color="primary">
+				<FaUserDoctor slot="icon" size={20} />
+			</StatsCard>
+		</section>
+
+		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+			<div class="xl:col-span-2 space-y-4">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos operativos</h2>
+					<Badge>Turno actual</Badge>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{
+						concreteReports.map((report) => (
+							<a href={report.href} class="block">
+								<ActionCard className="h-full items-start justify-between">
+									<div class="space-y-2">
+										<Badge>{report.badge}</Badge>
+										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
+										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
+									</div>
+									<div class="text-primary-700 mt-3">
+										<FaArrowRight size={14} />
+									</div>
+								</ActionCard>
+							</a>
+						))
+					}
+				</div>
+			</div>
+
+			<StaticCard>
+				<div class="space-y-3">
+					<h2 class="text-lg font-semibold text-gray-800">Estado del dia</h2>
+					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
+						<FaStethoscope />
+						<span>12 medicos en consulta activa</span>
+					</div>
+					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
+						<FaHospitalUser />
+						<span>35 pacientes en espera distribuida</span>
+					</div>
+					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
+						<FaClock />
+						<span>Demora promedio estimada: 18 minutos</span>
+					</div>
+				</div>
+			</StaticCard>
+		</section>
+
+		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+			<h2 class="text-xl font-semibold text-gray-800">Ocupacion por franja horaria</h2>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-primary-300">
+					<thead class="bg-primary-300">
+						<tr>
+							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Franja</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ocupacion</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-primary-300">
+						{
+							slotsByTime.map((row) => (
+								<tr class="hover:bg-primary-500/20 transition-colors">
+									<td class="px-4 py-3 text-sm text-cool-gray-90">{row.slot}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{row.occupancy}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.status}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</div>
+</AdminLayout>

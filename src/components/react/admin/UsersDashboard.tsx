@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import EditUserModalTrigger from '@/components/react/admin/EditUserModalTrigger';
 import CreateUserModalTrigger from '@/components/react/admin/CreateUserModalTrigger';
 import { StatsCard } from '@/components/react/primary/StatsCard';
-import { LuSearch, LuUsers, LuChevronDown, LuUserCheck, LuUserX, LuStethoscope } from 'react-icons/lu';
+import { FaUsers, FaUserCheck, FaUserXmark, FaStethoscope } from 'react-icons/fa6';
 import type { User, UserRole, UserStatus } from '@/types/User';
 import { Select } from '../primary/Select';
 import { Field } from '../primary/Field';
+import { api } from '@/lib/api';
 
 const ALL_ROLES: (UserRole | 'TODOS')[] = ['TODOS', 'ADMIN', 'DOCTOR', 'RECEPCIONISTA', 'PACIENTE'];
 
@@ -66,10 +67,22 @@ export default function UsersDashboard() {
     const [summary, setSummary] = useState({ total: 0, activos: 0, inactivos: 0, doctores: 0 });
 
     useEffect(() => {
-        fetch('/api/v1/admin/users-summary')
-            .then(res => res.json())
-            .then(data => setSummary(data))
-            .catch(() => { });
+        let mounted = true;
+        (async () => {
+            try {
+                const res = await api('/admin/users-summary', { method: 'GET' });
+                if (!res.ok) return;
+                const json = await res.json();
+                const data = (json && typeof json === 'object' && 'data' in json) ? (json as any).data : json;
+                if (mounted) setSummary(data);
+            } catch {
+                // ignore
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
     }, []);
 
     const params = new URLSearchParams();
@@ -86,28 +99,28 @@ export default function UsersDashboard() {
                     title="Total Usuarios"
                     value={summary.total}
                     color="primary"
-                    icon={<LuUsers size={18} />}
+                    icon={<FaUsers size={18} />}
                     variant="compact"
                 />
                 <StatsCard
                     title="Usuarios Activos"
                     value={summary.activos}
                     color="success"
-                    icon={<LuUserCheck size={18} />}
+                    icon={<FaUserCheck size={18} />}
                     variant="compact"
                 />
                 <StatsCard
                     title="Usuarios Inactivos"
                     value={summary.inactivos}
                     color="danger"
-                    icon={<LuUserX size={18} />}
+                    icon={<FaUserXmark size={18} />}
                     variant="compact"
                 />
                 <StatsCard
                     title="Médicos"
                     value={summary.doctores}
                     color="primary"
-                    icon={<LuStethoscope size={18} />}
+                    icon={<FaStethoscope size={18} />}
                     variant="compact"
                 />
             </div>
@@ -118,7 +131,7 @@ export default function UsersDashboard() {
                 <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 shrink-0 rounded-lg bg-white/10 flex items-center justify-center">
-                            <LuUsers size={18} className="text-white" />
+                            <FaUsers size={18} className="text-white" />
                         </div>
                         <div className='min-w-0'>
                             <h2 className="text-base font-semibold text-white leading-tight">Usuarios del Sistema</h2>

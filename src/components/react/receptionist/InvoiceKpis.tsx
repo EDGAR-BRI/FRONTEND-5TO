@@ -1,5 +1,5 @@
 import { StatsCard } from '@/components/react/primary/StatsCard';
-import { LuFileText, LuUserCheck, LuClock, LuBan } from 'react-icons/lu';
+import { FaFileLines, FaUserCheck, FaClock, FaBan } from 'react-icons/fa6';
 
 type InvoiceKpisProps = {
     pendientes: number;
@@ -21,7 +21,7 @@ export function InvoiceKpis({
                 value={pendientes}
                 color="warning"
                 variant="compact"
-                icon={<LuClock size={20} />}
+                icon={<FaClock size={20} />}
             />
 
             <StatsCard
@@ -29,7 +29,7 @@ export function InvoiceKpis({
                 value={emitidasHoy}
                 color="success"
                 variant="compact"
-                icon={<LuUserCheck size={20} />}
+                icon={<FaUserCheck size={20} />}
             />
 
             <StatsCard
@@ -37,7 +37,7 @@ export function InvoiceKpis({
                 value={`$${totalEmitidoHoy.toFixed(2)}`}
                 color="primary"
                 variant="compact"
-                icon={<LuFileText size={20} />}
+                icon={<FaFileLines size={20} />}
             />
 
             <StatsCard
@@ -45,7 +45,7 @@ export function InvoiceKpis({
                 value={anuladas}
                 color="danger"
                 variant="compact"
-                icon={<LuBan size={20} />}
+                icon={<FaBan size={20} />}
             />
         </div>
     );

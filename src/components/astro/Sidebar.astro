@@ -2,6 +2,7 @@
 import SidebarMenu from "@/components/astro/SidebarMenu.astro";
 import type { MenuItems } from "@/types/MenuItemsTypes";
 import clinica from "@/assets/clinica.svg";
+import { FaArrowRightFromBracket } from "react-icons/fa6";
 
 interface Props {
     menuItems: MenuItems[];
@@ -33,12 +34,13 @@ const { menuItems, currentPath } = Astro.props;
                     : "text-primary-100 hover:bg-cool-gray-90 hover:text-white"
             }`}
         >
-            <i
-                class={`fa-solid fa-arrow-right-from-bracket text-lg transition-colors ${
+            <FaArrowRightFromBracket
+                className={`text-lg transition-colors ${
                     currentPath === "/logout"
-                           ? "text-primary-600"
-                           : "text-primary-100 group-hover:text-primary-600"
-                }`}></i>
+                        ? "text-primary-600"
+                        : "text-primary-100 group-hover:text-primary-600"
+                }`}
+            />
             <span class="font-semibold text-sm tracking-wide">
                 Cerrar sesión
             </span>

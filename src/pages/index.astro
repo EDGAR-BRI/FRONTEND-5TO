@@ -1,11 +1,18 @@
 ---
+export const prerender = true;
+
 import Layout from "@/layouts/Layout.astro";
 import "@/styles/global.css";
 
-// Import raw SVGs to manipulate them inline
-import userIconRaw from "@/assets/icons/user.svg?raw";
-import doctorIconRaw from "@/assets/icons/hospital.svg?raw";
-import adminIconRaw from "@/assets/icons/shield-security.svg?raw";
+import {
+	FaChartColumn,
+	FaShieldHalved,
+	FaUserDoctor,
+	FaUser,
+	FaUserTie,
+} from "react-icons/fa6";
+
+// Import raw SVG assets (logo)
 import clinicastsvg from "@/assets/clinicasintext.svg?raw";
 
 // Helper to make SVGs use currentColor
@@ -18,10 +25,9 @@ const processSvg = (svg: string) => {
 		.replace(/height="[^"]*"/g, 'height="100%"');
 };
 
-const UserIcon = processSvg(userIconRaw);
-const DoctorIcon = processSvg(doctorIconRaw);
-const AdminIcon = processSvg(adminIconRaw);
 const ClinicaLogo = processSvg(clinicastsvg);
+
+
 ---
 
 <Layout>
@@ -129,20 +135,7 @@ const ClinicaLogo = processSvg(clinicastsvg);
 								<div
 									class="aspect-video bg-linear-to-tr from-primary-200 to-primary-100 flex items-center justify-center text-gray-400"
 								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke-width="1.5"
-										stroke="currentColor"
-										class="w-20 h-20 opacity-20"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605"
-										></path>
-									</svg>
+									<FaChartColumn className="w-20 h-20 opacity-20" />
 								</div>
 							</div>
 						</div>
@@ -179,10 +172,7 @@ const ClinicaLogo = processSvg(clinicastsvg);
 						<div
 							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
 						>
-							<div
-								class="w-6 h-6 fill-current"
-								set:html={AdminIcon}
-							/>
+							<FaShieldHalved className="w-6 h-6" />
 						</div>
 						<h3 class="text-xl font-bold text-gray-900 mb-3">
 							Administración
@@ -217,10 +207,7 @@ const ClinicaLogo = processSvg(clinicastsvg);
 						<div
 							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
 						>
-							<div
-								class="w-6 h-6 fill-current"
-								set:html={DoctorIcon}
-							/>
+							<FaUserDoctor className="w-6 h-6" />
 						</div>
 						<h3 class="text-xl font-bold text-gray-900 mb-3">
 							Médicos
@@ -255,10 +242,7 @@ const ClinicaLogo = processSvg(clinicastsvg);
 						<div
 							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
 						>
-							<div
-								class="w-6 h-6 fill-current"
-								set:html={UserIcon}
-							/>
+							<FaUser className="w-6 h-6" />
 						</div>
 						<h3 class="text-xl font-bold text-gray-900 mb-3">
 							Pacientes
@@ -295,10 +279,7 @@ const ClinicaLogo = processSvg(clinicastsvg);
 						<div
 							class="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 text-2xl"
 						>
-							<div
-								class="w-6 h-6 fill-current"
-								set:html={UserIcon}
-							/>
+							<FaUserTie className="w-6 h-6" />
 						</div>
 						<h3 class="text-xl font-bold text-gray-900 mb-3">
 							Recepcionista

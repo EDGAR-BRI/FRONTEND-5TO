@@ -1,5 +1,14 @@
 ---
 // src/components/astro/DoctorProfile.astro
+import {
+  FaAddressBook,
+  FaCamera,
+  FaEnvelope,
+  FaFloppyDisk,
+  FaLocationDot,
+  FaUserDoctor,
+} from "react-icons/fa6";
+
 const { doctor } = Astro.props;
 ---
 
@@ -18,10 +27,7 @@ const { doctor } = Astro.props;
         >
           {
             !doctor.photo && (
-              <i
-                id="user-icon"
-                class="fa-solid fa-user-doctor text-4xl text-primary-300"
-              />
+              <FaUserDoctor id="user-icon" className="text-4xl text-primary-300" />
             )
           }
         </div>
@@ -31,7 +37,7 @@ const { doctor } = Astro.props;
         for="photo-upload"
         class="absolute bottom-1 right-1 bg-primary-700 text-white p-2 rounded-full shadow-lg border-2 border-white hover:bg-primary-800 transition-all cursor-pointer hover:scale-110 active:scale-95"
       >
-        <i class="fa-solid fa-camera text-xs"></i>
+        <FaCamera className="text-xs" />
       </label>
 
       <input type="file" id="photo-upload" accept="image/*" class="hidden" />
@@ -43,7 +49,7 @@ const { doctor } = Astro.props;
       <div
         class="flex items-center justify-center gap-2 mt-2 text-gray-500 text-sm"
       >
-        <i class="fa-solid fa-location-dot text-xs text-primary-500"></i>
+        <FaLocationDot className="text-xs text-primary-500" />
         <span>{doctor.clinic}</span>
       </div>
     </div>
@@ -53,7 +59,7 @@ const { doctor } = Astro.props;
     <h3
       class="text-base font-bold flex items-center gap-2 text-primary-800 px-1 uppercase tracking-tight"
     >
-      <i class="fa-solid fa-address-book"></i>
+      <FaAddressBook />
       Datos de Contacto
     </h3>
     <div
@@ -63,7 +69,7 @@ const { doctor } = Astro.props;
         <div
           class="size-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-700"
         >
-          <i class="fa-solid fa-envelope"></i>
+          <FaEnvelope />
         </div>
         <div class="flex-1">
           <p
@@ -82,7 +88,7 @@ const { doctor } = Astro.props;
       id="save-profile"
       class="w-full bg-primary-700 hover:bg-primary-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-200 transition-all flex items-center justify-center gap-2"
     >
-      <i class="fa-solid fa-floppy-disk"></i>
+      <FaFloppyDisk />
       Guardar Cambios
     </button>
   </div>

@@ -1,4 +1,4 @@
-import { Calendar, Users, FlaskConical, TrendingUp } from "lucide-react";
+import { FaArrowTrendUp, FaCalendarDays, FaFlask, FaUsers } from "react-icons/fa6";
 
 interface Props {
   label: string;
@@ -9,9 +9,9 @@ interface Props {
 
 export default function StatCard({ label, value, iconType, trend }: Props) {
   const icons = {
-    calendar: { icon: <Calendar size={20} />, bg: "bg-blue-50 text-blue-500" },
-    users: { icon: <Users size={20} />, bg: "bg-green-50 text-green-500" },
-    beaker: { icon: <FlaskConical size={20} />, bg: "bg-yellow-50 text-yellow-500" },
+    calendar: { icon: <FaCalendarDays size={20} />, bg: "bg-blue-50 text-blue-500" },
+    users: { icon: <FaUsers size={20} />, bg: "bg-green-50 text-green-500" },
+    beaker: { icon: <FaFlask size={20} />, bg: "bg-yellow-50 text-yellow-500" },
   };
 
   return (
@@ -22,7 +22,7 @@ export default function StatCard({ label, value, iconType, trend }: Props) {
         </div>
         {trend && (
           <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-full">
-            <TrendingUp size={10} /> {trend}
+			<FaArrowTrendUp size={10} /> {trend}
           </div>
         )}
       </div>

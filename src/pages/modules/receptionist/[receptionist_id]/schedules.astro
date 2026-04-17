@@ -2,8 +2,19 @@
 import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
 import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
+import {
+  FaArrowLeft,
+  FaCalendarCheck,
+  FaCalendarPlus,
+  FaCalendarWeek,
+  FaCircleCheck,
+  FaClock,
+  FaSliders,
+  FaTableCellsLarge,
+  FaUserDoctor,
+} from "react-icons/fa6";
 
-const { receptionist_id } = Astro.params;
+const { receptionist_id: _receptionist_id } = Astro.params;
 const viewParam = Astro.url.searchParams.get("view");
 const initialView =
   viewParam === "day" || viewParam === "agenda" ? viewParam : "week";
@@ -325,7 +336,7 @@ const pendingApts = Object.values(appointmentsByDoctorId)
             href="overview"
             class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors"
           >
-            <i class="fa-solid fa-arrow-left mr-1"></i>Dashboard
+            <FaArrowLeft className="mr-1 inline-block" />Dashboard
           </a>
           <span class="text-cool-gray-30">/</span>
           <span class="text-body-xs text-cool-gray-50">Horarios</span>
@@ -341,14 +352,14 @@ const pendingApts = Object.values(appointmentsByDoctorId)
           href="manage-schedules"
           class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
         >
-          <i class="fa-solid fa-sliders"></i>
+          <FaSliders />
           Configurar ciclos
         </a>
         <a
           href="appointments"
           class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
         >
-          <i class="fa-solid fa-calendar-plus"></i>
+          <FaCalendarPlus />
           Nueva cita
         </a>
       </div>
@@ -362,25 +373,25 @@ const pendingApts = Object.values(appointmentsByDoctorId)
       {
         label: "Médicos en turno",
         value: String(totalShiftsToday),
-        icon: "fa-solid fa-user-doctor",
+        icon: FaUserDoctor,
         color: "primary",
       },
       {
         label: "Total citas (semana)",
         value: String(totalApts),
-        icon: "fa-solid fa-calendar-check",
+        icon: FaCalendarCheck,
         color: "success",
       },
       {
         label: "Confirmadas / Realizadas",
         value: String(confirmedApts),
-        icon: "fa-solid fa-circle-check",
+        icon: FaCircleCheck,
         color: "success",
       },
       {
         label: "Sin confirmar",
         value: String(pendingApts),
-        icon: "fa-solid fa-clock",
+        icon: FaClock,
         color: "warning",
       },
     ]}
@@ -395,7 +406,7 @@ const pendingApts = Object.values(appointmentsByDoctorId)
       class="px-5 py-4 border-b border-primary-200 flex items-center justify-between"
     >
       <h2 class="text-heading-6 text-primary-800">
-        <i class="fa-solid fa-table-cells-large text-primary-500 mr-2"></i>
+        <FaTableCellsLarge className="text-primary-500 mr-2 inline-block" />
         Turnos de la semana
       </h2>
       <span class="text-body-xxs text-cool-gray-50">Ciclo semanal vigente</span>
@@ -456,7 +467,7 @@ const pendingApts = Object.values(appointmentsByDoctorId)
   >
     <div class="mb-4">
       <h2 class="text-heading-6 text-primary-800">
-        <i class="fa-solid fa-calendar-week text-primary-500 mr-2"></i>
+        <FaCalendarWeek className="text-primary-500 mr-2 inline-block" />
         Vista de citas por médico
       </h2>
       <p class="text-body-xs text-cool-gray-50 mt-0.5">

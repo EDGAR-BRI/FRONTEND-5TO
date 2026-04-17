@@ -1,27 +1,12 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
-
-// Tipos genéricos
-interface PaginationMeta {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-}
-
-interface ApiResponse<T> {
-    data: T[];
-    pagination?: PaginationMeta;
-    message?: string;
-    border?: string;
-}
 
 export interface Column<T> {
     header: string;
     accessorKey?: keyof T;
     align?: "left" | "center" | "right";
-    cell?: (item: T) => React.ReactNode;
+    cell?: (item: T) => ReactNode;
 }
 
 interface DataTableProps<T> {
@@ -132,7 +117,7 @@ export function DataTable<T>({
     );
 }
 
-const TableSkeleton = ({ columns }: { columns: number }) => (
+const TableSkeleton = ({ columns: _columns }: { columns: number }) => (
     <div className="animate-pulse bg-cool-gray-90 rounded border border-cool-gray-80">
         <div className="h-10 bg-cool-gray-100 border-b border-cool-gray-80" />
         {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 border-b border-cool-gray-80" />)}

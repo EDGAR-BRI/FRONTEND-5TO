@@ -1,4 +1,3 @@
-import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/react/primary/Avatar';
 import PreviewBox from './PreviewBox';
 
@@ -43,7 +42,7 @@ export default function AvatarDemo() {
       </PreviewBox>
 
       <PreviewBox label="Tamaños">
-        {['w-8 h-8', 'w-10 h-10', 'w-14 h-14', 'w-16 h-16'].map((size, i) => (
+        {['w-8 h-8', 'w-10 h-10', 'w-14 h-14', 'w-16 h-16'].map((size) => (
           <Avatar key={size} className={size}>
             <AvatarFallback className="bg-primary-200 text-primary-800 text-xs font-bold">
               JD

@@ -1,8 +1,20 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { DataTable } from '@/components/react/primary/DataTable'
 import type { Column } from '@/components/react/primary/DataTable'
 import { Badge } from '@/components/react/primary/Badge'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
+import type { IconType } from 'react-icons'
+import {
+    FaBuildingColumns,
+    FaCircleCheck,
+    FaClock,
+    FaCoins,
+    FaCreditCard,
+    FaDollarSign,
+    FaEllipsis,
+    FaMagnifyingGlass,
+    FaMoneyBillWave,
+} from 'react-icons/fa6'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface Payment {
@@ -27,15 +39,18 @@ const statusBadge = (status: Payment['status']) => {
 }
 
 const methodIcon = (method: Payment['method']) => {
-    const icons: Record<Payment['method'], string> = {
-        Efectivo: 'fa-solid fa-money-bill-wave',
-        Transferencia: 'fa-solid fa-building-columns',
-        Tarjeta: 'fa-solid fa-credit-card',
-        Otro: 'fa-solid fa-ellipsis',
+    const icons: Record<Payment['method'], IconType> = {
+        Efectivo: FaMoneyBillWave,
+        Transferencia: FaBuildingColumns,
+        Tarjeta: FaCreditCard,
+        Otro: FaEllipsis,
     }
+
+    const Icon = icons[method]
+
     return (
         <span className="inline-flex items-center gap-2 text-primary-700">
-            <i className={`${icons[method]} text-xs text-primary-500`} />
+            <Icon className="text-xs text-primary-500" />
             {method}
         </span>
     )
@@ -91,11 +106,11 @@ const columns: Column<Payment>[] = [
 ]
 
 // ─── Summary stat mini-card ────────────────────────────────────────────────────
-function SumCard({ icon, label, value, color }: { icon: string; label: string; value: string; color: string }) {
+function SumCard({ icon: Icon, label, value, color }: { icon: IconType; label: string; value: string; color: string }) {
     return (
         <div className={`bg-white rounded-xl border border-primary-200 p-4 flex items-center gap-4 shadow-sm`}>
             <div className={`w-10 h-10 rounded-lg ${color} flex items-center justify-center shrink-0`}>
-                <i className={`${icon} text-base`} />
+                <Icon className="text-base" />
             </div>
             <div className="min-w-0">
                 <p className="text-xs text-cool-gray-50 font-medium truncate">{label}</p>
@@ -133,10 +148,10 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
 
             {/* ── Summary mini-cards ─────────────────────────────────────────── */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <SumCard icon="fa-solid fa-dollar-sign" label="Recaudado (USD)" value={`$${totalUSD.toFixed(2)}`} color="bg-green-100 text-green-600" />
-                <SumCard icon="fa-solid fa-bs-currency" label="Recaudado (Bs)" value={`Bs.${totalBs.toFixed(2)}`} color="bg-primary-200 text-primary-600" />
-                <SumCard icon="fa-solid fa-circle-check" label="Completados" value={String(completed)} color="bg-emerald-100 text-emerald-600" />
-                <SumCard icon="fa-solid fa-clock" label="Pendientes" value={String(pending)} color="bg-yellow-100 text-yellow-600" />
+                <SumCard icon={FaDollarSign} label="Recaudado (USD)" value={`$${totalUSD.toFixed(2)}`} color="bg-green-100 text-green-600" />
+                <SumCard icon={FaCoins} label="Recaudado (Bs)" value={`Bs.${totalBs.toFixed(2)}`} color="bg-primary-200 text-primary-600" />
+                <SumCard icon={FaCircleCheck} label="Completados" value={String(completed)} color="bg-emerald-100 text-emerald-600" />
+                <SumCard icon={FaClock} label="Pendientes" value={String(pending)} color="bg-yellow-100 text-yellow-600" />
             </div>
 
             {/* ── Table card ────────────────────────────────────────────────── */}
@@ -146,7 +161,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 border-b border-primary-100">
                     <div className="flex items-center gap-2 flex-1">
                         <div className="relative flex-1 max-w-sm">
-                            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 text-xs pointer-events-none" />
+                            <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 text-xs pointer-events-none" />
                             <input
                                 type="text"
                                 placeholder="Buscar paciente o ID..."

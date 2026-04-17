@@ -1,6 +1,7 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import DoctorScheduleManager from '@/components/react/DoctorScheduleManager';
+import { FaArrowLeft, FaSliders } from 'react-icons/fa6';
 
 // ─── Mock data based on DB schema ───────────────────────────────────────────
 // UserDoctor → User join gives us name + specialty
@@ -75,13 +76,13 @@ const initialCycles = {
       <div>
         <div class="flex items-center gap-2 mb-1">
           <a href="schedules" class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors">
-            <i class="fa-solid fa-arrow-left mr-1"></i>Vista global
+            <FaArrowLeft className="mr-1 inline-block" />Vista global
           </a>
           <span class="text-cool-gray-30">/</span>
           <span class="text-body-xs text-cool-gray-50">Configurar</span>
         </div>
         <h1 class="text-heading-4 text-primary-800">
-          <i class="fa-solid fa-sliders text-primary-500 mr-2"></i>
+          <FaSliders className="text-primary-500 mr-2 inline-block" />
           Configurar Calendario Médico
         </h1>
         <p class="text-body-s text-cool-gray-50 mt-0.5">

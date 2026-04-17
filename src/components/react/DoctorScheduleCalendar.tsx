@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
-import type { Formats, BackgroundEvent } from 'react-big-calendar'
+import type { Formats } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, addDays, setHours, setMinutes } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -8,6 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
+import { FaRegCalendarXmark, FaUserDoctor } from 'react-icons/fa6'
 
 
 export interface DoctorInfo {
@@ -32,6 +33,14 @@ export interface BookedAppointment {
   status: 'Realizada' | 'Confirmada' | 'Sin Confirmar' | 'Cancelada'
   type: string
   price: string
+}
+
+type CalendarEvent = {
+  id?: number
+  title: string
+  start: Date
+  end: Date
+  resource?: BookedAppointment
 }
 
 export interface DoctorScheduleCalendarProps {
@@ -91,7 +100,7 @@ function parseDateTime(str: string): Date {
 
 function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
   const monday = startOfWeek(referenceDate, { weekStartsOn: 1 })
-  const events: { start: Date; end: Date; title: string }[] = []
+  const events: CalendarEvent[] = []
 
   for (const shift of shifts) {
     // dayOfWeek:1=Mon…7=Sun → addDays from monday: Mon=0, Tue=1…
@@ -129,15 +138,13 @@ export default function DoctorScheduleCalendar({
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
-  const effectiveView = isMobile ? 'agenda' : undefined
-
   const closeAndClear = () => { closeModal(); setSelectedApt(null) }
 
   const doctor = doctors.find(d => d.id === selectedDoctorId)
 
   const aptEvents = useMemo(() => {
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
-    return apts.map(apt => ({
+    return apts.map<CalendarEvent>(apt => ({
       id: apt.id,
       title: apt.patientName,
       start: parseDateTime(apt.scheduledStart),
@@ -151,7 +158,7 @@ export default function DoctorScheduleCalendar({
     return buildShiftEvents(shifts, referenceDate)
   }, [selectedDoctorId, shiftsByDoctorId, referenceDate])
 
-  const eventStyleGetter = (event: { resource?: BookedAppointment }) => {
+  const eventStyleGetter = (event: CalendarEvent) => {
     const status = event.resource?.status ?? ''
     const bg = STATUS_COLORS[status] ?? '#6b7280'
     return {
@@ -168,7 +175,7 @@ export default function DoctorScheduleCalendar({
     }
   }
 
-  const onSelectEvent = (event: { resource?: BookedAppointment }) => {
+  const onSelectEvent = (event: CalendarEvent) => {
     if (event.resource) {
       setSelectedApt(event.resource)
       openModal()
@@ -197,7 +204,7 @@ export default function DoctorScheduleCalendar({
 
       <div className="flex flex-wrap items-center gap-4 text-xs text-primary-700">
         <span className="font-semibold text-primary-800">
-          <i className="fa-solid fa-user-doctor mr-1 text-primary-500" />
+          <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
           {doctor?.name} — {doctor?.specialty}
         </span>
         <span className="ml-auto flex flex-wrap gap-3">
@@ -232,10 +239,10 @@ export default function DoctorScheduleCalendar({
           .rbc-agenda-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; gap: 0.75rem; color: #6B7280; }
         `}</style>
 
-        <Calendar
+        <Calendar<CalendarEvent, object>
           localizer={localizer}
           events={aptEvents}
-          backgroundEvents={shiftEvents as unknown as BackgroundEvent[]}
+          backgroundEvents={shiftEvents}
           startAccessor="start"
           endAccessor="end"
           culture="es"
@@ -244,7 +251,7 @@ export default function DoctorScheduleCalendar({
             noEventsInRange: (
               <div className="flex flex-col items-center justify-center gap-3 py-12 px-4 text-center">
                 <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
-                  <i className="fa-regular fa-calendar-xmark text-2xl text-primary-400" />
+                  <FaRegCalendarXmark className="text-2xl text-primary-400" />
                 </div>
                 <p className="text-sm font-semibold text-primary-700">Sin citas registradas</p>
                 <p className="text-xs text-cool-gray-50 max-w-xs">No hay citas programadas para este médico en el rango de fechas seleccionado.</p>
@@ -263,7 +270,6 @@ export default function DoctorScheduleCalendar({
           min={setMinutes(setHours(new Date(), 6), 0)}
           max={setMinutes(setHours(new Date(), 20), 0)}
           style={{ height: isMobile ? 500 : heightPx }}
-          showAllDay={false}
           showMultiDayTimes={false}
         />
       </div>

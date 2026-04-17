@@ -1,68 +1,99 @@
-import React from 'react';
-import { User, Droplets, Activity, Pill, Ban, Loader2, VenusAndMars } from 'lucide-react';
-import { Avatar, AvatarFallback } from "@/components/react/primary/Avatar";
+import {
+  FaCalendarDays,
+  FaUser,
+  FaDroplet,
+  FaWeightScale,
+  FaShieldHalved,
+  FaHeartPulse,
+  FaCreditCard,
+  FaChartLine,
+} from "react-icons/fa6";
+import StaticCard from "@/components/react/primary/StaticCard"; 
+// Importamos tu complemento de Avatar
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/react/primary/Avatar";
 
 export const BasicData = () => {
-  const data = {
-    nombre: "Pedro Javier Sánchez López",
-    genero: "Masculino",
-    sangre: "O+",
-    alergias: "Niega alergias",
-    condiciones: "Diabetes Tipo 2",
-    medicamentos: "Metformina 500mg",
-    iniciales: "PS"
-  };
-
   return (
-    <div className="bg-white rounded-lg p-8 shadow-sm border border-primary-200 transition-all hover:border-primary-400 flex flex-col items-center w-full h-full">
-      <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 self-start mb-6">
-        <User className="w-5 h-5 text-primary-600" /> Datos Médicos
-      </h2>
+    <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full">
+      
+      {/* CABECERA: AVATAR Y NOMBRE */}
+      <div className="flex flex-col items-center gap-3">
+        {/* Implementación de tu componente Avatar */}
+        <Avatar className="w-24 h-24 ring-4 ring-slate-50 shadow-sm">
+          <AvatarImage 
+            src="https://i.pravatar.cc/150?img=11" 
+            alt="Perfil del paciente" 
+          />
+          {/* Fallback con iniciales por si falla la imagen */}
+          <AvatarFallback className="bg-slate-200 text-slate-600 font-bold text-xl">
+            JP
+          </AvatarFallback>
+        </Avatar>
+        
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-slate-800">Juan Pérez</h2>
+          <p className="text-sm text-slate-500 flex items-center justify-center gap-1">
+            <FaCreditCard className="w-4 h-4" /> V-12.345.678
+          </p>
+        </div>
+      </div>
 
-      <Avatar className="w-28 h-28 mb-8 border-4 border-white shadow-sm rounded-full overflow-hidden">
-        <AvatarFallback className="bg-slate-100 text-3xl font-bold text-primary-600 size-full flex items-center justify-center">
-          {data.iniciales}
-        </AvatarFallback>
-      </Avatar>
+      {/* CUADRICULA DE DATOS FÍSICOS */}
+      <div className="grid grid-cols-2 gap-4 w-full">
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <FaCalendarDays className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase italic">Edad</span>
+          <span className="text-lg font-bold text-slate-800">45 años</span>
+        </StaticCard>
 
-      <div className="w-full space-y-5">
-        <div>
-          <label className="text-[10px] font-bold text-slate-400 uppercase italic">Nombre Completo</label>
-          <div className="bg-slate-50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3">{data.nombre}</div>
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <FaUser className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase italic">Género</span>
+          <span className="text-lg font-bold text-slate-800">Masculino</span>
+        </StaticCard>
+
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <FaDroplet className="w-6 h-6 text-red-500 mb-1" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase italic">Sangre</span>
+          <span className="text-lg font-bold text-slate-800">O+</span>
+        </StaticCard>
+
+        <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
+          <FaWeightScale className="w-6 h-6 text-primary-600 mb-1" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase italic">Peso</span>
+          <span className="text-lg font-bold text-slate-800">78 kg</span>
+        </StaticCard>
+      </div>
+
+      {/* NUEVA SECCIÓN: ALERTAS MÉDICAS */}
+      <div className="flex flex-col gap-3 mt-2 border-t border-slate-100 pt-4">
+        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Resumen Médico</h4>
+        
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-red-50 border border-red-100">
+          <FaShieldHalved className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <span className="block text-xs font-bold text-red-700">Alergias</span>
+            <span className="text-xs text-red-600/80 font-medium">Penicilina, Polen</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3">
-            <VenusAndMars className="w-4 h-4 text-blue-400" /> {data.genero}
-          </div>
-          <div className="bg-red-50 p-3 rounded-xl flex items-center justify-center gap-2 text-sm text-red-600 font-bold">
-            <Droplets className="w-4 h-4" /> {data.sangre}
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
+          <FaChartLine className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+          <div>
+            <span className="block text-xs font-bold text-blue-700">Condición</span>
+            <span className="text-xs text-blue-600/80 font-medium">Hipertensión leve</span>
           </div>
         </div>
 
-        <hr className="border-slate-100" />
-
-        <div className="space-y-4">
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+          <FaHeartPulse className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
           <div>
-            <label className="text-[10px] font-bold text-red-500 uppercase italic">Alergias Detectadas</label>
-            <div className="bg-orange-50/50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3 border border-orange-100">
-              <Ban className="w-4 h-4 text-orange-500" /> {data.alergias}
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Diagnóstico Activo</label>
-            <div className="bg-slate-50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3">
-              <Activity className="w-4 h-4 text-primary-500" /> {data.condiciones}
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Tratamiento Farmacológico</label>
-            <div className="bg-emerald-50/50 p-3 rounded-xl text-slate-700 text-sm flex items-center gap-3 border border-emerald-100">
-              <Pill className="w-4 h-4 text-emerald-600" /> {data.medicamentos}
-            </div>
+            <span className="block text-xs font-bold text-slate-700">Última Visita</span>
+            <span className="text-xs text-slate-500 font-medium">12 de Marzo, 2026</span>
           </div>
         </div>
       </div>
-    </div>
+
+    </StaticCard>
   );
 };
