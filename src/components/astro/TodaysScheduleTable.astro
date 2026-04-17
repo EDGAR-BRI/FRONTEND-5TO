@@ -1,0 +1,53 @@
+---
+import { getScheduleOverview } from "@/lib/services/scheduling/appointment/appointment.service";
+const agenda = await getScheduleOverview();
+
+function getStatusClass(status: string) {
+    switch (status.toUpperCase()) {
+        case "REALIZADA":
+            return "bg-green-100 text-success border-green-200";
+        case "CONFIRMADA":
+            return "bg-yellow-100 text-warning border-yellow-200";
+        case "SIN CONFIRMAR":
+        case "CANCELADA":
+            return "bg-cool-gray-10 text-cool-gray-60 border-cool-gray-30";
+        default:
+            return "bg-cool-gray-10 text-cool-gray-60 border-cool-gray-30";
+    }
+}
+---
+
+<tbody class="divide-y divide-primary-50">
+    {
+        agenda.length === 0 ? (
+            <tr>
+                <td colspan="4" class="text-center py-4">
+                    <p class="text-body-s text-cool-gray-50">
+                        No se han registrado citas hoy.
+                    </p>
+                </td>
+            </tr>
+        ) : (
+            agenda.map((item) => (
+                <tr class="text-body-s hover:bg-primary-50/50 transition-colors">
+                    <td class="py-3 px-2 font-medium text-primary-700">
+                        {item.date_time}
+                    </td>
+                    <td class="py-3 px-2 text-primary-800">
+                        {item.patient.user.name}
+                    </td>
+                    <td class="py-3 px-2 text-cool-gray-60">
+                        {item.doctor.specialty.name}
+                    </td>
+                    <td class="py-3 px-2 text-right">
+                        <span
+                            class={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusClass(item.status.name)}`}
+                        >
+                            {item.status.name.toUpperCase()}
+                        </span>
+                    </td>
+                </tr>
+            ))
+        )
+    }
+</tbody>

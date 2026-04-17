@@ -1,6 +1,7 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import PaymentMethodsBox from '@/components/astro/paymentMethodsBox.astro';
+import TodaysScheduleTable from '@/components/astro/TodaysScheduleTable.astro';
 import {
 	ReceptionistStatsSummary,
 	type StatItem,
@@ -119,13 +120,6 @@ const quickActions = [
   { label: 'Gestionar pagos', icon: FaCreditCard, href: 'payment', color: 'from-violet-500 to-violet-700' },
   { label: 'Configurar horarios', icon: FaClock, href: 'manage-schedules', color: 'from-orange-400 to-orange-600' },
 ];
-
-const paymentBreakdown = [
-  { method: 'Efectivo (USD)', amount: '$540', pct: 44, color: 'bg-primary-500' },
-  { method: 'Tarjeta débito', amount: '$380', pct: 31, color: 'bg-teal-500' },
-  { method: 'Pago Móvil (VES)', amount: '$200', pct: 16, color: 'bg-violet-500' },
-  { method: 'Zelle', amount: '$120', pct: 9, color: 'bg-orange-400' },
-];
 ---
 
 <ReceptionistLayout title={`Dashboard – ${receptionist.fullName}`}>
@@ -163,38 +157,8 @@ const paymentBreakdown = [
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       
       <div class="lg:col-span-2 space-y-6">
-        <StaticCard>
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-heading-6 text-primary-800">Agenda de hoy</h2>
-            <a href="/appointments" class="text-body-xs font-medium text-primary-600 hover:underline">Ver todo</a>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="text-body-xs font-semibold text-cool-gray-50 uppercase tracking-wider border-b border-primary-100">
-                  <th class="pb-3 px-2">Hora</th>
-                  <th class="pb-3 px-2">Paciente</th>
-                  <th class="pb-3 px-2">Especialidad</th>
-                  <th class="pb-3 px-2 text-right">Estado</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-primary-50">
-                {agenda.map((item) => (
-                  <tr class="text-body-s hover:bg-primary-50/50 transition-colors">
-                    <td class="py-3 px-2 font-medium text-primary-700">{item.time}</td>
-                    <td class="py-3 px-2 text-primary-800">{item.patient}</td>
-                    <td class="py-3 px-2 text-cool-gray-60">{item.specialty}</td>
-                    <td class="py-3 px-2 text-right">
-                      <span class={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${item.statusClass}`}>
-                        {item.status.toUpperCase()}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </StaticCard>
+        <TodaysScheduleTable>
+        </TodaysScheduleTable>
       </div>
 
       <div class="space-y-6">
