@@ -1,6 +1,6 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
-import PaymentMethodsBox from '@/components/astro/paymentMethodsBox.astro';
+import PaymentMethodsBox from '@/components/astro/PaymentMethodsBox.astro';
 import TodaysScheduleTable from '@/components/astro/TodaysScheduleTable.astro';
 import {
 	ReceptionistStatsSummary,
@@ -156,9 +156,10 @@ const quickActions = [
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       
-      <div class="lg:col-span-2 space-y-6">
-        <TodaysScheduleTable>
-        </TodaysScheduleTable>
+      <div class="lg:col-span-2 space-y-6 border border-primary-100 rounded-xl">
+        <StaticCard>
+          <TodaysScheduleTable />
+        </StaticCard>
       </div>
 
       <div class="space-y-6">
