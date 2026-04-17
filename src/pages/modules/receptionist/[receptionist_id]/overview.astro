@@ -1,11 +1,12 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+import PaymentMethodsBox from '@/components/astro/paymentMethodsBox.astro';
 import {
 	ReceptionistStatsSummary,
 	type StatItem,
 } from '@/components/react/receptionist/ReceptionistStatsSummary';
 import StaticCard from '@/components/react/primary/StaticCard';
-import {
+import { // Eliminable?
   FaCalendarCheck,
   FaUserPlus,
   FaMoneyBillWave,
@@ -30,43 +31,7 @@ const receptionist = {
   shift: '07:00 AM – 03:00 PM',
 };
 
-const todayStr = '2026-03-02';
-
-const stats: StatItem[] = [
-  {
-    label: 'Citas hoy',
-    value: '18',
-    icon: FaCalendarCheck,
-    color: 'primary',
-    sub: '3 pendientes de confirmar',
-    subColor: 'text-warning',
-  },
-  {
-    label: 'Pacientes registrados',
-    value: '5',
-    icon: FaUserPlus,
-    color: 'success',
-    sub: 'Nuevos hoy',
-    subColor: 'text-success',
-  },
-  {
-    label: 'Pagos cobrados',
-    value: '$1,240',
-    icon: FaMoneyBillWave,
-    color: 'success',
-    sub: '9 transacciones',
-    subColor: 'text-cool-gray-50',
-  },
-  {
-    label: 'Facturas pendientes',
-    value: '4',
-    icon: FaFileInvoiceDollar,
-    color: 'danger',
-    sub: 'Requieren gestión',
-    subColor: 'text-error',
-  },
-];
-
+const todayStr = new Date().toISOString().split('T')[0];
 const agenda = [
   {
     id: 'APT-021',
@@ -193,7 +158,7 @@ const paymentBreakdown = [
       </div>
     </div>
 
-    <ReceptionistStatsSummary client:load stats={stats} />
+    <ReceptionistStatsSummary client:load/>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       
@@ -245,22 +210,8 @@ const paymentBreakdown = [
           </div>
         </StaticCard>
 
-        <StaticCard>
-          <h3 class="text-subtitle-m text-primary-800 mb-4">Métodos de pago (Hoy)</h3>
-          <div class="space-y-4">
-            {paymentBreakdown.map(item => (
-              <div>
-                <div class="flex justify-between text-body-xs mb-1">
-                  <span class="text-cool-gray-60">{item.method}</span>
-                  <span class="font-semibold text-primary-800">{item.amount}</span>
-                </div>
-                <div class="w-full bg-primary-50 rounded-full h-1.5">
-                  <div class={`${item.color} h-1.5 rounded-full`} style={`width: ${item.pct}%`}></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </StaticCard>
+        <PaymentMethodsBox>
+        </PaymentMethodsBox>
       </div>
     </div>
   </div>

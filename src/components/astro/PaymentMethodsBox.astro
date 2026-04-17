@@ -1,0 +1,39 @@
+---
+import { getPaymentsBreakdown } from "@/lib/services/finance/invoice-payment/invoice_payment.service";
+
+const paymentBreakdown = await getPaymentsBreakdown();
+
+const COLORS = [
+  'bg-primary-500',
+  'bg-teal-500',
+  'bg-violet-500',
+  'bg-orange-400',
+  'bg-rose-500',
+  'bg-cyan-500',
+  'bg-amber-500',
+  'bg-emerald-500',
+];
+
+const totalPaid = paymentBreakdown.reduce((sum, item) => sum + item.amount_paid, 0);
+
+const paymentBreakdownWithMeta = paymentBreakdown.map((item, i) => ({
+  ...item,
+  color: COLORS[i % COLORS.length],
+  pct: totalPaid > 0 ? Math.round((item.amount_paid / totalPaid) * 100) : 0,
+}));
+---
+{paymentBreakdownWithMeta.length === 0 ? (
+  <p class="text-body-s text-cool-gray-50 text-center py-4">
+    No se han registrado pagos hoy.
+  </p>
+) : paymentBreakdownWithMeta.map(item => (
+  <div>
+    <div class="flex justify-between text-body-xs mb-1">
+      <span class="text-cool-gray-60">{item.paymentMethod.name}</span>
+      <span class="font-semibold text-primary-800">${item.amount_paid}</span>
+    </div>
+    <div class="w-full bg-primary-50 rounded-full h-1.5">
+      <div class={`${item.color} h-1.5 rounded-full`} style={`width: ${item.pct}%`}></div>
+    </div>
+  </div>
+))}
