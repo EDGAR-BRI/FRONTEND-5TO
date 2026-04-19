@@ -63,45 +63,6 @@ const doctorOccupancyStats = [
 
 		<ReportTimeframeFilters client:load title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
 
-		{/* Summary Cards */}
-		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<StatsCard
-				title="Ingresos Totales (Mes)"
-				value="$21,000"
-				trend="12.5%"
-				trendUp={true}
-				color="success"
-			>
-				<FaArrowTrendUp slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard
-				title="Consultas Atendidas"
-				value="1,420"
-				trend="5.2%"
-				trendUp={true}
-				color="primary"
-			>
-				<FaStethoscope slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard
-				title="Pacientes Nuevos"
-				value="84"
-				trend="2.1%"
-				trendUp={false}
-				color="warning"
-			>
-				<FaUserPlus slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard
-				title="Cancelaciones"
-				value="12"
-				trend="0.5%"
-				trendUp={false}
-				color="danger"
-			>
-				<FaBan slot="icon" size={20} />
-			</StatsCard>
-		</section>
 
         <div id="seccion-operativos" class="space-y-8">
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
