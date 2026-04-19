@@ -4,20 +4,23 @@ import { InvoicesDataTable } from '@/components/react/receptionist/InvoicesDataT
 import { Field } from '@/components/react/primary/Field';
 import { Button } from '@/components/react/primary/Button';
 import { InvoiceKpis } from '@/components/react/receptionist/InvoiceKpis';
+import { getInvoices } from '@/lib/services/finance/invoice/invoice.service'
 
 // Datos de ejemplo
-const facturas = [
+const facturas = /*[
     { nro: 'FAC-2026-001', cliente: 'Ana Sofía Parra', fecha: '2026-03-02', total: 40.00, estado: 'Emitida' },
     { nro: 'FAC-2026-002', cliente: 'Jorge Luis Rivas', fecha: '2026-03-02', total: 80.00, estado: 'Pendiente' },
     { nro: 'FAC-2026-003', cliente: 'Carlos Méndez', fecha: '2026-03-01', total: 120.00, estado: 'Anulada' },
-];
+];*/
+await getInvoices()
 
-const emitidasHoy = facturas.filter((f) => f.estado === 'Emitida' && f.fecha === '2026-03-02').length;
-const pendientes = facturas.filter((f) => f.estado === 'Pendiente').length;
-const anuladas = facturas.filter((f) => f.estado === 'Anulada').length;
+
+const emitidasHoy = facturas.filter((f) => f.status.name === 'Emitida' && f.exchangeRate.createdAt === '2026-03-02').length;
+const pendientes = facturas.filter((f) => f.status.name === 'Pendiente').length;
+const anuladas = facturas.filter((f) => f.status.name === 'Anulada').length;
 const totalEmitidoHoy = facturas
-    .filter((f) => f.estado === 'Emitida' && f.fecha === '2026-03-02')
-    .reduce((acc, f) => acc + f.total, 0);
+    .filter((f) => f.status.name === 'Emitida' && f.exchangeRate.createdAt === '2026-03-02')
+    .reduce((acc, f) => acc + f.total_usd, 0);
 ---
 
 <ReceptionistLayout title="Facturación">

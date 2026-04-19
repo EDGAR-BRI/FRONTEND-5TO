@@ -3,6 +3,7 @@ import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import PaymentMethodsBox from '@/components/astro/PaymentMethodsBox.astro';
 import TodaysScheduleTable from '@/components/astro/TodaysScheduleTable.astro';
 import { getUserName, getCI } from "@/lib/api";
+import { getInitials } from "@/utils/helper_functions"
 import {
 	ReceptionistStatsSummary,
 	type StatItem,
@@ -23,17 +24,6 @@ import { // Eliminable?
 } from 'react-icons/fa6';
 
 const { receptionist_id } = Astro.params;
-export const getInitials = (name: string | null): string | null => {
-    if(name == null) 
-      return null
-    return name
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((word) => word[0].toUpperCase())
-        .join("");
-};
 const receptionist = {
   id: receptionist_id ?? '008',
   fullName: getUserName(Astro.cookies),

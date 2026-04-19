@@ -1,6 +1,7 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import PaymentsTable from '@/components/react/receptionist/PaymentsTable';
+import { getInvoicePayments } from '@/lib/services/finance/invoice-payment/invoice_payment.service'
 import type { Payment } from '@/components/react/receptionist/PaymentsTable';
 import PaymentAction from '@/components/react/receptionist/PaymentAction';
 import { FaArrowLeft, FaDollarSign } from 'react-icons/fa6';
