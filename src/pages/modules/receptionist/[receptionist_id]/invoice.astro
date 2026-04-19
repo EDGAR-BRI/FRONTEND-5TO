@@ -5,6 +5,7 @@ import { Field } from '@/components/react/primary/Field';
 import { Button } from '@/components/react/primary/Button';
 import { InvoiceKpis } from '@/components/react/receptionist/InvoiceKpis';
 import { getInvoices } from '@/lib/services/finance/invoice/invoice.service'
+import { convertirAFechaISO } from '@/utils/helper_functions'
 
 // Datos de ejemplo
 const facturas = /*[
@@ -15,11 +16,11 @@ const facturas = /*[
 await getInvoices()
 
 
-const emitidasHoy = facturas.filter((f) => f.status.name === 'Emitida' && f.exchangeRate.createdAt === '2026-03-02').length;
+const emitidasHoy = facturas.filter((f) => f.status.name === 'Emitida' && convertirAFechaISO(f.exchangeRate.createdAt) === '2026-03-02').length;
 const pendientes = facturas.filter((f) => f.status.name === 'Pendiente').length;
 const anuladas = facturas.filter((f) => f.status.name === 'Anulada').length;
 const totalEmitidoHoy = facturas
-    .filter((f) => f.status.name === 'Emitida' && f.exchangeRate.createdAt === '2026-03-02')
+    .filter((f) => f.status.name === 'Emitida' && convertirAFechaISO(f.exchangeRate.createdAt) === convertirAFechaISO((new Date()).toDateString()))
     .reduce((acc, f) => acc + f.total_usd, 0);
 ---
 

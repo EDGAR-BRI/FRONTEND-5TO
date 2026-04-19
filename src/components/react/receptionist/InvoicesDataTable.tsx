@@ -1,6 +1,7 @@
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
+import { convertirAFechaISO } from '@/utils/helper_functions'
 
 const statusBadgeStyles = (status: string) => {
     if (status === 'Emitida') return { bg: 'bg-primary-200/30', text: 'text-primary-700', border: 'border-primary-300' };
@@ -21,7 +22,7 @@ export function InvoicesDataTable({ facturas }: { facturas?: Invoice[] }) {
         },
         {
             header: 'Fecha',
-            cell: (fac) => <span className="text-primary-700">{fac.exchangeRate.createdAt}</span>,
+            cell: (fac) => <span className="text-primary-700">{convertirAFechaISO(fac.exchangeRate.createdAt)}</span>,
         },
         {
             header: 'Total',
