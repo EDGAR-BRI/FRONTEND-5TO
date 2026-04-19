@@ -81,6 +81,29 @@ export const getUserName = (cookies?: AstroCookies): string | null => {
     return null;
 };
 
+const CI_KEY = "user_ci"
+export const removeCI = (): void => {
+    Cookies.remove(CI_KEY, { path: "/" });
+};
+export const setCI = (ci: string): void => {
+    Cookies.set(CI_KEY, ci, {
+        expires: 7,
+        path: "/",
+        sameSite: "lax",
+        secure: import.meta.env.PROD // Solo HTTPS en producción, permite HTTP en desarrollo
+    });
+};
+
+export const getCI = (cookies?: AstroCookies): string | null => {
+    if (typeof window === "undefined" && cookies) {
+        return cookies.get(CI_KEY)?.value || null;
+    }
+    if (typeof window !== "undefined") {
+        return Cookies.get(CI_KEY) || null;
+    }
+    return null;
+};
+
 export const removeUserName = (): void => {
     Cookies.remove(USER_NAME_KEY, { path: "/" });
 };

@@ -2,6 +2,7 @@
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import PaymentMethodsBox from '@/components/astro/PaymentMethodsBox.astro';
 import TodaysScheduleTable from '@/components/astro/TodaysScheduleTable.astro';
+import { getUserName, getCI } from "@/lib/api";
 import {
 	ReceptionistStatsSummary,
 	type StatItem,
@@ -22,97 +23,26 @@ import { // Eliminable?
 } from 'react-icons/fa6';
 
 const { receptionist_id } = Astro.params;
-
+export const getInitials = (name: string | null): string | null => {
+    if(name == null) 
+      return null
+    return name
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((word) => word[0].toUpperCase())
+        .join("");
+};
 const receptionist = {
-  id: receptionist_id ?? '001',
-  fullName: 'Laura Castillo Díaz',
-  ci: 'V-18.902.341',
+  id: receptionist_id ?? '008',
+  fullName: getUserName(Astro.cookies),
+  ci: getCI(Astro.cookies),
   role: 'Recepcionista',
-  avatarInitials: 'LC',
-  shift: '07:00 AM – 03:00 PM',
+  avatarInitials: getInitials(getUserName(Astro.cookies)),
 };
 
 const todayStr = new Date().toISOString().split('T')[0];
-const agenda = [
-  {
-    id: 'APT-021',
-    time: '08:00',
-    patient: 'Ana Sofía Parra',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    reason: 'Control de rutina',
-    type: 'Presencial',
-    status: 'Realizada',
-    statusClass: 'bg-green-100 text-success border-green-200',
-    price: '$40',
-    paid: true,
-  },
-  {
-    id: 'APT-022',
-    time: '08:30',
-    patient: 'Jorge Luis Rivas',
-    specialty: 'Cardiología',
-    doctor: 'Dra. Luisa Vargas',
-    reason: 'Seguimiento post-operatorio',
-    type: 'Presencial',
-    status: 'Realizada',
-    statusClass: 'bg-green-100 text-success border-green-200',
-    price: '$80',
-    paid: true,
-  },
-  {
-    id: 'APT-023',
-    time: '09:00',
-    patient: 'Marta Elena Cruz',
-    specialty: 'Ginecología',
-    doctor: 'Dra. Patricia Mora',
-    reason: 'Consulta general',
-    type: 'Presencial',
-    status: 'Confirmada',
-    statusClass: 'bg-yellow-100 text-warning border-yellow-200',
-    price: '$60',
-    paid: false,
-  },
-  {
-    id: 'APT-024',
-    time: '09:30',
-    patient: 'Ramón Díaz Solano',
-    specialty: 'Traumatología',
-    doctor: 'Dr. Héctor Torres',
-    reason: 'Dolor lumbar persistente',
-    type: 'Presencial',
-    status: 'Confirmada',
-    statusClass: 'bg-yellow-100 text-warning border-yellow-200',
-    price: '$55',
-    paid: false,
-  },
-  {
-    id: 'APT-025',
-    time: '10:00',
-    patient: 'Carmen Rosa Fuentes',
-    specialty: 'Pediatría',
-    doctor: 'Dra. Valentina Ríos',
-    reason: 'Vacunación',
-    type: 'Presencial',
-    status: 'Sin Confirmar',
-    statusClass: 'bg-cool-gray-10 text-cool-gray-60 border-cool-gray-30',
-    price: '$30',
-    paid: false,
-  },
-  {
-    id: 'APT-026',
-    time: '10:30',
-    patient: 'Luis Eduardo Blanco',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    reason: 'Revisión de exámenes',
-    type: 'Presencial',
-    status: 'Sin Confirmar',
-    statusClass: 'bg-cool-gray-10 text-cool-gray-60 border-cool-gray-30',
-    price: '$40',
-    paid: false,
-  },
-];
 
 const quickActions = [
   { label: 'Registrar paciente', icon: FaUserPlus, href: 'register-patient', color: 'from-primary-500 to-primary-700' },
@@ -137,8 +67,6 @@ const quickActions = [
             <FaIdCard className="mr-1 inline-block" />{receptionist.ci}
             &nbsp;·&nbsp;
             <FaUserTie className="mr-1 inline-block" />{receptionist.role}
-            &nbsp;·&nbsp;
-            <FaRegClock className="mr-1 inline-block" />Turno: {receptionist.shift}
           </p>
         </div>
       </div>
