@@ -368,32 +368,6 @@ const pendingApts = Object.values(appointmentsByDoctorId)
   <!-- ─── Mini stats ──────────────────────────────────────────────────────── -->
   <ReceptionistStatsSummary
     client:load
-    stats={[
-      {
-        label: "Médicos en turno",
-        value: String(totalShiftsToday),
-        icon: FaUserDoctor,
-        color: "primary",
-      },
-      {
-        label: "Total citas (semana)",
-        value: String(totalApts),
-        icon: FaCalendarCheck,
-        color: "success",
-      },
-      {
-        label: "Confirmadas / Realizadas",
-        value: String(confirmedApts),
-        icon: FaCircleCheck,
-        color: "success",
-      },
-      {
-        label: "Sin confirmar",
-        value: String(pendingApts),
-        icon: FaClock,
-        color: "warning",
-      },
-    ]}
   />
 </div>
 
