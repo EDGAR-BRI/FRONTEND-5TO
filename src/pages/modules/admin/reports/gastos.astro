@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
+<<<<<<< HEAD
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaCartFlatbed, FaFileInvoiceDollar, FaSackDollar, FaBoxesStacked, FaScaleBalanced } from "react-icons/fa6";
 
@@ -147,3 +148,147 @@ const coloresEstado: Record<string, string> = {
         </div>
     </div>
 </AdminLayout>
+=======
+import ActionCard from "@/components/react/primary/ActionCard";
+import { Badge } from "@/components/react/primary/Badge";
+import { Button } from "@/components/react/primary/Button";
+import StaticCard from "@/components/react/primary/StaticCard";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import {
+	FaArrowRight,
+	FaCartFlatbed,
+	FaFileInvoiceDollar,
+	FaMoneyBillTrendUp,
+	FaSackDollar,
+	FaTriangleExclamation,
+} from "react-icons/fa6";
+
+const expenseBreakdown = [
+	{ category: "Insumos medicos", amount: "$4,980", weight: "40%" },
+	{ category: "Servicios operativos", amount: "$3,410", weight: "27%" },
+	{ category: "Mantenimiento", amount: "$2,160", weight: "17%" },
+	{ category: "Logistica", amount: "$1,900", weight: "16%" },
+];
+
+const concreteReports = [
+	{
+		title: "Compras por categoria",
+		description: "Comparativo semanal de insumos, servicios y mantenimiento.",
+		href: "/modules/admin/reports/gastos-compras",
+		badge: "Semanal",
+	},
+	{
+		title: "Rendimiento de proveedores",
+		description: "Costo promedio por orden, cumplimiento y desviaciones.",
+		href: "/modules/admin/reports/gastos-proveedores",
+		badge: "Top 10",
+	},
+	{
+		title: "Variacion mensual de egresos",
+		description: "Tendencias de gasto, picos de consumo y alertas tempranas.",
+		href: "/modules/admin/reports/gastos-variacion",
+		badge: "Historico",
+	},
+];
+---
+
+<AdminLayout title="Reporte de Gastos | Admin">
+	<div class="space-y-8">
+		<header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+			<div class="space-y-2">
+				<h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
+				<p class="text-gray-500">Vista general de egresos y acceso rapido a reportes financieros concretos.</p>
+			</div>
+			<div class="flex gap-2">
+				<Button label="Exportar CSV" variant="secondary">Exportar CSV</Button>
+				<Button label="Imprimir" variant="ghost">Imprimir</Button>
+			</div>
+		</header>
+
+		<ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos de control." />
+
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
+				<FaSackDollar slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
+				<FaCartFlatbed slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
+				<FaFileInvoiceDollar slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
+				<FaMoneyBillTrendUp slot="icon" size={20} />
+			</StatsCard>
+		</section>
+
+		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+			<div class="xl:col-span-2 space-y-4">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos de gastos</h2>
+					<Badge>Actualizado hoy</Badge>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{
+						concreteReports.map((report) => (
+							<a href={report.href} class="block">
+								<ActionCard className="h-full items-start justify-between">
+									<div class="space-y-2">
+										<Badge>{report.badge}</Badge>
+										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
+										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
+									</div>
+									<div class="text-primary-700 mt-3">
+										<FaArrowRight size={14} />
+									</div>
+								</ActionCard>
+							</a>
+						))
+					}
+				</div>
+			</div>
+
+			<StaticCard>
+				<div class="space-y-4">
+					<h2 class="text-lg font-semibold text-gray-800">Alertas de costo</h2>
+					<div class="p-3 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm flex gap-2 items-start">
+						<FaTriangleExclamation className="mt-0.5" />
+						<span>El rubro de insumos subio 8% en la semana 2. Revisar proveedor principal.</span>
+					</div>
+					<div class="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-sm flex gap-2 items-start">
+						<FaTriangleExclamation className="mt-0.5" />
+						<span>Mantenimiento preventivo pendiente para dos equipos de laboratorio.</span>
+					</div>
+				</div>
+			</StaticCard>
+		</section>
+
+		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+			<h2 class="text-xl font-semibold text-gray-800">Desglose rapido de egresos</h2>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-primary-300">
+					<thead class="bg-primary-300">
+						<tr>
+							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Categoria</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Participacion</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-primary-300">
+						{
+							expenseBreakdown.map((item) => (
+								<tr class="hover:bg-primary-500/20 transition-colors">
+									<td class="px-4 py-3 text-sm text-cool-gray-90">{item.category}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{item.amount}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.weight}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</div>
+</AdminLayout>
+>>>>>>> dev2

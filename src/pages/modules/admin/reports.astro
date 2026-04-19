@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { Button } from "@/components/react/primary/Button";
 import {
@@ -60,6 +61,7 @@ const doctorOccupancyStats = [
             </div>
         </header>
 
+<<<<<<< HEAD
         {/* SUB-MENÚ UNIFICADO*/}
         <div class="flex gap-6 border-b border-gray-200 pb-2 overflow-x-auto mt-6">
             <button id="btn-operativos" class="text-primary-600 font-bold border-b-2 border-primary-600 pb-2 whitespace-nowrap">
@@ -72,6 +74,49 @@ const doctorOccupancyStats = [
                 3. Honorarios y Gastos
             </button>
         </div>
+=======
+		<ReportTimeframeFilters client:load title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
+
+		{/* Summary Cards */}
+		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+			<StatsCard
+				title="Ingresos Totales (Mes)"
+				value="$21,000"
+				trend="12.5%"
+				trendUp={true}
+				color="success"
+			>
+				<FaArrowTrendUp slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard
+				title="Consultas Atendidas"
+				value="1,420"
+				trend="5.2%"
+				trendUp={true}
+				color="primary"
+			>
+				<FaStethoscope slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard
+				title="Pacientes Nuevos"
+				value="84"
+				trend="2.1%"
+				trendUp={false}
+				color="warning"
+			>
+				<FaUserPlus slot="icon" size={20} />
+			</StatsCard>
+			<StatsCard
+				title="Cancelaciones"
+				value="12"
+				trend="0.5%"
+				trendUp={false}
+				color="danger"
+			>
+				<FaBan slot="icon" size={20} />
+			</StatsCard>
+		</section>
+>>>>>>> dev2
 
         <div id="seccion-operativos" class="space-y-8">
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

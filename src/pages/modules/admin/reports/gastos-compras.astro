@@ -1,0 +1,70 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { Badge } from "@/components/react/primary/Badge";
+import StaticCard from "@/components/react/primary/StaticCard";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaCartFlatbed, FaBoxesStacked, FaTruckFast } from "react-icons/fa6";
+
+const rows = [
+  { category: "Insumos medicos", week1: "$1,120", week2: "$1,340", week3: "$1,210", week4: "$1,310" },
+  { category: "Material descartable", week1: "$520", week2: "$680", week3: "$590", week4: "$640" },
+  { category: "Laboratorio", week1: "$860", week2: "$910", week3: "$940", week4: "$1,020" },
+];
+---
+
+<AdminLayout title="Gastos - Compras por categoria | Admin">
+  <div class="space-y-6">
+    <a href="/modules/admin/reports/gastos" class="inline-flex items-center gap-2 text-sm text-primary-700 hover:underline">
+      <FaArrowLeft size={12} /> Volver a gastos
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-2xl font-bold text-gray-800">Compras por categoria</h1>
+      <p class="text-gray-500">Comparativo semanal de compras para detectar desviaciones tempranas.</p>
+    </header>
+
+    <ReportTimeframeFilters client:load title="Filtro de compras" subtitle="Alterna entre periodos diarios, semanales, mensuales y anuales para revisar la compra de insumos." />
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <StatsCard title="Total mensual" value="$10,180" trend="5.8%" trendUp={false} color="danger"><FaCartFlatbed slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Ordenes generadas" value="92" trend="2.1%" trendUp={true} color="primary"><FaBoxesStacked slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Entregas a tiempo" value="87%" trend="1.4%" trendUp={true} color="success"><FaTruckFast slot="icon" size={18} /></StatsCard>
+    </section>
+
+    <StaticCard>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-800">Detalle semanal</h2>
+          <Badge>Ultimas 4 semanas</Badge>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-primary-300">
+            <thead class="bg-primary-300">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Categoria</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 1</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 2</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 3</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 4</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-primary-300">
+              {rows.map((row) => (
+                <tr class="hover:bg-primary-500/20 transition-colors">
+                  <td class="px-4 py-3 text-sm text-cool-gray-90">{row.category}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.week1}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.week2}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.week3}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.week4}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </StaticCard>
+  </div>
+</AdminLayout>
