@@ -15,6 +15,7 @@ import {
     FaMagnifyingGlass,
     FaMoneyBillWave,
 } from 'react-icons/fa6'
+import type { InvoicePayment } from '@/lib/services/finance/invoice-payment/invoice_payment.interface'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface Payment {
@@ -27,9 +28,12 @@ export interface Payment {
     status: 'Completado' | 'Pendiente' | 'Anulado'
     doctor?: string
 }
+interface PaymentsTableProps {
+    payments: InvoicePayment[];
+}
 
 // ─── Badge helpers ─────────────────────────────────────────────────────────────
-const statusBadge = (status: Payment['status']) => {
+const statusBadge = (status: InvoicePayment['invoice']['status']['name']) => {
     const map = {
         Completado: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
         Pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200' },
@@ -38,7 +42,7 @@ const statusBadge = (status: Payment['status']) => {
     return <Badge styles={map[status]}>{status}</Badge>
 }
 
-const methodIcon = (method: Payment['method']) => {
+const methodIcon = (method: InvoicePayment['paymentMethod']['name']) => {
     const icons: Record<Payment['method'], IconType> = {
         Efectivo: FaMoneyBillWave,
         Transferencia: FaBuildingColumns,
@@ -57,39 +61,39 @@ const methodIcon = (method: Payment['method']) => {
 }
 
 // ─── Column definitions ────────────────────────────────────────────────────────
-const columns: Column<Payment>[] = [
+const columns: Column<InvoicePayment>[] = [
     {
         header: 'Paciente',
         cell: (p) => (
             <div className="flex flex-col">
-                <span className="font-semibold text-primary-900">{p.patient}</span>
-                <span className="text-xs text-cool-gray-50">{p.time}</span>
+                <span className="font-semibold text-primary-900">{p.invoice.patient.user.name}</span>
+                <span className="text-xs text-cool-gray-50">{p.date ?? '-'}</span>
             </div>
         ),
     },
     {
         header: 'Médico',
         cell: (p) => (
-            <span className="text-sm text-primary-700">{p.doctor ?? '—'}</span>
+            <span className="text-sm text-primary-700">{p.invoice.doctor.name ?? '—'}</span>
         ),
     },
     {
         header: 'Método',
-        cell: (p) => methodIcon(p.method),
+        cell: (p) => methodIcon(p.paymentMethod.name),
     },
     {
         header: 'Monto',
         align: 'right',
         cell: (p) => (
             <span className="font-semibold text-primary-900 tabular-nums">
-                {p.currency === 'USD' ? '$' : 'Bs.'}{p.amount.toFixed(2)}
+                {p.paymentMethod.currency}{p.amount_paid.toFixed(2)}
             </span>
         ),
     },
     {
         header: 'Estado',
         align: 'center',
-        cell: (p) => statusBadge(p.status),
+        cell: (p) => statusBadge(p.invoice.status.name),
     },
     {
         header: 'Acciones',
@@ -121,27 +125,23 @@ function SumCard({ icon: Icon, label, value, color }: { icon: IconType; label: s
 }
 
 // ─── Main component ────────────────────────────────────────────────────────────
-interface PaymentsTableProps {
-    payments: Payment[]
-}
 
-export default function PaymentsTable({ payments }: PaymentsTableProps) {
+export default function PaymentsTable({payments}: PaymentsTableProps) {
     const [search, setSearch] = useState('')
-    const [statusFilter, setStatusFilter] = useState<Payment['status'] | 'TODOS'>('TODOS')
+    const [statusFilter, setStatusFilter] = useState<InvoicePayment['invoice']['status']['name'] | 'TODOS'>('TODOS')
 
     const filtered = payments.filter(p => {
         const matchSearch = search === '' ||
-            p.patient.toLowerCase().includes(search.toLowerCase()) ||
-            p.id.toLowerCase().includes(search.toLowerCase())
-        const matchStatus = statusFilter === 'TODOS' || p.status === statusFilter
+            p.invoice.patient.user.name.toLowerCase().includes(search.toLowerCase())
+        const matchStatus = statusFilter === 'TODOS' || p.invoice.status.name === statusFilter
         return matchSearch && matchStatus
     })
 
     // Summary stats
-    const totalUSD = payments.filter(p => p.currency === 'USD' && p.status === 'Completado').reduce((s, p) => s + p.amount, 0)
-    const totalBs = payments.filter(p => p.currency === 'Bs' && p.status === 'Completado').reduce((s, p) => s + p.amount, 0)
-    const pending = payments.filter(p => p.status === 'Pendiente').length
-    const completed = payments.filter(p => p.status === 'Completado').length
+    const totalUSD = payments.filter(p => p.paymentMethod.currency === 'USD' && p.invoice.status.name === 'Completado').reduce((s, p) => s + p.amount_paid, 0)
+    const totalBs = payments.filter(p => p.paymentMethod.currency === 'Bs' && p.invoice.status.name === 'Completado').reduce((s, p) => s + p.amount_paid, 0)
+    const pending = payments.filter(p => p.invoice.status.name === 'Pendiente').length
+    const completed = payments.filter(p => p.invoice.status.name === 'Completado').length
 
     return (
         <div className="space-y-5">
@@ -188,7 +188,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                 </div>
 
                 {/* DataTable */}
-                <DataTable<Payment>
+                <DataTable<InvoicePayment>
                     endpoint=""
                     data={filtered}
                     columns={columns}
