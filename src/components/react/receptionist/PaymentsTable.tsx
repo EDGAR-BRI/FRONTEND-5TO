@@ -50,7 +50,8 @@ const methodIcon = (method: InvoicePayment['paymentMethod']['name']) => {
         Otro: FaEllipsis,
     }
 
-    const Icon = icons[method]
+    const Icon = icons[method] ?? FaEllipsis
+
 
     return (
         <span className="inline-flex items-center gap-2 text-primary-700">
@@ -67,14 +68,14 @@ const columns: Column<InvoicePayment>[] = [
         cell: (p) => (
             <div className="flex flex-col">
                 <span className="font-semibold text-primary-900">{p.invoice.patient.user.name}</span>
-                <span className="text-xs text-cool-gray-50">{p.date ?? '-'}</span>
+                <span className="text-xs text-cool-gray-50">{p.date ?? 'No encontrado'}</span>
             </div>
         ),
     },
     {
         header: 'Médico',
         cell: (p) => (
-            <span className="text-sm text-primary-700">{p.invoice.doctor.name ?? '—'}</span>
+            <span className="text-sm text-primary-700">{p.invoice?.doctor?.name ?? 'No encontrado'}</span>
         ),
     },
     {
@@ -86,7 +87,7 @@ const columns: Column<InvoicePayment>[] = [
         align: 'right',
         cell: (p) => (
             <span className="font-semibold text-primary-900 tabular-nums">
-                {p.paymentMethod.currency}{p.amount_paid.toFixed(2)}
+                {p.paymentMethod.currency}{p.amount_paid}
             </span>
         ),
     },
