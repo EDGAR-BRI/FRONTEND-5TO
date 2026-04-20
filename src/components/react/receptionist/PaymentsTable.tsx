@@ -87,7 +87,7 @@ const columns: Column<InvoicePayment>[] = [
         align: 'right',
         cell: (p) => (
             <span className="font-semibold text-primary-900 tabular-nums">
-                {p.paymentMethod.currency}{p.amount_paid}
+                {p.amount_paid} {p.paymentMethod.currency}
             </span>
         ),
     },

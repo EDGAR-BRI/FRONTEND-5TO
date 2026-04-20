@@ -6,6 +6,7 @@ import { FaCheck, FaMinus, FaPlus, FaXmark } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import { getDoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { convertirAHHMM } from '@/utils/helper_functions'
 
 export interface ScheduleDay {
     id?: number
@@ -41,18 +42,30 @@ const WEEKDAYS = [
 ]
 
 function availabilityToCycle(doctorId: number, availability: DoctorAvailability[]): ScheduleCycle {
-    const days: ScheduleDay[] = availability.map(a => ({
-        id: a.id,
-        day_number: a.day_of_week,
-        starts_at: a.start_time,
-        ends_at: a.end_time,
-    }))
-    days.sort((a, b) => a.day_number - b.day_number || a.starts_at.localeCompare(b.starts_at))
+    const weekMap = new Map<number, ScheduleDay[]>()
+
+    for (const a of availability) {
+        const weekNum = a.week_number ?? 1
+        if (!weekMap.has(weekNum)) weekMap.set(weekNum, [])
+        weekMap.get(weekNum)!.push({
+            id: a.id,
+            day_number: a.day_of_week,
+            starts_at: convertirAHHMM(a.start_time),
+            ends_at: convertirAHHMM(a.end_time),
+        })
+    }
+
+    const weeks: ScheduleWeek[] = Array.from(weekMap.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([week_number, days]) => ({
+            week_number,
+            days: days.sort((a, b) => a.day_number - b.day_number || a.starts_at.localeCompare(b.starts_at)),
+        }))
 
     return {
         employee_id: doctorId,
         desc: 'Ciclo Regular',
-        weeks: [{ week_number: 1, days }],
+        weeks: weeks.length > 0 ? weeks : [{ week_number: 1, days: [] }],
     }
 }
 
@@ -62,20 +75,13 @@ function emptyDefaultCycle(doctorId: number): ScheduleCycle {
 
 export default function DoctorScheduleManager({ doctors }: DoctorScheduleManagerProps) {
     const [selectedDocId, setSelectedDocId] = useState<number>(doctors[0]?.id ?? 0)
-
-    // Cache: doctorId -> ScheduleCycle (confirmed/saved state)
     const [cycles, setCycles] = useState<Record<number, ScheduleCycle>>({})
-
-    // Loading state per doctor
     const [loadingDocId, setLoadingDocId] = useState<number | null>(null)
-
-    // Current edits
     const [editingCycle, setEditingCycle] = useState<ScheduleCycle | null>(null)
     const [activeWeekTab, setActiveWeekTab] = useState<number>(1)
     const [isSaving, setIsSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
 
-    // Load availability for a doctor if not cached, then switch to it
     const handleSelectDoctor = useCallback(async (docId: number) => {
         if (docId === selectedDocId) return
         setShowSuccess(false)
@@ -83,12 +89,10 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         setSelectedDocId(docId)
 
         if (cycles[docId]) {
-            // Already fetched — just switch
             setEditingCycle(structuredClone(cycles[docId]))
             return
         }
 
-        // Fetch from API
         setLoadingDocId(docId)
         try {
             const availability = await getDoctorAvailability(docId)
@@ -102,9 +106,8 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         } finally {
             setLoadingDocId(null)
         }
-    }, [selectedDocId, cycles, getDoctorAvailability])
+    }, [selectedDocId, cycles])
 
-    // Fetch initial doctor on first render
     const [initialFetchDone, setInitialFetchDone] = useState(false)
     if (!initialFetchDone && doctors.length > 0) {
         setInitialFetchDone(true)
@@ -122,8 +125,6 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
     }
 
     const isLoading = loadingDocId === selectedDocId
-
-    // ── Cycle mutations ────────────────────────────────────────────────────
 
     const handleWeekCountChange = (count: number) => {
         const newCount = Math.max(1, Math.min(4, count))
@@ -193,6 +194,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
     const handleDiscard = () => {
         const saved = cycles[selectedDocId] ?? emptyDefaultCycle(selectedDocId)
         setEditingCycle(structuredClone(saved))
+        setActiveWeekTab(1)
     }
 
     const activeWeek = editingCycle?.weeks.find(w => w.week_number === activeWeekTab)

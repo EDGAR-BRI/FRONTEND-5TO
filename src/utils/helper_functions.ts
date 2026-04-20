@@ -30,3 +30,13 @@ export function convertirAFechaISO(fechaStr: string): string {
     
     return `${año}-${mes}-${dia}`;
 }
+export function convertirAHHMM(value: string): string {
+    if (/^\d{2}:\d{2}$/.test(value)) return value
+
+    const date = new Date(value)
+    return date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC'
+    })
+}
