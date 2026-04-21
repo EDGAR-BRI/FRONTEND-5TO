@@ -1,4 +1,5 @@
 import type { DoctorAvailability } from "@/lib/services/scheduling/doctor-availability/doctor_availability.interface"
+import type { Appointment } from "@/lib/services/scheduling/appointment/appointment.interface"
 
 export const getInitials = (name: string | null): string | null => {
     if(name == null) 
@@ -54,4 +55,44 @@ export function formatShiftsByDoctorId(
         })
         return acc
     }, {} as Record<number, { dayOfWeek: number; startsAt: string; endsAt: string }[]>)
+}
+export function formatAppointmentsByDoctorId(
+    appointments: Appointment[],
+    durationMinutes: number = 30
+): Record<number, {
+    id: number
+    scheduledStart: string
+    scheduledEnd: string
+    patientName: string
+    reason: string
+    status: string
+    type: string
+    price: string
+}[]> {
+    const VALID_STATUSES = ['Realizada', 'Confirmada', 'Sin Confirmar', 'Cancelada'] as const
+    type Status = typeof VALID_STATUSES[number]
+
+    return appointments.reduce((acc, a) => {
+        if (!acc[a.doctorId]) acc[a.doctorId] = []
+
+        const start = new Date(a.date_time)
+        const end = new Date(start.getTime() + durationMinutes * 60_000)
+
+        const status = VALID_STATUSES.includes(a.status.name as Status)
+            ? a.status.name as Status
+            : 'Sin Confirmar'
+
+        acc[a.doctorId].push({
+            id: a.id,
+            scheduledStart: a.date_time,
+            scheduledEnd: end.toISOString(),
+            patientName: a.patient?.user?.name,
+            reason: a.reson_visit,
+            status,
+            type: a.type.name,
+            price: `$${a.price}`,
+        })
+
+        return acc
+    }, {} as Record<number, any[]>)
 }

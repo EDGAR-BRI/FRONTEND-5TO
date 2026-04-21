@@ -10,7 +10,8 @@ import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
 import { FaRegCalendarXmark, FaUserDoctor } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from "@/lib/services/medical/doctor/doctor.interface";
-
+import { getAppointmentsByDr } from '@/lib/services/scheduling/appointment/appointment.service'
+import { formatAppointmentsByDoctorId, convertirAHHMM } from '@/utils/helper_functions'
 
 
 export interface DoctorInfo {
@@ -32,7 +33,7 @@ export interface BookedAppointment {
   scheduledEnd: string
   patientName: string
   reason: string
-  status: 'Realizada' | 'Confirmada' | 'Sin Confirmar' | 'Cancelada'
+  status: string
   type: string
   price: string
 }
@@ -47,12 +48,8 @@ type CalendarEvent = {
 
 export interface DoctorScheduleCalendarProps {
   doctors: DoctorSchedConfigOption[]
-  /** shiftsByDoctorId[doctorId] = array of shift day rules for the active ScheduleCycle */
-  shiftsByDoctorId: Record<number, ShiftDay[]>
-  /** appointmentsByDoctorId[doctorId] = booked appointments */
-  appointmentsByDoctorId: Record<number, BookedAppointment[]>
+  shiftsByDoctorId: Record<number, { dayOfWeek: number; startsAt: string; endsAt: string }[]>
   heightPx?: number
-  /** 'week' (default) or 'day' to start the calendar in day view */
   initialView?: 'week' | 'day' | 'agenda'
 }
 
@@ -122,7 +119,6 @@ function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
 export default function DoctorScheduleCalendar({
   doctors,
   shiftsByDoctorId,
-  appointmentsByDoctorId,
   heightPx = 640,
   initialView = 'week',
 }: DoctorScheduleCalendarProps) {
@@ -131,7 +127,29 @@ export default function DoctorScheduleCalendar({
   const [selectedApt, setSelectedApt] = useState<BookedAppointment | null>(null)
   const { isOpen, openModal, closeModal } = useModal(false)
 
-  // ── Responsive: lock to agenda view on narrow screens ──────────────────
+  // ── Appointments fetch por doctor ───────────────────────────────────────
+  const [appointmentsByDoctorId, setAppointmentsByDoctorId] = useState<Record<number, BookedAppointment[]>>({})
+  const [loadingApts, setLoadingApts] = useState(false)
+
+  useEffect(() => {
+    // Si ya están cacheados, no volver a pedir
+    if (appointmentsByDoctorId[selectedDoctorId]) return
+
+    setLoadingApts(true)
+    getAppointmentsByDr(selectedDoctorId)
+      .then(raw => {
+        const formatted = formatAppointmentsByDoctorId(raw)
+        console.log(formatted)
+        setAppointmentsByDoctorId(prev => ({
+          ...prev,
+          [selectedDoctorId]: formatted[selectedDoctorId] ?? [],
+        }))
+      })
+      .catch(err => console.error('Error fetching appointments:', err))
+      .finally(() => setLoadingApts(false))
+  }, [selectedDoctorId])
+
+  // ── Responsive ──────────────────────────────────────────────────────────
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 640px)')
@@ -140,8 +158,8 @@ export default function DoctorScheduleCalendar({
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
-  const closeAndClear = () => { closeModal(); setSelectedApt(null) }
 
+  const closeAndClear = () => { closeModal(); setSelectedApt(null) }
   const doctor = doctors.find(d => d.id === selectedDoctorId)
 
   const aptEvents = useMemo(() => {
@@ -184,8 +202,17 @@ export default function DoctorScheduleCalendar({
     }
   }
 
-  return (
+    return (
     <div className="flex flex-col gap-4">
+      {/* Doctor selector — sin cambios */}
+
+      {/* Loading indicator */}
+      {loadingApts && (
+        <div className="text-xs text-primary-500 flex items-center gap-2 animate-pulse">
+          <span className="w-2 h-2 rounded-full bg-primary-400 inline-block" />
+          Cargando citas...
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {doctors.map(doc => (
           <button
@@ -304,11 +331,11 @@ export default function DoctorScheduleCalendar({
               </div>
               <div>
                 <p className="text-xs text-cool-gray-50 font-medium">Inicio</p>
-                <p>{selectedApt.scheduledStart}</p>
+                <p>{convertirAHHMM(selectedApt.scheduledStart)}</p>
               </div>
               <div>
                 <p className="text-xs text-cool-gray-50 font-medium">Fin</p>
-                <p>{selectedApt.scheduledEnd}</p>
+                <p>{convertirAHHMM(selectedApt.scheduledEnd)}</p>
               </div>
             </div>
 
