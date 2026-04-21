@@ -9,6 +9,8 @@ import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
 import { FaRegCalendarXmark, FaUserDoctor } from 'react-icons/fa6'
+import type { DoctorSchedConfigOption } from "@/lib/services/medical/doctor/doctor.interface";
+
 
 
 export interface DoctorInfo {
@@ -44,7 +46,7 @@ type CalendarEvent = {
 }
 
 export interface DoctorScheduleCalendarProps {
-  doctors: DoctorInfo[]
+  doctors: DoctorSchedConfigOption[]
   /** shiftsByDoctorId[doctorId] = array of shift day rules for the active ScheduleCycle */
   shiftsByDoctorId: Record<number, ShiftDay[]>
   /** appointmentsByDoctorId[doctorId] = booked appointments */
@@ -194,9 +196,9 @@ export default function DoctorScheduleCalendar({
               : 'bg-white text-primary-800 border-primary-200 hover:bg-primary-50'
               }`}
           >
-            <span className="font-semibold">{doc.name}</span>
+            <span className="font-semibold">{doc.user.name}</span>
             <span className={`ml-1.5 text-xs ${doc.id === selectedDoctorId ? 'text-primary-200' : 'text-cool-gray-50'}`}>
-              {doc.specialty}
+              {doc.specialty.name}
             </span>
           </button>
         ))}
@@ -205,7 +207,7 @@ export default function DoctorScheduleCalendar({
       <div className="flex flex-wrap items-center gap-4 text-xs text-primary-700">
         <span className="font-semibold text-primary-800">
           <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
-          {doctor?.name} — {doctor?.specialty}
+          {doctor?.user.name} — {doctor?.specialty.name}
         </span>
         <span className="ml-auto flex flex-wrap gap-3">
           {Object.entries(STATUS_COLORS).map(([label, color]) => (

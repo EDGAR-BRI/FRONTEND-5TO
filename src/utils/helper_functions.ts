@@ -1,3 +1,5 @@
+import type { DoctorAvailability } from "@/lib/services/scheduling/doctor-availability/doctor_availability.interface"
+
 export const getInitials = (name: string | null): string | null => {
     if(name == null) 
       return null
@@ -39,4 +41,17 @@ export function convertirAHHMM(value: string): string {
         minute: '2-digit',
         timeZone: 'UTC'
     })
+}
+export function formatShiftsByDoctorId(
+    availabilities: DoctorAvailability[]
+): Record<number, { dayOfWeek: number; startsAt: string; endsAt: string }[]> {
+    return availabilities.reduce((acc, a) => {
+        if (!acc[a.doctorId]) acc[a.doctorId] = []
+        acc[a.doctorId].push({
+            dayOfWeek: a.day_of_week,
+            startsAt: convertirAHHMM(a.start_time),
+            endsAt: convertirAHHMM(a.end_time),
+        })
+        return acc
+    }, {} as Record<number, { dayOfWeek: number; startsAt: string; endsAt: string }[]>)
 }

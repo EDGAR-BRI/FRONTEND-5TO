@@ -2,6 +2,9 @@
 import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
 import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
+import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
+import { getDoctorsAvailabilities } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { formatShiftsByDoctorId } from '@/utils/helper_functions';
 import {
   FaArrowLeft,
   FaCalendarCheck,
@@ -24,19 +27,14 @@ const initialView =
 // ScheduleCycle → ScheduleWeek → ScheduleDay gives us shift windows per employee
 // Appoinment + Form → User gives us booked appointments per doctor
 
-const doctors = [
-  { id: 1, name: "Dr. Carlos Méndez", specialty: "Medicina General" },
-  { id: 2, name: "Dra. Luisa Vargas", specialty: "Cardiología" },
-  { id: 3, name: "Dra. Patricia Mora", specialty: "Ginecología" },
-  { id: 4, name: "Dr. Héctor Torres", specialty: "Traumatología" },
-  { id: 5, name: "Dra. Valentina Ríos", specialty: "Pediatría" },
-];
+const doctors = await getActuallyAvailableDrs();
+const shifts = await getDoctorsAvailabilities();
 
 // ScheduleDay rows for the active ScheduleCycle (dayOfWeek: 1=Mon … 5=Fri)
 const shiftsByDoctorId: Record<
   number,
   { dayOfWeek: number; startsAt: string; endsAt: string }[]
-> = {
+> = /*{
   1: [
     { dayOfWeek: 1, startsAt: "07:30", endsAt: "13:00" },
     { dayOfWeek: 2, startsAt: "07:30", endsAt: "13:00" },
@@ -64,7 +62,7 @@ const shiftsByDoctorId: Record<
     { dayOfWeek: 4, startsAt: "10:00", endsAt: "14:00" },
     { dayOfWeek: 5, startsAt: "10:00", endsAt: "14:00" },
   ],
-};
+};*/ formatShiftsByDoctorId(shifts);
 
 // Appoinment rows with scheduled_range parsed into start/end + Form+User for patient name
 const appointmentsByDoctorId: Record<
@@ -411,9 +409,9 @@ const pendingApts = Object.values(appointmentsByDoctorId)
               return (
                 <tr class="hover:bg-primary-50 transition-colors">
                   <td class="px-4 py-3 font-semibold text-primary-800">
-                    {doc.name}
+                    {doc.user.name}
                   </td>
-                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty}</td>
+                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty.name}</td>
                   {[1, 2, 3, 4, 5].map((d) => (
                     <td class="px-4 py-3">
                       {byDay[d] ? (

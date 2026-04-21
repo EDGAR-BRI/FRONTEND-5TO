@@ -1,10 +1,10 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import DoctorScheduleManager from '@/components/react/DoctorScheduleManager';
-import { getDoctorSchedOptions } from '@/lib/services/medical/doctor/doctor.service'
+import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
 import { FaArrowLeft, FaSliders } from 'react-icons/fa6';
 
-const doctors = await getDoctorSchedOptions()
+const doctors = await getActuallyAvailableDrs()
 
 ---
 

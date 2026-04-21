@@ -4,7 +4,7 @@ import type { DoctorSchedConfigOption } from "./doctor.interface";
 
 const BASE_PATH = "medical/doctor";
 
-export const getDoctorSchedOptions = async (): Promise<DoctorSchedConfigOption[]> => {
+export const getActuallyAvailableDrs = async (): Promise<DoctorSchedConfigOption[]> => {
     const response = await api(BASE_PATH, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
         method: "GET"
     });
