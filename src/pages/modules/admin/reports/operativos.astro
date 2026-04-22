@@ -72,6 +72,29 @@ const slotsByTime = [
 			</StatsCard>
 		</section>
 
+<<<<<<< HEAD
+		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-lg font-bold text-gray-800">Flujo de pacientes por hora</h2>
+					<Badge styles={{ bg: "bg-primary-200", text: "text-primary-700", border: "border-primary-400" }}>
+						Turno manana
+					</Badge>
+				</div>
+				<div class="h-64 flex items-end gap-2 sm:gap-3 border-b border-primary-300 pb-2">
+					{
+						hourlyLoad.map((slot) => (
+							<div class="flex-1 h-full flex flex-col items-center justify-end group relative">
+								<div class="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] bg-cool-gray-90 text-white px-2 py-1 rounded">
+									{slot.visits} citas
+								</div>
+								<div
+									class="w-full min-h-2 rounded-t-md bg-primary-400 hover:bg-primary-500 transition-colors"
+									style={`height: ${(slot.visits / maxVisits) * 100}%`}
+								/>
+								<span class="text-[11px] text-cool-gray-50 mt-2">{slot.hour}</span>
+							</div>
+=======
 		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 			<div class="xl:col-span-2 space-y-4">
 				<div class="flex items-center justify-between">
@@ -93,11 +116,75 @@ const slotsByTime = [
 									</div>
 								</ActionCard>
 							</a>
+>>>>>>> dev2
 						))
 					}
 				</div>
 			</div>
 
+<<<<<<< HEAD
+			<div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
+				<h2 class="text-lg font-bold text-gray-800 mb-5">Distribucion por area</h2>
+				<div class="space-y-4">
+					{
+						areaDistribution.map((area) => (
+							<div>
+								<div class="flex items-center justify-between mb-1">
+									<span class="text-sm text-cool-gray-60">{area.area}</span>
+									<span class="text-xs font-semibold text-cool-gray-90">{area.value}%</span>
+								</div>
+								<div class="w-full h-2.5 rounded-full bg-primary-200 overflow-hidden">
+									<div class:list={["h-2.5 rounded-full", area.tone]} style={`width: ${area.value}%`} />
+								</div>
+							</div>
+						))
+					}
+				</div>
+			</div>
+		</section>
+
+		<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+			<StaticCard className="p-6">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-lg font-bold text-gray-800">Rendimiento por consultorio</h3>
+					<FaStethoscope className="text-primary-600" />
+				</div>
+				<div class="space-y-4">
+					{
+						roomPerformance.map((room) => (
+							<div class="p-3 rounded-lg border border-primary-200 bg-primary-50/40">
+								<div class="flex items-center justify-between mb-2">
+									<p class="text-sm font-semibold text-cool-gray-90">{room.room}</p>
+									<Badge
+										styles={{
+											bg: room.status === "alto" ? "bg-success/20" : room.status === "medio" ? "bg-warning/20" : "bg-primary-200",
+											text: room.status === "alto" ? "text-success" : room.status === "medio" ? "text-warning" : "text-primary-700",
+											border: "border-transparent",
+										}}
+									>
+										{room.status}
+									</Badge>
+								</div>
+								<div class="w-full h-2 rounded-full bg-primary-200 overflow-hidden mb-2">
+									<div class="h-2 rounded-full bg-primary-500" style={`width: ${room.occupancy}%`} />
+								</div>
+								<p class="text-xs text-cool-gray-50">Ocupacion: {room.occupancy}% | Espera: {room.waiting}</p>
+							</div>
+						))
+					}
+				</div>
+			</StaticCard>
+
+			<StaticCard className="p-6">
+				<h3 class="text-lg font-bold text-gray-800 mb-4">Alertas operativas</h3>
+				<ul class="space-y-3">
+					<li class="text-sm text-cool-gray-60 border-l-2 border-warning pl-3">Incremento de demanda entre 10:00 y 11:00 (+22%).</li>
+					<li class="text-sm text-cool-gray-60 border-l-2 border-primary-500 pl-3">Consultorio 1 mantiene ocupacion superior al 90% por 3 dias.</li>
+					<li class="text-sm text-cool-gray-60 border-l-2 border-success pl-3">Tiempo de espera promedio bajo objetivo (&lt;25 min).</li>
+				</ul>
+			</StaticCard>
+		</section>
+=======
 			<StaticCard>
 				<div class="space-y-3">
 					<h2 class="text-lg font-semibold text-gray-800">Estado del dia</h2>
@@ -142,5 +229,6 @@ const slotsByTime = [
 				</table>
 			</div>
 		</section>
+>>>>>>> dev2
 	</div>
 </AdminLayout>

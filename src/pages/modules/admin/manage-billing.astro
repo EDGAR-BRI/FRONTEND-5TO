@@ -2,14 +2,14 @@
 export const prerender = true;
 
 import MainLayout from '@/layouts/AdminLayout.astro';
-import { ExpenseDashboard } from '@/components/react/admin/finance/ExpenseDashboard';
+import { IncomeDashboard } from '@/components/react/admin/finance/IncomeDashboard';
 ---
 
-<MainLayout title="Admin | Egresos">
+<MainLayout title="Admin | Ingresos">
 	<section class="p-8">
 		<h1 class="text-2xl font-semibold text-primary-800 mb-6">
-			Gestión de Egresos
+			Gestión de Ingresos
 		</h1>
-		<ExpenseDashboard client:load />
+		<IncomeDashboard client:load />
 	</section>
 </MainLayout>

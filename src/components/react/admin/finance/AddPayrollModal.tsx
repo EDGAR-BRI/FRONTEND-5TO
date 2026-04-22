@@ -1,38 +1,30 @@
-import { useState, useEffect, type ChangeEvent, type SyntheticEvent } from 'react';
+import { useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import { Modal } from '@/components/react/primary/Modal';
 import { Field } from '@/components/react/primary/Field';
 import { Select } from '@/components/react/primary/Select';
 import { Button } from '@/components/react/primary/Button';
 
-interface AddTransactionModalProps {
+interface AddPayrollModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
-    initialType?: 'income' | 'expense';
 }
 
-export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 'expense' }: AddTransactionModalProps) => {
+export const AddPayrollModal = ({ isOpen, onClose, onSuccess }: AddPayrollModalProps) => {
     const [formData, setFormData] = useState<{
-        description: string;
+        employeeId: string;
         amount: string;
         date: string;
-        type: string;
-        category: string;
+        description: string;
         status: string;
     }>({
-        description: '',
+        employeeId: '',
         amount: '',
         date: '',
-        type: initialType,
-        category: '',
+        description: 'Pago de Quincena',
         status: 'completed'
     });
 
-    useEffect(() => {
-        if (isOpen) {
-            setFormData(prev => ({ ...prev, type: initialType }));
-        }
-    }, [isOpen, initialType]);
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -49,8 +41,8 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 
         setLoading(true);
         try {
             // Simular petición
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log("Transacción guardada:", formData);
+            await new Promise(resolve => setTimeout(resolve, 800));
+            console.log("Nómina guardada:", formData);
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {
@@ -60,54 +52,34 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 
         }
     };
 
-    const transactionTypes = [
-        { label: 'Ingreso', value: 'income' },
-        { label: 'Gasto', value: 'expense' },
-    ];
-
-    const categories = [
-        { label: 'Consulta', value: 'Consulta' },
-        { label: 'Farmacia', value: 'Farmacia' },
-        { label: 'Tratamiento', value: 'Tratamiento' },
-        { label: 'Insumos', value: 'Insumos' },
-        { label: 'Servicios', value: 'Servicios' },
-        { label: 'Mantenimiento', value: 'Mantenimiento' },
-        { label: 'Salarios', value: 'Salarios' },
-        { label: 'Otros', value: 'Otros' },
+    const employees = [
+        { label: 'Dr. Roberto Mendoza', value: '1' },
+        { label: 'Dra. Ana López', value: '2' },
+        { label: 'Carlos Ruiz (Recepción)', value: '3' },
+        { label: 'María Gómez (Enfermería)', value: '4' },
     ];
     
     const statuses = [
-        { label: 'Completado', value: 'completed' },
+        { label: 'Pagado', value: 'completed' },
         { label: 'Pendiente', value: 'pending' },
-        { label: 'Cancelado', value: 'cancelled' },
     ];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Nueva Transacción">
+        <Modal isOpen={isOpen} onClose={onClose} title="Registrar Pago de Nómina">
             <form onSubmit={handleSubmit} className="space-y-4 w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Select
-                        label="Tipo"
-                        name="type"
-                        options={transactionTypes}
-                        value={formData.type}
-                        onChange={(val) => handleSelectChange('type', val)}
-                        required
-                    />
-                    <Select
-                        label="Estado"
-                        name="status"
-                        options={statuses}
-                        value={formData.status}
-                        onChange={(val) => handleSelectChange('status', val)}
-                        required
-                    />
-                </div>
+                <Select
+                    label="Empleado"
+                    name="employeeId"
+                    options={employees}
+                    value={formData.employeeId}
+                    onChange={(val) => handleSelectChange('employeeId', val)}
+                    required
+                />
 
                 <Field 
-                    label="Descripción" 
+                    label="Descripción del pago" 
                     name="description" 
-                    placeholder="Ej: Pago de luz" 
+                    placeholder="Ej: Quincena 1 Mayo" 
                     value={formData.description}
                     onChange={handleChange}
                     required
@@ -125,7 +97,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 
                         required
                     />
                      <Field 
-                        label="Fecha" 
+                        label="Fecha de Pago" 
                         name="date" 
                         type="date" 
                         value={formData.date}
@@ -135,11 +107,11 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 
                 </div>
 
                 <Select
-                    label="Categoría"
-                    name="category"
-                    options={categories}
-                    value={formData.category}
-                    onChange={(val) => handleSelectChange('category', val)}
+                    label="Estado"
+                    name="status"
+                    options={statuses}
+                    value={formData.status}
+                    onChange={(val) => handleSelectChange('status', val)}
                     required
                 />
 
@@ -153,7 +125,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 
                     <Button 
                         type="submit" 
                         variant="primary" 
-                        label="Guardar" 
+                        label="Registrar Pago" 
                         loading={loading}
                     />
                 </div>
