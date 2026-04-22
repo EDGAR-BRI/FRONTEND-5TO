@@ -21,17 +21,11 @@ export interface Cita {
   fecha: string
   hora: string
   estado: string
-<<<<<<< HEAD
-  paciente?: string
-  pacienteId?: number | string
-  [key: string]: any
-=======
   pacienteNombre: string;
   pacienteId: string;
   motivo: string;
   tipoConsulta: 'Presencial' | 'Teleconsulta' | 'Examen';
   notasAdicionales?: string;
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
 }
 
 interface EventoCalendario {
@@ -44,7 +38,6 @@ interface EventoCalendario {
 }
 
 export type CalendarAction =
-<<<<<<< HEAD
   | {
       id: string
       label: string
@@ -65,35 +58,15 @@ export type CalendarAction =
     }
 
 const DEFAULT_ESTADOS = ['Pendiente', 'Confirmada', 'Cancelada', 'Finalizada']
-=======
-  | { id: string; label: string; variant?: variant; kind: 'link'; hrefTemplate: string }
-  | { id: string; label: string; variant?: variant; kind: 'api'; method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'; endpointTemplate: string; body?: Record<string, unknown>; refreshOnSuccess?: boolean; closeOnSuccess?: boolean }
-  | { id: string; label: string; variant?: variant; kind: 'event'; eventName: string }
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
 
 export type AppointmentCalendarProps = {
   // Fuente de citas
   citas?: Cita[]
   endpoint?: string
-<<<<<<< HEAD
-
-=======
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
   role?: AppointmentCalendarRole
   context?: Record<string, string | number | undefined>
   actions?: CalendarAction[]
   statusClassByEstado?: Record<string, string>
-<<<<<<< HEAD
-
-  // Estados para el select de edición (solo receptionist/admin)
-  availableEstados?: string[]
-  estadosEndpoint?: string   // GET → string[]
-
-  // Endpoint PATCH para cambiar estado: template con {citaId}
-  updateEndpoint?: string
-
-=======
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
   heightPx?: number
 }
 
@@ -154,53 +127,6 @@ function interpolateBody(body: Record<string, unknown>, ctx: Record<string, stri
   return next
 }
 
-<<<<<<< HEAD
-// ─── Component ────────────────────────────────────────────────────────────────
-
-export default function AppointmentCalendar({
-  citas,
-  endpoint,
-  role = 'pacient',
-  context,
-  actions,
-  statusClassByEstado,
-  availableEstados,
-  estadosEndpoint,
-  updateEndpoint,
-  heightPx = 600,
-}: AppointmentCalendarProps) {
-  const isReceptionist = role === 'receptionist' || role === 'admin'
-
-  // ── Modal ──────────────────────────────────────────────────────────────────
-  const { isOpen, openModal, closeModal } = useModal(false)
-  const [modalMode, setModalMode] = useState<'detail' | 'edit'>('detail')
-  const [citaSeleccionada, setCitaSeleccionada] = useState<Cita | null>(null)
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
-
-  // Edit-estado state
-  const [editEstado, setEditEstado] = useState('')
-  const [saveLoading, setSaveLoading] = useState(false)
-
-  const closeAndClear = useCallback(() => {
-    closeModal()
-    setCitaSeleccionada(null)
-    setModalMode('detail')
-    setEditEstado('')
-  }, [closeModal])
-
-  // ── Citas data ─────────────────────────────────────────────────────────────
-  const { data: citasFromEndpoint, mutate } = useSWR<Cita[]>(endpoint ?? null, fetcher)
-  const effectiveCitas = citas ?? citasFromEndpoint ?? []
-
-  // ── Estados disponibles ────────────────────────────────────────────────────
-  const { data: estadosFromEndpoint } = useSWR<string[]>(
-    isReceptionist && !availableEstados && estadosEndpoint ? estadosEndpoint : null,
-    fetcher
-  )
-  const effectiveEstados = availableEstados ?? estadosFromEndpoint ?? DEFAULT_ESTADOS
-
-  // ── Calendar events ────────────────────────────────────────────────────────
-=======
 const badgeColors: Record<string, string> = {
   'Pendiente': 'bg-amber-100 text-amber-800 border-amber-200',
   'Confirmada': 'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -224,7 +150,6 @@ export default function AppointmentCalendar({
   const { data: citasFromEndpoint, mutate } = useSWR<Cita[]>(swrKey, fetcher)
   const effectiveCitas = citas ?? citasFromEndpoint ?? []
 
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
   const eventosAdaptados: EventoCalendario[] = useMemo(
     () =>
       effectiveCitas.map((cita) => {
@@ -244,18 +169,9 @@ export default function AppointmentCalendar({
     [effectiveCitas]
   )
 
-<<<<<<< HEAD
-  // ── Event styles ───────────────────────────────────────────────────────────
-  const defaultStatusClasses: Record<string, string> = {
-    Pendiente:  'bg-amber-500',
-    Confirmada: 'bg-green-500',
-    Cancelada:  'bg-red-500',
-    Finalizada: 'bg-blue-500',
-=======
   const onSelectEvent = (evento: EventoCalendario) => {
     setCitaSeleccionada(evento.cita)
     openModal()
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
   }
 
   const aplicarEstilosEvento = (evento: EventoCalendario) => {
@@ -270,17 +186,6 @@ export default function AppointmentCalendar({
     }
   }
 
-<<<<<<< HEAD
-  // ── Event click ────────────────────────────────────────────────────────────
-  const onSelectEvent = (evento: EventoCalendario) => {
-    setCitaSeleccionada(evento.cita)
-    setModalMode('detail')
-    openModal()
-  }
-
-  // ── Default actions by role ────────────────────────────────────────────────
-=======
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
   const resolvedActions: CalendarAction[] = useMemo(() => {
     if (actions) return actions
 
@@ -306,10 +211,6 @@ export default function AppointmentCalendar({
     return []
   }, [actions, role])
 
-<<<<<<< HEAD
-  // ── Modal actions (non-receptionist roles) ─────────────────────────────────
-=======
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
   const modalActions = useMemo(() => {
     if (!citaSeleccionada) return []
 
@@ -318,28 +219,19 @@ export default function AppointmentCalendar({
     }
 
     return resolvedActions.map((a) => {
-<<<<<<< HEAD
-      const variantVal = a.variant ?? ButtonTheme.SECONDARY
-=======
       const variant = a.variant ?? ButtonTheme.SECONDARY
 
       // 1. Evaluación para enlaces
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
       if (a.kind === 'link') {
         const href = interpolateTemplate(a.hrefTemplate, ctx)
         const enabled = Boolean(href)
         return {
-<<<<<<< HEAD
-          id: a.id, label: a.label, variant: variantVal, enabled,
-          onClick: () => { if (!enabled) return; window.location.assign(href); closeAndClear() },
-=======
           id: a.id, label: a.label, variant, enabled,
           onClick: () => {
             if (!enabled) return
             window.location.assign(href)
             closeAndClear()
           },
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
         }
       }
 
@@ -383,32 +275,8 @@ export default function AppointmentCalendar({
     })
   }, [citaSeleccionada, closeAndClear, context, mutate, resolvedActions, role])
 
-<<<<<<< HEAD
-  // ── Save estado ────────────────────────────────────────────────────────────
-  const handleSaveEstado = async () => {
-    if (!citaSeleccionada || !updateEndpoint) return
-    setSaveLoading(true)
-    try {
-      const ctx = { citaId: citaSeleccionada.id, ...context }
-      const ep = interpolateTemplate(updateEndpoint, ctx as Record<string, string | number | undefined>)
-      if (!ep) return
-      const res = await api(ep, {
-        method: 'PATCH',
-        body: JSON.stringify({ estado: editEstado }),
-      })
-      if (res.ok) { await mutate(); closeAndClear() }
-    } finally {
-      setSaveLoading(false)
-    }
-  }
-
-  // ── Render ─────────────────────────────────────────────────────────────────
-  return (
-    <div className="w-full bg-white p-4" style={{ height: heightPx }}>
-=======
   return (
     <div className="w-full bg-white p-4 rounded-xl shadow-sm border border-slate-200" style={{ height: heightPx }}>
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
       <style>{`
         .rbc-btn-group button { color: #374151; border-color: #E5E7EB; }
         .rbc-btn-group .rbc-active { background-color: #EFF6FF; color: #2563EB; box-shadow: none; }
@@ -434,120 +302,6 @@ export default function AppointmentCalendar({
         showMultiDayTimes
       />
 
-<<<<<<< HEAD
-      <Modal
-        isOpen={isOpen}
-        onClose={closeAndClear}
-        title={modalMode === 'edit' ? 'Cambiar estado' : 'Detalle de cita'}
-      >
-        {citaSeleccionada && (
-          <div className="space-y-4">
-
-            {modalMode === 'detail' && (
-              <>
-                <div className="space-y-1">
-                  {citaSeleccionada.paciente && (
-                    <div className="text-xs text-primary-500">
-                      Paciente:{' '}
-                      <span className="font-medium text-primary-900">{citaSeleccionada.paciente}</span>
-                    </div>
-                  )}
-                  <div className="text-sm font-semibold text-primary-900">{citaSeleccionada.doctor}</div>
-                  <div className="text-sm text-primary-700">{citaSeleccionada.especialidad}</div>
-                  <div className="text-xs text-primary-700">
-                    {citaSeleccionada.fecha} · {citaSeleccionada.hora}
-                  </div>
-                  <div className="text-xs text-primary-700">
-                    Estado: <span className="font-medium">{citaSeleccionada.estado}</span>
-                  </div>
-                </div>
-
-                {!isReceptionist && modalActions.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {modalActions.map((a) => (
-                      <Button
-                        key={a.id}
-                        label={a.label}
-                        variant={a.variant}
-                        size="sm"
-                        disabled={!a.enabled || (actionLoadingId !== null && actionLoadingId !== a.id)}
-                        loading={actionLoadingId === a.id}
-                        onClick={() => a.onClick()}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-2">
-                  {isReceptionist && updateEndpoint && (
-                    <Button
-                      label="Cambiar estado"
-                      variant={ButtonTheme.SECONDARY}
-                      size="sm"
-                      onClick={() => {
-                        setEditEstado(citaSeleccionada.estado)
-                        setModalMode('edit')
-                      }}
-                    />
-                  )}
-                  <Button label="Cerrar" variant={ButtonTheme.GHOST} size="sm" onClick={closeAndClear} />
-                </div>
-              </>
-            )}
-
-            {modalMode === 'edit' && isReceptionist && (
-              <>
-                <div className="text-xs text-primary-500 space-y-0.5">
-                  <div className="font-medium text-primary-900">{citaSeleccionada.doctor}</div>
-                  <div>{citaSeleccionada.fecha} · {citaSeleccionada.hora}</div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nuevo estado
-                  </label>
-                  {effectiveEstados.length > 0 ? (
-                    <select
-                      value={editEstado}
-                      onChange={(e) => setEditEstado(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    >
-                      {effectiveEstados.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={editEstado}
-                      onChange={(e) => setEditEstado(e.target.value)}
-                      placeholder="Ej: Pendiente, Confirmada…"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  )}
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    label="Cancelar"
-                    variant={ButtonTheme.GHOST}
-                    size="sm"
-                    onClick={() => setModalMode('detail')}
-                    disabled={saveLoading}
-                  />
-                  <Button
-                    label="Guardar"
-                    variant={ButtonTheme.PRIMARY}
-                    size="sm"
-                    disabled={!editEstado || saveLoading}
-                    loading={saveLoading}
-                    onClick={handleSaveEstado}
-                  />
-                </div>
-              </>
-            )}
-
-=======
       <Modal isOpen={isOpen} onClose={closeAndClear} title="Detalles de la Cita">
         {!citaSeleccionada ? null : (
           <div className="flex flex-col gap-6 w-full max-w-md">
@@ -619,7 +373,6 @@ export default function AppointmentCalendar({
               />
             </div>
 
->>>>>>> 3991eec1fd97cafb092f26ce79c6971c727c9f64
           </div>
         )}
       </Modal>
