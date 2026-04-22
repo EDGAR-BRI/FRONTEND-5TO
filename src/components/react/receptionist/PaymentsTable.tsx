@@ -160,13 +160,13 @@ export default function PaymentsTable({payments}: PaymentsTableProps) {
     return (
         <div className="space-y-5">
 
-            {/* ── Summary mini-cards ─────────────────────────────────────────── */}
+            {/* ── Summary mini-cards ───────────────────────────────────────────
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <SumCard icon={FaDollarSign} label="Recaudado (USD)" value={`$${totalUSD.toFixed(2)}`} color="bg-green-100 text-green-600" />
                 <SumCard icon={FaCoins} label="Recaudado (Bs)" value={`Bs.${totalBs.toFixed(2)}`} color="bg-primary-200 text-primary-600" />
                 <SumCard icon={FaCircleCheck} label="Completados" value={String(completed)} color="bg-emerald-100 text-emerald-600" />
                 <SumCard icon={FaClock} label="Pendientes" value={String(pending)} color="bg-yellow-100 text-yellow-600" />
-            </div>
+            </div>  esto no se va a usar*/} 
 
             {/* ── Table card ────────────────────────────────────────────────── */}
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm overflow-hidden">
