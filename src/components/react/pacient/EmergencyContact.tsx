@@ -1,11 +1,11 @@
 import { FaShieldHalved, FaUser, FaPhone } from 'react-icons/fa6';
 import StaticCard from '@/components/react/primary/StaticCard';
 
-export const EmergencyContact = () => {
+export const EmergencyContact = ({ patientId }: { patientId: string }) => {
   const data = {
-    nombre: "María Rodríguez",
-    parentesco: "Madre",
-    telefono: "+58 424-9876543"
+    nombre: "-",
+    parentesco: "-",
+    telefono: "-"
   };
 
   return (

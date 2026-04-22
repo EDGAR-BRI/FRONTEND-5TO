@@ -2,11 +2,8 @@ import { FaWallet } from 'react-icons/fa6';
 import { BillDetailModal } from './BillDetailModal';
 import StaticCard from '@/components/react/primary/StaticCard';
 
-export const PaymentsBills = () => {
-  const payments = [
-    { id: '8820', servicio: 'Consulta Especializada - Cardiología', fecha: '15 de Febrero, 2024', monto: '$60.00' },
-    { id: '8821', servicio: 'Consulta Especializada - Cardiología', fecha: '15 de Febrero, 2024', monto: '$60.00' }
-  ];
+export const PaymentsBills = ({ patientId }: { patientId: string }) => {
+  const payments: any[] = [];
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">

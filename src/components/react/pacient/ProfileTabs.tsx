@@ -22,7 +22,7 @@ import {
 } from 'react-icons/fa6';
 import { Button } from '../primary/Button';
 
-export const ProfileTabs = () => {
+export const ProfileTabs = ({ patientId }: { patientId: string }) => {
   const [activeTab, setActiveTab] = useState('personal');
 
   const tabs = [
@@ -73,10 +73,10 @@ export const ProfileTabs = () => {
               
               <div className="grid grid-cols-1 gap-6 w-full">
                 <div className="w-full transition-all duration-300">
-                  <ContactInfo />
+                  <ContactInfo patientId={patientId} />
                 </div>
                 <div className="w-full transition-all duration-300">
-                  <EmergencyContact />
+                  <EmergencyContact patientId={patientId} />
                 </div>
               </div>
 
@@ -182,17 +182,17 @@ export const ProfileTabs = () => {
 
           {activeTab === 'citas' && (
             <div className="animate-in slide-in-from-right-4 duration-500 w-full">
-              <MedicalAppointments />
+              <MedicalAppointments patientId={patientId} />
             </div>
           )}
           {activeTab === 'tratamientos' && (
             <div className="animate-in slide-in-from-right-4 duration-500 w-full">
-              <CurrentMedication />
+              <CurrentMedication patientId={patientId} />
             </div>
           )}
           {activeTab === 'pagos' && (
             <div className="animate-in fade-in duration-500 w-full">
-              <PaymentsBills />
+              <PaymentsBills patientId={patientId} />
             </div>
           )}
         </article>
