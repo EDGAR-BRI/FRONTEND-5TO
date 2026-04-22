@@ -4,33 +4,43 @@ import { Field } from "@/components/react/primary/Field";
 import { Select, type SelectOption } from "@/components/react/primary/Select";
 import { CheckBox } from "@/components/react/primary/CheckBox";
 import { Button, ButtonTheme } from "@/components/react/primary/Button";
+import { deactivateAdminUser, updateAdminUser } from "@/lib/services/admin/admin.service";
 
-import type { User, UserRole, UserStatus } from "@/types/User";
+import type { User, UserStatus } from "@/types/User";
+
+type RoleOption = { value: number; label: string };
 
 type UserDraft = {
+    ci: string;
     name: string;
-    email: string;
-    role: UserRole | "";
+    roleId: number | "";
+    password: string;
     status: UserStatus;
 };
 
-export default function EditUserModalTrigger({ user }: { user: User }) {
+export default function EditUserModalTrigger({
+    user,
+    roleOptions = [],
+    onUpdated,
+}: {
+    user: User;
+    roleOptions?: RoleOption[];
+    onUpdated?: () => void;
+}) {
     const initialDraft: UserDraft = {
+        ci: user.ci,
         name: user.name,
-        email: user.email,
-        role: user.role,
+        roleId: user.roleId ?? "",
+        password: "",
         status: user.status,
     };
     const [draft, setDraft] = useState<UserDraft>(initialDraft);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const roleOptions: SelectOption[] = useMemo(
-        () => [
-            { value: "ADMIN", label: "Administrador" },
-            { value: "DOCTOR", label: "Doctor" },
-            { value: "RECEPCIONISTA", label: "Recepcionista" },
-            { value: "PACIENTE", label: "Paciente" },
-        ],
-        []
+    const selectRoleOptions: SelectOption[] = useMemo(
+        () => roleOptions.map((role) => ({ value: role.value, label: role.label })),
+        [roleOptions]
     );
 
     const set = <K extends keyof UserDraft>(key: K, value: UserDraft[K]) => {
@@ -46,15 +56,47 @@ export default function EditUserModalTrigger({ user }: { user: User }) {
             {({ close }) => (
                 <form
                     className="space-y-4"
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                         e.preventDefault();
 
-                        // Mock: log to console
-                        console.log("🧾 Editar usuario (mock)", { id: user.id, ...draft });
+                        setError(null);
+                        setLoading(true);
+                        try {
+                            if (draft.status === "INACTIVO" && user.status !== "INACTIVO") {
+                                await deactivateAdminUser(user.id);
+                            } else {
+                                await updateAdminUser(user.id, {
+                                    ci: draft.ci,
+                                    name: draft.name,
+                                    roleId: Number(draft.roleId),
+                                    password: draft.password || undefined,
+                                });
+                            }
 
-                        close();
+                            close();
+                            onUpdated?.();
+                        } catch (err) {
+                            setError(err instanceof Error ? err.message : "No se pudo actualizar el usuario");
+                        } finally {
+                            setLoading(false);
+                        }
                     }}
                 >
+                    {error ? (
+                        <div className="text-sm text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
+                            {error}
+                        </div>
+                    ) : null}
+
+                    <Field
+                        label="Cédula"
+                        name="ci"
+                        placeholder="Ej: 12345678"
+                        value={draft.ci}
+                        onChange={(e) => set("ci", e.target.value)}
+                        required
+                    />
+
                     <Field
                         label="Nombre completo"
                         name="name"
@@ -65,22 +107,21 @@ export default function EditUserModalTrigger({ user }: { user: User }) {
                     />
 
                     <Field
-                        label="Correo electrónico"
-                        name="email"
-                        type="email"
-                        placeholder="correo@ejemplo.com"
-                        value={draft.email}
-                        onChange={(e) => set("email", e.target.value)}
-                        required
+                        label="Contraseña (opcional)"
+                        name="password"
+                        type="password"
+                        placeholder="Dejar en blanco para mantener"
+                        value={draft.password}
+                        onChange={(e) => set("password", e.target.value)}
                     />
 
                     <Select
                         label="Rol"
-                        name="role"
-                        options={roleOptions}
+                        name="roleId"
+                        options={selectRoleOptions}
                         placeholder="Selecciona un rol"
-                        value={draft.role}
-                        onChange={(v) => set("role", v as UserRole)}
+                        value={draft.roleId}
+                        onChange={(v) => set("roleId", Number(v))}
                         required
                     />
 
@@ -101,9 +142,10 @@ export default function EditUserModalTrigger({ user }: { user: User }) {
                                 onClick={() => {
                                     close();
                                     setDraft(initialDraft);
+                                    setError(null);
                                 }}
                             />
-                            <Button label="Guardar cambios" type="submit" />
+                            <Button label="Guardar cambios" type="submit" loading={loading} />
                         </div>
                     </div>
                 </form>

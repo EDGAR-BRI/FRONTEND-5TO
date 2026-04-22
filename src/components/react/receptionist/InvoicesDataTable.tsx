@@ -18,7 +18,11 @@ export function InvoicesDataTable({ facturas }: { facturas?: Invoice[] }) {
         },
         {
             header: 'Cliente',
-            cell: (fac) => <span className="font-medium text-primary-900">{fac.patient.user.name}</span>,
+            cell: (fac) => (
+                <span className="font-medium text-primary-900">
+                    {fac.patient.name ?? fac.patient.user?.name ?? "No registrado"}
+                </span>
+            ),
         },
         {
             header: 'Fecha',

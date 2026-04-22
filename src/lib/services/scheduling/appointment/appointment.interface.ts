@@ -2,11 +2,14 @@ export type AppointmentsOverview =
     {
         date_time: string,
         patient: {
-            user: {
+            id?: number,
+            ci?: string | null,
+            name?: string | null,
+            user?: {
                 id: number,
                 ci: string,
                 name: string,
-            },
+            } | null,
         },
         doctor: {
             user: {

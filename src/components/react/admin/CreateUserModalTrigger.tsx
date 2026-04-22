@@ -2,38 +2,39 @@ import { useMemo, useState } from "react";
 import { ModalTrigger } from "@/components/react/primary/ModalTrigger";
 import { Field } from "@/components/react/primary/Field";
 import { Select, type SelectOption } from "@/components/react/primary/Select";
-import { CheckBox } from "@/components/react/primary/CheckBox";
 import { Button, ButtonTheme } from "@/components/react/primary/Button";
+import { createAdminUser } from "@/lib/services/admin/admin.service";
 
-import type { UserRole, UserStatus } from "@/types/User";
+type RoleOption = { value: number; label: string };
 
 type UserDraft = {
+    ci: string;
     name: string;
-    email: string;
-    role: UserRole | "";
+    roleId: number | "";
     password: string;
-    status: UserStatus;
 };
 
 const emptyDraft = (): UserDraft => ({
+    ci: "",
     name: "",
-    email: "",
-    role: "",
+    roleId: "",
     password: "",
-    status: "ACTIVO",
 });
 
-export default function CreateUserModalTrigger() {
+export default function CreateUserModalTrigger({
+    roleOptions = [],
+    onCreated,
+}: {
+    roleOptions?: RoleOption[];
+    onCreated?: () => void;
+}) {
     const [draft, setDraft] = useState<UserDraft>(emptyDraft);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const roleOptions: SelectOption[] = useMemo(
-        () => [
-            { value: "ADMIN", label: "Administrador" },
-            { value: "DOCTOR", label: "Doctor" },
-            { value: "RECEPCIONISTA", label: "Recepcionista" },
-            { value: "PACIENTE", label: "Paciente" },
-        ],
-        []
+    const selectRoleOptions: SelectOption[] = useMemo(
+        () => roleOptions.map((option) => ({ value: option.value, label: option.label })),
+        [roleOptions]
     );
 
     const set = <K extends keyof UserDraft>(key: K, value: UserDraft[K]) => {
@@ -49,16 +50,44 @@ export default function CreateUserModalTrigger() {
             {({ close }) => (
                 <form
                     className="space-y-4 w-full"
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                         e.preventDefault();
 
-                        // Mock: log to console
-                        console.log("🧾 Crear usuario (mock)", draft);
+                        setError(null);
+                        setLoading(true);
+                        try {
+                            await createAdminUser({
+                                ci: draft.ci,
+                                name: draft.name,
+                                password: draft.password,
+                                roleId: Number(draft.roleId),
+                            });
 
-                        close();
-                        setDraft(emptyDraft());
+                            close();
+                            setDraft(emptyDraft());
+                            onCreated?.();
+                        } catch (err) {
+                            setError(err instanceof Error ? err.message : "No se pudo crear el usuario");
+                        } finally {
+                            setLoading(false);
+                        }
                     }}
                 >
+                    {error ? (
+                        <div className="text-sm text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
+                            {error}
+                        </div>
+                    ) : null}
+
+                    <Field
+                        label="Cédula"
+                        name="ci"
+                        placeholder="Ej: 12345678"
+                        value={draft.ci}
+                        onChange={(e) => set("ci", e.target.value)}
+                        required
+                    />
+
                     <Field
                         label="Nombre completo"
                         name="name"
@@ -69,20 +98,10 @@ export default function CreateUserModalTrigger() {
                     />
 
                     <Field
-                        label="Correo electrónico"
-                        name="email"
-                        type="email"
-                        placeholder="correo@ejemplo.com"
-                        value={draft.email}
-                        onChange={(e) => set("email", e.target.value)}
-                        required
-                    />
-
-                    <Field
                         label="Contraseña"
-                        name="ctrsñ"
+                        name="password"
                         type="password"
-                        placeholder="CI o 1234"
+                        placeholder="Mínimo 6 caracteres"
                         value={draft.password}
                         onChange={(e) => set("password", e.target.value)}
                         required
@@ -90,35 +109,26 @@ export default function CreateUserModalTrigger() {
 
                     <Select
                         label="Rol"
-                        name="role"
-                        options={roleOptions}
+                        name="roleId"
+                        options={selectRoleOptions}
                         placeholder="Selecciona un rol"
-                        value={draft.role}
-                        onChange={(v) => set("role", v as UserRole)}
+                        value={draft.roleId}
+                        onChange={(v) => set("roleId", Number(v))}
                         required
                     />
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                        <CheckBox
-                            label="Activo"
-                            variant="switch"
-                            checked={draft.status === "ACTIVO"}
-                            onChange={(e) => set("status", e.target.checked ? "ACTIVO" : "INACTIVO")}
-                            name="status"
+                    <div className="flex gap-3 shrink-0 ml-auto pt-2 justify-end">
+                        <Button
+                            label="Cancelar"
+                            variant={ButtonTheme.SECONDARY}
+                            type="button"
+                            onClick={() => {
+                                close();
+                                setDraft(emptyDraft());
+                                setError(null);
+                            }}
                         />
-
-                        <div className="flex gap-3 shrink-0 ml-auto">
-                            <Button
-                                label="Cancelar"
-                                variant={ButtonTheme.SECONDARY}
-                                type="button"
-                                onClick={() => {
-                                    close();
-                                    setDraft(emptyDraft());
-                                }}
-                            />
-                            <Button label="Guardar" type="submit" />
-                        </div>
+                        <Button label="Guardar" type="submit" loading={loading} />
                     </div>
                 </form>
             )}

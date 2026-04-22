@@ -39,7 +39,12 @@ const statusBadge = (status: InvoicePayment['invoice']['status']['name']) => {
         Pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200' },
         Anulado: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
     }
-    return <Badge styles={map[status]}>{status}</Badge>
+
+    const styles = Object.prototype.hasOwnProperty.call(map, status)
+        ? map[status as keyof typeof map]
+        : { bg: 'bg-primary-100', text: 'text-primary-700', border: 'border-primary-200' }
+
+    return <Badge styles={styles}>{status}</Badge>
 }
 
 const methodIcon = (method: InvoicePayment['paymentMethod']['name']) => {
@@ -50,7 +55,11 @@ const methodIcon = (method: InvoicePayment['paymentMethod']['name']) => {
         Otro: FaEllipsis,
     }
 
-    const Icon = icons[method] ?? FaEllipsis
+    const safeMethod: Payment['method'] = Object.prototype.hasOwnProperty.call(icons, method)
+        ? (method as Payment['method'])
+        : 'Otro'
+
+    const Icon = icons[safeMethod]
 
 
     return (
@@ -67,15 +76,17 @@ const columns: Column<InvoicePayment>[] = [
         header: 'Paciente',
         cell: (p) => (
             <div className="flex flex-col">
-                <span className="font-semibold text-primary-900">{p.invoice.patient.user.name}</span>
-                <span className="text-xs text-cool-gray-50">{p.date ?? 'No encontrado'}</span>
+                <span className="font-semibold text-primary-900">
+                    {p.invoice.patient.name ?? p.invoice.patient.user?.name ?? "No registrado"}
+                </span>
+                <span className="text-xs text-cool-gray-50">{p.date_at ?? 'No encontrado'}</span>
             </div>
         ),
     },
     {
         header: 'Médico',
         cell: (p) => (
-            <span className="text-sm text-primary-700">{p.invoice?.doctor?.name ?? 'No encontrado'}</span>
+            <span className="text-sm text-primary-700">{p.invoice.consultation?.doctor.user.name ?? 'No encontrado'}</span>
         ),
     },
     {
@@ -133,7 +144,9 @@ export default function PaymentsTable({payments}: PaymentsTableProps) {
 
     const filtered = payments.filter(p => {
         const matchSearch = search === '' ||
-            p.invoice.patient.user.name.toLowerCase().includes(search.toLowerCase())
+            (p.invoice.patient.name ?? p.invoice.patient.user?.name ?? "")
+                .toLowerCase()
+                .includes(search.toLowerCase())
         const matchStatus = statusFilter === 'TODOS' || p.invoice.status.name === statusFilter
         return matchSearch && matchStatus
     })
@@ -147,13 +160,13 @@ export default function PaymentsTable({payments}: PaymentsTableProps) {
     return (
         <div className="space-y-5">
 
-            {/* ── Summary mini-cards ─────────────────────────────────────────── */}
+            {/* ── Summary mini-cards ───────────────────────────────────────────
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <SumCard icon={FaDollarSign} label="Recaudado (USD)" value={`$${totalUSD.toFixed(2)}`} color="bg-green-100 text-green-600" />
                 <SumCard icon={FaCoins} label="Recaudado (Bs)" value={`Bs.${totalBs.toFixed(2)}`} color="bg-primary-200 text-primary-600" />
                 <SumCard icon={FaCircleCheck} label="Completados" value={String(completed)} color="bg-emerald-100 text-emerald-600" />
                 <SumCard icon={FaClock} label="Pendientes" value={String(pending)} color="bg-yellow-100 text-yellow-600" />
-            </div>
+            </div>  esto no se va a usar*/} 
 
             {/* ── Table card ────────────────────────────────────────────────── */}
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm overflow-hidden">

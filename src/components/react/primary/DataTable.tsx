@@ -58,7 +58,7 @@ export function DataTable<T>({
     const pagination = hasLocalData ? undefined : response?.pagination;
 
     if (safeData.length === 0) {
-        return <div className="p-8 text-center text-cool-gray-40 bg-primary-400 rounded border border-primary-600">No hay datos que coincidan con tu búsqueda.</div>;
+        return <div className="p-8 text-center text-cool-gray-40 bg-primary-100 rounded">No hay datos que coincidan con tu búsqueda.</div>;
     }
 
     return (
