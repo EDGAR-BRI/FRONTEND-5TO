@@ -3,7 +3,7 @@ import PacientLayout from "@/layouts/PacientLayout.astro";
 import AppointmentCalendar from "@/components/react/AppointmentCalendar";
 import StaticCard from "@/components/react/primary/StaticCard";
 import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
-import AppointmentForm from "@/components/react/pacient/AppointmentForm";
+import AppointmentForm from "@/components/react/AppointmentForm";
 
 const pacient_id = Astro.params.pacient_id || "";
 
@@ -53,7 +53,7 @@ const citas: any[] = [];
         >
           <FaCalendarPlus className="text-blue-600" /> Nueva Cita
         </h2>
-        <AppointmentForm client:load patientId={pacient_id} />
+        <AppointmentForm client:load context={{ patientId: pacient_id }} createEndpoint="/appointment" />
       </StaticCard>
 
       <StaticCard

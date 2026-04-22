@@ -51,11 +51,11 @@ try {
     const json = await response.json();
     patientData = json.data;
   } else {
-    return Astro.redirect('/404');
+    return Astro.redirect('/no-encontrado');
   }
 } catch (error) {
   console.error(error);
-  return Astro.redirect('/500');
+  return Astro.redirect('/error-servidor');
 }
 */
 
