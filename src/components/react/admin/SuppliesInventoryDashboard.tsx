@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import type { FC } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { FaBox, FaBoxesStacked, FaStethoscope, FaClipboardList } from 'react-icons/fa6';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 import { Field } from '@/components/react/primary/Field';
@@ -14,14 +15,22 @@ const TYPES = [
     { value: 'SERVICIO', label: 'Servicio' }
 ];
 
-export default function SuppliesInventoryDashboard() {
-    const forcedType = (() => {
+export type InventoryForcedType = "INSUMO" | "SERVICIO";
+
+export type SuppliesInventoryDashboardProps = {
+    forcedType?: InventoryForcedType;
+};
+
+const SuppliesInventoryDashboard: FC<SuppliesInventoryDashboardProps> = ({ forcedType: forcedTypeProp }) => {
+    const forcedTypeFromPath = useMemo<InventoryForcedType | null>(() => {
         if (typeof window === "undefined") return null;
         const path = window.location.pathname;
         if (path.includes("/modules/admin/manage-services")) return "SERVICIO";
         if (path.includes("/modules/admin/manage-supplies")) return "INSUMO";
         return null;
-    })();
+    }, []);
+
+    const forcedType: InventoryForcedType | null = forcedTypeProp ?? forcedTypeFromPath;
 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -57,7 +66,7 @@ export default function SuppliesInventoryDashboard() {
 
     useEffect(() => {
         void reloadSupplies();
-    }, []);
+    }, [forcedType]);
 
     const filtered = items.filter((item) => {
         const byType = typeFilter === 'TODOS' ? true : item.type === typeFilter;
@@ -179,4 +188,6 @@ export default function SuppliesInventoryDashboard() {
             </section>
         </div>
     );
-}
+};
+
+export default SuppliesInventoryDashboard;
