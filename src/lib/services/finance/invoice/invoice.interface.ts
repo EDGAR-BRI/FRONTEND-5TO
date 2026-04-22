@@ -17,7 +17,9 @@ export type Invoice = {
     },
     patient: {
         id: number,
-        user: { id: number, ci: string, name: string }
+        ci?: string | null,
+        name?: string | null,
+        user?: { id: number, ci: string, name: string } | null
     },
     receptionist: {
         id: number, ci: string, name: string

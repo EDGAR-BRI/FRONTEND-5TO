@@ -2,7 +2,7 @@
 import { getScheduleOverview } from "@/lib/services/scheduling/appointment/appointment.service";
 import { ToggleAgendaRows } from "@/components/react/receptionist/ToggleAgendaRows";
 
-const agenda = await getScheduleOverview();
+const agenda = await getScheduleOverview({ range: "hoy" });
 
 function formatTime(isoString: string): string {
     return isoString.slice(11, 16);
@@ -65,9 +65,11 @@ agenda.sort(
                                 {formatTime(item.date_time)}
                             </td>
                             <td class="py-3 px-2 text-primary-800">
-                                {item.patient.user
-                                    ? item.patient.user.name
-                                    : "No registrado"}
+                                {item.patient.name
+                                    ? item.patient.name
+                                    : item.patient.user
+                                        ? item.patient.user.name
+                                        : "No registrado"}
                             </td>
                             <td class="py-3 px-2 text-cool-gray-60">
                                 {item.doctor.specialty.name}
