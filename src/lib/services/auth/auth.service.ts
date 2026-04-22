@@ -1,4 +1,4 @@
-import { api, setToken, setUserName } from "@/lib/api";
+import { api, setToken, setUserName, setCI } from "@/lib/api";
 import type { LoginRequest, LoginResponseData, LoginUser, RegisterUserRequest, RegisterUserResponseData, Role } from "./auth.interface";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../_shared/envelope";
 
@@ -67,6 +67,7 @@ export const dashboardPathForUser = (user: LoginUser, roleCodeOverride?: string)
 		case "DOCTOR":
 			return `/modules/doctor/${id}/overview`;
 		case "RECEPCIONISTA":
+			console.log("CASO RECEPCIONISTA")
 			return `/modules/receptionist/${id}/overview`;
 		case "PACIENTE":
 			return `/modules/pacient/${id}/overview`;
@@ -78,10 +79,12 @@ export const dashboardPathForUser = (user: LoginUser, roleCodeOverride?: string)
 export const persistLogin = (data: LoginResponseData) => {
 	setToken(data.token);
 	setUserName(data.user.name);
+	setCI(data.user.ci);
 };
 
 export const logout = () => {
 	setToken("");
 	setUserName("");
+	setCI("")
 	window.location.href = "/auth/login";
 };

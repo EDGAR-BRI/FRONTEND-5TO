@@ -1,71 +1,11 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import DoctorScheduleManager from '@/components/react/DoctorScheduleManager';
+import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
 import { FaArrowLeft, FaSliders } from 'react-icons/fa6';
 
-// ─── Mock data based on DB schema ───────────────────────────────────────────
-// UserDoctor → User join gives us name + specialty
-const doctors = [
-  { id: 1, name: 'Dr. Carlos Méndez',    specialty: 'Medicina General' },
-  { id: 2, name: 'Dra. Luisa Vargas',    specialty: 'Cardiología'      },
-  { id: 3, name: 'Dra. Patricia Mora',   specialty: 'Ginecología'      },
-  { id: 4, name: 'Dr. Héctor Torres',    specialty: 'Traumatología'    },
-  { id: 5, name: 'Dra. Valentina Ríos',  specialty: 'Pediatría'        },
-];
+const doctors = await getActuallyAvailableDrs()
 
-// Existing mock schedules to prepopulate the form
-const initialCycles = {
-  1: {
-    employee_id: 1,
-    desc: 'Ciclo L-V Regular',
-    weeks: [
-      {
-        week_number: 1,
-        days: [
-          { day_number: 1, starts_at: '07:30', ends_at: '13:00' },
-          { day_number: 2, starts_at: '07:30', ends_at: '13:00' },
-          { day_number: 3, starts_at: '07:30', ends_at: '13:00' },
-          { day_number: 4, starts_at: '07:30', ends_at: '13:00' },
-          { day_number: 5, starts_at: '07:30', ends_at: '13:00' },
-        ]
-      }
-    ]
-  },
-  2: {
-    employee_id: 2,
-    desc: 'Ciclo Interdiario',
-    weeks: [
-      {
-        week_number: 1,
-        days: [
-          { day_number: 1, starts_at: '08:00', ends_at: '14:00' },
-          { day_number: 3, starts_at: '08:00', ends_at: '14:00' },
-          { day_number: 5, starts_at: '08:00', ends_at: '14:00' },
-        ]
-      }
-    ]
-  },
-  3: {
-    employee_id: 3,
-    desc: 'Ciclo 2 Semanas',
-    weeks: [
-      {
-        week_number: 1,
-        days: [
-          { day_number: 2, starts_at: '09:00', ends_at: '13:00' },
-          { day_number: 4, starts_at: '09:00', ends_at: '13:00' },
-        ]
-      },
-      {
-        week_number: 2, // Second week she works Mon/Wed instead
-        days: [
-          { day_number: 1, starts_at: '09:00', ends_at: '13:00' },
-          { day_number: 3, starts_at: '09:00', ends_at: '13:00' },
-        ]
-      }
-    ]
-  }
-}
 ---
 
 <ReceptionistLayout title="Configurar Horarios – Recepción">
@@ -86,7 +26,7 @@ const initialCycles = {
           Configurar Calendario Médico
         </h1>
         <p class="text-body-s text-cool-gray-50 mt-0.5">
-          Define los ciclos semanales (ScheduleCycle) y los turnos diarios por doctor.
+          Define los ciclos semanales y días feriados por doctor.
         </p>
       </div>
     </div>
@@ -95,7 +35,6 @@ const initialCycles = {
     <DoctorScheduleManager
       client:only="react"
       doctors={doctors}
-      initialCycles={initialCycles}
     />
 
   </div>
