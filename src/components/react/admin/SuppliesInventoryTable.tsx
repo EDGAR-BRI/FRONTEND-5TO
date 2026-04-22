@@ -20,7 +20,17 @@ const statusBadgeStyles = (status: string) => {
     return { bg: "bg-primary-300/25", text: "text-primary-800", border: "border-primary-400" };
 };
 
-export default function SuppliesInventoryTable({ search, type }: { search: string; type: string }) {
+export default function SuppliesInventoryTable({
+    items,
+    isLoading,
+    onDeleted,
+    onUpdated,
+}: {
+    items: InventoryItem[];
+    isLoading?: boolean;
+    onDeleted: (id: number) => Promise<void>;
+    onUpdated?: () => void;
+}) {
     const columns: Column<InventoryItem>[] = [
         { header: "ID", accessorKey: "id", align: "left" },
         {
@@ -66,20 +76,25 @@ export default function SuppliesInventoryTable({ search, type }: { search: strin
             align: "center",
             cell: (item) => (
                 <div className="flex justify-center gap-3">
-                    <EditProductModalTrigger item={item} />
-                    <button className="text-error hover:text-red-700 text-sm font-medium transition-colors">Eliminar</button>
+                    <EditProductModalTrigger item={item} onUpdated={onUpdated} />
+                    <button
+                        className="text-error hover:text-red-700 text-sm font-medium transition-colors"
+                        onClick={() => void onDeleted(item.id)}
+                    >
+                        Eliminar
+                    </button>
                 </div>
             ),
         },
     ];
 
-    const endpoint = `/admin/supplies?search=${search}${type !== 'TODOS' ? `&type=${type}` : ''}`;
-
     return (
         <DataTable<InventoryItem>
             className="rounded-none! border-none!"
-            endpoint={endpoint}
+            endpoint=""
+            data={items}
             columns={columns}
+            isLoading={isLoading}
         />
     );
 }

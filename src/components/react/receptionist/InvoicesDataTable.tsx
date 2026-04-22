@@ -1,48 +1,41 @@
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
+import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
+import { convertirAFechaISO } from '@/utils/helper_functions'
 
-export type InvoiceItem = {
-    nro: string;
-    cliente: string;
-    fecha: string;
-    total: number;
-    estado: string;
-};
-
-const statusBadgeStyles = (status: InvoiceItem['estado']) => {
+const statusBadgeStyles = (status: string) => {
     if (status === 'Emitida') return { bg: 'bg-primary-200/30', text: 'text-primary-700', border: 'border-primary-300' };
     if (status === 'Pendiente') return { bg: 'bg-primary-300/25', text: 'text-primary-800', border: 'border-primary-400' };
     return { bg: 'bg-error/15', text: 'text-error', border: 'border-error/20' };
 };
 
-const MOCK_FACTURAS: InvoiceItem[] = [
-    { nro: 'FAC-2026-001', cliente: 'Ana Sofía Parra', fecha: '2026-03-02', total: 40.0, estado: 'Emitida' },
-    { nro: 'FAC-2026-002', cliente: 'Jorge Luis Rivas', fecha: '2026-03-02', total: 80.0, estado: 'Pendiente' },
-    { nro: 'FAC-2026-003', cliente: 'Carlos Méndez', fecha: '2026-03-01', total: 120.0, estado: 'Anulada' },
-];
 
-export function InvoicesDataTable({ facturas = MOCK_FACTURAS }: { facturas?: InvoiceItem[] }) {
-    const columns: Column<InvoiceItem>[] = [
+export function InvoicesDataTable({ facturas }: { facturas?: Invoice[] }) {
+    const columns: Column<Invoice>[] = [
         {
             header: 'Nro. Factura',
-            cell: (fac) => <span className="font-mono font-semibold">{fac.nro}</span>,
+            cell: (fac) => <span className="font-mono font-semibold">{fac.id}</span>,
         },
         {
             header: 'Cliente',
-            cell: (fac) => <span className="font-medium text-primary-900">{fac.cliente}</span>,
+            cell: (fac) => (
+                <span className="font-medium text-primary-900">
+                    {fac.patient.name ?? fac.patient.user?.name ?? "No registrado"}
+                </span>
+            ),
         },
         {
             header: 'Fecha',
-            cell: (fac) => <span className="text-primary-700">{fac.fecha}</span>,
+            cell: (fac) => <span className="text-primary-700">{convertirAFechaISO(fac.exchangeRate.createdAt)}</span>,
         },
         {
             header: 'Total',
-            cell: (fac) => <span className="font-semibold text-primary-900">${fac.total.toFixed(2)}</span>,
+            cell: (fac) => <span className="font-semibold text-primary-900">${fac.total_usd}</span>,
         },
         {
             header: 'Estado',
             align: 'center',
-            cell: (fac) => <Badge styles={statusBadgeStyles(fac.estado)}>{fac.estado}</Badge>,
+            cell: (fac) => <Badge styles={statusBadgeStyles(fac.status.name)}>{fac.status.name}</Badge>,
         },
         {
             header: 'Acciones',
@@ -61,7 +54,7 @@ export function InvoicesDataTable({ facturas = MOCK_FACTURAS }: { facturas?: Inv
     ];
 
     return (
-        <DataTable<InvoiceItem>
+        <DataTable<Invoice>
             endpoint=""
             data={facturas}
             columns={columns}

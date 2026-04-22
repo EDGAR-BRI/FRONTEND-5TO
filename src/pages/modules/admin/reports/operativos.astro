@@ -2,68 +2,60 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import { StatsCard } from "@/components/react/primary/StatsCard";
-import { Button } from "@/components/react/primary/Button";
+import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
+import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
 import StaticCard from "@/components/react/primary/StaticCard";
 import {
+	FaArrowRight,
 	FaCalendarCheck,
 	FaClock,
-	FaDownload,
-	FaFilter,
 	FaHospitalUser,
 	FaStethoscope,
 	FaUserDoctor,
 } from "react-icons/fa6";
 
-const hourlyLoad = [
-	{ hour: "07:00", visits: 10 },
-	{ hour: "08:00", visits: 14 },
-	{ hour: "09:00", visits: 18 },
-	{ hour: "10:00", visits: 22 },
-	{ hour: "11:00", visits: 19 },
-	{ hour: "12:00", visits: 16 },
-	{ hour: "13:00", visits: 13 },
-	{ hour: "14:00", visits: 20 },
-	{ hour: "15:00", visits: 24 },
-	{ hour: "16:00", visits: 17 },
+const concreteReports = [
+	{
+		title: "Carga y puntualidad de citas",
+		description: "Horas de mayor demanda, ausencias y cumplimiento por turno.",
+		href: "/modules/admin/reports/operativos-citas",
+		badge: "Agenda",
+	},
+	{
+		title: "Tiempos de atencion",
+		description: "Duracion por especialidad y tiempo promedio de espera por bloque.",
+		href: "/modules/admin/reports/operativos-tiempos",
+		badge: "Flujo",
+	},
+	{
+		title: "Productividad medica",
+		description: "Atenciones por medico, saturacion y capacidad disponible.",
+		href: "/modules/admin/reports/operativos-productividad",
+		badge: "Equipo",
+	},
 ];
 
-const areaDistribution = [
-	{ area: "Consulta general", value: 42, tone: "bg-primary-500" },
-	{ area: "Laboratorio", value: 23, tone: "bg-success" },
-	{ area: "Imagenologia", value: 19, tone: "bg-warning" },
-	{ area: "Urgencias", value: 16, tone: "bg-cool-gray-50" },
+const slotsByTime = [
+	{ slot: "07:00 - 09:00", occupancy: "71%", status: "Normal" },
+	{ slot: "09:00 - 11:00", occupancy: "88%", status: "Alto" },
+	{ slot: "11:00 - 13:00", occupancy: "93%", status: "Critico" },
+	{ slot: "14:00 - 16:00", occupancy: "82%", status: "Alto" },
 ];
-
-const roomPerformance = [
-	{ room: "Consultorio 1", occupancy: 92, waiting: "14 min", status: "alto" },
-	{ room: "Consultorio 2", occupancy: 86, waiting: "18 min", status: "alto" },
-	{ room: "Consultorio 3", occupancy: 71, waiting: "21 min", status: "medio" },
-	{ room: "Consultorio 4", occupancy: 63, waiting: "17 min", status: "estable" },
-];
-
-const maxVisits = Math.max(...hourlyLoad.map((item) => item.visits));
 ---
 
 <AdminLayout title="Reporte Operativo | Admin">
-	<div class="p-6 md:p-8 space-y-8">
-		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-			<div class="space-y-2">
-				<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
-				<p class="text-gray-500">Seguimiento de actividad diaria, flujo por horario y rendimiento por area.</p>
-			</div>
-			<div class="flex flex-wrap gap-3">
-				<Button label="Filtrar" variant="secondary">
-					<FaFilter size={14} />
-					Filtrar
-				</Button>
-				<Button label="Exportar" variant="primary">
-					<FaDownload size={14} />
-					Exportar
-				</Button>
-			</div>
+	<div class="space-y-8">
+		<header class="space-y-2">
+			<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
+			<p class="text-gray-500">Seguimiento de capacidad, tiempos y productividad con acceso a reportes detallados.</p>
 		</header>
+
+		<ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
+
+		<ReportBackendSnapshot client:load scope="operativos" />
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 			<StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">
@@ -80,6 +72,7 @@ const maxVisits = Math.max(...hourlyLoad.map((item) => item.visits));
 			</StatsCard>
 		</section>
 
+<<<<<<< HEAD
 		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
 				<div class="flex items-center justify-between mb-6">
@@ -101,11 +94,35 @@ const maxVisits = Math.max(...hourlyLoad.map((item) => item.visits));
 								/>
 								<span class="text-[11px] text-cool-gray-50 mt-2">{slot.hour}</span>
 							</div>
+=======
+		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+			<div class="xl:col-span-2 space-y-4">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos operativos</h2>
+					<Badge>Turno actual</Badge>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{
+						concreteReports.map((report) => (
+							<a href={report.href} class="block">
+								<ActionCard className="h-full items-start justify-between">
+									<div class="space-y-2">
+										<Badge>{report.badge}</Badge>
+										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
+										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
+									</div>
+									<div class="text-primary-700 mt-3">
+										<FaArrowRight size={14} />
+									</div>
+								</ActionCard>
+							</a>
+>>>>>>> dev2
 						))
 					}
 				</div>
 			</div>
 
+<<<<<<< HEAD
 			<div class="bg-primary-100 rounded-xl border border-primary-200 p-6">
 				<h2 class="text-lg font-bold text-gray-800 mb-5">Distribucion por area</h2>
 				<div class="space-y-4">
@@ -167,5 +184,51 @@ const maxVisits = Math.max(...hourlyLoad.map((item) => item.visits));
 				</ul>
 			</StaticCard>
 		</section>
+=======
+			<StaticCard>
+				<div class="space-y-3">
+					<h2 class="text-lg font-semibold text-gray-800">Estado del dia</h2>
+					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
+						<FaStethoscope />
+						<span>12 medicos en consulta activa</span>
+					</div>
+					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
+						<FaHospitalUser />
+						<span>35 pacientes en espera distribuida</span>
+					</div>
+					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
+						<FaClock />
+						<span>Demora promedio estimada: 18 minutos</span>
+					</div>
+				</div>
+			</StaticCard>
+		</section>
+
+		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+			<h2 class="text-xl font-semibold text-gray-800">Ocupacion por franja horaria</h2>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-primary-300">
+					<thead class="bg-primary-300">
+						<tr>
+							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Franja</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ocupacion</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-primary-300">
+						{
+							slotsByTime.map((row) => (
+								<tr class="hover:bg-primary-500/20 transition-colors">
+									<td class="px-4 py-3 text-sm text-cool-gray-90">{row.slot}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{row.occupancy}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.status}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+>>>>>>> dev2
 	</div>
 </AdminLayout>

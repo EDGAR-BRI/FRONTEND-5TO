@@ -81,6 +81,29 @@ export const getUserName = (cookies?: AstroCookies): string | null => {
     return null;
 };
 
+const CI_KEY = "user_ci"
+export const removeCI = (): void => {
+    Cookies.remove(CI_KEY, { path: "/" });
+};
+export const setCI = (ci: string): void => {
+    Cookies.set(CI_KEY, ci, {
+        expires: 7,
+        path: "/",
+        sameSite: "lax",
+        secure: import.meta.env.PROD // Solo HTTPS en producción, permite HTTP en desarrollo
+    });
+};
+
+export const getCI = (cookies?: AstroCookies): string | null => {
+    if (typeof window === "undefined" && cookies) {
+        return cookies.get(CI_KEY)?.value || null;
+    }
+    if (typeof window !== "undefined") {
+        return Cookies.get(CI_KEY) || null;
+    }
+    return null;
+};
+
 export const removeUserName = (): void => {
     Cookies.remove(USER_NAME_KEY, { path: "/" });
 };
@@ -95,40 +118,50 @@ interface ApiOptions extends RequestInit {
 }
 
 export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: AstroCookies) => {
-    const token = getToken(cookies);
+    try {
+        const token = getToken(cookies);
 
-    const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        ...options.headers,
-    };
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+            ...options.headers,
+        };
 
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const config: RequestInit = {
-        ...options,
-        headers,
-    };
-
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-
-    const response = await fetch(`${API_URL}${cleanEndpoint}`, config);
-
-    if (response.status === 401) {
-
-        if (typeof window !== "undefined") {
-            removeToken();
-
-            window.location.href = '/login';
-
-        } else {
-            // En el servidor, lanzamos error para que Astro lo capture
-            throw new Error("Unauthorized");
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
         }
-    }
 
-    return response;
+        const config: RequestInit = {
+            ...options,
+            headers,
+        };
+
+        const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+        
+        // Asignamos la URL completa a una variable para poder auditarla
+        const targetUrl = `${API_URL}${cleanEndpoint}`;
+
+        // === INICIO DE AUDITORÍA ESTRICTA ===
+        console.log("----- DEBUGGING FETCH -----");
+        console.log("1. Variable API_URL:", API_URL);
+        console.log("2. URL Final Ensamblada:", targetUrl);
+        console.log("---------------------------");
+        // === FIN DE AUDITORÍA ESTRICTA ===
+
+        const response = await fetch(targetUrl, config);
+
+        if (response.status === 401) {
+            if (typeof window !== "undefined") {
+                removeToken();
+                window.location.href = '/login';
+            } else {
+                throw new Error("Unauthorized");
+            }
+        }
+        return response;
+    } catch (error) {
+        console.error("Error fetching API:", error);
+        throw error;
+    }
 };
 
 

@@ -2,57 +2,58 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import { StatsCard } from "@/components/react/primary/StatsCard";
-import { Button } from "@/components/react/primary/Button";
+import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
+import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
 import StaticCard from "@/components/react/primary/StaticCard";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
 import {
+	FaArrowRight,
 	FaArrowTrendUp,
-	FaBullseye,
 	FaChartLine,
-	FaDownload,
 	FaFileCircleCheck,
-	FaFlask,
 	FaUserCheck,
 } from "react-icons/fa6";
 
-const monthlyOutcome = [
-	{ month: "Ene", score: 82 },
-	{ month: "Feb", score: 84 },
-	{ month: "Mar", score: 85 },
-	{ month: "Abr", score: 88 },
-	{ month: "May", score: 90 },
-	{ month: "Jun", score: 92 },
+const concreteReports = [
+	{
+		title: "Resultados clinicos",
+		description: "Evolucion de casos cerrados, seguimiento y efectividad de tratamientos.",
+		href: "/modules/admin/reports/resultados-clinicos",
+		badge: "Calidad",
+	},
+	{
+		title: "Satisfaccion de pacientes",
+		description: "NPS, recomendaciones y nivel de conformidad por area.",
+		href: "/modules/admin/reports/resultados-satisfaccion",
+		badge: "Experiencia",
+	},
+	{
+		title: "Resultado financiero",
+		description: "Margen operativo, cumplimiento de metas y desempeno por servicio.",
+		href: "/modules/admin/reports/resultados-financieros",
+		badge: "Rentabilidad",
+	},
 ];
 
-const qualityByService = [
-	{ service: "Consulta externa", success: 94, target: 90 },
-	{ service: "Laboratorio", success: 89, target: 87 },
-	{ service: "Imagenologia", success: 86, target: 85 },
-	{ service: "Hospitalizacion", success: 91, target: 88 },
+const goals = [
+	{ metric: "Adherencia a protocolos", goal: "90%", real: "94%", gap: "+4%" },
+	{ metric: "Satisfaccion post consulta", goal: "85%", real: "89%", gap: "+4%" },
+	{ metric: "Recurrencia no planificada", goal: "<10%", real: "8%", gap: "-2%" },
 ];
-
-const followUpStats = [
-	{ label: "Reingresos 30 dias", value: "4.2%", state: "estable" },
-	{ label: "Entrega de resultados a tiempo", value: "96%", state: "positivo" },
-	{ label: "Casos con seguimiento completo", value: "91%", state: "positivo" },
-];
-
-const maxOutcome = Math.max(...monthlyOutcome.map((item) => item.score));
 ---
 
 <AdminLayout title="Reporte de Resultados | Admin">
-	<div class="p-6 md:p-8 space-y-8">
-		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-			<div class="space-y-2">
-				<h1 class="text-3xl font-bold text-gray-800">Reporte de Resultados</h1>
-				<p class="text-gray-500">Indicadores de efectividad clinica, metas de calidad y satisfaccion del paciente.</p>
-			</div>
-			<Button label="Exportar resumen" variant="primary">
-				<FaDownload size={14} />
-				Exportar resumen
-			</Button>
+	<div class="space-y-8">
+		<header class="space-y-2">
+			<h1 class="text-3xl font-bold text-gray-800">Reporte de Resultados</h1>
+			<p class="text-gray-500">KPIs de calidad asistencial y desempeno economico con reportes especializados.</p>
 		</header>
+
+		<ReportTimeframeFilters client:load title="Filtros de resultados" subtitle="Mueve los indicadores clínicos y financieros entre cortes diarios, semanales, mensuales o anuales." />
+
+		<ReportBackendSnapshot client:load scope="resultados" />
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 			<StatsCard title="Atenciones Exitosas" value="94%" trend="2.3%" trendUp={true} color="success">
@@ -69,6 +70,7 @@ const maxOutcome = Math.max(...monthlyOutcome.map((item) => item.score));
 			</StatsCard>
 		</section>
 
+<<<<<<< HEAD
 		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
 				<div class="flex items-center justify-between mb-6">
@@ -158,5 +160,71 @@ const maxOutcome = Math.max(...monthlyOutcome.map((item) => item.score));
 				</div>
 			</StaticCard>
 		</section>
+=======
+		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+			<div class="xl:col-span-2 space-y-4">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos de resultados</h2>
+					<Badge>Cierre semanal</Badge>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{
+						concreteReports.map((report) => (
+							<a href={report.href} class="block">
+								<ActionCard className="h-full items-start justify-between">
+									<div class="space-y-2">
+										<Badge>{report.badge}</Badge>
+										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
+										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
+									</div>
+									<div class="text-primary-700 mt-3">
+										<FaArrowRight size={14} />
+									</div>
+								</ActionCard>
+							</a>
+						))
+					}
+				</div>
+			</div>
+
+			<StaticCard>
+				<div class="space-y-3">
+					<h2 class="text-lg font-semibold text-gray-800">Resumen de impacto</h2>
+					<p class="text-sm text-cool-gray-60">Las tres metas clinicas principales cerraron arriba de objetivo en el ultimo ciclo.</p>
+					<Badge styles={{ bg: "bg-green-50", text: "text-green-700", border: "border-green-200" }}>
+						Desempeno sostenido
+					</Badge>
+				</div>
+			</StaticCard>
+		</section>
+
+		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+			<h2 class="text-xl font-semibold text-gray-800">Cumplimiento de objetivos</h2>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-primary-300">
+					<thead class="bg-primary-300">
+						<tr>
+							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Indicador</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Meta</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Real</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Brecha</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-primary-300">
+						{
+							goals.map((item) => (
+								<tr class="hover:bg-primary-500/20 transition-colors">
+									<td class="px-4 py-3 text-sm text-cool-gray-90">{item.metric}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{item.goal}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{item.real}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.gap}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+>>>>>>> dev2
 	</div>
 </AdminLayout>

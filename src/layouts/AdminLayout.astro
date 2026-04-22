@@ -5,7 +5,12 @@ import Sidebar from "@/components/astro/Sidebar.astro";
 import BottomNavbar from "@/components/astro/BottomNavbar.astro";
 import { FaChartLine, FaHouse, FaMoneyBillWave, FaUsers } from "react-icons/fa6";
 import { FaBoxesStacked } from "react-icons/fa6";
-import { FaClipboardList, FaDollarSign, FaSquarePollVertical } from "react-icons/fa6";
+import {
+	FaClipboardList,
+	FaDollarSign,
+	FaFolderOpen,
+	FaSquarePollVertical,
+} from "react-icons/fa6";
 const { title } = Astro.props;
 
 const menuItems = [
@@ -20,8 +25,13 @@ const menuItems = [
 		icon: FaUsers,
 	},
 	{
-		label: "Gestión de insumos y servicios",
+		label: "Gestión de insumos",
 		href: "/modules/admin/manage-supplies",
+		icon: FaBoxesStacked,
+	},
+	{
+		label: "Gestión de servicios",
+		href: "/modules/admin/manage-services",
 		icon: FaBoxesStacked,
 	},
 	{
@@ -33,6 +43,11 @@ const menuItems = [
 		label: "Reportes",
 		icon: FaChartLine,
 		subItems: [
+			{
+				label: "Centro de reportes",
+				href: "/modules/admin/reports",
+				icon: FaFolderOpen,
+			},
 			{
 				label: "Operativos",
 				href: "/modules/admin/reports/operativos",

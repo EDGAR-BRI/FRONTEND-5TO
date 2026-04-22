@@ -2,58 +2,67 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import { StatsCard } from "@/components/react/primary/StatsCard";
-import { Button } from "@/components/react/primary/Button";
+import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
+import { Button } from "@/components/react/primary/Button";
 import StaticCard from "@/components/react/primary/StaticCard";
+import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
 import {
+	FaArrowRight,
 	FaCartFlatbed,
-	FaDownload,
 	FaFileInvoiceDollar,
 	FaMoneyBillTrendUp,
 	FaSackDollar,
-	FaScaleBalanced,
+	FaTriangleExclamation,
 } from "react-icons/fa6";
 
-const monthlySpend = [
-	{ month: "Ene", spend: 10400, budget: 11000 },
-	{ month: "Feb", spend: 11200, budget: 11500 },
-	{ month: "Mar", spend: 10900, budget: 11500 },
-	{ month: "Abr", spend: 12100, budget: 11800 },
-	{ month: "May", spend: 11750, budget: 12000 },
-	{ month: "Jun", spend: 12450, budget: 12300 },
+const expenseBreakdown = [
+	{ category: "Insumos medicos", amount: "$4,980", weight: "40%" },
+	{ category: "Servicios operativos", amount: "$3,410", weight: "27%" },
+	{ category: "Mantenimiento", amount: "$2,160", weight: "17%" },
+	{ category: "Logistica", amount: "$1,900", weight: "16%" },
 ];
 
-const categorySplit = [
-	{ name: "Insumos", value: 38, tone: "bg-primary-500" },
-	{ name: "Servicios", value: 24, tone: "bg-success" },
-	{ name: "Mantenimiento", value: 19, tone: "bg-warning" },
-	{ name: "Administrativo", value: 12, tone: "bg-cool-gray-50" },
-	{ name: "Otros", value: 7, tone: "bg-primary-300" },
+const concreteReports = [
+	{
+		title: "Compras por categoria",
+		description: "Comparativo semanal de insumos, servicios y mantenimiento.",
+		href: "/modules/admin/reports/gastos-compras",
+		badge: "Semanal",
+	},
+	{
+		title: "Rendimiento de proveedores",
+		description: "Costo promedio por orden, cumplimiento y desviaciones.",
+		href: "/modules/admin/reports/gastos-proveedores",
+		badge: "Top 10",
+	},
+	{
+		title: "Variacion mensual de egresos",
+		description: "Tendencias de gasto, picos de consumo y alertas tempranas.",
+		href: "/modules/admin/reports/gastos-variacion",
+		badge: "Historico",
+	},
 ];
-
-const supplierImpact = [
-	{ supplier: "BioSupply", invoices: 16, amount: "$2,940" },
-	{ supplier: "MediGroup", invoices: 11, amount: "$2,140" },
-	{ supplier: "LabCore", invoices: 9, amount: "$1,880" },
-	{ supplier: "ServiTec", invoices: 8, amount: "$1,460" },
-];
-
-const maxAmount = Math.max(...monthlySpend.map((item) => Math.max(item.spend, item.budget)));
 ---
 
 <AdminLayout title="Reporte de Gastos | Admin">
-	<div class="p-6 md:p-8 space-y-8">
-		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+	<div class="space-y-8">
+		<header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 			<div class="space-y-2">
 				<h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
-				<p class="text-gray-500">Control de egresos, desviacion de presupuesto y peso por categoria.</p>
+				<p class="text-gray-500">Vista general de egresos y acceso rapido a reportes financieros concretos.</p>
 			</div>
-			<Button label="Descargar analisis" variant="primary">
-				<FaDownload size={14} />
-				Descargar analisis
-			</Button>
+			<div class="flex gap-2">
+				<Button label="Exportar CSV" variant="secondary">Exportar CSV</Button>
+				<Button label="Imprimir" variant="ghost">Imprimir</Button>
+			</div>
 		</header>
+
+		<ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos de control." />
+
+		<ReportBackendSnapshot client:load scope="gastos" />
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
@@ -70,6 +79,7 @@ const maxAmount = Math.max(...monthlySpend.map((item) => Math.max(item.spend, it
 			</StatsCard>
 		</section>
 
+<<<<<<< HEAD
 		<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
 				<div class="flex items-center justify-between mb-6">
@@ -158,5 +168,73 @@ const maxAmount = Math.max(...monthlySpend.map((item) => Math.max(item.spend, it
 				</ul>
 			</StaticCard>
 		</section>
+=======
+		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+			<div class="xl:col-span-2 space-y-4">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos de gastos</h2>
+					<Badge>Actualizado hoy</Badge>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{
+						concreteReports.map((report) => (
+							<a href={report.href} class="block">
+								<ActionCard className="h-full items-start justify-between">
+									<div class="space-y-2">
+										<Badge>{report.badge}</Badge>
+										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
+										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
+									</div>
+									<div class="text-primary-700 mt-3">
+										<FaArrowRight size={14} />
+									</div>
+								</ActionCard>
+							</a>
+						))
+					}
+				</div>
+			</div>
+
+			<StaticCard>
+				<div class="space-y-4">
+					<h2 class="text-lg font-semibold text-gray-800">Alertas de costo</h2>
+					<div class="p-3 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm flex gap-2 items-start">
+						<FaTriangleExclamation className="mt-0.5" />
+						<span>El rubro de insumos subio 8% en la semana 2. Revisar proveedor principal.</span>
+					</div>
+					<div class="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-sm flex gap-2 items-start">
+						<FaTriangleExclamation className="mt-0.5" />
+						<span>Mantenimiento preventivo pendiente para dos equipos de laboratorio.</span>
+					</div>
+				</div>
+			</StaticCard>
+		</section>
+
+		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+			<h2 class="text-xl font-semibold text-gray-800">Desglose rapido de egresos</h2>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-primary-300">
+					<thead class="bg-primary-300">
+						<tr>
+							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Categoria</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto</th>
+							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Participacion</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-primary-300">
+						{
+							expenseBreakdown.map((item) => (
+								<tr class="hover:bg-primary-500/20 transition-colors">
+									<td class="px-4 py-3 text-sm text-cool-gray-90">{item.category}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{item.amount}</td>
+									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.weight}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+>>>>>>> dev2
 	</div>
 </AdminLayout>

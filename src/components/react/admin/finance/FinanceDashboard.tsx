@@ -6,7 +6,7 @@ import { StatsCard } from '@/components/react/primary/StatsCard';
 import { AddTransactionModal } from './AddTransactionModal';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { api } from '@/lib/api';
+import { getFinanceDashboardData, type FinanceTransaction } from '@/lib/services/admin/admin.service';
 import {
     FaArrowTrendUp,
     FaArrowTrendDown,
@@ -25,7 +25,7 @@ interface Transaction {
     date: string;
     detail: string;
     provider: string;
-    category: 'Consulta' | 'Farmacia';
+    category: string;
     amount: number;
     status: 'completed' | 'pending' | 'cancelled';
 }
@@ -38,7 +38,7 @@ const columns: Column<Transaction>[] = [
             <div className="flex flex-col">
                 <span className="font-semibold text-gray-900">{item.patientName}</span>
                 <span className="text-xs text-gray-500">
-                    {item.code} • {format(new Date(item.date), 'dd MMM yyyy', { locale: es })}
+                    {item.code} • {item.date ? format(new Date(item.date), 'dd MMM yyyy', { locale: es }) : 'Sin fecha'}
                 </span>
             </div>
         )
@@ -60,7 +60,9 @@ const columns: Column<Transaction>[] = [
             // Using literal colors or similar logic to match the screenshot
             const typeConfig = item.category === 'Consulta'
                 ? { bg: 'bg-blue-50', text: 'text-blue-600', icon: '🩺' }
-                : { bg: 'bg-purple-50', text: 'text-purple-600', icon: '💊' };
+                : item.category === 'Gasto'
+                    ? { bg: 'bg-red-50', text: 'text-red-600', icon: '📉' }
+                    : { bg: 'bg-purple-50', text: 'text-purple-600', icon: '💊' };
 
             return (
                 <Badge styles={{
@@ -126,6 +128,8 @@ const columns: Column<Transaction>[] = [
 
 export const FinanceDashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [transactions, setTransactions] = useState<FinanceTransaction[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [summary, setSummary] = useState({
         totalIncome: 0,
         totalExpenses: 0,
@@ -137,14 +141,16 @@ export const FinanceDashboard = () => {
         let mounted = true;
         (async () => {
             try {
-                const res = await api('/admin/financial-summary', { method: 'GET' });
-                if (!res.ok) return;
-                const json = await res.json();
-                const data = (json && typeof json === 'object' && 'data' in json) ? (json as any).data : json;
-                if (mounted) setSummary(data);
+                const data = await getFinanceDashboardData();
+                if (mounted) {
+                    setSummary(data.summary);
+                    setTransactions(data.transactions);
+                }
             } catch (err) {
                 // eslint-disable-next-line no-console
                 console.error('Error fetching summary:', err);
+            } finally {
+                if (mounted) setIsLoading(false);
             }
         })();
 
@@ -227,8 +233,10 @@ export const FinanceDashboard = () => {
 
                 <DataTable
                     className="rounded-none! border-none!"
-                    endpoint="/admin/transactions"
+                    endpoint=""
+                    data={transactions as Transaction[]}
                     columns={columns}
+                    isLoading={isLoading}
                 />
             </section>
 
