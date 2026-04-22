@@ -10,25 +10,8 @@ import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
 import StaticCard from '../primary/StaticCard';
 
-export const MedicalAppointments = () => {
-  const appointments = [
-    { 
-      especialidad: "Cardiología", 
-      doctor: "Dr. Alejandro Lira", 
-      fecha: "20 de Marzo, 2026",
-      hora: "09:30 AM", 
-      lugar: "Consultorio 402 - Clínica VitalFe & Alegría", 
-      status: "Próxima" 
-    },
-    { 
-      especialidad: "Medicina General", 
-      doctor: "Dra. Elena Rossi", 
-      fecha: "10 de Marzo, 2026",
-      hora: "11:00 AM", 
-      lugar: "Consultorio 105 - Clínica VitalFe & Alegría", 
-      status: "Asistió" 
-    }
-  ];
+export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
+  const appointments: any[] = [];
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
@@ -36,9 +19,18 @@ export const MedicalAppointments = () => {
         <h3 className="text-lg font-bold text-slate-800">Citas Programadas</h3>
       </div>
       
-      {appointments.map((app, i) => (
-        <AppointmentDetailModal key={i} appointment={app} />
-      ))}
+      {appointments.length > 0 ? (
+        appointments.map((app, i) => (
+          <AppointmentDetailModal key={i} appointment={app} />
+        ))
+      ) : (
+        <StaticCard className="p-16 text-center flex flex-col items-center gap-4 border-dashed">
+          <div className="bg-white p-6 rounded-full text-slate-300 shadow-sm">
+            <FaCalendarDays className="w-14 h-14" />
+          </div>
+          <p className="text-slate-800 font-bold text-lg">No hay citas programadas</p>
+        </StaticCard>
+      )}
     </div>
   );
 };
