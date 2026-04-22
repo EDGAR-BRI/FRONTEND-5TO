@@ -45,7 +45,7 @@ function availabilityToCycle(doctorId: number, availability: DoctorAvailability[
     const weekMap = new Map<number, ScheduleDay[]>()
 
     for (const a of availability) {
-        const weekNum = a.week_number ?? 1
+        const weekNum = 1
         if (!weekMap.has(weekNum)) weekMap.set(weekNum, [])
         weekMap.get(weekNum)!.push({
             id: a.id,

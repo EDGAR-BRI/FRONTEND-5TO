@@ -1,5 +1,5 @@
 ---
-import PacientLayout from "@/layouts/PacientLayout.astro";
+import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import AppointmentCalendar from "@/components/react/AppointmentCalendar";
 import StaticCard from "@/components/react/primary/StaticCard";
 import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
@@ -41,7 +41,7 @@ const citasMock = [
 ];
 ---
 
-<PacientLayout title="Agendar Cita | Paciente">
+<ReceptionistLayout title="Agendar Cita | Paciente">
   <div class="p-6 md:p-8 space-y-6 min-w-0">
     <header
       class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
@@ -166,4 +166,4 @@ const citasMock = [
       </StaticCard>
     </div>
   </div>
-</PacientLayout>
+</ReceptionistLayout>
