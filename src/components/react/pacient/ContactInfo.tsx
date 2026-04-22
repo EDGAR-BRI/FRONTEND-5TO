@@ -1,11 +1,11 @@
 import { FaEnvelope, FaPhone, FaLocationDot } from 'react-icons/fa6';
 import StaticCard from '@/components/react/primary/StaticCard';
 
-export const ContactInfo = () => {
+export const ContactInfo = ({ patientId }: { patientId: string }) => {
   const data = {
-    email: "pedro.sanchez@gmail.com",
-    telefono: "+58 412-1234567",
-    direccion: "Pueblo Nuevo, Edificio Sol, Apto 4B."
+    email: "-",
+    telefono: "-",
+    direccion: "-"
   };
 
   return (

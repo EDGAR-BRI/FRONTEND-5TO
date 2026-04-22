@@ -1,4 +1,6 @@
 ---
+import { api } from '@/lib/api';
+
 export type Props = {
   patientId: string
   mode?: 'doctor' | 'pacient'
@@ -6,71 +8,39 @@ export type Props = {
 
 const { patientId, mode = 'doctor' } = Astro.props
 
-function hashToIndex(input: string, max: number) {
-  let hash = 0
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0
+let patientData: any = null;
+try {
+  const response = await api(`/medical/patient/${patientId}`, {}, Astro.cookies);
+  if (response.ok) {
+    const json = await response.json();
+    patientData = json.data;
   }
-  return max <= 0 ? 0 : hash % max
+} catch (error) {
+  console.error(error);
 }
 
-function makeMockHistory(id: string) {
-  const names = ['María Pérez', 'Carlos Gómez', 'Ana Rodríguez', 'Luis Fernández', 'Sofía Martínez']
-  const bloodTypes = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-']
-
-  const fullName = names[hashToIndex(id, names.length)]
-  const bloodType = bloodTypes[hashToIndex(id + 'blood', bloodTypes.length)]
-
-  return {
-    patient: {
-      id,
-      fullName,
-      document: `DOC-${id.slice(0, 8) || '00000000'}`,
-      sex: ['Femenino', 'Masculino'][hashToIndex(id + 'sex', 2)],
-      age: 24 + hashToIndex(id + 'age', 43),
-      bloodType,
-      phone: '+1 (555) 010-2026',
-      email: 'paciente@example.com',
-      emergencyContact: 'Contacto: Familiar (555) 010-1111',
-    },
-    alerts: {
-      allergies: ['Penicilina', 'Mariscos'].slice(0, 1 + hashToIndex(id + 'all', 2)),
-      chronicConditions: ['Hipertensión', 'Asma'].slice(0, hashToIndex(id + 'cc', 3)),
-      notes: 'Plantilla temporal (sin backend).',
-    },
-    medications: [
-      { name: 'Losartán 50mg', sig: '1 tableta diaria', status: 'Activa' },
-      { name: 'Ibuprofeno 400mg', sig: 'Según dolor (máx. 3/día)', status: 'PRN' },
-    ],
-    visits: [
-      {
-        date: '2026-02-20',
-        specialty: 'Medicina General',
-        reason: 'Control',
-        diagnosis: 'Evolución favorable',
-        plan: 'Mantener tratamiento. Control en 4 semanas.',
-      },
-      {
-        date: '2026-01-10',
-        specialty: 'Urgencias',
-        reason: 'Dolor torácico',
-        diagnosis: 'Dolor musculoesquelético',
-        plan: 'AINEs y reposo. Signos de alarma explicados.',
-      },
-    ],
-    labs: [
-      { date: '2026-02-15', test: 'Hemograma', result: 'Sin alteraciones', status: 'Normal' },
-      { date: '2026-02-15', test: 'Glucosa', result: '92 mg/dL', status: 'Normal' },
-      { date: '2026-02-15', test: 'Colesterol LDL', result: '118 mg/dL', status: 'Leve' },
-    ],
-    files: [
-      { date: '2026-02-20', name: 'Resumen de consulta.pdf', type: 'PDF' },
-      { date: '2026-01-10', name: 'Nota de urgencias.pdf', type: 'PDF' },
-    ],
-  }
-}
-
-const data = makeMockHistory(patientId)
+const data = {
+  patient: {
+    id: patientId,
+    fullName: patientData?.user?.name || 'Desconocido',
+    document: patientData?.user?.ci || 'Sin CI',
+    sex: '-',
+    age: '-',
+    bloodType: patientData?.tipo_sangre || 'No registrado',
+    phone: '-',
+    email: '-',
+    emergencyContact: '-',
+  },
+  alerts: {
+    allergies: [] as any[],
+    chronicConditions: [] as any[],
+    notes: patientData?.medical_history || 'Sin notas registradas.',
+  },
+  medications: [] as any[],
+  visits: [] as any[],
+  labs: [] as any[],
+  files: [] as any[],
+};
 ---
 
 <section class="p-6 lg:p-8">

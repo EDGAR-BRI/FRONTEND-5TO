@@ -1,6 +1,7 @@
 ---
 import PacientLayout from '@/layouts/PacientLayout.astro';
 import StaticCard from '@/components/react/primary/StaticCard';
+import ActionCard from '@/components/react/primary/ActionCard';
 import {
   FaArrowDown,
   FaArrowUp,
@@ -31,135 +32,56 @@ import {
   FaCapsules,
 } from 'react-icons/fa6';
 
+import { api } from '@/lib/api';
+
 const { pacient_id } = Astro.params;
 
-// ─── Mock data derived from DB schema ──────────────────────────────────────
-const patient = {
-  id: pacient_id ?? '001',
-  fullName: 'María Rodríguez González',
-  ci: 'V-12.345.678',
-  age: 34,
-  bloodType: 'O+',
-  sex: 'Femenino',
-  email: 'maria.rodriguez@example.com',
-  phone: '+58 (414) 555-0192',
-  emergencyContact: 'Pedro González · +58 (212) 555-0198',
-  avatarInitials: 'MR',
+let patientData: any = {
+  user: {
+    name: "Daniela Pérez ",
+    ci: "V-12345678"
+  },
+  tipo_sangre: "O+"
 };
 
-const stats = [
-  {
-    label: 'Consultas realizadas',
-    value: '12',
-    icon: FaStethoscope,
-    color: 'text-primary-500',
-    bg: 'bg-primary-200',
-    trend: '+2 este mes',
-    trendUp: true,
-  },
-  {
-    label: 'Próximas citas',
-    value: '2',
-    icon: FaCalendarCheck,
-    color: 'text-success',
-    bg: 'bg-green-100',
-    trend: 'Confirmadas',
-    trendUp: true,
-  },
-  {
-    label: 'Medicamentos en dósis',
-    value: '3',
-    icon: FaPills,
-    color: 'text-warning',
-    bg: 'bg-yellow-100',
-    trend: 'En curso',
-    trendUp: null,
-  },
-  
-];
+/* Samuel aca tu cuando conectes la apio la descomentas
+try {
+  const response = await api(`/medical/patient/${pacient_id}`, {}, Astro.cookies);
+  if (response.ok) {
+    const json = await response.json();
+    patientData = json.data;
+  } else {
+    return Astro.redirect('/404');
+  }
+} catch (error) {
+  console.error(error);
+  return Astro.redirect('/500');
+}
+*/
 
-const upcomingAppointments = [
-  {
-    id: 'APT-001',
-    date: '2026-03-10',
-    time: '09:00 – 09:30 AM',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    reason: 'Control de rutina',
-    status: 'Confirmada',
-    type: 'Presencial',
-    statusClass: 'bg-green-100 text-success',
-  },
-  {
-    id: 'APT-002',
-    date: '2026-03-18',
-    time: '02:00 – 02:30 PM',
-    specialty: 'Cardiología',
-    doctor: 'Dra. Luisa Vargas',
-    reason: 'Seguimiento electrocardiograma',
-    status: 'Pendiente',
-    type: 'Presencial',
-    statusClass: 'bg-yellow-100 text-warning',
-  },
-];
+const fullName = patientData?.user?.name || 'Paciente Desconocido';
+const ci = patientData?.user?.ci || 'Sin CI';
+const bloodType = patientData?.tipo_sangre || 'No registrado';
 
-const recentConsultations = [
-  {
-    date: '2026-02-20',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    diagnosis: 'Evolución favorable',
-    reason: 'Control mensual',
-    plan: 'Mantener tratamiento. Control en 4 semanas.',
-  },
-  {
-    date: '2026-01-10',
-    specialty: 'Urgencias',
-    doctor: 'Dr. Ramón Castillo',
-    diagnosis: 'Dolor musculoesquelético',
-    reason: 'Dolor torácico leve',
-    plan: 'AINEs y reposo. Signos de alarma explicados.',
-  },
-  {
-    date: '2025-12-05',
-    specialty: 'Cardiología',
-    doctor: 'Dra. Luisa Vargas',
-    diagnosis: 'Hipertensión leve controlada',
-    reason: 'Evaluación cardiovascular',
-    plan: 'Ajuste de dosis de Losartán. Dieta baja en sodio.',
-  },
-];
+const patient = {
+  id: pacient_id ?? '001',
+  fullName: fullName,
+  ci: ci,
+  age: '-', 
+  bloodType: bloodType,
+  sex: '-', 
+  email: '-', 
+  phone: '-', 
+  emergencyContact: '-',
+  avatarInitials: fullName.substring(0, 2).toUpperCase(),
+};
 
-const prescriptions = [
-  {
-    name: 'Losartán 50 mg',
-    sig: '1 tableta diaria (mañana)',
-    status: 'Activa',
-    statusClass: 'bg-green-100 text-success',
-    icon: FaCapsules,
-  },
-  {
-    name: 'Atorvastatina 20 mg',
-    sig: '1 tableta diaria (noche)',
-    status: 'Activa',
-    statusClass: 'bg-green-100 text-success',
-    icon: FaPills,
-  },
-  {
-    name: 'Ibuprofeno 400 mg',
-    sig: 'Según dolor (máx. 3/día)',
-    status: 'PRN',
-    statusClass: 'bg-yellow-100 text-warning',
-    icon: FaTablets,
-  },
-];
-
-const labResults = [
-  { date: '2026-02-15', test: 'Hemograma completo', result: 'Sin alteraciones', status: 'Normal', statusClass: 'bg-green-100 text-success' },
-  { date: '2026-02-15', test: 'Glucosa en ayunas', result: '92 mg/dL', status: 'Normal', statusClass: 'bg-green-100 text-success' },
-  { date: '2026-02-15', test: 'Colesterol LDL', result: '118 mg/dL', status: 'Leve', statusClass: 'bg-yellow-100 text-warning' },
-  { date: '2026-01-22', test: 'Creatinina sérica', result: 'Pendiente lectura', status: 'Pendiente', statusClass: 'bg-red-100 text-error' },
-];
+const stats: any[] = [];
+const upcomingAppointments: any[] = [];
+const recentConsultations: any[] = [];
+const prescriptions: any[] = [];
+const labResults: any[] = [];
+const alerts: any[] = [];
 
 const quickActions = [
   { label: 'Agendar cita', icon: FaCalendarPlus, href: 'schedule-appointment', color: 'from-primary-500 to-primary-700' },
@@ -168,16 +90,12 @@ const quickActions = [
   { label: 'Documentos', icon: FaFolderOpen, href: 'history', color: 'from-orange-400 to-orange-600' },
 ];
 
-const alerts = [
-  { type: 'allergy', label: 'Penicilina', icon: FaTriangleExclamation, color: 'bg-red-100 text-error border-red-200' },
-  { type: 'condition', label: 'Hipertensión', icon: FaHeartPulse, color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-];
 ---
 
 <PacientLayout title={`Dashboard - ${patient.fullName}`}>
   <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
 
-    <!-- ─── Header / Welcome ──────────────────────────────────────────────── -->
+    <!-- Header / Welcome -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
         <!-- Avatar -->
@@ -208,7 +126,7 @@ const alerts = [
       </div>
     </div>
 
-    <!-- ─── Stat Cards ────────────────────────────────────────────────────── -->
+    <!-- ─── Stat Cards ─── -->
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
       {stats.map(({ icon: Icon, ...stat }) => (
         <StaticCard client:load className="p-5 !bg-primary-100">
@@ -240,28 +158,24 @@ const alerts = [
       ))}
     </div>
 
-    <!-- ─── Quick Actions ─────────────────────────────────────────────────── -->
     <div>
       <h2 class="text-heading-6 text-primary-800 mb-3">Acciones rápidas</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickActions.map(({ icon: Icon, ...action }) => (
-          <a
-            href={action.href}
-            class={`group relative overflow-hidden rounded-xl bg-linear-to-br ${action.color} p-5 flex flex-col items-center gap-2 text-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer`}
-          >
-            <Icon className="text-2xl opacity-90" />
-            <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
-            <!-- Decorative circle -->
-            <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
+          <a href={action.href} class="block group relative overflow-hidden h-full">
+            <ActionCard client:load className={`bg-linear-to-br ${action.color} p-5 flex-col items-center gap-2 text-white border-transparent hover:border-transparent h-full w-full justify-center`}>
+              <Icon className="text-2xl opacity-90" />
+              <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
+              <!-- Decorative circle -->
+              <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            </ActionCard>
           </a>
         ))}
       </div>
     </div>
 
-    <!-- ─── Two-column layout: Upcoming + Prescriptions ──────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
-      <!-- Próximas citas (wider) -->
       <StaticCard client:load className="lg:col-span-3 !bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">

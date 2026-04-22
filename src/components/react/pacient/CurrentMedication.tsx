@@ -3,11 +3,8 @@ import { AddMedicationModal } from './AddMedicationModal';
 import { EditMedicationModal } from './EditMedicationModal';
 import StaticCard from '@/components/react/primary/StaticCard';
 
-export const CurrentMedication = () => {
-  const medications = [
-    { nombre: "Losartán Potásico", dosis: "50mg", frecuencia: "1 tableta cada 24h", duracion: "Continuo", doctor: "Dr. Mendoza" },
-    { nombre: "Aspirina Protect", dosis: "100mg", frecuencia: "1 tableta diaria", duracion: "Continuo", doctor: "Dr. Mendoza" }
-  ];
+export const CurrentMedication = ({ patientId }: { patientId: string }) => {
+  const medications: any[] = [];
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
