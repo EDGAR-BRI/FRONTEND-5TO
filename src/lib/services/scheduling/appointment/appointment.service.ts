@@ -4,8 +4,12 @@ import type { AppointmentsOverview, Appointment } from "./appointment.interface"
 
 const BASE_PATH = "scheduling/appointment";
 
-export const getScheduleOverview = async (): Promise<AppointmentsOverview[]> => {
-    const response = await api(BASE_PATH, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
+export const getScheduleOverview = async (filters?: { range?: string }): Promise<AppointmentsOverview[]> => {
+    const params = new URLSearchParams();
+    if (filters?.range) params.set("range", filters.range);
+    const endpoint = params.toString() ? `${BASE_PATH}?${params.toString()}` : BASE_PATH;
+
+    const response = await api(endpoint, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
         method: "GET"
     });
     if(!response.ok){

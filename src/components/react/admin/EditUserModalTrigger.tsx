@@ -17,7 +17,7 @@ type UserDraft = {
 export default function EditUserModalTrigger({ user }: { user: User }) {
     const initialDraft: UserDraft = {
         name: user.name,
-        email: user.email,
+        email: user.email ?? "",
         role: user.role,
         status: user.status,
     };
