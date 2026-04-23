@@ -149,7 +149,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
     }));
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Registrar Nueva Factura" size="lg">
+        <Modal isOpen={isOpen} onClose={onClose} title="Registrar Nueva Factura" >
             {loading ? (
                 <div className="flex justify-center p-12">
                     <Spinner className="h-10 w-10 text-primary-600" />

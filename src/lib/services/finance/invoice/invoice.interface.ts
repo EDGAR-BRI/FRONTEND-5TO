@@ -43,8 +43,8 @@ export type createInvoiceDto = {
     patientId: number;
     receptionistId: number;
     exchangeRateId?: number;
-    taxId: number;
-    statusId: number;
+    taxId?: number;
+    statusId?: number;
     total_usd?: string | number;
     total_bs?: string | number;
     appointmentId?: number;
