@@ -81,54 +81,71 @@ const slotsByTime = [
         <ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
 
         <div class="space-y-8 mt-8">
-            <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div class="xl:col-span-2 space-y-4">
-                    <div class="flex items-center justify-between px-1">
-                        <h2 class="text-xl font-bold text-gray-800">Reportes concretos operativos</h2>
-                        <Badge>Turno actual</Badge>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {
-                            concreteReports.map((report) => (
-                                <a href={report.href} class="block group">
-                                    <ActionCard className="h-full items-start justify-between border-primary-200 hover:border-primary-500 transition-all">
-                                        <div class="space-y-2">
-                                            <Badge>{report.badge}</Badge>
-                                            <h3 class="font-bold text-gray-800 group-hover:text-primary-600 transition-colors">{report.title}</h3>
-                                            <p class="text-xs text-gray-500 leading-relaxed font-medium">{report.description}</p>
-                                        </div>
-                                        <div class="text-primary-600 mt-3 group-hover:translate-x-1 transition-transform">
-                                            <FaArrowRight size={14} />
-                                        </div>
-                                    </ActionCard>
-                                </a>
-                            ))
-                        }
-                    </div>
-                </div>
+			<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+				<div class="xl:col-span-2 space-y-6">
+					<div class="flex items-center justify-between px-1">
+						<h2 class="text-2xl font-bold text-gray-800">Reportes concretos operativos</h2>
+						
+						<span class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary-100 text-primary-600 border border-primary-200 shadow-sm">
+							Turno actual
+						</span>
+					</div>
 
-                <div class="h-full">
-                    <StaticCard className="h-full border-primary-200">
-                        <div class="space-y-4">
-                            <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider text-sm">Estado del día</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                    <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600"><FaStethoscope /></div>
-                                    <span>12 médicos en consulta activa</span>
-                                </div>
-                                <div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                    <div class="w-8 h-8 rounded-lg bg-success-50 flex items-center justify-center text-success-600"><FaHospitalUser /></div>
-                                    <span>35 pacientes en espera</span>
-                                </div>
-                                <div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                    <div class="w-8 h-8 rounded-lg bg-warning-50 flex items-center justify-center text-warning-600"><FaClock /></div>
-                                    <span>Demora promedio: 18 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </StaticCard>
-                </div>
-            </section>
+					<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+						{
+							concreteReports.map((report) => (
+								<a href={report.href} class="block group">
+									<ActionCard className="h-full p-6 items-start justify-between border-primary-100 hover:border-primary-500 transition-all shadow-sm hover:shadow-md">
+										<div class="space-y-4">
+											<span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight bg-primary-50 text-primary-600 border border-primary-100 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+												{report.badge}
+											</span>
+											
+											{/* Título del reporte subido a text-xl */}
+											<h3 class="text-xl font-bold text-gray-800 group-hover:text-primary-600 transition-colors leading-tight">
+												{report.title}
+											</h3>
+											
+											{/* Descripción subida a text-sm */}
+											<p class="text-sm text-gray-500 leading-relaxed font-medium">
+												{report.description}
+											</p>
+										</div>
+										
+										<div class="text-primary-400 mt-4 group-hover:text-primary-600 group-hover:translate-x-1 transition-all">
+											<FaArrowRight size={18} />
+										</div>
+									</ActionCard>
+								</a>
+							))
+						}
+					</div>
+				</div>
+
+				
+				<div class="h-full">
+					<StaticCard className="h-full border-primary-200">
+						<div class="space-y-4">
+							<h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider text-sm">Estado del día</h2>
+							<div class="space-y-4">
+								<div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
+									<div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600"><FaStethoscope /></div>
+									<span>12 médicos en consulta activa</span>
+								</div>
+								<div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
+									<div class="w-8 h-8 rounded-lg bg-success-50 flex items-center justify-center text-success-600"><FaHospitalUser /></div>
+									<span>35 pacientes en espera</span>
+								</div>
+								<div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
+									<div class="w-8 h-8 rounded-lg bg-warning-50 flex items-center justify-center text-warning-600"><FaClock /></div>
+									<span>Demora promedio: 18 min</span>
+								</div>
+							</div>
+						</div>
+					</StaticCard>
+				</div>
+			</section>
+		</div>
 
             {/* TABLA DE OCUPACIÓN */}
             <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
