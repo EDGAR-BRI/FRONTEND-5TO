@@ -12,7 +12,7 @@ export const getPatients = async (): Promise<Patient[]> => {
 };
 export const addPatient = async (payload: createPatientRequest): Promise<Patient> => {
     const response = await api(BASE_PATH, { 
-        method: "GET",
+        method: "POST",
         body: JSON.stringify(payload)
     });
     if (!response.ok) {

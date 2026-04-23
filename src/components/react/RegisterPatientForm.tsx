@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Field } from '@/components/react/primary/Field'
 import { Select } from '@/components/react/primary/Select'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { CheckBox } from '@/components/react/primary/CheckBox'
 import { Modal } from '@/components/react/primary/Modal'
+import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import { useModal } from '@/hooks/UseModal'
+
+import { listUsers, createUser } from '@/lib/services/User/user.service'
+import { addPatient } from '@/lib/services/medical/patient/patient.service'
+import { addPatientInfo } from '@/lib/services/medical/info-patient/info_patient.service'
+import type { UserDto } from '@/lib/services/User/user.interface'
 import type { IconType } from 'react-icons'
 import {
     FaCircleExclamation,
@@ -63,8 +69,8 @@ interface PatientForm {
     insuranceCompany: string
     insurancePolicyNumber: string
 
-    createUser: boolean
-    username: string
+    linkExistingUser: boolean
+    selectedUserId: number | null
     tempPassword: string
 
     emergencyContact: EmergencyContact
@@ -77,13 +83,13 @@ const EMPTY_FORM: PatientForm = {
     allergies: '', chronicDiseases: '', currentMedications: '',
     previousSurgeries: '', smokingStatus: '', alcoholUse: '',
     hasInsurance: false, insuranceCompany: '', insurancePolicyNumber: '',
-    createUser: false, username: '', tempPassword: '',
+    linkExistingUser: true, selectedUserId: null, tempPassword: '',
     emergencyContact: { name: '', relation: '', phone: '' },
 }
 
 // Aca reemplazariamos por fetch de datos
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(v => ({ value: v, label: v }))
-const GENDERS = [{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Femenino' }, { value: 'O', label: 'Otro' }]
+const GENDERS = [{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Femenino' }]
 const SMOKING = [
     { value: 'no', label: 'No fumador' }, { value: 'ex', label: 'Ex-fumador' }, { value: 'si', label: 'Fumador activo' },
 ]
@@ -98,10 +104,29 @@ const RELATION_OPTIONS = [
 export default function RegisterPatientForm() {
     const [form, setForm] = useState<PatientForm>(EMPTY_FORM)
     const [isSaving, setIsSaving] = useState(false)
+    const [globalError, setGlobalError] = useState<string | null>(null)
     const [errors, setErrors] = useState<Partial<Record<keyof PatientForm, string>>>({})
     const { isOpen: isSuccessOpen, openModal: openSuccess, closeModal: closeSuccess } = useModal(false)
 
-    const set = (field: keyof PatientForm, value: string | boolean) =>
+    const [users, setUsers] = useState<UserDto[]>([])
+    const [isLoadingUsers, setIsLoadingUsers] = useState(false)
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoadingUsers(true)
+            try {
+                const data = await listUsers()
+                setUsers(data)
+            } catch (error) {
+                console.error("Error fetching users:", error)
+            } finally {
+                setIsLoadingUsers(false)
+            }
+        }
+        fetchUsers()
+    }, [])
+
+    const set = (field: keyof PatientForm, value: string | boolean | number | null) =>
         setForm(prev => ({ ...prev, [field]: value }))
 
     const setEcontact = (field: keyof EmergencyContact, value: string) =>
@@ -115,22 +140,85 @@ export default function RegisterPatientForm() {
         if (!form.birthDate) e.birthDate = 'Requerido'
         if (!form.gender) e.gender = 'Requerido'
         if (!form.phone.trim()) e.phone = 'Requerido'
+
+        if (form.linkExistingUser && !form.selectedUserId) {
+            e.selectedUserId = 'Debes seleccionar un usuario'
+        }
+        if (!form.linkExistingUser && !form.tempPassword.trim()) {
+            e.tempPassword = 'La contraseña es requerida'
+        }
+
         setErrors(e)
         return Object.keys(e).length === 0
     }
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        setGlobalError(null)
         if (!validate()) return
         setIsSaving(true)
-        setTimeout(() => {
-            setIsSaving(false)
+        
+        try {
+            let patientUserId = form.selectedUserId;
+
+            if (!form.linkExistingUser) {
+                // Flow 2: Create new user
+                const newUser = await createUser({
+                    ci: form.ci,
+                    name: `${form.firstName} ${form.lastName}`,
+                    password: form.tempPassword,
+                    roleId: 4 // PACIENTE
+                });
+                patientUserId = newUser.id;
+            }
+
+            if (!patientUserId) {
+                throw new Error("No se pudo obtener el ID del usuario para vincular al paciente.");
+            }
+
+            // Create patient
+            const patient = await addPatient({
+                userId: patientUserId,
+                ci: form.ci,
+                name: `${form.firstName} ${form.lastName}`
+            });
+
+            // Create patient info
+            const birthDate = new Date(form.birthDate);
+            // Ensure sex maps to MALE/FEMALE
+            const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
+
+            await addPatientInfo({
+                patientId: patient.id,
+                ci: form.ci,
+                name: form.firstName,
+                last_name: form.lastName,
+                sex,
+                birth_date: birthDate,
+                blood_type: form.bloodType || null,
+                nacionality: form.nationality || null,
+                main_phone: form.phone || null,
+                email: form.email || null,
+                address: form.address || null,
+                city: form.city || null,
+                allergies: form.allergies || null,
+                chronic_diseases: form.chronicDiseases || null,
+                current_medications: form.currentMedications || null,
+                previous_surgeries: form.previousSurgeries || null
+            });
+
             openSuccess()
-        }, 800)
+        } catch (error: any) {
+            console.error("Error during registration flow:", error);
+            setGlobalError(error.message || "Ocurrió un error al registrar el paciente.");
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     const handleReset = () => {
         setForm(EMPTY_FORM)
         setErrors({})
+        setGlobalError(null)
     }
 
     return (
@@ -304,31 +392,54 @@ export default function RegisterPatientForm() {
             </div>
 
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon={FaUserLock} title="Acceso al Sistema" subtitle="Opcional: crea un usuario para que el paciente pueda iniciar sesión" />
+                <SectionHeader icon={FaUserLock} title="Vincular a Usuario Preexistente" subtitle="Selecciona un usuario preexistente o crea uno nuevo" />
                 <div className="space-y-4">
                     <CheckBox
-                        name="createUser"
-                        label="Crear usuario del sistema para este paciente"
+                        name="linkExistingUser"
+                        label="Vincular a usuario preexistente"
                         variant="switch"
-                        checked={form.createUser}
-                        onChange={e => set('createUser', e.target.checked)}
+                        checked={form.linkExistingUser}
+                        onChange={e => set('linkExistingUser', e.target.checked)}
                     />
-                    {form.createUser && (
+                    {form.linkExistingUser ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                            <Field
-                                name="tempPassword" label="Contraseña temporal"
-                                type="password"
-                                showTogglePassword
-                                placeholder="Mín. 8 caracteres"
-                                value={form.tempPassword}
-                                onChange={e => set('tempPassword', e.target.value)}
-                            />
+                            <div className="flex flex-col gap-1 w-full">
+                                <SearchableSelect
+                                    name="selectedUserId"
+                                    options={users.map(u => ({ value: u.id, label: `${u.name} - ${u.ci}` }))}
+                                    value={form.selectedUserId || ""}
+                                    onChange={v => set('selectedUserId', Number(v))}
+                                    placeholder={isLoadingUsers ? "Cargando usuarios..." : "Buscar usuario por nombre o CI"}
+                                    label="Seleccionar Usuario *"
+                                />
+                                {errors.selectedUserId && <p className="text-xs text-error mt-1">{errors.selectedUserId}</p>}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
+                            <div className="flex flex-col gap-1 w-full">
+                                <Field
+                                    name="tempPassword" label="Contraseña temporal para nuevo usuario *"
+                                    type="password"
+                                    showTogglePassword
+                                    placeholder="Mín. 8 caracteres"
+                                    value={form.tempPassword}
+                                    onChange={e => set('tempPassword', e.target.value)}
+                                />
+                                {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 pb-4">
+                {globalError && (
+                    <p className="text-sm text-error font-medium mr-auto flex items-center gap-1">
+                        <FaCircleExclamation />
+                        {globalError}
+                    </p>
+                )}
                 <Button variant={ButtonTheme.GHOST} label="Limpiar formulario" onClick={handleReset} />
                 <Button variant={ButtonTheme.SECONDARY} label="Guardar borrador" onClick={() => { }} />
                 <Button variant={ButtonTheme.PRIMARY} label={isSaving ? 'Registrando...' : 'Registrar paciente'} loading={isSaving} onClick={handleSave} />
