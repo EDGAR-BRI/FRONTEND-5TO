@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { DoctorAvailability } from "./doctor_availability.interface"
+import type { DoctorAvailability, CreateDoctorAvailabilityDto } from "./doctor_availability.interface"
 
 const BASE_PATH = "scheduling/doctor-availability"
 
@@ -22,3 +22,13 @@ export const getDoctorsAvailabilities = async (): Promise<DoctorAvailability[]> 
 	}
     return readEnvelopeData<DoctorAvailability[]>(response);
 }
+export const createDrAvailability = async (payload: CreateDoctorAvailabilityDto): Promise<DoctorAvailability> => {
+    const response = await api(BASE_PATH, { 
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    return readEnvelopeData<DoctorAvailability>(response);
+};
