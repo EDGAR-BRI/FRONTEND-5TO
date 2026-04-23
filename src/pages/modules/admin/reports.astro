@@ -51,7 +51,7 @@ const specialtiesStats = [
             </div>
         </header>
 
-        {/* MÉTRICAS*/}
+        {/* MÉTRICAS SUPERIORES */}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-xl border border-primary-200 shadow-sm flex items-center gap-4">
                 <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><FaMoneyBillWave size={24} /></div>
@@ -67,7 +67,7 @@ const specialtiesStats = [
             </div>
         </div>
 
-        {/*TARJETAS*/}
+        {/*TARJETAS DE ESTADÍSTICAS */}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatsCard title="Ingresos Totales (Mes)" value="$21,000" trend="12.5%" trendUp={true} color="success"><FaArrowTrendUp slot="icon" size={20} /></StatsCard>
             <StatsCard title="Consultas Atendidas" value="1,420" trend="5.2%" trendUp={true} color="primary"><FaStethoscope slot="icon" size={20} /></StatsCard>
@@ -75,43 +75,58 @@ const specialtiesStats = [
             <StatsCard title="Tasa de Ausentismo" value="12%" trend="0.5%" trendUp={false} color="danger"><FaBan slot="icon" size={20} /></StatsCard>
         </section>
 
-        {/* FILTROS  */}
+        {/* FILTROS */}
         <ReportTimeframeFilters client:load title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
 
         <div id="seccion-operativos" class="space-y-8">
             
+            {/* SECCIÓN DE GRÁFICOS*/}
             <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-                <div class="lg:col-span-2 bg-primary-100 rounded-xl border border-primary-200 p-6">
+                <div class="lg:col-span-2 bg-white rounded-xl border border-primary-200 p-6 shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-lg font-bold text-gray-800">Evolución de Ingresos</h2>
                         <select class="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-primary-500">
-                            <option>Últimos 6 meses</option><option>Este año</option>
+                            <option>Últimos 6 meses</option>
+                            <option>Este año</option>
                         </select>
                     </div>
-                    <div class="h-64 flex items-end justify-between gap-2 sm:gap-4 pt-4 border-b border-gray-100 pb-2">
+                    <div class="h-64 flex items-end justify-between gap-3 pt-4 border-b border-gray-100 pb-2">
                         {monthlyRevenue.map((data) => (
-                            <div class="relative flex flex-col items-center flex-1 group">
-                                <div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10">${data.value.toLocaleString()}</div>
-                                <div class="w-full bg-primary-200 hover:bg-primary-400 transition-colors rounded-t-md" style={`height: ${(data.value / maxRevenue) * 100}%`} />
-                                <span class="text-xs text-gray-500 mt-2">{data.month}</span>
+                            <div class="relative flex flex-col items-center flex-1 group h-full justify-end">
+                            
+                                <div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-10 shadow-lg font-bold">
+                                    ${data.value.toLocaleString()}
+                                </div>
+                                <div 
+                                    class="w-full bg-primary-500 hover:bg-primary-600 transition-all rounded-t-md shadow-sm" 
+                                    style={`height: ${(data.value / maxRevenue) * 100}%`} 
+                                />
+                                <span class="text-[10px] text-gray-500 mt-2 font-bold uppercase">{data.month}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div class="bg-primary-100 rounded-xl border border-primary-200 p-6 flex flex-col">
+                {/* Demanda por Especialidad */}
+                <div class="bg-white rounded-xl border border-primary-200 p-6 shadow-sm flex flex-col">
                     <h2 class="text-lg font-bold text-gray-800 mb-6">Demanda por Especialidad</h2>
                     <div class="space-y-6 flex-1 justify-center flex flex-col">
                         {specialtiesStats.map((stat) => (
                             <div>
-                                <div class="flex justify-between items-center mb-1"><span class="text-sm font-medium text-gray-700">{stat.name}</span><span class="text-sm font-bold text-gray-900">{stat.percentage}%</span></div>
-                                <div class="w-full bg-gray-100 rounded-full h-2.5"><div class={`h-2.5 rounded-full ${stat.color}`} style={`width: ${stat.percentage}%`} /></div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs font-bold text-gray-600 uppercase">{stat.name}</span>
+                                    <span class="text-sm font-black text-gray-900">{stat.percentage}%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                    <div class={`h-2.5 rounded-full ${stat.color} transition-all duration-700`} style={`width: ${stat.percentage}%`} />
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
+            {/* Cuadro de Citas */}
             <section class="bg-primary-100 rounded-xl border border-primary-200 p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-6">Ocupación del Centro Médico (Citas)</h2>
                 <div class="flex gap-2 overflow-x-auto pb-2">
@@ -137,4 +152,5 @@ const specialtiesStats = [
             </section>
 
         </div>
+    </div>
 </AdminLayout>
