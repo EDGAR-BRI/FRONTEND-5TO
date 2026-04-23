@@ -2,34 +2,32 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import StaticCard from "@/components/react/primary/StaticCard";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaCalendarCheck, FaClock, FaUserClock } from "react-icons/fa6";
+import CitasBarChart from "@/components/react/admin/CitasBarChart";
 
 const agenda = [
-  { day: "Lunes", scheduled: 36, attended: 31, noShow: 5 },
-  { day: "Martes", scheduled: 42, attended: 39, noShow: 3 },
-  { day: "Miércoles", scheduled: 38, attended: 34, noShow: 4 },
-  { day: "Jueves", scheduled: 44, attended: 40, noShow: 4 },
+  { day: "Lunes", attended: 31, noShow: 5 },
+  { day: "Martes", attended: 39, noShow: 3 },
+  { day: "Miércoles", attended: 34, noShow: 4 },
+  { day: "Jueves", attended: 40, noShow: 4 },
 ];
 ---
 
 <AdminLayout title="Operativos - Citas | Admin">
   <div class="p-6 md:p-8 space-y-8">
-    {/* Botón Volver */}
+    
     <a href="/modules/admin/reports/operativos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a operativos
     </a>
 
-    {/* Header */}
     <header class="space-y-2">
       <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Carga y puntualidad de citas</h1>
-      <p class="text-gray-500 font-medium">Monitoreo diario de agenda para reducir ausencias y tiempos muertos.</p>
+      <p class="text-gray-500 font-medium">Monitoreo diario de agenda para reducir ausencias.</p>
     </header>
 
-    {/* TARJETAS DE ESTADÍSTICAS ARRIBA */}
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <StatsCard title="Citas semanales" value="160" trend="4.3%" trendUp={true} color="primary">
         <FaCalendarCheck slot="icon" size={20} />
@@ -42,46 +40,42 @@ const agenda = [
       </StatsCard>
     </section>
 
-    {/* FILTROS */}
-    <ReportTimeframeFilters client:load title="Filtro de citas" subtitle="Mira la agenda por día, semana, mes o año para detectar ausencias y horas pico." />
+    <ReportTimeframeFilters client:load title="Filtro de citas" />
+
+    <div class="mt-8">
+      <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-gray-800">Tendencia Diaria</h2>
+        </div>
+        
+        <CitasBarChart client:load data={agenda} />
+      </section>
+    </div>
 
     {/* TABLA */}
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-semibold text-gray-800">Resumen por dia</h2>
-        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
-            Semana actual
-        </span>
-      </div>
-      
+      <h2 class="text-xl font-semibold text-gray-800">Resumen por día</h2>
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-primary-300">
           <thead class="bg-primary-300">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Dia</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Programadas</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Atendidas</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ausencias</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Día</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Atendidas</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Ausencias</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-primary-300">
-            {
-              agenda.map((row) => (
-                <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
-                  <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{row.day}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{row.scheduled}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{row.attended}</td>
-                  <td class="px-4 py-3 text-sm text-right">
-                    <span class={`font-bold ${row.noShow > 4 ? 'text-red-600' : 'text-orange-600'}`}>
-                      {row.noShow}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            }
+            {agenda.map((row) => (
+              <tr class="hover:bg-primary-500/20 transition-colors">
+                <td class="px-4 py-3 text-sm font-medium">{row.day}</td>
+                <td class="px-4 py-3 text-sm text-right font-bold">{row.attended}</td>
+                <td class="px-4 py-3 text-sm text-right font-bold text-red-600">{row.noShow}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     </section>
+
   </div>
 </AdminLayout>
