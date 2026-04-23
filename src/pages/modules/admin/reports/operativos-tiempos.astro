@@ -2,8 +2,6 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import { Badge } from "@/components/react/primary/Badge";
-import StaticCard from "@/components/react/primary/StaticCard";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaArrowsLeftRight, FaClock, FaHourglassHalf } from "react-icons/fa6";
@@ -17,53 +15,72 @@ const durations = [
 ---
 
 <AdminLayout title="Operativos - Tiempos | Admin">
-  <div class="space-y-6">
-    <a href="/modules/admin/reports/operativos" class="inline-flex items-center gap-2 text-sm text-primary-700 hover:underline">
-      <FaArrowLeft size={12} /> Volver a operativos
+  <div class="p-6 md:p-8 space-y-8">
+    
+    {/* Botón Volver con estilo unificado */}
+    <a href="/modules/admin/reports/operativos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+      <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
+      Volver a operativos
     </a>
 
+    {/* Header con tipografía corregida */}
     <header class="space-y-2">
-      <h1 class="text-2xl font-bold text-gray-800">Tiempos de atencion</h1>
-      <p class="text-gray-500">Duracion real de consulta y espera por especialidad.</p>
+      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Tiempos de atención</h1>
+      <p class="text-gray-500 font-medium">Duración real de consulta y espera por especialidad.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de tiempos" subtitle="Ajusta el corte temporal para revisar duración, espera y transferencia por día, semana, mes o año." />
-
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <StatsCard title="Espera promedio" value="14 min" trend="1.3%" trendUp={false} color="warning"><FaHourglassHalf slot="icon" size={18} /></StatsCard>
-      <StatsCard title="Consulta promedio" value="21 min" trend="0.4%" trendUp={true} color="primary"><FaClock slot="icon" size={18} /></StatsCard>
-      <StatsCard title="Transferencia entre areas" value="4.5 min" trend="0.2%" trendUp={false} color="danger"><FaArrowsLeftRight slot="icon" size={18} /></StatsCard>
+    {/* 1. TARJETAS DE ESTADÍSTICAS ARRIBA */}
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Espera promedio" value="14 min" trend="1.3%" trendUp={false} color="warning">
+        <FaHourglassHalf slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Consulta promedio" value="21 min" trend="0.4%" trendUp={true} color="primary">
+        <FaClock slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Transferencia entre áreas" value="4.5 min" trend="0.2%" trendUp={false} color="danger">
+        <FaArrowsLeftRight slot="icon" size={20} />
+      </StatsCard>
     </section>
 
-    <StaticCard>
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-800">Detalle por area</h2>
-          <Badge>Corte diario</Badge>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-primary-300">
-            <thead class="bg-primary-300">
-              <tr>
-                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Area</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Consulta</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Espera</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Transferencia</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-primary-300">
-              {durations.map((item) => (
-                <tr class="hover:bg-primary-500/20 transition-colors">
-                  <td class="px-4 py-3 text-sm text-cool-gray-90">{item.area}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.consult}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.wait}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.transfer}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    {/* 2. FILTROS */}
+    <ReportTimeframeFilters client:load title="Filtro de tiempos" subtitle="Ajusta el corte temporal para revisar duración, espera y transferencia por día, semana, mes o año." />
+
+    {/* 3. TABLA CON FORMATO AZUL (mt-8) */}
+    <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-800">Detalle por área</h2>
+        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
+            Corte diario
+        </span>
       </div>
-    </StaticCard>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-primary-300">
+          <thead class="bg-primary-300">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Área</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Consulta</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Espera</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Transferencia</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-primary-300">
+            {
+              durations.map((item) => (
+                <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
+                  <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{item.area}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{item.consult}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{item.wait}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">
+                    {item.transfer}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </div>
 </AdminLayout>
