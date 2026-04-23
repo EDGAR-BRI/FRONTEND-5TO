@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { AppointmentsOverview, Appointment } from "./appointment.interface";
+import type { AppointmentsOverview, Appointment, CreateAppointmentDto } from "./appointment.interface";
 
 const BASE_PATH = "scheduling/appointment";
 
@@ -26,3 +26,13 @@ export const getAppointmentsByDr = async (doctorId: number): Promise<Appointment
 	}
     return readEnvelopeData<Appointment[]>(response);
 }
+export const createAppointment = async (payload: CreateAppointmentDto): Promise<Appointment> => {
+    const response = await api(BASE_PATH, { 
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    return readEnvelopeData<Appointment>(response);
+};

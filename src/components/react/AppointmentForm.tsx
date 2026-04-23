@@ -25,7 +25,11 @@ import StaticCard from '@/components/react/primary/StaticCard'
 import { FaCalendarPlus } from 'react-icons/fa6'
 
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
+import { getPatients } from '@/lib/services/medical/patient/patient.service'
+import { getAppointmentTypes } from '@/lib/services/scheduling/appointment-type/appointment_type.service'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
+import type { Patient } from '@/lib/services/medical/patient/patient.interface'
+import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
 import type { SelectOption } from '@/components/react/primary/Select'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -57,6 +61,12 @@ export interface AppointmentFormProps {
 
     /** Contexto extra enviado en el body (ej: patientId) */
     context?: Record<string, string | number | undefined>
+
+    /** Rol del usuario que abre el form */
+    role?: "receptionist" | "pacient"
+
+    /** ID del usuario actual (útil para rol paciente) */
+    userId?: string | number
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -125,18 +135,30 @@ export default function AppointmentForm({
     onSuccess,
     onError,
     context,
+    role,
+    userId,
 }: AppointmentFormProps) {
 
     // ── Remote data ──────────────────────────────────────────────────────────
     const [doctors, setDoctors] = useState<DoctorSchedConfigOption[]>([])
+    const [patients, setPatients] = useState<Patient[]>([])
+    const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([])
     const [dataLoading, setDataLoading] = useState(true)
 
     useEffect(() => {
         let cancelled = false
         const load = async () => {
             try {
-                const drs = await getDrsSelect()
-                if (!cancelled) setDoctors(drs)
+                const [drs, pats, types] = await Promise.all([
+                    getDrsSelect(),
+                    getPatients(),
+                    getAppointmentTypes()
+                ])
+                if (!cancelled) {
+                    setDoctors(drs)
+                    setPatients(pats)
+                    setAppointmentTypes(types)
+                }
             } catch (err) {
                 console.error('Error cargando datos del formulario:', err)
             } finally {
@@ -163,13 +185,27 @@ export default function AppointmentForm({
     }, [doctors])
 
     const doctorOptionsAll: SelectOption[] = useMemo(() =>
-        doctors.map(d => ({ value: d.id, label: d.user.name })),
+        doctors.map(d => ({ value: d.id, label: `${d.user.name} - ${d.user.ci}` })),
         [doctors]
     )
+
+    const filteredPatientOptions: SelectOption[] = useMemo(() => {
+        let filtered = patients;
+        if (role === 'pacient' && userId) {
+            filtered = patients.filter(p => String(p.userId) === String(userId));
+        }
+        return filtered.map(p => ({ value: p.id, label: `${p.name} - ${p.ci}` }))
+    }, [patients, role, userId])
+
+    const appointmentTypeOptions: SelectOption[] = useMemo(() => {
+        return appointmentTypes.map(t => ({ value: t.id, label: t.name }))
+    }, [appointmentTypes])
 
     // ── Form state ───────────────────────────────────────────────────────────
     const [especialidad, setEspecialidad] = useState<string | number>('')
     const [doctorId, setDoctorId] = useState<string | number>('')
+    const [patientId, setPatientId] = useState<string | number>(context?.patientId || '')
+    const [appointmentTypeId, setAppointmentTypeId] = useState<string | number>('')
     const [motivo, setMotivo] = useState('')
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
@@ -213,7 +249,7 @@ export default function AppointmentForm({
         if (!especialidad) return doctorOptionsAll
         return doctors
             .filter(d => d.specialty.name === String(especialidad))
-            .map(d => ({ value: d.id, label: d.user.name }))
+            .map(d => ({ value: d.id, label: `${d.user.name} - ${d.user.ci}` }))
     }, [doctors, doctorOptionsAll, especialidad])
 
     const handleEspecialidadChange = useCallback((val: string | number) => {
@@ -253,6 +289,8 @@ export default function AppointmentForm({
     // ── Validation ───────────────────────────────────────────────────────────
     const isValid = Boolean(
         (doctorId || especialidad) &&
+        patientId &&
+        appointmentTypeId &&
         resolvedDate &&
         resolvedHour
     )
@@ -269,12 +307,12 @@ export default function AppointmentForm({
 
 
             const payload = {
-                patientId: Number(context?.patientId),
+                patientId: Number(patientId),
                 doctorId: Number(doctorId),
                 date_time: dateObj.toISOString(),
                 reson_visit: motivo || undefined,
                 statusId: 1,
-                typeId: 1,
+                typeId: Number(appointmentTypeId),
                 price: 0
             }
 
@@ -318,6 +356,27 @@ export default function AppointmentForm({
                 </div>
             ) : (
                 <div className="space-y-4">
+                    {/* ── Paciente ── */}
+                    <SearchableSelect
+                        label="Paciente *"
+                        placeholder={filteredPatientOptions.length === 0 ? 'Sin pacientes disponibles' : '— Seleccionar paciente —'}
+                        options={filteredPatientOptions}
+                        value={patientId}
+                        onChange={(val) => setPatientId(val)}
+                        name="patient"
+                        searchPlaceholder="Buscar paciente por nombre o CI…"
+                    />
+
+                    {/* ── Tipo de Cita ── */}
+                    <Select
+                        label="Tipo de Cita *"
+                        placeholder="— Seleccionar tipo —"
+                        options={appointmentTypeOptions}
+                        value={appointmentTypeId}
+                        onChange={(val) => setAppointmentTypeId(val)}
+                        name="appointmentType"
+                    />
+
                     {/* ── Especialidad ── */}
                     <Select
                         label="Especialidad"

@@ -36,32 +36,43 @@ export type Appointment =
         price: number,
         date_time: string,
         doctor: {
+            id: number,
+            user: {
                 id: number,
-                user: {
-                        id: number,
-                        ci: string,
-                        name: string,
-                },
-                specialty: {
-                        id: number,
-                        name: string,
-                },
+                ci: string,
+                name: string,
             },
-        patient: {
-                id: number,
-                user: {
-                        id: number,
-                        ci: string,
-                        name: string,
-                },
-            },
-        status: {
+            specialty: {
                 id: number,
                 name: string,
-                color_hex: string,
+            },
+        },
+        patient: {
+            id: number,
+            user: {
+                id: number,
+                ci: string,
+                name: string,
+            },
+        },
+        status: {
+            id: number,
+            name: string,
+            color_hex: string,
         },
         type: {
-                id: number,
-                name: string,
-            },
+            id: number,
+            name: string,
+        },
+    }
+export type CreateAppointmentDto =
+    {
+        doctorId?: number;
+        specialtyId?: number;
+        patientId: number;
+        statusId: number;
+        typeId: number;
+        reson_visit?: string;
+        price: string | number;
+        date_time: string | Date;
     }

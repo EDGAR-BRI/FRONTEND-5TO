@@ -55,7 +55,9 @@ const citas: any[] = [];
         </h2>
         <AppointmentForm
           client:load
-          createEndpoint="/appointment"
+          createEndpoint="scheduling/appointment"
+          role="pacient"
+          userId={pacient_id}
           context={{ patientId: pacient_id }}
         />
       </StaticCard>
