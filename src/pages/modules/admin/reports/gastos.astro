@@ -9,138 +9,161 @@ import StaticCard from "@/components/react/primary/StaticCard";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import {
-	FaArrowRight,
-	FaCartFlatbed,
-	FaFileInvoiceDollar,
-	FaMoneyBillTrendUp,
-	FaSackDollar,
-	FaTriangleExclamation,
+    FaArrowRight,
+    FaCartFlatbed,
+    FaFileInvoiceDollar,
+    FaMoneyBillTrendUp,
+    FaSackDollar,
+    FaTriangleExclamation,
+    FaFilePdf,
+    FaPrint
 } from "react-icons/fa6";
 
 const expenseBreakdown = [
-	{ category: "Insumos medicos", amount: "$4,980", weight: "40%" },
-	{ category: "Servicios operativos", amount: "$3,410", weight: "27%" },
-	{ category: "Mantenimiento", amount: "$2,160", weight: "17%" },
-	{ category: "Logistica", amount: "$1,900", weight: "16%" },
+    { category: "Insumos medicos", amount: "$4,980", weight: "40%" },
+    { category: "Servicios operativos", amount: "$3,410", weight: "27%" },
+    { category: "Mantenimiento", amount: "$2,160", weight: "17%" },
+    { category: "Logistica", amount: "$1,900", weight: "16%" },
 ];
 
 const concreteReports = [
-	{
-		title: "Compras por categoria",
-		description: "Comparativo semanal de insumos, servicios y mantenimiento.",
-		href: "/modules/admin/reports/gastos-compras",
-		badge: "Semanal",
-	},
-	{
-		title: "Rendimiento de proveedores",
-		description: "Costo promedio por orden, cumplimiento y desviaciones.",
-		href: "/modules/admin/reports/gastos-proveedores",
-		badge: "Top 10",
-	},
-	{
-		title: "Variacion mensual de egresos",
-		description: "Tendencias de gasto, picos de consumo y alertas tempranas.",
-		href: "/modules/admin/reports/gastos-variacion",
-		badge: "Historico",
-	},
+    {
+        title: "Compras por categoria",
+        description: "Comparativo semanal de insumos, servicios y mantenimiento.",
+        href: "/modules/admin/reports/gastos-compras",
+        badge: "Semanal",
+    },
+    {
+        title: "Rendimiento de proveedores",
+        description: "Costo promedio por orden, cumplimiento y desviaciones.",
+        href: "/modules/admin/reports/gastos-proveedores",
+        badge: "Top 10",
+    },
+    {
+        title: "Variacion mensual de egresos",
+        description: "Tendencias de gasto, picos de consumo y alertas tempranas.",
+        href: "/modules/admin/reports/gastos-variacion",
+        badge: "Historico",
+    },
 ];
 ---
 
 <AdminLayout title="Reporte de Gastos | Admin">
-	<div class="space-y-8">
-		<header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-			<div class="space-y-2">
-				<h1 class="text-3xl font-bold text-gray-800">Reporte de Gastos</h1>
-				<p class="text-gray-500">Vista general de egresos y acceso rapido a reportes financieros concretos.</p>
-			</div>
-			<div class="flex gap-2">
-				<Button label="Exportar CSV" variant="secondary">Exportar CSV</Button>
-				<Button label="Imprimir" variant="ghost">Imprimir</Button>
-			</div>
-		</header>
+    <div class="p-6 md:p-8 space-y-8">
+        
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte de Gastos</h1>
+                <p class="text-gray-500 mt-1">Vista general de egresos y reportes financieros concretos.</p>
+            </div>
+            <div class="flex gap-3">
+                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
+                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+            </div>
+        </header>
 
-		<ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos de control." />
+        {/* ARJETAS DE ESTADÍSTICAS */}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
+                <FaSackDollar slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
+                <FaCartFlatbed slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
+                <FaFileInvoiceDollar slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
+                <FaMoneyBillTrendUp slot="icon" size={20} />
+            </StatsCard>
+        </section>
 
-		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
-				<FaSackDollar slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
-				<FaCartFlatbed slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
-				<FaFileInvoiceDollar slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
-				<FaMoneyBillTrendUp slot="icon" size={20} />
-			</StatsCard>
-		</section>
+        {/*FILTROS*/}
+        <ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos." />
 
-		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-			<div class="xl:col-span-2 space-y-4">
-				<div class="flex items-center justify-between">
-					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos de gastos</h2>
-					<Badge>Actualizado hoy</Badge>
-				</div>
-				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-					{
-						concreteReports.map((report) => (
-							<a href={report.href} class="block">
-								<ActionCard className="h-full items-start justify-between">
-									<div class="space-y-2">
-										<Badge>{report.badge}</Badge>
-										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
-										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
-									</div>
-									<div class="text-primary-700 mt-3">
-										<FaArrowRight size={14} />
-									</div>
-								</ActionCard>
-							</a>
-						))
-					}
-				</div>
-			</div>
+        <div class="space-y-8 mt-8">
+            <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="xl:col-span-2 space-y-6">
+                    <div class="flex items-center justify-between px-1">
+                        <h2 class="text-2xl font-bold text-gray-800">Reportes concretos de gastos</h2>
+                        <span class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary-100 text-primary-600 border border-primary-200 shadow-sm">
+                            Actualizado hoy
+                        </span>
+                    </div>
 
-			<StaticCard>
-				<div class="space-y-4">
-					<h2 class="text-lg font-semibold text-gray-800">Alertas de costo</h2>
-					<div class="p-3 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm flex gap-2 items-start">
-						<FaTriangleExclamation className="mt-0.5" />
-						<span>El rubro de insumos subio 8% en la semana 2. Revisar proveedor principal.</span>
-					</div>
-					<div class="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-sm flex gap-2 items-start">
-						<FaTriangleExclamation className="mt-0.5" />
-						<span>Mantenimiento preventivo pendiente para dos equipos de laboratorio.</span>
-					</div>
-				</div>
-			</StaticCard>
-		</section>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                        {concreteReports.map((report) => (
+                            <a href={report.href} class="block group">
+                                <ActionCard className="h-full p-6 items-start justify-between border-primary-100 hover:border-primary-500 transition-all shadow-sm hover:shadow-md">
+                                    <div class="space-y-4">
+                                        <span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight bg-primary-50 text-primary-600 border border-primary-100 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                                            {report.badge}
+                                        </span>
+                                        
+                                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-primary-600 transition-colors leading-tight">
+                                            {report.title}
+                                        </h3>
+                                        
+                                        <p class="text-sm text-gray-500 leading-relaxed font-medium">
+                                            {report.description}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="text-primary-400 mt-4 group-hover:text-primary-600 group-hover:translate-x-1 transition-all">
+                                        <FaArrowRight size={18} />
+                                    </div>
+                                </ActionCard>
+                            </a>
+                        ))}
+                    </div>
+                </div>
 
-		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
-			<h2 class="text-xl font-semibold text-gray-800">Desglose rapido de egresos</h2>
-			<div class="overflow-x-auto">
-				<table class="min-w-full divide-y divide-primary-300">
-					<thead class="bg-primary-300">
-						<tr>
-							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Categoria</th>
-							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto</th>
-							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Participacion</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-primary-300">
-						{
-							expenseBreakdown.map((item) => (
-								<tr class="hover:bg-primary-500/20 transition-colors">
-									<td class="px-4 py-3 text-sm text-cool-gray-90">{item.category}</td>
-									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{item.amount}</td>
-									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.weight}</td>
-								</tr>
-							))
-						}
-					</tbody>
-				</table>
-			</div>
-		</section>
-	</div>
+                {/* ALERTAS DE COSTO */}
+                <div class="h-full">
+                    <StaticCard className="h-full border-primary-200 flex flex-col justify-center p-6">
+                        <div class="space-y-6">
+                            <h2 class="text-base font-black text-gray-400 uppercase tracking-[0.15em]">
+                                Alertas de costo
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="p-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm flex gap-3 items-start shadow-sm">
+                                    <FaTriangleExclamation className="mt-1 flex-shrink-0" size={16} />
+                                    <span class="font-medium leading-tight">Insumos subieron 8% en semana 2. Revisar proveedor.</span>
+                                </div>
+                                <div class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm flex gap-3 items-start shadow-sm">
+                                    <FaTriangleExclamation className="mt-1 flex-shrink-0" size={16} />
+                                    <span class="font-medium leading-tight">Mantenimiento preventivo pendiente para 2 equipos.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </StaticCard>
+                </div>
+            </section>
+
+            {/* TABLA DE EGRESOS*/}
+            <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800">Desglose rapido de egresos</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-primary-300">
+                        <thead class="bg-primary-300">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Categoria</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Participacion</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary-300">
+                            {expenseBreakdown.map((item) => (
+                                <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
+                                    <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{item.category}</td>
+                                    <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{item.amount}</td>
+                                    <td class="px-4 py-3 text-sm text-right text-cool-gray-60 font-bold">{item.weight}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
 </AdminLayout>
