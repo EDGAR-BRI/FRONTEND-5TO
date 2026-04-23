@@ -6,7 +6,6 @@ import { CheckBox } from '@/components/react/primary/CheckBox'
 import { Modal } from '@/components/react/primary/Modal'
 import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import { useModal } from '@/hooks/UseModal'
-
 import { listUsers, createUser } from '@/lib/services/User/user.service'
 import { addPatient } from '@/lib/services/medical/patient/patient.service'
 import { addPatientInfo } from '@/lib/services/medical/info-patient/info_patient.service'
@@ -169,6 +168,7 @@ export default function RegisterPatientForm() {
                     roleId: 4 // PACIENTE
                 });
                 patientUserId = newUser.id;
+                setUsers(prev => [...prev, newUser]);
             }
 
             if (!patientUserId) {
@@ -459,7 +459,7 @@ export default function RegisterPatientForm() {
                     <p>El paciente ha sido registrado exitosamente en el sistema. Puede agendar una cita para esta visita desde la agenda.</p>
                     <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
                         <Button label="Registrar otro" variant={ButtonTheme.SECONDARY} size="sm" onClick={() => { closeSuccess(); handleReset() }} />
-                        <Button label="Agendar cita" variant={ButtonTheme.PRIMARY} size="sm" onClick={closeSuccess} />
+                        <Button label="Agendar cita" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => window.location.href = window.location.pathname.replace('/register-patient', '/appointments')}  />
                     </div>
                 </div>
             </Modal>
