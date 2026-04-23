@@ -131,30 +131,28 @@ const slotsByTime = [
             </section>
 
             {/* TABLA DE OCUPACIÓN */}
-            <section class="bg-white rounded-xl border border-primary-200 shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800">Ocupación por franja horaria</h2>
-                </div>
+            <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800">Ocupacion por franja horaria</h2>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-100">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-primary-300">
+                        <thead class="bg-primary-300">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">Franja Horaria</th>
-                                <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-400">Nivel de Ocupación</th>
-                                <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-400">Estado de Alerta</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Franja</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ocupacion</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
+                        <tbody class="divide-y divide-primary-300">
                             {
                                 slotsByTime.map((row) => (
-                                    <tr class="hover:bg-primary-50/50 transition-colors group">
-                                        <td class="px-6 py-4 text-sm font-bold text-gray-700">{row.slot}</td>
-                                        <td class="px-6 py-4 text-sm text-right font-black text-gray-800">{row.occupancy}</td>
-                                        <td class="px-6 py-4 text-right">
-                                            <span class={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${
-                                                row.status === 'Critico' ? 'bg-red-100 text-red-600' : 
-                                                row.status === 'Alto' ? 'bg-orange-100 text-orange-600' : 
-                                                'bg-green-100 text-green-600'
+                                    <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
+                                        <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{row.slot}</td>
+                                        <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{row.occupancy}</td>
+                                        <td class="px-4 py-3 text-sm text-right">
+                                            <span class={`font-semibold ${
+                                                row.status === 'Critico' ? 'text-red-600' : 
+                                                row.status === 'Alto' ? 'text-orange-600' : 
+                                                'text-green-600'
                                             }`}>
                                                 {row.status}
                                             </span>
