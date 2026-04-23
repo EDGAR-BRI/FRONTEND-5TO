@@ -1,6 +1,8 @@
 export type AppointmentsOverview =
     {
+        id: number,
         date_time: string,
+        price: number,
         patient: {
             id?: number,
             ci?: string | null,
@@ -76,3 +78,4 @@ export type CreateAppointmentDto =
         price: string | number;
         date_time: string | Date;
     }
+export type UpdateAppointmentDto = Partial<CreateAppointmentDto>;
