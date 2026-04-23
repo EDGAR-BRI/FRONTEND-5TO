@@ -27,6 +27,7 @@ import { FaCalendarPlus } from 'react-icons/fa6'
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import { getPatients } from '@/lib/services/medical/patient/patient.service'
 import { getAppointmentTypes } from '@/lib/services/scheduling/appointment-type/appointment_type.service'
+import { createAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { Patient } from '@/lib/services/medical/patient/patient.interface'
 import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
@@ -73,27 +74,29 @@ export interface AppointmentFormProps {
 
 function resolveDateOptions(preset: DatePreset, weekday?: string): Date[] {
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    let rawDates: Date[] = []
+
     if (preset === 'this_week') {
         const start = startOfWeek(today, { weekStartsOn: 1 })
         const end = endOfWeek(today, { weekStartsOn: 1 })
-        const dates: Date[] = []
         let d = start
-        while (d <= end) { dates.push(new Date(d)); d = addDays(d, 1) }
-        return dates
-    }
-    if (preset === 'this_month') {
+        while (d <= end) { rawDates.push(new Date(d)); d = addDays(d, 1) }
+    } else if (preset === 'this_month') {
         const start = startOfMonth(today)
         const end = endOfMonth(today)
-        const dates: Date[] = []
         let d = start
-        while (d <= end) { dates.push(new Date(d)); d = addDays(d, 1) }
-        return dates
-    }
-    if (preset === 'weekday' && weekday !== undefined) {
+        while (d <= end) { rawDates.push(new Date(d)); d = addDays(d, 1) }
+    } else if (preset === 'weekday' && weekday !== undefined) {
         const fns = [nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday]
-        return [fns[parseInt(weekday, 10)](today)]
+        rawDates = [fns[parseInt(weekday, 10)](new Date())]
     }
-    return []
+
+    return rawDates.filter(d => {
+        const dateOnly = new Date(d)
+        dateOnly.setHours(0, 0, 0, 0)
+        return dateOnly >= today
+    })
 }
 
 function getHoursForSlot(slot: TimeSlot): string[] {
@@ -236,7 +239,15 @@ export default function AppointmentForm({
     const [selectedHourFromList, setSelectedHourFromList] = useState('')
     const [specificHour, setSpecificHour] = useState('')
 
-    const hourOptions = useMemo(() => getHoursForSlot(timeSlot), [timeSlot])
+    const hourOptions = useMemo(() => {
+        let hours = getHoursForSlot(timeSlot)
+        const todayStr = format(new Date(), 'yyyy-MM-dd')
+        if (resolvedDate === todayStr) {
+            const currentHourStr = format(new Date(), 'HH:mm')
+            hours = hours.filter(h => h > currentHourStr)
+        }
+        return hours
+    }, [timeSlot, resolvedDate])
 
     const resolvedHour = useMemo(() => {
         if (timeSlot === 'any') return 'Cualquiera'
@@ -297,7 +308,7 @@ export default function AppointmentForm({
 
     // ── Submit ───────────────────────────────────────────────────────────────
     const handleSubmit = async () => {
-        if (!isValid || !createEndpoint) return
+        if (!isValid) return
         setLoading(true)
         setFeedback(null)
         try {
@@ -305,33 +316,44 @@ export default function AppointmentForm({
             const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
             const dateObj = new Date(dateTimeString);
 
+            // Validation against past dates
+            const now = new Date();
+            if (resolvedHour === 'Cualquiera') {
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+                if (selectedDay < today) {
+                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
+                    setLoading(false);
+                    return;
+                }
+            } else {
+                if (dateObj < now) {
+                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
+                    setLoading(false);
+                    return;
+                }
+            }
 
-            const payload = {
+
+            const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
+            const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
+
+            await createAppointment({
                 patientId: Number(patientId),
                 doctorId: Number(doctorId),
                 date_time: dateObj.toISOString(),
                 reson_visit: motivo || undefined,
                 statusId: 1,
                 typeId: Number(appointmentTypeId),
-                price: 0
-            }
-
-            const res = await api(createEndpoint, {
-                method: 'POST',
-                body: JSON.stringify(payload),
+                price: consultationPrice
             })
 
-            if (res.ok) {
-                setFeedback({ type: 'success', msg: 'Cita pautada correctamente. Pendiente de confirmación.' })
-                onSuccess?.()
-
-                setMotivo('')
-            } else {
-                const errorData = await res.json().catch(() => ({}));
-                setFeedback({ type: 'error', msg: errorData.message || 'No se pudo pautar la cita. Intenta de nuevo.' })
-            }
-        } catch (err) {
-            setFeedback({ type: 'error', msg: 'Error de conexión con el servidor.' })
+            setFeedback({ type: 'success', msg: 'Cita pautada correctamente. Pendiente de confirmación.' })
+            onSuccess?.()
+            setMotivo('')
+        } catch (err: any) {
+            console.error('Error creando cita:', err)
+            setFeedback({ type: 'error', msg: err.message || 'No se pudo pautar la cita. Intenta de nuevo.' })
             onError?.(err)
         } finally {
             setLoading(false)
@@ -461,6 +483,7 @@ export default function AppointmentForm({
                                 value={specificDate}
                                 onChange={(e) => setSpecificDate(e.target.value)}
                                 placeholder="Selecciona una fecha"
+                                min={format(new Date(), 'yyyy-MM-dd')}
                             />
                         )}
                     </div>
@@ -510,7 +533,7 @@ export default function AppointmentForm({
                         {timeSlot === 'specific' && (
                             <Field
                                 name="specificHour"
-                                type="text"
+                                type="time"
                                 placeholder="Ej: 10:30"
                                 value={specificHour}
                                 onChange={(e) => setSpecificHour(e.target.value)}
