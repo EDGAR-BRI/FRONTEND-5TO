@@ -53,7 +53,11 @@ const citas: any[] = [];
         >
           <FaCalendarPlus className="text-blue-600" /> Nueva Cita
         </h2>
-        <AppointmentForm client:load context={{ patientId: pacient_id }} createEndpoint="/appointment" />
+        <AppointmentForm
+          client:load
+          createEndpoint="/appointment"
+          context={{ patientId: pacient_id }}
+        />
       </StaticCard>
 
       <StaticCard
