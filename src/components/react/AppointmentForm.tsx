@@ -263,29 +263,37 @@ export default function AppointmentForm({
         setLoading(true)
         setFeedback(null)
         try {
-            const doc = doctors.find(d => d.id === Number(doctorId))
+            const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
+            const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
+            const dateObj = new Date(dateTimeString);
+
+
             const payload = {
-                ...(context ?? {}),
-                doctorId: doctorId || undefined,
-                doctor: doc?.user.name ?? '',
-                especialidad: String(especialidad) || doc?.specialty.name || '',
-                fecha: resolvedDate,
-                hora: resolvedHour,
-                motivo: motivo || undefined,
-                estado: 'Pendiente',
+                patientId: Number(context?.patientId),
+                doctorId: Number(doctorId),
+                date_time: dateObj.toISOString(),
+                reson_visit: motivo || undefined,
+                statusId: 1,
+                typeId: 1,
+                price: 0
             }
+
             const res = await api(createEndpoint, {
                 method: 'POST',
                 body: JSON.stringify(payload),
             })
+
             if (res.ok) {
                 setFeedback({ type: 'success', msg: 'Cita pautada correctamente. Pendiente de confirmación.' })
                 onSuccess?.()
+
+                setMotivo('')
             } else {
-                setFeedback({ type: 'error', msg: 'No se pudo pautar la cita. Intenta de nuevo.' })
+                const errorData = await res.json().catch(() => ({}));
+                setFeedback({ type: 'error', msg: errorData.message || 'No se pudo pautar la cita. Intenta de nuevo.' })
             }
         } catch (err) {
-            setFeedback({ type: 'error', msg: 'Error de conexión.' })
+            setFeedback({ type: 'error', msg: 'Error de conexión con el servidor.' })
             onError?.(err)
         } finally {
             setLoading(false)
