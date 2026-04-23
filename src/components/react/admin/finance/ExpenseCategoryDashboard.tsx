@@ -107,7 +107,7 @@ export default function ExpenseCategoryDashboard() {
                         </div>
                         <div className='min-w-0'>
                             <h2 className="text-base font-semibold text-white leading-tight">
-                                Gestión de Servicios
+                                Gestión de Servicios Generales
                             </h2>
                             <p className="text-xs text-primary-200 mt-0.5">
                                 Catálogo de servicios generales y análisis de gasto (agua, luz, internet, etc).
