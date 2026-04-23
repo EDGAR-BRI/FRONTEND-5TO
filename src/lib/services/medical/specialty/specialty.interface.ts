@@ -9,4 +9,5 @@ export type SpecialtySelectOptions =
 {
     id: number,
     name: string,
+    consultation_price: number
 }
