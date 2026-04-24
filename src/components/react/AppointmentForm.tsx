@@ -335,13 +335,15 @@ export default function AppointmentForm({
             }
 
 
+            const dateTimeUTC = `${resolvedDate}T${horaFinal}:00.000Z`;
+
             const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
             const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
 
             await createAppointment({
                 patientId: Number(patientId),
                 doctorId: Number(doctorId),
-                date_time: dateObj.toISOString(),
+                date_time: dateTimeUTC,
                 reson_visit: motivo || undefined,
                 statusId: 1,
                 typeId: Number(appointmentTypeId),
