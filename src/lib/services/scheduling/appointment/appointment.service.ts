@@ -30,8 +30,9 @@ export const getAppointments = async (filters?: { range?: string }): Promise<App
 	}
     return readEnvelopeData<AppointmentsOverview[]>(response);
 }
-export const getAppointmentsByDr = async (doctorId: number): Promise<Appointment[]> => {
-    const response = await api(`${BASE_PATH}/doctor/${doctorId}`, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
+export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: boolean = false): Promise<Appointment[]> => {
+    const url = `${BASE_PATH}/${selectUpcomingOnly ? 'upcoming/' : ''}doctor/${doctorId}`
+    const response = await api(url, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
         method: "GET"
     });
     if(!response.ok){

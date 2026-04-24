@@ -31,6 +31,7 @@ import { createAppointment } from '@/lib/services/scheduling/appointment/appoint
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { Patient } from '@/lib/services/medical/patient/patient.interface'
 import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
+import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import type { SelectOption } from '@/components/react/primary/Select'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -68,11 +69,20 @@ export interface AppointmentFormProps {
 
     /** ID del usuario actual (útil para rol paciente) */
     userId?: string | number
+
+    /** Fecha seleccionada externamente (YYYY-MM-DD) */
+    externalDate?: string
+
+    /** Callback cuando cambia el doctor */
+    onDoctorChange?: (doctorId: string | number) => void
+
+    /** Disponibilidad del doctor seleccionado (para filtrar días y horas) */
+    doctorSchedule?: DoctorAvailability[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function resolveDateOptions(preset: DatePreset, weekday?: string): Date[] {
+function resolveDateOptions(preset: DatePreset, weekday?: string, workDays?: number[]): Date[] {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     let rawDates: Date[] = []
@@ -95,7 +105,12 @@ function resolveDateOptions(preset: DatePreset, weekday?: string): Date[] {
     return rawDates.filter(d => {
         const dateOnly = new Date(d)
         dateOnly.setHours(0, 0, 0, 0)
-        return dateOnly >= today
+        if (dateOnly < today) return false
+        // Si hay días laborables definidos, filtrar
+        if (workDays && workDays.length > 0) {
+            return workDays.includes(dateOnly.getDay())
+        }
+        return true
     })
 }
 
@@ -140,6 +155,9 @@ export default function AppointmentForm({
     context,
     role,
     userId,
+    externalDate,
+    onDoctorChange,
+    doctorSchedule = [],
 }: AppointmentFormProps) {
 
     // ── Remote data ──────────────────────────────────────────────────────────
@@ -219,11 +237,35 @@ export default function AppointmentForm({
     const [selectedDateFromList, setSelectedDateFromList] = useState('')
     const [specificDate, setSpecificDate] = useState('')
 
+    const [dateFlash, setDateFlash] = useState(false)
+
+    // Días laborables del doctor (para filtrar)
+    const workDays = useMemo(() => {
+        if (!doctorSchedule || doctorSchedule.length === 0) return undefined
+        return Array.from(new Set(doctorSchedule.map(s => s.day_of_week)))
+    }, [doctorSchedule])
+
+    // Filtrar opciones de WEEKDAYS según días que trabaja el doctor
+    const filteredWeekdays = useMemo(() => {
+        if (!workDays) return WEEKDAYS
+        return WEEKDAYS.filter(w => workDays.includes(Number(w.value)))
+    }, [workDays])
+
     const dateOptions = useMemo(() => {
         if (datePreset === 'specific') return []
-        if (datePreset === 'weekday') return resolveDateOptions('weekday', String(selectedWeekday))
-        return resolveDateOptions(datePreset)
-    }, [datePreset, selectedWeekday])
+        if (datePreset === 'weekday') return resolveDateOptions('weekday', String(selectedWeekday), workDays)
+        return resolveDateOptions(datePreset, undefined, workDays)
+    }, [datePreset, selectedWeekday, workDays])
+
+    // Sincronizar fecha externa
+    useEffect(() => {
+        if (externalDate) {
+            setDatePreset('specific')
+            setSpecificDate(externalDate)
+            setDateFlash(true)
+            setTimeout(() => setDateFlash(false), 1200)
+        }
+    }, [externalDate])
 
     const resolvedDate = useMemo(() => {
         if (datePreset === 'specific') return specificDate
@@ -239,6 +281,31 @@ export default function AppointmentForm({
     const [selectedHourFromList, setSelectedHourFromList] = useState('')
     const [specificHour, setSpecificHour] = useState('')
 
+    // Rango de horas del doctor para el día seleccionado
+    const doctorTimeRange = useMemo(() => {
+        if (!doctorSchedule || doctorSchedule.length === 0 || !resolvedDate) return null
+        // Determinar el día de la semana de la fecha seleccionada
+        let dayOfWeek: number | null = null
+        // Si es YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}$/.test(resolvedDate)) {
+            const d = new Date(resolvedDate + 'T00:00:00')
+            dayOfWeek = d.getDay()
+        }
+        if (dayOfWeek === null) return null
+        const schedForDay = doctorSchedule.filter(s => s.day_of_week === dayOfWeek)
+        if (schedForDay.length === 0) return null
+        // Tomar el rango más amplio (min start, max end)
+        const starts = schedForDay.map(s => {
+            const clean = s.start_time.replace('Z', '').substring(11, 16)
+            return clean || s.start_time.substring(0, 5)
+        })
+        const ends = schedForDay.map(s => {
+            const clean = s.end_time.replace('Z', '').substring(11, 16)
+            return clean || s.end_time.substring(0, 5)
+        })
+        return { start: starts.sort()[0], end: ends.sort().reverse()[0] }
+    }, [doctorSchedule, resolvedDate])
+
     const hourOptions = useMemo(() => {
         let hours = getHoursForSlot(timeSlot)
         const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -246,8 +313,12 @@ export default function AppointmentForm({
             const currentHourStr = format(new Date(), 'HH:mm')
             hours = hours.filter(h => h > currentHourStr)
         }
+        // Filtrar por horario del doctor
+        if (doctorTimeRange) {
+            hours = hours.filter(h => h >= doctorTimeRange.start && h < doctorTimeRange.end)
+        }
         return hours
-    }, [timeSlot, resolvedDate])
+    }, [timeSlot, resolvedDate, doctorTimeRange])
 
     const resolvedHour = useMemo(() => {
         if (timeSlot === 'any') return 'Cualquiera'
@@ -281,7 +352,8 @@ export default function AppointmentForm({
             const doc = doctors.find(d => d.id === Number(val))
             if (doc) setEspecialidad(doc.specialty.name)
         }
-    }, [doctors])
+        onDoctorChange?.(val)
+    }, [doctors, onDoctorChange])
 
     // ── Preset change handlers ───────────────────────────────────────────────
     const handleDatePresetChange = (preset: DatePreset) => {
@@ -439,7 +511,7 @@ export default function AppointmentForm({
                         {datePreset === 'weekday' && (
                             <Select
                                 label="Día"
-                                options={WEEKDAYS}
+                                options={filteredWeekdays}
                                 value={selectedWeekday}
                                 onChange={(val) => setSelectedWeekday(val)}
                                 name="weekday"
@@ -479,14 +551,24 @@ export default function AppointmentForm({
 
                         {/* Input fecha específica */}
                         {datePreset === 'specific' && (
-                            <Field
-                                name="specificDate"
-                                type="date"
-                                value={specificDate}
-                                onChange={(e) => setSpecificDate(e.target.value)}
-                                placeholder="Selecciona una fecha"
-                                min={format(new Date(), 'yyyy-MM-dd')}
-                            />
+                            <div className={dateFlash ? 'date-field-flash' : ''} key={dateFlash ? 'flash' : 'idle'}>
+                                <Field
+                                    name="specificDate"
+                                    type="date"
+                                    value={specificDate}
+                                    onChange={(e) => setSpecificDate(e.target.value)}
+                                    placeholder="Selecciona una fecha"
+                                    min={format(new Date(), 'yyyy-MM-dd')}
+                                />
+                                <style>{`
+                                    @keyframes dateFieldPulse {
+                                        0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); }
+                                        40% { box-shadow: 0 0 0 6px rgba(37,99,235,0.25); }
+                                        100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+                                    }
+                                    .date-field-flash { animation: dateFieldPulse 0.6s ease 2; border-radius: 8px; }
+                                `}</style>
+                            </div>
                         )}
                     </div>
 
@@ -503,6 +585,14 @@ export default function AppointmentForm({
                             <Chip active={timeSlot === 'any'} onClick={() => handleTimeSlotChange('any')}>🔄 Cualquiera</Chip>
                             <Chip active={timeSlot === 'specific'} onClick={() => handleTimeSlotChange('specific')}>🕐 Específica</Chip>
                         </div>
+
+                        {/* Indicador de horario del doctor */}
+                        {doctorTimeRange && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5">
+                                <span>🩺</span>
+                                <span>Horario del doctor: <strong>{doctorTimeRange.start}</strong> – <strong>{doctorTimeRange.end}</strong></span>
+                            </div>
+                        )}
 
                         {/* Grid de horas por franja */}
                         {hourOptions.length > 0 && (

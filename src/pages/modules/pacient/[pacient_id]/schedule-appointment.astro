@@ -1,9 +1,6 @@
 ---
 import PacientLayout from "@/layouts/PacientLayout.astro";
-import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import StaticCard from "@/components/react/primary/StaticCard";
-import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
-import AppointmentForm from "@/components/react/AppointmentForm";
+import AppointmentBookingManager from "@/components/react/AppointmentBookingManager";
 
 const pacient_id = Astro.params.pacient_id || "";
 
@@ -13,8 +10,6 @@ const coloresEstado: Record<string, string> = {
   Cancelada: "bg-red-100 text-red-700 border-red-200",
   Finalizada: "bg-blue-100 text-blue-700 border-blue-200",
 };
-
-const citas: any[] = [];
 ---
 
 <PacientLayout title="Agendar Cita | Paciente">
@@ -46,37 +41,11 @@ const citas: any[] = [];
       </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
-      <StaticCard className="h-fit min-w-0">
-        <h2
-          class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"
-        >
-          <FaCalendarPlus className="text-blue-600" /> Nueva Cita
-        </h2>
-        <AppointmentForm
-          client:load
-          createEndpoint="scheduling/appointment"
-          role="pacient"
-          userId={pacient_id}
-          context={{ patientId: pacient_id }}
-        />
-      </StaticCard>
-
-      <StaticCard
-        className="lg:col-span-3 flex flex-col min-h-150 overflow-hidden"
-      >
-        <div class="overflow-x-auto w-full h-full">
-          <div class="min-w-[800px] h-full">
-            <AppointmentCalendar
-              role="pacient"
-              citas={citas}
-              context={{ patientId: pacient_id }}
-              client:load
-              actions={[]}
-            />
-          </div>
-        </div>
-      </StaticCard>
-    </div>
+    <AppointmentBookingManager 
+      client:load 
+      role="pacient" 
+      userId={pacient_id}
+      context={{ patientId: pacient_id }}
+    />
   </div>
 </PacientLayout>
