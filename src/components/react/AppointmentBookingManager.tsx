@@ -75,7 +75,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
     const handleSelectDate = useCallback((date: string) => {
         setSelectedDate(date)
         setDateToast(date)
-        setTimeout(() => setDateToast(null), 2500)
+        setTimeout(() => setDateToast(null), 5000)
     }, [])
 
     return (
@@ -83,18 +83,18 @@ export default function AppointmentBookingManager({ role, userId, context }: App
             {/* Toast de confirmación */}
             {dateToast && (
                 <div
-                    className="absolute top-0 left-1/2 -translate-x-1/2 z-50 animate-bounce-in"
-                    style={{ animation: 'toastSlideIn 0.3s ease, toastFadeOut 0.4s ease 2.1s forwards' }}
+                    className="fixed bottom-6 right-6 z-[60]"
+                    style={{ animation: 'toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1), toastFadeOut 0.4s ease 4.6s forwards' }}
                 >
-                    <div className="bg-primary-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-                        <span>✓</span>
+                    <div className="bg-primary-700 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-primary-600/50">
+                        <span className="bg-primary-500 rounded-full w-5 h-5 flex items-center justify-center text-[10px] text-white shadow-inner">✓</span>
                         <span>Fecha <strong>{dateToast}</strong> seleccionada en el formulario</span>
                     </div>
                 </div>
             )}
             <style>{`
-                @keyframes toastSlideIn { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
-                @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translate(-50%, -10px); } }
+                @keyframes toastSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(20px); } }
             `}</style>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
             <div className="lg:col-span-1">
@@ -105,6 +105,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
                     externalDate={selectedDate}
                     onDoctorChange={handleDoctorChange}
                     doctorSchedule={doctorSchedule}
+                    doctorAppointments={doctorAppointments}
                     onSuccess={() => {
                         // Refrescar citas del doctor tras crear una nueva
                         if (selectedDoctorId && role === 'receptionist') {

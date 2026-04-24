@@ -32,6 +32,7 @@ import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doct
 import type { Patient } from '@/lib/services/medical/patient/patient.interface'
 import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
+import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface'
 import type { SelectOption } from '@/components/react/primary/Select'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -78,6 +79,9 @@ export interface AppointmentFormProps {
 
     /** Disponibilidad del doctor seleccionado (para filtrar días y horas) */
     doctorSchedule?: DoctorAvailability[]
+
+    /** Citas existentes del doctor (para filtrar horas ocupadas) */
+    doctorAppointments?: Appointment[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -158,6 +162,7 @@ export default function AppointmentForm({
     externalDate,
     onDoctorChange,
     doctorSchedule = [],
+    doctorAppointments = [],
 }: AppointmentFormProps) {
 
     // ── Remote data ──────────────────────────────────────────────────────────
@@ -313,12 +318,42 @@ export default function AppointmentForm({
             const currentHourStr = format(new Date(), 'HH:mm')
             hours = hours.filter(h => h > currentHourStr)
         }
-        // Filtrar por horario del doctor
+        // Filtrar por horario de trabajo del doctor
         if (doctorTimeRange) {
             hours = hours.filter(h => h >= doctorTimeRange.start && h < doctorTimeRange.end)
         }
+        // Filtrar horas ocupadas por citas existentes
+        if (resolvedDate && doctorAppointments.length > 0) {
+            const dateStr = resolvedDate // YYYY-MM-DD
+            const occupiedStarts = doctorAppointments
+                .filter(apt => {
+                    const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
+                    return cleanDate.startsWith(dateStr) && apt.status.name !== 'Cancelada'
+                })
+                .map(apt => {
+                    const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
+                    return format(new Date(cleanDate), 'HH:mm')
+                })
+            
+            hours = hours.filter(h => {
+                // Parsear hora actual de la opción
+                const [h_hh, h_mm] = h.split(':').map(Number)
+                const optTime = h_hh * 60 + h_mm
+                
+                // Verificar si choca con alguna cita existente (asumiendo duración de 15 mins o margen)
+                for (const occ of occupiedStarts) {
+                    const [o_hh, o_mm] = occ.split(':').map(Number)
+                    const occTime = o_hh * 60 + o_mm
+                    // Si la diferencia absoluta es menor a 15 minutos, hay solapamiento
+                    if (Math.abs(optTime - occTime) < 15) {
+                        return false // Hora bloqueada
+                    }
+                }
+                return true
+            })
+        }
         return hours
-    }, [timeSlot, resolvedDate, doctorTimeRange])
+    }, [timeSlot, resolvedDate, doctorTimeRange, doctorAppointments])
 
     const resolvedHour = useMemo(() => {
         if (timeSlot === 'any') return 'Cualquiera'
@@ -650,12 +685,28 @@ export default function AppointmentForm({
                     {/* ── Feedback ── */}
                     {feedback && (
                         <div
-                            className={`text-xs px-3 py-2 rounded-lg border ${feedback.type === 'success'
-                                ? 'bg-green-50 text-green-700 border-green-200'
-                                : 'bg-red-50 text-red-600 border-red-200'
-                                }`}
+                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]"
+                            style={{ animation: 'toastSlideUpCenter 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
                         >
-                            {feedback.msg}
+                            <div className={`px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border ${feedback.type === 'success'
+                                ? 'bg-emerald-600 text-white border-emerald-500/50'
+                                : 'bg-rose-600 text-white border-rose-500/50'
+                                }`}>
+                                <span className={`rounded-full w-6 h-6 flex items-center justify-center text-[12px] font-bold shadow-inner ${feedback.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+                                    {feedback.type === 'success' ? '✓' : '!'}
+                                </span>
+                                <span className="text-sm font-medium">{feedback.msg}</span>
+                                <button 
+                                    onClick={() => setFeedback(null)}
+                                    className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
+                                    type="button"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <style>{`
+                                @keyframes toastSlideUpCenter { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+                            `}</style>
                         </div>
                     )}
 

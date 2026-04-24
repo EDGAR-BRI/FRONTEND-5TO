@@ -13,3 +13,11 @@ export interface CreateDoctorAvailabilityDto {
     end_time: string | Date;
     patient_limit: number;
 }
+
+export type UpdateDoctorAvailabilityDto = {
+    doctorId?: number;
+    day_of_week?: number;
+    start_time?: string | Date;
+    end_time?: string | Date;
+    patient_limit?: number;
+}
