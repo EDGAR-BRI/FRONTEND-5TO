@@ -52,6 +52,26 @@ export const getToken = (cookies?: AstroCookies): string | null => {
 };
 
 const USER_NAME_KEY = "auth_user_name";
+const DOCTOR_ID_KEY = "auth_doctor_id";
+
+export const getDoctorId = (cookies?: AstroCookies): string | null => {
+    if (typeof window === "undefined" && cookies) {
+        return cookies.get(DOCTOR_ID_KEY)?.value || null;
+    }
+    if (typeof window !== "undefined") {
+        return Cookies.get(DOCTOR_ID_KEY) || null;
+    }   
+    return null;
+};
+
+export const setDoctorId = (doctorId: string): void => {
+    Cookies.set(DOCTOR_ID_KEY, doctorId, {
+        expires: 7,
+        path: "/",
+        sameSite: "lax",
+        secure: import.meta.env.PROD
+    });
+};
 
 export const setToken = (token: string): void => {
     Cookies.set(TOKEN_KEY, token, {
@@ -120,6 +140,7 @@ interface ApiOptions extends RequestInit {
 export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: AstroCookies) => {
     try {
         const token = getToken(cookies);
+        const doctorId = getDoctorId(cookies);
 
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
@@ -128,6 +149,9 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
 
         if (token) {
             headers["Authorization"] = `Bearer ${token}`;
+        }
+        if (doctorId) {
+            headers["X-Doctor-Id"] = doctorId;
         }
 
         const config: RequestInit = {
