@@ -1,7 +1,8 @@
 import { DataTable, type Column } from '@/components/react/primary/DataTable';
 import { Badge } from '@/components/react/primary/Badge';
 import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
-import { convertirAFechaISO } from '@/utils/helper_functions'
+import { convertirAFechaISO } from '@/utils/helper_functions';
+import { printInvoice } from '@/utils/printInvoice';
 
 const statusBadgeStyles = (status: string) => {
     if (status === 'Emitida') return { bg: 'bg-primary-200/30', text: 'text-primary-700', border: 'border-primary-300' };
@@ -40,9 +41,12 @@ export function InvoicesDataTable({ facturas }: { facturas?: Invoice[] }) {
         {
             header: 'Acciones',
             align: 'center',
-            cell: () => (
+            cell: (fac) => (
                 <div className="flex justify-center gap-3">
-                    <button className="text-primary-600 hover:text-primary-800 font-medium">
+                    <button 
+                        className="text-primary-600 hover:text-primary-800 font-medium transition-colors"
+                        onClick={() => printInvoice(fac)}
+                    >
                         Imprimir
                     </button>
                     <button className="text-error hover:text-red-700 font-medium transition-colors">

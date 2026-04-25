@@ -10,6 +10,13 @@ export const getPatients = async (): Promise<Patient[]> => {
     }
     return readEnvelopeData<Patient[]>(response);
 };
+export const getPatientsFromUser = async (userId: number): Promise<Patient[]> => {
+    const response = await api(`${BASE_PATH}/user/${userId}`, { method: "GET" });
+    if (!response.ok) {
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    return readEnvelopeData<Patient[]>(response);
+};
 export const addPatient = async (payload: createPatientRequest): Promise<Patient> => {
     const response = await api(BASE_PATH, { 
         method: "POST",

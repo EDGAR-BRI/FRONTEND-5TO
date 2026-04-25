@@ -50,7 +50,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
         }
 
         setLoadingApts(true)
-        getAppointmentsByDr(selectedDoctorId, true)
+        getAppointmentsByDr(selectedDoctorId)
             .then((apts: Appointment[]) => {
                 setDoctorAppointments(apts)
             })

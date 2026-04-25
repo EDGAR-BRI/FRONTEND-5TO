@@ -9,10 +9,12 @@ import { getPaymentMethods } from '@/lib/services/finance/payment-method/payment
 import { getExchangeRates } from '@/lib/services/finance/exchange-rate/exchange_rate.service';
 import { addInvoice } from '@/lib/services/finance/invoice/invoice.service';
 import { updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service';
+import { getPatientsFromUser } from '@/lib/services/medical/patient/patient.service';
 import type { AppointmentsOverview } from '@/lib/services/scheduling/appointment/appointment.interface';
 import type { PaymentMethod } from '@/lib/services/finance/payment-method/payment_method.interface';
 import type { ExchangeRate } from '@/lib/services/finance/exchange-rate/exchange_rate.interface';
 import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
+import type { Patient } from '@/lib/services/medical/patient/patient.interface';
 import { Spinner } from '@/components/react/primary/Spinner';
 
 interface Props {
@@ -40,6 +42,11 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | number>('');
     const [payments, setPayments] = useState<PaymentRow[]>([]);
     
+    // Payer (Responsable de Pago)
+    const [payerPatients, setPayerPatients] = useState<Patient[]>([]);
+    const [selectedPayerId, setSelectedPayerId] = useState<string | number>('');
+    const [loadingPayers, setLoadingPayers] = useState(false);
+
     // New payment form
     const [newPaymentMethodId, setNewPaymentMethodId] = useState<string | number>('');
     const [newAmount, setNewAmount] = useState<string>('');
@@ -51,7 +58,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
             setLoading(true);
             try {
                 const [apps, methods, rates] = await Promise.all([
-                    getScheduleOverview({ range: 'month' }), 
+                    getScheduleOverview({ range: 'today' }), 
                     getPaymentMethods(),
                     getExchangeRates()
                 ]);
@@ -73,28 +80,81 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
         appointments.find(a => a.id === Number(selectedAppointmentId)),
     [selectedAppointmentId, appointments]);
 
+    // Fetch payer patients when appointment changes
+    useEffect(() => {
+        if (!selectedAppointment) {
+            setPayerPatients([]);
+            setSelectedPayerId('');
+            return;
+        }
+
+        const userId = selectedAppointment.patient.user?.id;
+        if (!userId) {
+            // No user linked — fallback to the appointment patient itself
+            setPayerPatients([]);
+            setSelectedPayerId(selectedAppointment.patient.id ?? '');
+            return;
+        }
+
+        const fetchPayers = async () => {
+            setLoadingPayers(true);
+            try {
+                const patients = await getPatientsFromUser(userId);
+                setPayerPatients(patients);
+                // Auto-select the appointment's patient if present
+                const match = patients.find(p => p.id === selectedAppointment.patient.id);
+                setSelectedPayerId(match ? match.id : (patients.length > 0 ? patients[0].id : ''));
+            } catch (err) {
+                console.error('Error fetching payer patients:', err);
+                setPayerPatients([]);
+                setSelectedPayerId(selectedAppointment.patient.id ?? '');
+            } finally {
+                setLoadingPayers(false);
+            }
+        };
+
+        fetchPayers();
+    }, [selectedAppointment]);
+
     const totalPaid = useMemo(() => 
         payments.reduce((acc, p) => acc + p.amount_paid, 0),
     [payments]);
 
     const remaining = selectedAppointment ? (selectedAppointment.price - totalPaid) : 0;
 
+    const selectedMethod = useMemo(() => 
+        paymentMethods.find(m => m.id === Number(newPaymentMethodId)),
+    [newPaymentMethodId, paymentMethods]);
+
+    const isVES = (method?: PaymentMethod) => {
+        if (!method) return false;
+        const cur = method.currency.toLowerCase();
+        return cur.includes('ves') || cur.includes('bolívar') || cur.includes('bolivar') || cur.includes('bs');
+    };
+
     const handleAddPayment = () => {
         const method = paymentMethods.find(m => m.id === Number(newPaymentMethodId));
         if (!method || !newAmount || isNaN(Number(newAmount))) return;
 
-        const amount = Number(newAmount);
-        let igtf = 0;
+        const enteredAmount = Number(newAmount);
+        let amountInUSD = enteredAmount;
 
-        // IGTF Calculation Logic
-        const isCash = method.type.toLowerCase().includes('cash') || method.type.toLowerCase().includes('efectivo');
-        const isUSD = method.currency.toLowerCase().includes('usd') || method.currency.toLowerCase().includes('dolar') || method.currency.toLowerCase().includes('dólar') || method.currency.includes('$');
-        
-        if (isCash && isUSD) {
-            igtf = amount * 0.03;
+        // If currency is VES, convert to USD using exchange rate
+        if (isVES(method) && exchangeRate) {
+            amountInUSD = enteredAmount / Number(exchangeRate.rate);
         }
 
-        setPayments([...payments, { paymentMethodId: method.id, amount_paid: amount, igtf_amount: igtf }]);
+        let igtf = 0;
+
+        // IGTF Calculation Logic (calculated on USD amount)
+        const isCash = method.type.toLowerCase().includes('cash') || method.type.toLowerCase().includes('efectivo');
+        const isUSDMethod = method.currency.toLowerCase().includes('usd') || method.currency.toLowerCase().includes('dolar') || method.currency.toLowerCase().includes('dólar') || method.currency.includes('$');
+        
+        if (isCash && isUSDMethod) {
+            igtf = amountInUSD * 0.03;
+        }
+
+        setPayments([...payments, { paymentMethodId: method.id, amount_paid: amountInUSD, igtf_amount: igtf }]);
         setNewPaymentMethodId('');
         setNewAmount('');
     };
@@ -110,7 +170,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
         setErrorMsg(null);
         try {
             const invoicePayload = {
-                patientId: selectedAppointment.patient.id!,
+                patientId: Number(selectedPayerId) || selectedAppointment.patient.id!,
                 receptionistId,
                 exchangeRateId: exchangeRate.id,
                 appointmentId: selectedAppointment.id,
@@ -173,6 +233,33 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                     </div>
 
                     {selectedAppointment && (
+                        <div className="grid grid-cols-1 gap-4">
+                            {loadingPayers ? (
+                                <div className="flex items-center gap-2 text-sm text-primary-500 py-2">
+                                    <Spinner className="h-4 w-4 text-primary-500" />
+                                    <span>Cargando responsables...</span>
+                                </div>
+                            ) : payerPatients.length > 0 ? (
+                                <Select
+                                    label="Responsable de Pago"
+                                    options={payerPatients.map(p => ({
+                                        value: p.id,
+                                        label: `${p.name} (C.I. ${p.ci})`
+                                    }))}
+                                    value={selectedPayerId}
+                                    onChange={(val) => setSelectedPayerId(val)}
+                                    placeholder="Seleccionar responsable"
+                                    name="payer"
+                                />
+                            ) : (
+                                <p className="text-xs text-primary-500 italic py-1">
+                                    Responsable: {selectedAppointment.patient.name ?? selectedAppointment.patient.user?.name ?? 'Paciente de la cita'}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {selectedAppointment && (
                         <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-primary-700 font-medium">Monto Total Cita:</span>
@@ -195,7 +282,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                                 const method = paymentMethods.find(m => m.id === p.paymentMethodId);
                                 return (
                                     <div key={i} className="flex justify-between items-center bg-white p-2 rounded border border-primary-100 text-sm">
-                                        <span>{method?.name} - <span className="font-semibold">${p.amount_paid}</span> {p.igtf_amount > 0 && <span className="text-xs text-primary-500">(IGTF: ${p.igtf_amount.toFixed(2)})</span>}</span>
+                                        <span>{method?.name} - <span className="font-semibold">${p.amount_paid.toFixed(2)}</span> {isVES(method) && exchangeRate && <span className="text-xs text-primary-400">(Bs {(p.amount_paid * Number(exchangeRate.rate)).toFixed(2)})</span>} {p.igtf_amount > 0 && <span className="text-xs text-primary-500">(IGTF: ${p.igtf_amount.toFixed(2)})</span>}</span>
                                         <button onClick={() => handleRemovePayment(i)} className="text-error hover:underline text-xs">Eliminar</button>
                                     </div>
                                 );
@@ -216,7 +303,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                             </div>
                             <div className="md:col-span-1">
                                 <Field
-                                    label="Monto ($)"
+                                    label={selectedMethod && isVES(selectedMethod) ? 'Monto (Bs)' : 'Monto ($)'}
                                     type="number"
                                     name="amount"
                                     value={newAmount}
@@ -240,7 +327,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                             label={submitting ? "Procesando..." : "Registrar Factura"} 
                             onClick={handleSubmit} 
                             variant="primary" 
-                            disabled={submitting || !selectedAppointmentId || payments.length === 0}
+                            disabled={submitting || !selectedAppointmentId || payments.length === 0 || (!selectedPayerId && payerPatients.length > 0)}
                         />
                     </div>
                 </div>
