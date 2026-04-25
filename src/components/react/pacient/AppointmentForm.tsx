@@ -84,14 +84,12 @@ export default function AppointmentForm({ patientId }: AppointmentFormProps) {
         setIsLoading(true);
         setMessage({ type: "", text: "" });
 
-        // Fusión de fecha y hora para el DateTime de Prisma
-        const dateTimeString = `${formData.date}T${formData.time}:00`;
-
-        // Armamos el Payload EXACTO que espera tu schema.prisma
+        // Fusión de fecha y hora para el DateTime de Prisma (Literal UTC)
+        const dateTimeUTC = `${formData.date}T${formData.time}:00.000Z`;
         const payload = {
             patientId: Number(patientId),
             doctorId: Number(formData.doctorId),
-            date_time: new Date(dateTimeString).toISOString(),
+            date_time: dateTimeUTC,
             reson_visit: formData.reason, // ¡Manteniendo tu typo del schema!
             statusId: 1, // Asumiendo que 1 es 'Pendiente' en StatusAppointment
             typeId: 1,   // Asumiendo que 1 es consulta regular en AppointmentType

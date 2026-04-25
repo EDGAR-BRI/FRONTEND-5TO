@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { DoctorAvailability, CreateDoctorAvailabilityDto } from "./doctor_availability.interface"
+import type { DoctorAvailability, CreateDoctorAvailabilityDto, UpdateDoctorAvailabilityDto } from "./doctor_availability.interface"
 
 const BASE_PATH = "scheduling/doctor-availability"
 
@@ -50,6 +50,7 @@ export const getDoctorAvailabilitiesByScheduleId = async (doctorScheduleId: numb
 export const getDoctorAvailability = async (doctorId: number): Promise<DoctorAvailability[]> => {
     return getDoctorAvailabilitiesByDoctorId(doctorId);
 }
+
 export const getDoctorsAvailabilities = async (): Promise<DoctorAvailability[]> => {
     const response = await api(`${BASE_PATH}`, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
         method: "GET"
@@ -60,9 +61,22 @@ export const getDoctorsAvailabilities = async (): Promise<DoctorAvailability[]> 
     const data = await readEnvelopeData<ApiDoctorAvailability[]>(response);
     return data.map(normalizeAvailability);
 }
+
 export const createDrAvailability = async (payload: CreateDoctorAvailabilityDto): Promise<DoctorAvailability> => {
     const response = await api(BASE_PATH, { 
         method: "POST",
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    const data = await readEnvelopeData<ApiDoctorAvailability>(response);
+    return normalizeAvailability(data);
+};
+
+export const updateDrAvailability = async (id: number, payload: UpdateDoctorAvailabilityDto): Promise<DoctorAvailability> => {
+    const response = await api(`${BASE_PATH}/${id}`, { 
+        method: "PUT",
         body: JSON.stringify(payload)
     });
     if (!response.ok) {

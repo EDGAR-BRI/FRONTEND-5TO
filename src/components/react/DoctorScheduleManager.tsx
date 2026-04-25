@@ -346,22 +346,39 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
 
                 {/* Notifications Banner */}
                 {showSuccess && (
-                    <div className="mx-5 mt-4 bg-green-50 border border-green-200 text-success p-3 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                        <div className="bg-green-500 text-white rounded-full p-1">
-                            <FaCheck className="text-[10px]" />
+                    <div
+                        className="fixed bottom-6 right-6 z-[60]"
+                        style={{ animation: 'toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1), toastFadeOut 0.4s ease 2.6s forwards' }}
+                    >
+                        <div className="bg-emerald-600 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-500/50">
+                            <span className="bg-emerald-500 rounded-full w-6 h-6 flex items-center justify-center text-[12px] font-bold shadow-inner text-white">✓</span>
+                            <span>¡Configuración guardada correctamente! Los cambios ya están vigentes.</span>
                         </div>
-                        <span className="text-sm font-medium">¡Configuración guardada correctamente! Los cambios ya están vigentes.</span>
                     </div>
                 )}
 
                 {errorMsg && (
-                    <div className="mx-5 mt-4 bg-red-50 border border-red-200 text-error p-3 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                        <div className="bg-red-500 text-white rounded-full p-1 text-[10px] flex items-center justify-center font-bold">
-                            X
+                    <div
+                        className="fixed bottom-6 right-6 z-[60]"
+                        style={{ animation: 'toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                    >
+                        <div className="bg-rose-600 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-rose-500/50">
+                            <span className="bg-rose-500 rounded-full w-6 h-6 flex items-center justify-center text-[12px] font-bold shadow-inner text-white">!</span>
+                            <span>{errorMsg}</span>
+                            <button 
+                                onClick={() => setErrorMsg(null)}
+                                className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
+                            >
+                                ✕
+                            </button>
                         </div>
-                        <span className="text-sm font-medium">{errorMsg}</span>
                     </div>
                 )}
+                
+                <style>{`
+                    @keyframes toastSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                    @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(20px); } }
+                `}</style>
 
                 {/* Loading skeleton */}
                 {isLoading && (

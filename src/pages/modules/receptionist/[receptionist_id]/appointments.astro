@@ -1,9 +1,7 @@
 ---
 import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
-import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import AppointmentForm from "@/components/react/AppointmentForm";
-import StaticCard from "@/components/react/primary/StaticCard";
-import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
+import AppointmentBookingManager from "@/components/react/AppointmentBookingManager";
+import { FaCalendarPlus } from "react-icons/fa6";
 
 const { receptionist_id } = Astro.params;
 
@@ -57,7 +55,7 @@ const citasMock = [
       <div class="flex items-center gap-4">
         <a 
           href={`/modules/receptionist/${receptionist_id}/register-patient`}
-          class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm whitespace-nowrap"
+          class="inline-flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary-600 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm whitespace-nowrap focus-visible:ring-[3px] focus-visible:ring-primary-300"
         >
           <FaCalendarPlus />
           Agregar Paciente
@@ -81,23 +79,10 @@ const citasMock = [
       </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
-      <AppointmentForm client:load role="receptionist" createEndpoint="scheduling/appointment" />
-
-      <StaticCard
-        className="lg:col-span-3 flex flex-col min-h-150 overflow-hidden"
-      >
-        <div class="overflow-x-auto w-full h-full">
-          <div class="min-w-[800px] h-full">
-            <AppointmentCalendar
-              role="receptionist"
-              context={{ patientId: undefined }}
-              client:load
-              actions={[]}
-            />
-          </div>
-        </div>
-      </StaticCard>
-    </div>
+    <AppointmentBookingManager 
+      client:load 
+      role="receptionist" 
+      context={{ receptionist_id }} 
+    />
   </div>
-</PacientLayout>
+</ReceptionistLayout>

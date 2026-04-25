@@ -416,36 +416,52 @@ const pendingApts = Object.values(appointmentsByDoctorId)
             <th class="px-4 py-2.5 font-semibold">Mié</th>
             <th class="px-4 py-2.5 font-semibold">Jue</th>
             <th class="px-4 py-2.5 font-semibold">Vie</th>
+            {Object.values(shiftsByDoctorId).some(sh => sh.some(s => s.dayOfWeek === 6)) && (
+              <th class="px-4 py-2.5 font-semibold">Sáb</th>
+            )}
+            {Object.values(shiftsByDoctorId).some(sh => sh.some(s => s.dayOfWeek === 0)) && (
+              <th class="px-4 py-2.5 font-semibold">Dom</th>
+            )}
           </tr>
         </thead>
         <tbody class="divide-y divide-primary-100">
           {
-            doctors.map((doc) => {
-              const shifts = shiftsByDoctorId[doc.id] ?? [];
-              const byDay: { [key: number]: string } = {};
-              for (const s of shifts) {
-                byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
-              }
-              return (
-                <tr class="hover:bg-primary-50 transition-colors">
-                  <td class="px-4 py-3 font-semibold text-primary-800">
-                    {doc.user.name}
-                  </td>
-                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty.name}</td>
-                  {[1, 2, 3, 4, 5].map((d) => (
-                    <td class="px-4 py-3">
-                      {byDay[d] ? (
-                        <span class="font-mono text-primary-700 text-body-xxs">
-                          {byDay[d]}
-                        </span>
-                      ) : (
-                        <span class="text-cool-gray-30">—</span>
-                      )}
+            (() => {
+              const allShifts = Object.values(shiftsByDoctorId).flat();
+              const hasSat = allShifts.some(s => s.dayOfWeek === 6);
+              const hasSun = allShifts.some(s => s.dayOfWeek === 0);
+              const daysToRender = [1, 2, 3, 4, 5];
+              if (hasSat) daysToRender.push(6);
+              if (hasSun) daysToRender.push(0);
+
+              return doctors.map((doc) => {
+                const shifts = shiftsByDoctorId[doc.id] ?? [];
+                const byDay: { [key: number]: string } = {};
+                for (const s of shifts) {
+                  byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
+                }
+
+                return (
+                  <tr class="hover:bg-primary-50 transition-colors">
+                    <td class="px-4 py-3 font-semibold text-primary-800">
+                      {doc.user.name}
                     </td>
-                  ))}
-                </tr>
-              );
-            })
+                    <td class="px-4 py-3 text-cool-gray-60">{doc.specialty.name}</td>
+                    {daysToRender.map((d) => (
+                      <td class="px-4 py-3">
+                        {byDay[d] ? (
+                          <span class="font-mono text-primary-700 text-body-xxs">
+                            {byDay[d]}
+                          </span>
+                        ) : (
+                          <span class="text-cool-gray-30">—</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              });
+            })()
           }
         </tbody>
       </table>

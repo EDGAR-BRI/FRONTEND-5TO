@@ -94,7 +94,10 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 function parseDateTime(str: string): Date {
-  return new Date(str.includes('T') ? str : str.replace(' ', 'T'))
+  // Para evitar desfases por zona horaria al mostrar citas (Literal UTC):
+  // Eliminamos la 'Z' para que el navegador lo parsee como hora local y se vea exactamente lo guardado.
+  const cleanStr = str.replace('Z', '').replace(' ', 'T')
+  return new Date(cleanStr)
 }
 
 function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
@@ -102,8 +105,11 @@ function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
   const events: CalendarEvent[] = []
 
   for (const shift of shifts) {
-    // dayOfWeek:1=Mon…7=Sun → addDays from monday: Mon=0, Tue=1…
-    const day = addDays(monday, shift.dayOfWeek - 1)
+    // Adaptamos el mapeo: el sistema ahora usa 1=Lun...6=Sab, 0=Dom
+    // Si monday es el inicio de la semana (Lunes), el offset para Domingo (0) debe ser 6.
+    const dayOffset = shift.dayOfWeek === 0 ? 6 : shift.dayOfWeek - 1
+    const day = addDays(monday, dayOffset)
+    
     const [sh, sm] = shift.startsAt.split(':').map(Number)
     const [eh, em] = shift.endsAt.split(':').map(Number)
     events.push({
