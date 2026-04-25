@@ -55,7 +55,7 @@ export const OverviewStats = () => {
             />
             <StatsCard
                 variant="compact"
-                title="Nuevos Reportes"
+                title="Consultas Realizadas"
                 value={stats.reportsCount}
                 color="primary"
                 icon={<FaFileLines size={22} />}

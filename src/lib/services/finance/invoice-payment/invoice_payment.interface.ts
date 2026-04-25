@@ -5,6 +5,12 @@ export type PaymentAcumulators =
         },
         amount_paid: number // en dolaritoss
     }
+export type CreateInvoicePaymentDto = {
+    invoiceId: number;
+    paymentMethodId: number;
+    amount_paid: string | number;
+    exchangeRateId?: number;
+}
 export type InvoicePayment =
     {
         id: number,

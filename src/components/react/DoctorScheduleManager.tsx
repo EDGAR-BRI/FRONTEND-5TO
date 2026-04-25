@@ -5,7 +5,8 @@ import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { FaCheck, FaMinus, FaPlus, FaXmark } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
-import { getDoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { getDoctorAvailabilitiesByScheduleId, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { createDoctorSchedule, getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
 export interface ScheduleDay {
@@ -38,7 +39,7 @@ const WEEKDAYS = [
     { val: 4, label: 'Jueves', short: 'Jue' },
     { val: 5, label: 'Viernes', short: 'Vie' },
     { val: 6, label: 'Sábado', short: 'Sáb' },
-    { val: 7, label: 'Domingo', short: 'Dom' },
+    { val: 0, label: 'Domingo', short: 'Dom' },
 ]
 
 function availabilityToCycle(doctorId: number, availability: DoctorAvailability[]): ScheduleCycle {
@@ -76,11 +77,41 @@ function emptyDefaultCycle(doctorId: number): ScheduleCycle {
 export default function DoctorScheduleManager({ doctors }: DoctorScheduleManagerProps) {
     const [selectedDocId, setSelectedDocId] = useState<number>(doctors[0]?.id ?? 0)
     const [cycles, setCycles] = useState<Record<number, ScheduleCycle>>({})
+    const [activeScheduleIds, setActiveScheduleIds] = useState<Record<number, number>>({})
     const [loadingDocId, setLoadingDocId] = useState<number | null>(null)
     const [editingCycle, setEditingCycle] = useState<ScheduleCycle | null>(null)
     const [activeWeekTab, setActiveWeekTab] = useState<number>(1)
     const [isSaving, setIsSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+    const dayStartUTC = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
+
+    const ensureActiveScheduleId = useCallback(async (doctorId: number) => {
+        if (activeScheduleIds[doctorId]) return activeScheduleIds[doctorId]
+
+        const todayStart = dayStartUTC(new Date())
+        const schedules = await getDoctorSchedules(doctorId)
+
+        const active = schedules
+            .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+            .filter(s => s._start <= todayStart && (s._end === null || s._end > todayStart))
+            .sort((a, b) => b._start.getTime() - a._start.getTime())[0]
+
+        if (active) {
+            setActiveScheduleIds(prev => ({ ...prev, [doctorId]: active.id }))
+            return active.id
+        }
+
+        const created = await createDoctorSchedule({
+            doctorId,
+            period_start: todayStart.toISOString().slice(0, 10),
+            period_end: null,
+        })
+
+        setActiveScheduleIds(prev => ({ ...prev, [doctorId]: created.id }))
+        return created.id
+    }, [activeScheduleIds])
 
     const handleSelectDoctor = useCallback(async (docId: number) => {
         if (docId === selectedDocId) return
@@ -95,7 +126,8 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
 
         setLoadingDocId(docId)
         try {
-            const availability = await getDoctorAvailability(docId)
+            const scheduleId = await ensureActiveScheduleId(docId)
+            const availability = await getDoctorAvailabilitiesByScheduleId(scheduleId)
             const cycle = availabilityToCycle(docId, availability)
             setCycles(prev => ({ ...prev, [docId]: cycle }))
             setEditingCycle(structuredClone(cycle))
@@ -106,22 +138,24 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         } finally {
             setLoadingDocId(null)
         }
-    }, [selectedDocId, cycles])
+    }, [selectedDocId, cycles, ensureActiveScheduleId])
 
     const [initialFetchDone, setInitialFetchDone] = useState(false)
     if (!initialFetchDone && doctors.length > 0) {
         setInitialFetchDone(true)
         const firstId = doctors[0].id
         setLoadingDocId(firstId)
-        getDoctorAvailability(firstId).then(availability => {
-            const cycle = availabilityToCycle(firstId, availability)
-            setCycles({ [firstId]: cycle })
-            setEditingCycle(structuredClone(cycle))
-        }).catch(() => {
-            setEditingCycle(emptyDefaultCycle(firstId))
-        }).finally(() => {
-            setLoadingDocId(null)
-        })
+        ensureActiveScheduleId(firstId)
+            .then((scheduleId) => getDoctorAvailabilitiesByScheduleId(scheduleId))
+            .then(availability => {
+                const cycle = availabilityToCycle(firstId, availability)
+                setCycles({ [firstId]: cycle })
+                setEditingCycle(structuredClone(cycle))
+            }).catch(() => {
+                setEditingCycle(emptyDefaultCycle(firstId))
+            }).finally(() => {
+                setLoadingDocId(null)
+            })
     }
 
     const isLoading = loadingDocId === selectedDocId
@@ -161,7 +195,18 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
             const weekIdx = next.weeks.findIndex(w => w.week_number === weekNum)
             if (weekIdx === -1) return prev
             const week = { ...next.weeks[weekIdx], days: [...next.weeks[weekIdx].days] }
-            week.days[dayIdx] = { ...week.days[dayIdx], [field]: val }
+            
+            const shift = week.days[dayIdx]
+            
+            // Validación: No permitir que la hora de fin sea menor o igual a la de inicio
+            if (field === 'starts_at' && val >= shift.ends_at) {
+                return prev // Bloquear el cambio
+            }
+            if (field === 'ends_at' && val <= shift.starts_at) {
+                return prev // Bloquear el cambio
+            }
+
+            week.days[dayIdx] = { ...shift, [field]: val }
             next.weeks[weekIdx] = week
             return next
         })
@@ -180,15 +225,46 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         })
     }
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!editingCycle) return
         setIsSaving(true)
-        setTimeout(() => {
-            setCycles(prev => ({ ...prev, [selectedDocId]: structuredClone(editingCycle) }))
-            setIsSaving(false)
+        setShowSuccess(false)
+        setErrorMsg(null)
+
+        try {
+            const scheduleId = await ensureActiveScheduleId(selectedDocId)
+            // Identificar turnos nuevos (sin ID)
+            // Nota: En esta versión simplificada, asumimos que todos los turnos en editingCycle.weeks[0].days
+            // que no tienen ID deben ser creados.
+            const newShifts = editingCycle.weeks[0].days.filter(d => !d.id)
+
+            if (newShifts.length > 0) {
+                await Promise.all(newShifts.map(shift => 
+                    createDrAvailability({
+                        doctorScheduleId: scheduleId,
+                        day_of_week: shift.day_number,
+                        // Formateamos como ISO para que el backend lo parsee correctamente como Date
+                        start_time: `1970-01-01T${shift.starts_at}:00.000Z`,
+                        end_time: `1970-01-01T${shift.ends_at}:00.000Z`,
+                        patient_limit: 10 // Valor por defecto
+                    })
+                ))
+            }
+
+            // Actualizamos la lista local y marcamos como guardado
+            const availability = await getDoctorAvailabilitiesByScheduleId(scheduleId)
+            const cycle = availabilityToCycle(selectedDocId, availability)
+            setCycles(prev => ({ ...prev, [selectedDocId]: cycle }))
+            setEditingCycle(structuredClone(cycle))
+            
             setShowSuccess(true)
             setTimeout(() => setShowSuccess(false), 3000)
-        }, 600)
+        } catch (err) {
+            console.error('Error saving schedule:', err)
+            setErrorMsg('No se pudo guardar la configuración. Por favor, intente de nuevo.')
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     const handleDiscard = () => {
@@ -236,11 +312,6 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                     <div>
                         <h2 className="text-lg font-bold text-primary-800 flex items-center gap-2">
                             Configuración de Turnos
-                            {showSuccess && (
-                                <span className="text-xs bg-green-100 text-success px-2 py-0.5 rounded-full animate-fade-in">
-                                    <FaCheck className="mr-1 inline-block" />Guardado
-                                </span>
-                            )}
                         </h2>
                         <p className="text-sm text-cool-gray-50 mt-1">
                             Configura el ciclo de horarios. Puedes alternar turnos creando ciclos de varias semanas.
@@ -252,7 +323,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => handleWeekCountChange(weekCount - 1)}
-                                    disabled={weekCount <= 1 || isLoading}
+                                    disabled={weekCount <= 1 || isLoading || isSaving}
                                     className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50"
                                     aria-label="Disminuir semanas"
                                 >
@@ -262,7 +333,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                                 <span className="text-xs text-primary-700 font-medium">{weekCount === 1 ? 'sem' : 'sems'}</span>
                                 <button
                                     onClick={() => handleWeekCountChange(weekCount + 1)}
-                                    disabled={weekCount >= 4 || isLoading}
+                                    disabled={weekCount >= 4 || isLoading || isSaving}
                                     className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50"
                                     aria-label="Aumentar semanas"
                                 >
@@ -272,6 +343,42 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                         </div>
                     </div>
                 </div>
+
+                {/* Notifications Banner */}
+                {showSuccess && (
+                    <div
+                        className="fixed bottom-6 right-6 z-[60]"
+                        style={{ animation: 'toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1), toastFadeOut 0.4s ease 2.6s forwards' }}
+                    >
+                        <div className="bg-emerald-600 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-500/50">
+                            <span className="bg-emerald-500 rounded-full w-6 h-6 flex items-center justify-center text-[12px] font-bold shadow-inner text-white">✓</span>
+                            <span>¡Configuración guardada correctamente! Los cambios ya están vigentes.</span>
+                        </div>
+                    </div>
+                )}
+
+                {errorMsg && (
+                    <div
+                        className="fixed bottom-6 right-6 z-[60]"
+                        style={{ animation: 'toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                    >
+                        <div className="bg-rose-600 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-rose-500/50">
+                            <span className="bg-rose-500 rounded-full w-6 h-6 flex items-center justify-center text-[12px] font-bold shadow-inner text-white">!</span>
+                            <span>{errorMsg}</span>
+                            <button 
+                                onClick={() => setErrorMsg(null)}
+                                className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
+                <style>{`
+                    @keyframes toastSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                    @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(20px); } }
+                `}</style>
 
                 {/* Loading skeleton */}
                 {isLoading && (
@@ -322,21 +429,24 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                                                         <input
                                                             type="time"
                                                             value={shift.starts_at}
+                                                            disabled={isSaving}
                                                             onChange={e => handleUpdateShift(activeWeekTab, realIdx, 'starts_at', e.target.value)}
-                                                            className="bg-white border border-primary-200 rounded px-2 py-1 text-primary-800 font-medium focus:ring-2 focus:ring-primary-400 outline-none"
+                                                            className="bg-white border border-primary-200 rounded px-2 py-1 text-primary-800 font-medium focus:ring-2 focus:ring-primary-400 outline-none disabled:bg-cool-gray-10 disabled:text-cool-gray-400"
                                                             aria-label="Hora de inicio"
                                                         />
                                                         <span className="text-primary-600 font-medium">a</span>
                                                         <input
                                                             type="time"
                                                             value={shift.ends_at}
+                                                            disabled={isSaving}
                                                             onChange={e => handleUpdateShift(activeWeekTab, realIdx, 'ends_at', e.target.value)}
-                                                            className="bg-white border border-primary-200 rounded px-2 py-1 text-primary-800 font-medium focus:ring-2 focus:ring-primary-400 outline-none"
+                                                            className="bg-white border border-primary-200 rounded px-2 py-1 text-primary-800 font-medium focus:ring-2 focus:ring-primary-400 outline-none disabled:bg-cool-gray-10 disabled:text-cool-gray-400"
                                                             aria-label="Hora de fin"
                                                         />
                                                         <button
                                                             onClick={() => handleRemoveShift(activeWeekTab, realIdx)}
-                                                            className="ml-auto w-7 h-7 flex items-center justify-center rounded text-cool-gray-50 hover:text-error hover:bg-red-50 transition-colors"
+                                                            disabled={isSaving}
+                                                            className="ml-auto w-7 h-7 flex items-center justify-center rounded text-cool-gray-50 hover:text-error hover:bg-red-50 transition-colors disabled:opacity-30"
                                                             title="Eliminar turno"
                                                         >
                                                             <FaXmark />

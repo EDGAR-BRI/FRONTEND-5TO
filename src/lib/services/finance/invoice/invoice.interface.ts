@@ -39,3 +39,19 @@ export type Invoice = {
         },
     },
 }
+export type createInvoiceDto = {
+    patientId: number;
+    receptionistId: number;
+    exchangeRateId?: number;
+    taxId?: number;
+    statusId?: number;
+    total_usd?: string | number;
+    total_bs?: string | number;
+    appointmentId?: number;
+
+    payments: {
+        paymentMethodId: number;
+        amount_paid: number;
+        igtf_amount: number;
+    }[];
+}
