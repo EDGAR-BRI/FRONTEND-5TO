@@ -5,7 +5,8 @@ import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { FaCheck, FaMinus, FaPlus, FaXmark } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
-import { getDoctorAvailability, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { getDoctorAvailabilitiesByScheduleId, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { createDoctorSchedule, getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
 export interface ScheduleDay {
@@ -76,12 +77,41 @@ function emptyDefaultCycle(doctorId: number): ScheduleCycle {
 export default function DoctorScheduleManager({ doctors }: DoctorScheduleManagerProps) {
     const [selectedDocId, setSelectedDocId] = useState<number>(doctors[0]?.id ?? 0)
     const [cycles, setCycles] = useState<Record<number, ScheduleCycle>>({})
+    const [activeScheduleIds, setActiveScheduleIds] = useState<Record<number, number>>({})
     const [loadingDocId, setLoadingDocId] = useState<number | null>(null)
     const [editingCycle, setEditingCycle] = useState<ScheduleCycle | null>(null)
     const [activeWeekTab, setActiveWeekTab] = useState<number>(1)
     const [isSaving, setIsSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+    const dayStartUTC = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
+
+    const ensureActiveScheduleId = useCallback(async (doctorId: number) => {
+        if (activeScheduleIds[doctorId]) return activeScheduleIds[doctorId]
+
+        const todayStart = dayStartUTC(new Date())
+        const schedules = await getDoctorSchedules(doctorId)
+
+        const active = schedules
+            .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+            .filter(s => s._start <= todayStart && (s._end === null || s._end > todayStart))
+            .sort((a, b) => b._start.getTime() - a._start.getTime())[0]
+
+        if (active) {
+            setActiveScheduleIds(prev => ({ ...prev, [doctorId]: active.id }))
+            return active.id
+        }
+
+        const created = await createDoctorSchedule({
+            doctorId,
+            period_start: todayStart.toISOString().slice(0, 10),
+            period_end: null,
+        })
+
+        setActiveScheduleIds(prev => ({ ...prev, [doctorId]: created.id }))
+        return created.id
+    }, [activeScheduleIds])
 
     const handleSelectDoctor = useCallback(async (docId: number) => {
         if (docId === selectedDocId) return
@@ -96,7 +126,8 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
 
         setLoadingDocId(docId)
         try {
-            const availability = await getDoctorAvailability(docId)
+            const scheduleId = await ensureActiveScheduleId(docId)
+            const availability = await getDoctorAvailabilitiesByScheduleId(scheduleId)
             const cycle = availabilityToCycle(docId, availability)
             setCycles(prev => ({ ...prev, [docId]: cycle }))
             setEditingCycle(structuredClone(cycle))
@@ -107,22 +138,24 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         } finally {
             setLoadingDocId(null)
         }
-    }, [selectedDocId, cycles])
+    }, [selectedDocId, cycles, ensureActiveScheduleId])
 
     const [initialFetchDone, setInitialFetchDone] = useState(false)
     if (!initialFetchDone && doctors.length > 0) {
         setInitialFetchDone(true)
         const firstId = doctors[0].id
         setLoadingDocId(firstId)
-        getDoctorAvailability(firstId).then(availability => {
-            const cycle = availabilityToCycle(firstId, availability)
-            setCycles({ [firstId]: cycle })
-            setEditingCycle(structuredClone(cycle))
-        }).catch(() => {
-            setEditingCycle(emptyDefaultCycle(firstId))
-        }).finally(() => {
-            setLoadingDocId(null)
-        })
+        ensureActiveScheduleId(firstId)
+            .then((scheduleId) => getDoctorAvailabilitiesByScheduleId(scheduleId))
+            .then(availability => {
+                const cycle = availabilityToCycle(firstId, availability)
+                setCycles({ [firstId]: cycle })
+                setEditingCycle(structuredClone(cycle))
+            }).catch(() => {
+                setEditingCycle(emptyDefaultCycle(firstId))
+            }).finally(() => {
+                setLoadingDocId(null)
+            })
     }
 
     const isLoading = loadingDocId === selectedDocId
@@ -199,6 +232,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         setErrorMsg(null)
 
         try {
+            const scheduleId = await ensureActiveScheduleId(selectedDocId)
             // Identificar turnos nuevos (sin ID)
             // Nota: En esta versión simplificada, asumimos que todos los turnos en editingCycle.weeks[0].days
             // que no tienen ID deben ser creados.
@@ -207,7 +241,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
             if (newShifts.length > 0) {
                 await Promise.all(newShifts.map(shift => 
                     createDrAvailability({
-                        doctorId: selectedDocId,
+                        doctorScheduleId: scheduleId,
                         day_of_week: shift.day_number,
                         // Formateamos como ISO para que el backend lo parsee correctamente como Date
                         start_time: `1970-01-01T${shift.starts_at}:00.000Z`,
@@ -218,7 +252,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
             }
 
             // Actualizamos la lista local y marcamos como guardado
-            const availability = await getDoctorAvailability(selectedDocId)
+            const availability = await getDoctorAvailabilitiesByScheduleId(scheduleId)
             const cycle = availabilityToCycle(selectedDocId, availability)
             setCycles(prev => ({ ...prev, [selectedDocId]: cycle }))
             setEditingCycle(structuredClone(cycle))

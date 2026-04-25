@@ -3,7 +3,8 @@ import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
 import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
 import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
-import { getDoctorsAvailabilities } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { getDoctorAvailabilitiesByScheduleId } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { formatShiftsByDoctorId } from '@/utils/helper_functions';
 import {
   FaArrowLeft,
@@ -28,7 +29,26 @@ const initialView =
 // Appoinment + Form → User gives us booked appointments per doctor
 
 const doctors = await getActuallyAvailableDrs();
-const shifts = await getDoctorsAvailabilities();
+
+const todayStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate(), 0, 0, 0, 0));
+const activeScheduleIdForDoctor = async (doctorId: number) => {
+  const schedules = await getDoctorSchedules(doctorId);
+  const active = schedules
+    .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+    .filter(s => s._start <= todayStart && (s._end === null || s._end > todayStart))
+    .sort((a, b) => b._start.getTime() - a._start.getTime())[0];
+  return active?.id ?? null;
+};
+
+const shiftsNested = await Promise.all(
+  doctors.map(async (d) => {
+    const scheduleId = await activeScheduleIdForDoctor(d.id);
+    if (!scheduleId) return [];
+    return getDoctorAvailabilitiesByScheduleId(scheduleId);
+  })
+);
+
+const shifts = shiftsNested.flat();
 
 // ScheduleDay rows for the active ScheduleCycle (dayOfWeek: 1=Mon … 5=Fri)
 const shiftsByDoctorId: Record<
