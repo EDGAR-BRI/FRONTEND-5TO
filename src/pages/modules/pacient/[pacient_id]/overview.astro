@@ -36,15 +36,15 @@ import { api } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
 
-let patientData: any = {
-  user: {
-    name: "Daniela Pérez ",
-    ci: "V-12345678"
-  },
-  tipo_sangre: "O+"
-};
+ let patientData: any = null;
+//   user: {
+//     name: "Daniela Pérez ",
+//     ci: "V-12345678"
+//   },
+//   tipo_sangre: "O+"
+// };
 
-/* Samuel aca tu cuando conectes la apio la descomentas
+// Samuel aca tu cuando conectes la apio la descomentas
 try {
   const response = await api(`/medical/patient/${pacient_id}`, {}, Astro.cookies);
   if (response.ok) {
@@ -57,7 +57,7 @@ try {
   console.error(error);
   return Astro.redirect('/error-servidor');
 }
-*/
+
 
 const fullName = patientData?.user?.name || 'Paciente Desconocido';
 const ci = patientData?.user?.ci || 'Sin CI';

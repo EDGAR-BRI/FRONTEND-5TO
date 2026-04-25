@@ -268,14 +268,21 @@ export default function AppointmentForm({
             const dateObj = new Date(dateTimeString);
 
 
-            const payload = {
+            const payload: Record<string, any> = {
                 patientId: Number(context?.patientId),
-                doctorId: Number(doctorId),
+                //doctorId: Number(doctorId),
                 date_time: dateObj.toISOString(),
                 reson_visit: motivo || undefined,
                 statusId: 1,
                 typeId: 1,
-                price: 0
+                price: 50,
+            }
+            if (doctorId) {
+                payload.doctorId = Number(doctorId);
+            } else if (especialidad) {
+                // Si no eligió doctor pero sí especialidad, enviamos specialtyId
+                // Ojo: asegúrate de que 'especialidad' guarde el ID y no el nombre
+                payload.specialtyId = Number(especialidad);
             }
 
             const res = await api(createEndpoint, {

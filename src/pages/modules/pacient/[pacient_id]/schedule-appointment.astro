@@ -4,6 +4,7 @@ import AppointmentCalendar from "@/components/react/AppointmentCalendar";
 import StaticCard from "@/components/react/primary/StaticCard";
 import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
 import AppointmentForm from "@/components/react/AppointmentForm";
+import { api } from "@/lib/api";
 
 const pacient_id = Astro.params.pacient_id || "";
 
@@ -14,7 +15,21 @@ const coloresEstado: Record<string, string> = {
   Finalizada: "bg-blue-100 text-blue-700 border-blue-200",
 };
 
-const citas: any[] = [];
+let citas: any[] = [];
+
+try {
+  const res = await api(
+    `/scheduling/appointment?patientId=${pacient_id}`,
+    {},
+    Astro.cookies,
+  );
+  if (res.ok) {
+    const json = await res.json();
+    citas = json.data;
+  }
+} catch (error) {
+  console.error("Error cargando citas del calendario:", error);
+}
 ---
 
 <PacientLayout title="Agendar Cita | Paciente">
