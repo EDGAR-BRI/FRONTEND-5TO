@@ -6,7 +6,7 @@ import { FaCheck, FaMinus, FaPlus, FaXmark } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import { getDoctorAvailabilitiesByScheduleId, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
-import { createDoctorSchedule, getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
+import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
 export interface ScheduleDay {
@@ -233,17 +233,32 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
 
         try {
             const scheduleId = await ensureActiveScheduleId(selectedDocId)
-            // Identificar turnos nuevos (sin ID)
-            // Nota: En esta versión simplificada, asumimos que todos los turnos en editingCycle.weeks[0].days
-            // que no tienen ID deben ser creados.
-            const newShifts = editingCycle.weeks[0].days.filter(d => !d.id)
+            const todayStart = dayStartUTC(new Date())
+            const todayISO = todayStart.toISOString().slice(0, 10)
 
-            if (newShifts.length > 0) {
-                await Promise.all(newShifts.map(shift => 
+            // Finalizar el schedule actual
+            await updateDoctorSchedule(scheduleId, {
+                period_end: todayISO
+            })
+
+            // Crear un schedule nuevo con fecha de inicio hoy y sin fecha de fin
+            const newSchedule = await createDoctorSchedule({
+                doctorId: selectedDocId,
+                period_start: todayISO,
+                period_end: null,
+            })
+            
+            // Actualizar la referencia del schedule activo localmente
+            setActiveScheduleIds(prev => ({ ...prev, [selectedDocId]: newSchedule.id }))
+
+            // Obtener todos los turnos del ciclo (de todas las semanas)
+            const allShifts = editingCycle.weeks.flatMap(w => w.days)
+
+            if (allShifts.length > 0) {
+                await Promise.all(allShifts.map(shift => 
                     createDrAvailability({
-                        doctorScheduleId: scheduleId,
+                        doctorScheduleId: newSchedule.id,
                         day_of_week: shift.day_number,
-                        // Formateamos como ISO para que el backend lo parsee correctamente como Date
                         start_time: `1970-01-01T${shift.starts_at}:00.000Z`,
                         end_time: `1970-01-01T${shift.ends_at}:00.000Z`,
                         patient_limit: 10 // Valor por defecto
@@ -252,7 +267,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
             }
 
             // Actualizamos la lista local y marcamos como guardado
-            const availability = await getDoctorAvailabilitiesByScheduleId(scheduleId)
+            const availability = await getDoctorAvailabilitiesByScheduleId(newSchedule.id)
             const cycle = availabilityToCycle(selectedDocId, availability)
             setCycles(prev => ({ ...prev, [selectedDocId]: cycle }))
             setEditingCycle(structuredClone(cycle))
