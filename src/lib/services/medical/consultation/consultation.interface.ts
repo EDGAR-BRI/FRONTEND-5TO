@@ -1,3 +1,7 @@
+import type { SymptomsConsultaDto } from "./symptoms-consulta/symptoms-consulta.interface";
+import type { ConsultationDiagnosisDto } from "./consultation-diagnosis/consultation-diagnosis.interface";
+import type { ClinicalExaminationDto } from "./clinical-examination/clinical-examination.interface";
+
 export interface ConsultationPatientUserRef {
 	ci: string;
 	name: string;
@@ -47,6 +51,25 @@ export interface ConsultationSummary {
 	doctor: ConsultationDoctorRef;
 }
 
+export interface ConsultationPrescriptionDto {
+	id: number;
+	consultationId: number;
+	supplyId?: number | null;
+	medication_name?: string | null;
+	dosage?: string | null;
+	frequency?: string | null;
+	duration?: string | null;
+	instructions?: string | null;
+	active: boolean;
+}
+
+export interface ConsultationSupplyDto {
+	id: number;
+	supplyId: number;
+	consultationId: number;
+	quantity: string | number;
+}
+
 export interface ConsultationDetail {
 	id: number;
 	date: string;
@@ -54,11 +77,11 @@ export interface ConsultationDetail {
 	finished_at: string | null;
 	invoice: Omit<ConsultationInvoiceRef, "patientId">;
 	doctor: Omit<ConsultationDoctorRef, "userId">;
-	symptomsConsultations: unknown[];
-	consultationDiagnoses: unknown[];
-	clinicalExaminations: unknown[];
-	prescriptions: unknown[];
-	supplies: unknown[];
+	symptomsConsultations: SymptomsConsultaDto[];
+	consultationDiagnoses: ConsultationDiagnosisDto[];
+	clinicalExaminations: ClinicalExaminationDto[];
+	prescriptions: ConsultationPrescriptionDto[];
+	supplies: ConsultationSupplyDto[];
 }
 
 export interface CreateConsultationDto {

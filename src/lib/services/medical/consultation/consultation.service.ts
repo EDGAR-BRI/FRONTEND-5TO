@@ -18,6 +18,14 @@ export const listConsultations = async (): Promise<ConsultationSummary[]> => {
 	return readEnvelopeData<ConsultationSummary[]>(response);
 };
 
+export const listConsultationsByDoctor = async (doctorId: number): Promise<ConsultationSummary[]> => {
+	const response = await api(`${BASE_PATH}/doctor/${doctorId}`, { method: "GET" });
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<ConsultationSummary[]>(response);
+};
+
 export const getConsultationById = async (id: number): Promise<ConsultationDetail> => {
 	const response = await api(`${BASE_PATH}/${id}`, { method: "GET" });
 	if (!response.ok) {
