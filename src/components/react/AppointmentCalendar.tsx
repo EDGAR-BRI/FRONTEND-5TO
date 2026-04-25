@@ -79,6 +79,8 @@ export type AppointmentCalendarProps = {
   availableDays?: number[]
   /** Citas del doctor seleccionado */
   doctorAppointments?: { date_time: string; reson_visit?: string; patient: { user: { name: string } }; doctor: { user: { name: string }; specialty: { name: string } }; status: { name: string } }[]
+  doctorSchedulesData?: { id: number, period_start: string, period_end: string | null }[]
+  doctorAvailabilities?: { day_of_week: number, doctorScheduleId?: number }[]
 }
 
 const locales = { es }
@@ -146,7 +148,7 @@ const badgeColors: Record<string, string> = {
 };
 
 export default function AppointmentCalendar({
-  citas, endpoint, role = 'pacient', context, actions, statusClassByEstado, heightPx = 600, onSelectDate, availableDays, doctorAppointments,
+  citas, endpoint, role = 'pacient', context, actions, statusClassByEstado, heightPx = 600, onSelectDate, availableDays, doctorAppointments, doctorSchedulesData, doctorAvailabilities,
 }: AppointmentCalendarProps) {
   const { isOpen, openModal, closeModal } = useModal(false)
   const [citaSeleccionada, setCitaSeleccionada] = useState<Cita | null>(null)
@@ -168,7 +170,17 @@ export default function AppointmentCalendar({
     today.setHours(0, 0, 0, 0)
     if (isBefore(slotInfo.start, today)) return
     // Bloquear días donde el doctor no trabaja
-    if (availableDays && availableDays.length > 0) {
+    if (doctorSchedulesData && doctorSchedulesData.length > 0 && doctorAvailabilities) {
+      const dateUTC = new Date(Date.UTC(slotInfo.start.getFullYear(), slotInfo.start.getMonth(), slotInfo.start.getDate(), 0, 0, 0, 0));
+      const activeSchedule = doctorSchedulesData.find(s => {
+        const start = new Date(s.period_start);
+        const end = s.period_end ? new Date(s.period_end) : null;
+        return dateUTC >= start && (!end || dateUTC <= end);
+      });
+      if (!activeSchedule) return;
+      const day = getDay(slotInfo.start);
+      if (!doctorAvailabilities.some(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === day)) return;
+    } else if (availableDays && availableDays.length > 0) {
       const dayOfWeek = getDay(slotInfo.start)
       if (!availableDays.includes(dayOfWeek)) return
     }
@@ -223,12 +235,22 @@ export default function AppointmentCalendar({
     const classes: string[] = ['cal-day-selectable']
     if (isSelected) classes.push('cal-day-selected')
 
-    if (!availableDays || availableDays.length === 0) {
-      return { className: classes.join(' ') }
+    let isWorkDay = false;
+    if (doctorSchedulesData && doctorSchedulesData.length > 0 && doctorAvailabilities) {
+      const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+      const activeSchedule = doctorSchedulesData.find(s => {
+        const start = new Date(s.period_start);
+        const end = s.period_end ? new Date(s.period_end) : null;
+        return dateUTC >= start && (!end || dateUTC <= end);
+      });
+      if (activeSchedule) {
+        const day = getDay(date);
+        isWorkDay = doctorAvailabilities.some(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === day);
+      }
+    } else if (availableDays && availableDays.length > 0) {
+      const day = getDay(date);
+      isWorkDay = availableDays.includes(day);
     }
-
-    const day = getDay(date)
-    const isWorkDay = availableDays.includes(day)
 
     if (isWorkDay && aptCount > 0) {
       classes.push('dr-work-day', 'dr-has-apts')

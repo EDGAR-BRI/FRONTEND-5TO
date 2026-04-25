@@ -5,7 +5,7 @@ import { ReceptionistStatsSummary } from "@/components/react/receptionist/Recept
 import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
 import { getDoctorAvailabilitiesByScheduleId } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
 import { getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
-import { formatShiftsByDoctorId } from '@/utils/helper_functions';
+import { formatShiftsByDoctorId, convertirAHHMM } from '@/utils/helper_functions';
 import {
   FaArrowLeft,
   FaCalendarCheck,
@@ -30,59 +30,56 @@ const initialView =
 
 const doctors = await getActuallyAvailableDrs();
 
-const todayStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate(), 0, 0, 0, 0));
-const activeScheduleIdForDoctor = async (doctorId: number) => {
-  const schedules = await getDoctorSchedules(doctorId);
-  const active = schedules
-    .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
-    .filter(s => s._start <= todayStart && (s._end === null || s._end > todayStart))
-    .sort((a, b) => b._start.getTime() - a._start.getTime())[0];
-  return active?.id ?? null;
-};
+const allDoctorsSchedulesNested = await Promise.all(doctors.map(d => getDoctorSchedules(d.id)));
+const allDoctorsSchedules = allDoctorsSchedulesNested.flat();
 
-const shiftsNested = await Promise.all(
-  doctors.map(async (d) => {
-    const scheduleId = await activeScheduleIdForDoctor(d.id);
-    if (!scheduleId) return [];
-    return getDoctorAvailabilitiesByScheduleId(scheduleId);
-  })
+const allAvailabilitiesNested = await Promise.all(
+  allDoctorsSchedules.map(s => getDoctorAvailabilitiesByScheduleId(s.id))
 );
+const allAvailabilities = allAvailabilitiesNested.flat();
 
-const shifts = shiftsNested.flat();
+const today = new Date();
+const currentDayOfWeek = today.getDay();
+const diffToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+const monday = new Date(today);
+monday.setDate(today.getDate() + diffToMonday);
+monday.setHours(0,0,0,0);
 
-// ScheduleDay rows for the active ScheduleCycle (dayOfWeek: 1=Mon … 5=Fri)
-const shiftsByDoctorId: Record<
-  number,
-  { dayOfWeek: number; startsAt: string; endsAt: string }[]
-> = /*{
-  1: [
-    { dayOfWeek: 1, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 2, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 3, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 4, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 5, startsAt: "07:30", endsAt: "13:00" },
-  ],
-  2: [
-    { dayOfWeek: 1, startsAt: "08:00", endsAt: "14:00" },
-    { dayOfWeek: 3, startsAt: "08:00", endsAt: "14:00" },
-    { dayOfWeek: 5, startsAt: "08:00", endsAt: "14:00" },
-  ],
-  3: [
-    { dayOfWeek: 2, startsAt: "09:00", endsAt: "13:00" },
-    { dayOfWeek: 4, startsAt: "09:00", endsAt: "13:00" },
-  ],
-  4: [
-    { dayOfWeek: 1, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 2, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 3, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 4, startsAt: "08:30", endsAt: "12:30" },
-  ],
-  5: [
-    { dayOfWeek: 2, startsAt: "10:00", endsAt: "14:00" },
-    { dayOfWeek: 4, startsAt: "10:00", endsAt: "14:00" },
-    { dayOfWeek: 5, startsAt: "10:00", endsAt: "14:00" },
-  ],
-};*/ formatShiftsByDoctorId(shifts);
+const datesOfWeek = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+});
+
+const shiftsByDoctorId: Record<number, { dayOfWeek: number; startsAt: string; endsAt: string }[]> = {};
+
+for (const doc of doctors) {
+    const schedules = allDoctorsSchedules.filter(s => s.doctorId === doc.id);
+    const docShifts: { dayOfWeek: number; startsAt: string; endsAt: string }[] = [];
+
+    for (let i = 0; i < 7; i++) {
+        const date = datesOfWeek[i];
+        const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+        const dayOfWeek = date.getDay();
+
+        const activeSchedule = schedules
+            .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+            .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+            .sort((a, b) => b._start.getTime() - a._start.getTime())[0];
+
+        if (activeSchedule) {
+            const availabilities = allAvailabilities.filter(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === dayOfWeek);
+            availabilities.forEach(a => {
+                docShifts.push({
+                    dayOfWeek: a.day_of_week,
+                    startsAt: convertirAHHMM(a.start_time),
+                    endsAt: convertirAHHMM(a.end_time)
+                });
+            });
+        }
+    }
+    shiftsByDoctorId[doc.id] = docShifts;
+}
 
 // Appoinment rows with scheduled_range parsed into start/end + Form+User for patient name
 const appointmentsByDoctorId: Record<
@@ -487,7 +484,8 @@ const pendingApts = Object.values(appointmentsByDoctorId)
     <DoctorScheduleCalendar
       client:only="react"
       doctors={doctors}
-      shiftsByDoctorId={shiftsByDoctorId}
+      allSchedules={allDoctorsSchedules}
+      allAvailabilities={allAvailabilities}
       heightPx={620}
       initialView={initialView}
     />

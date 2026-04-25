@@ -3,8 +3,10 @@ import AppointmentForm from './AppointmentForm'
 import AppointmentCalendar from './AppointmentCalendar'
 import { getDoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
 import { getAppointmentsByDr } from '@/lib/services/scheduling/appointment/appointment.service'
+import { getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface'
+import type { DoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.interface'
 
 interface AppointmentBookingManagerProps {
     role: 'receptionist' | 'pacient'
@@ -17,6 +19,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
     const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>()
     const [availableDays, setAvailableDays] = useState<number[]>([])
     const [doctorSchedule, setDoctorSchedule] = useState<DoctorAvailability[]>([])
+    const [doctorSchedulesData, setDoctorSchedulesData] = useState<DoctorSchedule[]>([])
     const [doctorAppointments, setDoctorAppointments] = useState<Appointment[]>([])
     const [loadingApts, setLoadingApts] = useState(false)
 
@@ -25,20 +28,26 @@ export default function AppointmentBookingManager({ role, userId, context }: App
         if (!selectedDoctorId) {
             setAvailableDays([])
             setDoctorSchedule([])
+            setDoctorSchedulesData([])
             setDoctorAppointments([])
             return
         }
 
-        getDoctorAvailability(selectedDoctorId)
-            .then((data: DoctorAvailability[]) => {
-                setDoctorSchedule(data)
-                const days = Array.from(new Set(data.map(a => a.day_of_week)))
+        Promise.all([
+            getDoctorAvailability(selectedDoctorId),
+            getDoctorSchedules(selectedDoctorId)
+        ])
+            .then(([availData, schedData]) => {
+                setDoctorSchedule(availData)
+                setDoctorSchedulesData(schedData)
+                const days = Array.from(new Set(availData.map(a => a.day_of_week)))
                 setAvailableDays(days)
             })
             .catch(err => {
-                console.error('Error fetching doctor availability:', err)
+                console.error('Error fetching doctor data:', err)
                 setAvailableDays([])
                 setDoctorSchedule([])
+                setDoctorSchedulesData([])
             })
     }, [selectedDoctorId])
 
@@ -171,6 +180,8 @@ export default function AppointmentBookingManager({ role, userId, context }: App
                             onSelectDate={handleSelectDate}
                             availableDays={availableDays}
                             doctorAppointments={doctorAppointments}
+                            doctorSchedulesData={doctorSchedulesData}
+                            doctorAvailabilities={doctorSchedule}
                         />
                     </div>
                 </div>
