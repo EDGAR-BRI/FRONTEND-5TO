@@ -5,6 +5,7 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaGaugeHigh, FaStethoscope, FaUserDoctor } from "react-icons/fa6";
+import ProductividadComposedChart from "@/components/react/admin/ProductividadComposedChart";
 
 const doctors = [
   { name: "Dra. Ramos", attended: 22, avgTime: "19 min", saturation: "83%" },
@@ -16,19 +17,18 @@ const doctors = [
 
 <AdminLayout title="Operativos - Productividad | Admin">
   <div class="p-6 md:p-8 space-y-8">
-    
+
     <a href="/modules/admin/reports/operativos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a operativos
     </a>
 
-    {/* Header */}
     <header class="space-y-2">
       <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Productividad médica</h1>
-      <p class="text-gray-500 font-medium">Rendimiento por profesional para balancear carga asistencial.</p>
+      <p class="text-gray-500 font-medium">Análisis de rendimiento por profesional para optimizar la carga asistencial.</p>
     </header>
 
-    {/* TARJETAS DE ESTADÍSTICAS ARRIBA */}
+    {/* TARJETAS DE ESTADÍSTICAS*/}
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <StatsCard title="Médicos en turno" value="12" trend="0.0%" trendUp={true} color="primary">
         <FaUserDoctor slot="icon" size={20} />
@@ -41,10 +41,19 @@ const doctors = [
       </StatsCard>
     </section>
 
-    {/* FILTROS */}
+    {/*FILTROS */}
     <ReportTimeframeFilters client:load title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de saturación." />
 
-    {/* TABLA  */}
+    <div class="mt-8">
+      <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">
+        <div class="mb-8 border-b border-gray-100 pb-5">
+            <h2 class="text-xl font-bold text-gray-800">Carga de Trabajo vs. Saturación</h2>
+            <p class="text-sm text-gray-500 font-medium">Relación entre el volumen de pacientes atendidos y la capacidad utilizada por médico.</p>
+        </div>
+        <ProductividadComposedChart client:only="react" data={doctors} />
+      </section>
+    </div>
+
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold text-gray-800">Productividad por médico</h2>
@@ -67,9 +76,9 @@ const doctors = [
             {
               doctors.map((item) => (
                 <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
-                  <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{item.name}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{item.attended}</td>
-                  <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{item.avgTime}</td>
+                  <td class="px-4 py-3 text-sm text-gray-700 font-medium">{item.name}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.attended}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.avgTime}</td>
                   <td class="px-4 py-3 text-sm text-right">
                     <span class={`font-bold ${parseInt(item.saturation) > 85 ? 'text-red-600' : 'text-emerald-600'}`}>
                       {item.saturation}
