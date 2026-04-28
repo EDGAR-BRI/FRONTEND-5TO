@@ -10,7 +10,6 @@ import {
 } from 'recharts';
 
 export default function TiemposAreaChart({ data }) {
-  // Limpieza de datos segura
   const cleanData = data ? data.map(item => ({
     name: item.area,
     Consulta: parseInt(item.consult) || 0,
