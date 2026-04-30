@@ -36,17 +36,25 @@ import { api } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
 
-let patientData: any = null;
+// let patientData: any = null;
+// 1. Definimos datos falsos por defecto (Fallback)
+let patientData: any = {
+  id: pacient_id,
+  user: {
+    name: "Daniela Pérez (Mock)",
+    ci: "V-12345678"
+  },
+  tipo_sangre: "O+"
+};
 let appointmentsData: any[] = [];
 
+
 try {
-  // Ejecutamos ambas peticiones en paralelo para máxima velocidad
   const [patientRes, appointmentsRes] = await Promise.all([
     api(`/medical/patient/${pacient_id}`, {}, Astro.cookies),
     api(`/scheduling/appointment?patientId=${pacient_id}`, {}, Astro.cookies)
   ]);
 
-  // Si el paciente no existe, redirigimos
   if (!patientRes.ok) {
     return Astro.redirect('/no-encontrado');
   }
