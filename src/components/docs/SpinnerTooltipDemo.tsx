@@ -1,4 +1,3 @@
-import React from 'react';
 import { Spinner } from '@/components/react/primary/Spinner';
 import { Tooltip } from '@/components/react/primary/Tooltip';
 import PreviewBox from './PreviewBox';

@@ -1,22 +1,13 @@
 ---
-const navItems = [
-    {
-        label: "Home",
-        href: "/dashboard",
-        icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
-    },
-    {
-        label: "Network",
-        href: "/users",
-        icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
-    },
-    { label: "Create", href: "/create", icon: "M12 4v16m8-8H4" },
-    {
-        label: "Search",
-        href: "/search",
-        icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
-    },
-    { label: "Menu", href: "/menu", icon: "M4 6h16M4 12h16M4 18h16" }, // Triggers sidebar or menu page
+import type { IconType } from "react-icons";
+import { FaBars, FaHouse, FaMagnifyingGlass, FaPlus, FaUsers } from "react-icons/fa6";
+
+const navItems: { label: string; href: string; icon: IconType }[] = [
+	{ label: "Home", href: "/dashboard", icon: FaHouse },
+	{ label: "Network", href: "/users", icon: FaUsers },
+	{ label: "Create", href: "/create", icon: FaPlus },
+	{ label: "Search", href: "/search", icon: FaMagnifyingGlass },
+	{ label: "Menu", href: "/menu", icon: FaBars }, // Triggers sidebar or menu page
 ];
 
 const currentPath = Astro.url.pathname;
@@ -35,30 +26,21 @@ const currentPath = Astro.url.pathname;
 
                 // Special handling for Menu
                 if (item.label === "Menu") {
+                    const Icon = item.icon;
                     return (
                         <button
                             onclick="document.dispatchEvent(new CustomEvent('toggle-sidebar'))"
                             class="flex flex-col items-center justify-center w-full h-full space-y-1 text-cool-gray-40 hover:text-cool-gray-20"
                         >
-                            <svg
-                                class="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d={item.icon}
-                                />
-                            </svg>
+						<Icon className="h-6 w-6" />
                             <span class="text-[10px] font-medium">
                                 {item.label}
                             </span>
                         </button>
                     );
                 }
+
+                const Icon = item.icon;
 
                 return (
                     <a
@@ -70,19 +52,7 @@ const currentPath = Astro.url.pathname;
                                 : "text-cool-gray-40 hover:text-cool-gray-20",
                         ]}
                     >
-                        <svg
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d={item.icon}
-                            />
-                        </svg>
+					<Icon className="h-6 w-6" />
                         <span class="text-[10px] font-medium">
                             {item.label}
                         </span>

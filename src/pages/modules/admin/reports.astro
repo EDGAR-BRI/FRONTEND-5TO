@@ -2,9 +2,18 @@
 export const prerender = true;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
+import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { Button } from "@/components/react/primary/Button";
-import { LuTrendingUp, LuStethoscope, LuUserPlus, LuBan } from "react-icons/lu";
+import {
+	FaArrowTrendUp,
+	FaBan,
+	FaFilePdf,
+	FaPrint,
+	FaStethoscope,
+	FaUserPlus,
+} from "react-icons/fa6";
 
 // Fake data for charts
 const monthlyRevenue = [
@@ -25,10 +34,6 @@ const specialtiesStats = [
 	{ name: "Dermatología", percentage: 15, color: "bg-cool-gray-50" },
 	{ name: "Otros", percentage: 5, color: "bg-cool-gray-30" },
 ];
-
-const printStats = () => {
-	window.print();
-};
 ---
 
 <AdminLayout title="Reportes y Estadísticas | Admin">
@@ -48,15 +53,19 @@ const printStats = () => {
 			</div>
 			<div class="flex gap-3">
 				<Button label="Exportar PDF" variant="secondary">
-					<i class="fa-solid fa-file-pdf"></i>
+					<FaFilePdf size={14} />
 					Exportar PDF
 				</Button>
 				<Button label="Imprimir Reporte" variant="primary">
-					<i class="fa-solid fa-print"></i>
+					<FaPrint size={14} />
 					Imprimir Reporte
 				</Button>
 			</div>
 		</header>
+
+		<ReportTimeframeFilters client:load title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
+
+		<ReportBackendSnapshot client:load scope="resultados" />
 
 		{/* Summary Cards */}
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -67,7 +76,7 @@ const printStats = () => {
 				trendUp={true}
 				color="success"
 			>
-				<LuTrendingUp slot="icon" size={20} />
+				<FaArrowTrendUp slot="icon" size={20} />
 			</StatsCard>
 			<StatsCard
 				title="Consultas Atendidas"
@@ -76,7 +85,7 @@ const printStats = () => {
 				trendUp={true}
 				color="primary"
 			>
-				<LuStethoscope slot="icon" size={20} />
+				<FaStethoscope slot="icon" size={20} />
 			</StatsCard>
 			<StatsCard
 				title="Pacientes Nuevos"
@@ -85,7 +94,7 @@ const printStats = () => {
 				trendUp={false}
 				color="warning"
 			>
-				<LuUserPlus slot="icon" size={20} />
+				<FaUserPlus slot="icon" size={20} />
 			</StatsCard>
 			<StatsCard
 				title="Cancelaciones"
@@ -94,7 +103,7 @@ const printStats = () => {
 				trendUp={false}
 				color="danger"
 			>
-				<LuBan slot="icon" size={20} />
+				<FaBan slot="icon" size={20} />
 			</StatsCard>
 		</section>
 
@@ -204,7 +213,7 @@ const printStats = () => {
 									Sem {colIndex + 1}
 								</span>
 								{Array.from({ length: 7 }).map(
-									(_, rowIndex) => {
+									(_, _rowIndex) => {
 										// Randomize intensity based on position
 										const intensity =
 											Math.random() > 0.6

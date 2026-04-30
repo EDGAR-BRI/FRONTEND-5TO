@@ -1,25 +1,25 @@
-import { UserPlus, Activity, CheckCircle2, TrendingUp } from "lucide-react";
+import { FaArrowTrendUp, FaCircleCheck, FaHeartPulse, FaUserPlus } from "react-icons/fa6";
 
 const stats = [
   {
     label: "Nuevos Pacientes",
     value: "12",
     trend: "+15%",
-    icon: <UserPlus size={18} className="text-blue-500" />,
+    icon: <FaUserPlus size={18} className="text-blue-500" />,
     bg: "bg-blue-50"
   },
   {
     label: "En Tratamiento",
     value: "48",
     trend: "Estable",
-    icon: <Activity size={18} className="text-emerald-500" />,
+    icon: <FaHeartPulse size={18} className="text-emerald-500" />,
     bg: "bg-emerald-50"
   },
   {
     label: "Altas del Mes",
     value: "25",
     trend: "+5",
-    icon: <CheckCircle2 size={18} className="text-purple-500" />,
+    icon: <FaCircleCheck size={18} className="text-purple-500" />,
     bg: "bg-purple-50"
   }
 ];
@@ -44,7 +44,7 @@ export default function PatientStats() {
           </div>
           
           <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
-            <TrendingUp size={10} className="text-emerald-500" />
+			<FaArrowTrendUp size={10} className="text-emerald-500" />
             <span className="text-[9px] font-bold text-slate-600">{s.trend}</span>
           </div>
         </div>

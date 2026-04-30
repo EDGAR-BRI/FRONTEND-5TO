@@ -2,8 +2,22 @@
 import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
 import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
+import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
+import { getDoctorsAvailabilities } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { formatShiftsByDoctorId } from '@/utils/helper_functions';
+import {
+  FaArrowLeft,
+  FaCalendarCheck,
+  FaCalendarPlus,
+  FaCalendarWeek,
+  FaCircleCheck,
+  FaClock,
+  FaSliders,
+  FaTableCellsLarge,
+  FaUserDoctor,
+} from "react-icons/fa6";
 
-const { receptionist_id } = Astro.params;
+const { receptionist_id: _receptionist_id } = Astro.params;
 const viewParam = Astro.url.searchParams.get("view");
 const initialView =
   viewParam === "day" || viewParam === "agenda" ? viewParam : "week";
@@ -13,19 +27,14 @@ const initialView =
 // ScheduleCycle → ScheduleWeek → ScheduleDay gives us shift windows per employee
 // Appoinment + Form → User gives us booked appointments per doctor
 
-const doctors = [
-  { id: 1, name: "Dr. Carlos Méndez", specialty: "Medicina General" },
-  { id: 2, name: "Dra. Luisa Vargas", specialty: "Cardiología" },
-  { id: 3, name: "Dra. Patricia Mora", specialty: "Ginecología" },
-  { id: 4, name: "Dr. Héctor Torres", specialty: "Traumatología" },
-  { id: 5, name: "Dra. Valentina Ríos", specialty: "Pediatría" },
-];
+const doctors = await getActuallyAvailableDrs();
+const shifts = await getDoctorsAvailabilities();
 
 // ScheduleDay rows for the active ScheduleCycle (dayOfWeek: 1=Mon … 5=Fri)
 const shiftsByDoctorId: Record<
   number,
   { dayOfWeek: number; startsAt: string; endsAt: string }[]
-> = {
+> = /*{
   1: [
     { dayOfWeek: 1, startsAt: "07:30", endsAt: "13:00" },
     { dayOfWeek: 2, startsAt: "07:30", endsAt: "13:00" },
@@ -53,7 +62,7 @@ const shiftsByDoctorId: Record<
     { dayOfWeek: 4, startsAt: "10:00", endsAt: "14:00" },
     { dayOfWeek: 5, startsAt: "10:00", endsAt: "14:00" },
   ],
-};
+};*/ formatShiftsByDoctorId(shifts);
 
 // Appoinment rows with scheduled_range parsed into start/end + Form+User for patient name
 const appointmentsByDoctorId: Record<
@@ -325,7 +334,7 @@ const pendingApts = Object.values(appointmentsByDoctorId)
             href="overview"
             class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors"
           >
-            <i class="fa-solid fa-arrow-left mr-1"></i>Dashboard
+            <FaArrowLeft className="mr-1 inline-block" />Dashboard
           </a>
           <span class="text-cool-gray-30">/</span>
           <span class="text-body-xs text-cool-gray-50">Horarios</span>
@@ -341,50 +350,24 @@ const pendingApts = Object.values(appointmentsByDoctorId)
           href="manage-schedules"
           class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
         >
-          <i class="fa-solid fa-sliders"></i>
+          <FaSliders />
           Configurar ciclos
         </a>
         <a
           href="appointments"
           class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary-600 text-white text-button-s font-semibold hover:bg-primary-700 transition-colors shadow-sm"
         >
-          <i class="fa-solid fa-calendar-plus"></i>
+          <FaCalendarPlus />
           Nueva cita
         </a>
       </div>
     </div>
-</div>
 
   <!-- ─── Mini stats ──────────────────────────────────────────────────────── -->
   <ReceptionistStatsSummary
     client:load
-    stats={[
-      {
-        label: "Médicos en turno",
-        value: String(totalShiftsToday),
-        icon: "fa-solid fa-user-doctor",
-        color: "primary",
-      },
-      {
-        label: "Total citas (semana)",
-        value: String(totalApts),
-        icon: "fa-solid fa-calendar-check",
-        color: "success",
-      },
-      {
-        label: "Confirmadas / Realizadas",
-        value: String(confirmedApts),
-        icon: "fa-solid fa-circle-check",
-        color: "success",
-      },
-      {
-        label: "Sin confirmar",
-        value: String(pendingApts),
-        icon: "fa-solid fa-clock",
-        color: "warning",
-      },
-    ]}
   />
+</div>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
   <!-- ─── Doctor shift reference table ──────────────────────────────────── -->
@@ -395,7 +378,7 @@ const pendingApts = Object.values(appointmentsByDoctorId)
       class="px-5 py-4 border-b border-primary-200 flex items-center justify-between"
     >
       <h2 class="text-heading-6 text-primary-800">
-        <i class="fa-solid fa-table-cells-large text-primary-500 mr-2"></i>
+        <FaTableCellsLarge className="text-primary-500 mr-2 inline-block" />
         Turnos de la semana
       </h2>
       <span class="text-body-xxs text-cool-gray-50">Ciclo semanal vigente</span>
@@ -426,9 +409,9 @@ const pendingApts = Object.values(appointmentsByDoctorId)
               return (
                 <tr class="hover:bg-primary-50 transition-colors">
                   <td class="px-4 py-3 font-semibold text-primary-800">
-                    {doc.name}
+                    {doc.user.name}
                   </td>
-                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty}</td>
+                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty.name}</td>
                   {[1, 2, 3, 4, 5].map((d) => (
                     <td class="px-4 py-3">
                       {byDay[d] ? (
@@ -456,7 +439,7 @@ const pendingApts = Object.values(appointmentsByDoctorId)
   >
     <div class="mb-4">
       <h2 class="text-heading-6 text-primary-800">
-        <i class="fa-solid fa-calendar-week text-primary-500 mr-2"></i>
+        <FaCalendarWeek className="text-primary-500 mr-2 inline-block" />
         Vista de citas por médico
       </h2>
       <p class="text-body-xs text-cool-gray-50 mt-0.5">
@@ -469,7 +452,6 @@ const pendingApts = Object.values(appointmentsByDoctorId)
       client:only="react"
       doctors={doctors}
       shiftsByDoctorId={shiftsByDoctorId}
-      appointmentsByDoctorId={appointmentsByDoctorId}
       heightPx={620}
       initialView={initialView}
     />

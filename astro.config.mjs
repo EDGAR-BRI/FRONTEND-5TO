@@ -33,6 +33,7 @@ export default defineConfig({
         {
           label: 'Componentes',
           items: [
+            { label: 'Íconos',              link: '/docs/components/icons/' },
             { label: 'Button',              link: '/docs/components/button/' },
             { label: 'Field',               link: '/docs/components/field/' },
             { label: 'CheckBox',            link: '/docs/components/checkbox/' },
@@ -43,6 +44,22 @@ export default defineConfig({
             { label: 'Avatar',              link: '/docs/components/avatar/' },
             { label: 'Cards',               link: '/docs/components/cards/' },
             { label: 'Spinner y Tooltip',   link: '/docs/components/spinner-tooltip/' },
+          ],
+        },
+        {
+          label: 'Services',
+          items: [
+            { label: 'Introducción', link: '/docs/services/' },
+            { label: 'Cliente HTTP del Frontend', link: '/docs/services/api-client/' },
+            { label: 'Auth', link: '/docs/services/auth/' },
+			{ label: 'User', link: '/docs/services/user/' },
+          ],
+        },
+        {
+          label: 'Utils',
+          items: [
+            { label: 'Introducción', link: '/docs/utils/' },
+            { label: 'Alertas (SweetAlert2)', link: '/docs/utils/alerts/' },
           ],
         },
         {

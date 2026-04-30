@@ -1,21 +1,49 @@
 ---
-title: Librería de Componentes
-description: Documentación de los componentes reutilizables de la librería primary.
+title: Documentación
+description: Documentación del frontend (componentes, services) y referencia de API.
 template: splash
 hero:
-  tagline: Componentes React reutilizables para el sistema de gestión médica.
+  tagline: Guía rápida del frontend y referencia de API.
   actions:
     - text: Ver componentes
       link: /docs/components/button/
       icon: right-arrow
       variant: primary
+    - text: Ver services
+      link: /docs/services/
+      icon: right-arrow
+    - text: Ver API Backend
+      link: /docs/api/
+      icon: right-arrow
 ---
 
 import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
 
+## Empezar
+
+<Aside type="caution">
+  Para consumir el backend desde el frontend: **no** hagas `fetch()` directo en componentes.
+  Debes crear un **service** en `src/lib/services/` y ese service debe usar el cliente HTTP `src/lib/api.ts` (en runtime es `api.js`).
+</Aside>
+
+<CardGrid>
+  <Card title="Componentes" icon="rocket" link="/docs/components/button/">
+    Librería de componentes React reutilizables del frontend.
+  </Card>
+  <Card title="Services" icon="setting" link="/docs/services/">
+    Servicios/helpers del frontend (cliente HTTP, fetchers, auth, etc.).
+  </Card>
+  <Card title="API Backend" icon="open-book" link="/docs/api/">
+    Referencia de endpoints del backend (v1) y formatos de respuesta.
+  </Card>
+</CardGrid>
+
 ## Componentes disponibles
 
 <CardGrid stagger>
+  <Card title="Íconos" icon="star" link="/docs/components/icons/">
+    Estándar del proyecto: solo `react-icons/fa6` (con ejemplos y links oficiales).
+  </Card>
   <Card title="Button" icon="pencil">
     Botón principal con variantes de estilo, tamaños y estado de carga.
   </Card>

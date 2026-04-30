@@ -6,10 +6,14 @@ export type InventoryItem = {
 	type: InventoryItemType;
 	name: string;
 	category: string;
+	categoryId?: number;
 	unit?: string;
+	unitId?: number;
 	price: number;
 	stock?: number;
 	minStock?: number;
 	available?: boolean;
 	status: InventoryStatus;
+	sku?: string;
+	description?: string;
 };

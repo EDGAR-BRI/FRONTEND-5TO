@@ -9,19 +9,27 @@ import StaticCard from '@/components/react/primary/StaticCard';
 import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
 
 import {
-  UserCircle, CalendarDays, Pill, Receipt, Settings2,
-  Mail, Phone, MapPin, User, ShieldAlert
-} from 'lucide-react';
+  FaCircleUser,
+  FaCalendarDays,
+  FaPills,
+  FaReceipt,
+  FaGears,
+  FaEnvelope,
+  FaPhone,
+  FaLocationDot,
+  FaUser,
+  FaShieldHalved,
+} from 'react-icons/fa6';
 import { Button } from '../primary/Button';
 
-export const ProfileTabs = () => {
+export const ProfileTabs = ({ patientId }: { patientId: string }) => {
   const [activeTab, setActiveTab] = useState('personal');
 
   const tabs = [
-    { id: 'personal', label: 'Inf. Personal', icon: UserCircle },
-    { id: 'citas', label: 'Citas Médicas', icon: CalendarDays },
-    { id: 'tratamientos', label: 'Tratamientos', icon: Pill },
-    { id: 'pagos', label: 'Facturación', icon: Receipt },
+    { id: 'personal', label: 'Inf. Personal', icon: FaCircleUser },
+    { id: 'citas', label: 'Citas Médicas', icon: FaCalendarDays },
+    { id: 'tratamientos', label: 'Tratamientos', icon: FaPills },
+    { id: 'pagos', label: 'Facturación', icon: FaReceipt },
   ];
 
   return (
@@ -65,10 +73,10 @@ export const ProfileTabs = () => {
               
               <div className="grid grid-cols-1 gap-6 w-full">
                 <div className="w-full transition-all duration-300">
-                  <ContactInfo />
+                  <ContactInfo patientId={patientId} />
                 </div>
                 <div className="w-full transition-all duration-300">
-                  <EmergencyContact />
+                  <EmergencyContact patientId={patientId} />
                 </div>
               </div>
 
@@ -82,7 +90,7 @@ export const ProfileTabs = () => {
                       label=""
                       className="w-full py-5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 text-base border-none"
                     >
-                      <Settings2 className="w-5 h-5" />
+                      <FaGears className="w-5 h-5" />
                       Gestionar y Editar Perfil Completo
                     </Button>
                   }
@@ -93,7 +101,7 @@ export const ProfileTabs = () => {
                       
                       <StaticCard className="p-6">
                         <div className="flex items-center gap-2 mb-6 border-b border-primary-200 pb-3">
-                          <Phone className="w-4 h-4 text-primary-600" />
+                          <FaPhone className="w-4 h-4 text-primary-600" />
                           <h4 className="text-xs font-black text-primary-700 uppercase tracking-widest">Información de Contacto</h4>
                         </div>
 
@@ -102,7 +110,7 @@ export const ProfileTabs = () => {
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Correo Electrónico</label>
                             <div className="relative">
                               <input type="email" defaultValue="pedro.sanchez@gmail.com" className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <Mail className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
+                              <FaEnvelope className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
                             </div>
                           </div>
 
@@ -110,7 +118,7 @@ export const ProfileTabs = () => {
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono Móvil</label>
                             <div className="relative">
                               <input type="text" defaultValue="+58 412-1234567" className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <Phone className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
+                              <FaPhone className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
                             </div>
                           </div>
 
@@ -118,7 +126,7 @@ export const ProfileTabs = () => {
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Dirección de Residencia</label>
                             <div className="relative">
                               <input type="text" defaultValue="Pueblo Nuevo, Edificio Sol, Apto 4B." className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <MapPin className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
+                              <FaLocationDot className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
                             </div>
                           </div>
                         </div>
@@ -126,7 +134,7 @@ export const ProfileTabs = () => {
 
                       <StaticCard className="p-6">
                         <div className="flex items-center gap-2 mb-6 border-b border-red-100 pb-3">
-                          <ShieldAlert className="w-4 h-4 text-red-500" />
+                          <FaShieldHalved className="w-4 h-4 text-red-500" />
                           <h4 className="text-xs font-black text-red-600 uppercase tracking-widest">Contacto de Emergencia</h4>
                         </div>
 
@@ -135,7 +143,7 @@ export const ProfileTabs = () => {
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Nombre Completo</label>
                             <div className="relative">
                               <input type="text" defaultValue="María Rodríguez" className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <User className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
+                              <FaUser className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
                             </div>
                           </div>
 
@@ -174,17 +182,17 @@ export const ProfileTabs = () => {
 
           {activeTab === 'citas' && (
             <div className="animate-in slide-in-from-right-4 duration-500 w-full">
-              <MedicalAppointments />
+              <MedicalAppointments patientId={patientId} />
             </div>
           )}
           {activeTab === 'tratamientos' && (
             <div className="animate-in slide-in-from-right-4 duration-500 w-full">
-              <CurrentMedication />
+              <CurrentMedication patientId={patientId} />
             </div>
           )}
           {activeTab === 'pagos' && (
             <div className="animate-in fade-in duration-500 w-full">
-              <PaymentsBills />
+              <PaymentsBills patientId={patientId} />
             </div>
           )}
         </article>

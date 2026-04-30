@@ -70,6 +70,7 @@ Si la URL no existe, el servidor responde:
 
 ## Índice
 
+- [Cliente HTTP del Frontend](../services/api-client/)
 - [Auth](auth/)
 - [Inventory](inventory/)
 - [Medical](medical/)

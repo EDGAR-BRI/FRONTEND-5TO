@@ -49,6 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     adaptive = false,
     className = "",
     disabled,
+    type = "button",
     children,
     ...props
 }, ref) => { // 2. Recibimos 'ref' como segundo argumento
@@ -60,6 +61,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
 	return (
 		<button
 			ref={ref}
+            type={type}
 			disabled={isDisabled}
 			{...props}
 			className={cx(
