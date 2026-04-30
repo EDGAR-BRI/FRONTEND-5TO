@@ -5,10 +5,10 @@ const resolveBackendUrl = (): string => {
 
     // En desarrollo, si no se configuró explícitamente, usamos el backend local real.
     // En producción, exigimos que venga configurado.
-    const resolved = raw || (import.meta.env.DEV ? "http://localhost:3800/api/v1" : "");
+    const resolved = raw || (import.meta.env.DEV ? "http://localhost:3000/api/v1" : "");
     if (!resolved) {
         throw new Error(
-            "Missing PUBLIC_BACKEND_URL. Set it to your backend base URL (e.g. http://localhost:3800/api/v1)."
+            "Missing PUBLIC_BACKEND_URL. Set it to your backend base URL (e.g. http://localhost:3000/api/v1)."
         );
     }
 
