@@ -5,46 +5,36 @@ import { StatsCard } from "@/components/react/primary/StatsCard";
 import { DailyAppointmentsAside } from "@/components/react/doctor/DailyAppointmentsAside";
 import StaticCard from "@/components/react/primary/StaticCard";
 import { FaFileMedical, FaUsers } from "react-icons/fa6";
+import { getAppointmentsByDr } from "@/lib/services/scheduling/appointment/appointment.service";
 
 const { doctor_id } = Astro.params;
-const today = new Date();
-const todayIso = today.toISOString().split("T")[0];
 
-const citasMock = [
-    {
-        id: 1,
-        patientName: "Juan Pérez",
-        id_paciente: "1",
-        hora: "09:00 AM",
-        motivo: "Control anual",
-        doctor: "Dr. Local",
-        especialidad: "General",
-        fecha: todayIso,
-        estado: "completada" as const,
-    },
-    {
-        id: 2,
-        patientName: "Ana García",
-        id_paciente: "2",
-        hora: "10:30 AM",
-        motivo: "Revisión post-op",
-        doctor: "Dr. Local",
-        especialidad: "General",
-        fecha: todayIso,
-        estado: "programada" as const,
-    },
-    {
-        id: 3,
-        patientName: "Luis Rodríguez",
-        id_paciente: "3",
-        hora: "11:15 AM",
-        motivo: "Consulta general",
-        doctor: "Dr. Local",
-        especialidad: "General",
-        fecha: todayIso,
-        estado: "cancelada" as const,
-    },
-];
+let citas = [];
+try {
+    const appointments = await getAppointmentsByDr(Number(doctor_id), false, Astro.cookies);
+    citas = appointments.map(apt => {
+        // Asumiendo que apt.date_time viene en formato ISO
+        const d = new Date(apt.date_time);
+        
+        // Ajustamos por la zona horaria sumando el offset si es necesario, 
+        // o usando UTC para extraer hora/fecha si la BD las guarda en UTC.
+        // Aquí extraemos basándonos en la hora local del navegador/servidor.
+        return {
+            id: apt.id,
+            patientName: apt.patient?.user?.name || "Paciente Desconocido",
+            id_paciente: String(apt.patient?.id),
+            hora: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            motivo: apt.reson_visit || "Consulta",
+            doctor: apt.doctor?.user?.name || "Doctor",
+            especialidad: apt.doctor?.specialty?.name || "General",
+            fecha: d.toISOString().split("T")[0],
+            estado: apt.status?.name || "Pendiente",
+            tipoConsulta: apt.type?.name || "Presencial",
+        };
+    });
+} catch (error) {
+    console.error("Error al obtener las citas:", error);
+}
 ---
 
 <MainLayout title="Agenda Médica">
@@ -54,7 +44,7 @@ const citasMock = [
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatsCard
                 title="Citas Hoy"
-                value={citasMock.length}
+                value={citas.length}
                 color="primary"
             />
             <StatsCard title="Pacientes Atendidos" value="24" color="success" />
@@ -71,7 +61,7 @@ const citasMock = [
                 <div class="flex-1">
                     <AppointmentCalendar
                         role="doctor"
-                        citas={citasMock}
+                        citas={citas}
                         context={{ doctorId: doctor_id }}
                         actions={[
                             {
@@ -94,7 +84,7 @@ const citasMock = [
                   Asegúrate de usar client:load para que React controle los eventos de clic y el modal. 
                 */
                 }
-                <DailyAppointmentsAside citas={citasMock} client:load />
+                <DailyAppointmentsAside citas={citas} client:load />
 
                 {
                     /* Esta tarjeta de herramientas rápidas puede seguir siendo estática si solo son enlaces */

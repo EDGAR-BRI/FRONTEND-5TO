@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaHeartPulse, FaLungs, FaThermometer, FaWeightScale, FaRulerVertical, FaPlus, FaTrash, FaCheck, FaPills, FaBoxOpen, FaStethoscope, FaNotesMedical } from 'react-icons/fa6';
 import { finishConsultation } from '@/lib/services/medical/consultation/consultation.service';
 import type { FinishConsultationDto } from '@/lib/services/medical/consultation/consultation.interface';
+import { getSymptoms } from '@/lib/services/medical/symptoms/symptoms.service';
+import type { Symptom } from '@/lib/services/medical/symptoms/symptoms.interface';
+import { getDiagnoses } from '@/lib/services/medical/diagnosis/diagnosis.service';
+import type { Diagnosis } from '@/lib/services/medical/diagnosis/diagnosis.interface';
+import { getSupplies } from '@/lib/services/inventory/supply/supply.service';
+import type { Supply } from '@/lib/services/inventory/supply/supply.interface';
 
 interface ConsultationFormProps {
     doctorId: string;
@@ -9,30 +15,7 @@ interface ConsultationFormProps {
     invoiceCode: string;
 }
 
-// Mock Data for Selectors
-const MOCK_SYMPTOMS = [
-    { id: 1, name: 'Dolor de cabeza' },
-    { id: 2, name: 'Fiebre' },
-    { id: 3, name: 'Tos seca' },
-    { id: 4, name: 'Fatiga' },
-    { id: 5, name: 'Dolor abdominal' },
-];
-
-const MOCK_DIAGNOSES = [
-    { id: 101, name: 'Migraña Crónica', code: 'G43.9' },
-    { id: 102, name: 'Infección Respiratoria Aguda', code: 'J06.9' },
-    { id: 103, name: 'Gastroenteritis', code: 'A09' },
-    { id: 104, name: 'Hipertensión Arterial', code: 'I10' },
-];
-
-const MOCK_SUPPLIES = [
-    { id: 201, name: 'Jeringa 5ml', type: 'Material' },
-    { id: 202, name: 'Guantes de látex (Par)', type: 'Material' },
-    { id: 203, name: 'Gasa esterilizada', type: 'Material' },
-    { id: 204, name: 'Paracetamol 500mg', type: 'Medicamento' },
-    { id: 205, name: 'Amoxicilina 500mg', type: 'Medicamento' },
-    { id: 206, name: 'Ibuprofeno 400mg', type: 'Medicamento' },
-];
+// Se obtienen las listas desde el backend
 
 // Helper Component for Search/Select
 const ItemSelector = ({ items, onSelect, placeholder, labelKey = 'name', renderExtra = (item: any) => null }: any) => {
@@ -94,6 +77,17 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
     const [prescriptions, setPrescriptions] = useState<any[]>([]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Listas del Backend
+    const [symptomsList, setSymptomsList] = useState<Symptom[]>([]);
+    const [diagnosesList, setDiagnosesList] = useState<Diagnosis[]>([]);
+    const [suppliesList, setSuppliesList] = useState<Supply[]>([]);
+
+    useEffect(() => {
+        getSymptoms().then(setSymptomsList).catch(console.error);
+        getDiagnoses().then(setDiagnosesList).catch(console.error);
+        getSupplies().then(setSuppliesList).catch(console.error);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -228,7 +222,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     </div>
                     <div className="w-64">
                         <ItemSelector 
-                            items={MOCK_SYMPTOMS} 
+                            items={symptomsList} 
                             placeholder="Buscar síntoma..." 
                             onSelect={(item: any) => {
                                 if(!symptoms.find(s => s.id === item.id)) {
@@ -288,7 +282,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     </div>
                     <div className="w-64">
                         <ItemSelector 
-                            items={MOCK_DIAGNOSES} 
+                            items={diagnosesList} 
                             placeholder="Buscar diagnóstico..." 
                             renderExtra={(item: any) => <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">{item.code}</span>}
                             onSelect={(item: any) => {
@@ -354,7 +348,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     </div>
                     <div className="w-64">
                         <ItemSelector 
-                            items={MOCK_SUPPLIES.filter(s => s.type === 'Material')} 
+                            items={suppliesList.filter(s => s.type === 'Material')} 
                             placeholder="Buscar insumo..." 
                             onSelect={(item: any) => {
                                 if(!supplies.find(s => s.id === item.id)) {
@@ -399,7 +393,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     <div className="flex gap-2">
                         <div className="w-64">
                             <ItemSelector 
-                                items={MOCK_SUPPLIES.filter(s => s.type === 'Medicamento')} 
+                                items={suppliesList.filter(s => s.type === 'Medicamento')} 
                                 placeholder="Buscar medicamento..." 
                                 onSelect={(item: any) => {
                                     setPrescriptions([...prescriptions, { supplyId: item.id, medication_name: item.name, dosage: '', frequency: '', duration: '', instructions: '' }]);
