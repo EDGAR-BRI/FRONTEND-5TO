@@ -36,29 +36,35 @@ import { api } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
 
-let patientData: any = {
-  user: {
-    name: "Daniela Pérez ",
-    ci: "V-12345678"
-  },
-  tipo_sangre: "O+"
-};
+let patientData: any = null;
+let appointmentsData: any[] = [];
 
-/* Samuel aca tu cuando conectes la apio la descomentas
 try {
-  const response = await api(`/medical/patient/${pacient_id}`, {}, Astro.cookies);
-  if (response.ok) {
-    const json = await response.json();
-    patientData = json.data;
-  } else {
+  // Ejecutamos ambas peticiones en paralelo para máxima velocidad
+  const [patientRes, appointmentsRes] = await Promise.all([
+    api(`/medical/patient/${pacient_id}`, {}, Astro.cookies),
+    api(`/scheduling/appointment?patientId=${pacient_id}`, {}, Astro.cookies)
+  ]);
+
+  // Si el paciente no existe, redirigimos
+  if (!patientRes.ok) {
     return Astro.redirect('/no-encontrado');
   }
+
+  const patientJson = await patientRes.json();
+  patientData = patientJson.data;
+
+  // Si hay citas, las guardamos (si falla esta, no rompemos la página entera)
+  if (appointmentsRes.ok) {
+    const apptJson = await appointmentsRes.json();
+    appointmentsData = Array.isArray(apptJson.data) ? apptJson.data : [];
+  }
 } catch (error) {
-  console.error(error);
+  console.error("Error cargando el overview:", error);
   return Astro.redirect('/error-servidor');
 }
-*/
 
+// ─── Format patient data ──────────────────────────────────────────────────
 const fullName = patientData?.user?.name || 'Paciente Desconocido';
 const ci = patientData?.user?.ci || 'Sin CI';
 const bloodType = patientData?.tipo_sangre || 'No registrado';
@@ -76,9 +82,42 @@ const patient = {
   avatarInitials: fullName.substring(0, 2).toUpperCase(),
 };
 
+// ─── Format Appointments Data ─────────────────────────────────────────────
+const now = new Date();
+
+// Filtramos las citas que son en el futuro y no están canceladas
+const upcomingAppointments = appointmentsData
+  .filter(apt => new Date(apt.date_time) >= now && apt.status?.name !== 'Cancelada')
+  .sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime()) // Ordenar por fecha más próxima
+  .slice(0, 4) // Mostramos solo las 4 más próximas en el dashboard
+  .map(apt => ({
+    date: apt.date_time,
+    specialty: apt.doctor?.specialty?.name || 'Especialidad General',
+    status: apt.status?.name || 'Pendiente',
+    // Coloreamos el status dinámicamente según lo que venga de la BD
+    statusClass: apt.status?.name === 'Pendiente' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700', 
+    type: apt.type?.name || 'Consulta',
+    doctor: apt.doctor?.user?.name ? `${apt.doctor.user.name}` : 'No asignado',
+    time: new Date(apt.date_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }),
+    reason: apt.reson_visit || 'Sin motivo especificado'
+  }));
+
+// Filtramos las citas en el pasado o ya finalizadas para el historial reciente
+const recentConsultations = appointmentsData
+  .filter(apt => new Date(apt.date_time) < now || apt.status?.name === 'Finalizada')
+  .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()) // Ordenar de la más reciente a la más antigua
+  .slice(0, 3)
+  .map(apt => ({
+    date: new Date(apt.date_time).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }),
+    specialty: apt.doctor?.specialty?.name || 'Consulta',
+    doctor: apt.doctor?.user?.name ? `${apt.doctor.user.name}` : '-',
+    reason: apt.reson_visit || '-',
+    diagnosis: 'Pendiente', // El backend de consultas aún no está, así que dejamos el mock
+    plan: 'Pendiente' // Mock
+  }));
+
+// Mocks restantes que conectaremos después
 const stats: any[] = [];
-const upcomingAppointments: any[] = [];
-const recentConsultations: any[] = [];
 const prescriptions: any[] = [];
 const labResults: any[] = [];
 const alerts: any[] = [];
@@ -89,7 +128,6 @@ const quickActions = [
   { label: 'Mi perfil', icon: FaUserPen, href: 'profile', color: 'from-violet-500 to-violet-700' },
   { label: 'Documentos', icon: FaFolderOpen, href: 'history', color: 'from-orange-400 to-orange-600' },
 ];
-
 ---
 
 <PacientLayout title={`Dashboard - ${patient.fullName}`}>
