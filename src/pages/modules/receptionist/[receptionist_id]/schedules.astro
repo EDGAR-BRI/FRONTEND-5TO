@@ -3,8 +3,9 @@ import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
 import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
 import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
 import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
-import { getDoctorsAvailabilities } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
-import { formatShiftsByDoctorId } from '@/utils/helper_functions';
+import { getDoctorAvailabilitiesByScheduleId } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
+import { formatShiftsByDoctorId, convertirAHHMM } from '@/utils/helper_functions';
 import {
   FaArrowLeft,
   FaCalendarCheck,
@@ -28,41 +29,57 @@ const initialView =
 // Appoinment + Form → User gives us booked appointments per doctor
 
 const doctors = await getActuallyAvailableDrs();
-const shifts = await getDoctorsAvailabilities();
 
-// ScheduleDay rows for the active ScheduleCycle (dayOfWeek: 1=Mon … 5=Fri)
-const shiftsByDoctorId: Record<
-  number,
-  { dayOfWeek: number; startsAt: string; endsAt: string }[]
-> = /*{
-  1: [
-    { dayOfWeek: 1, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 2, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 3, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 4, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 5, startsAt: "07:30", endsAt: "13:00" },
-  ],
-  2: [
-    { dayOfWeek: 1, startsAt: "08:00", endsAt: "14:00" },
-    { dayOfWeek: 3, startsAt: "08:00", endsAt: "14:00" },
-    { dayOfWeek: 5, startsAt: "08:00", endsAt: "14:00" },
-  ],
-  3: [
-    { dayOfWeek: 2, startsAt: "09:00", endsAt: "13:00" },
-    { dayOfWeek: 4, startsAt: "09:00", endsAt: "13:00" },
-  ],
-  4: [
-    { dayOfWeek: 1, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 2, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 3, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 4, startsAt: "08:30", endsAt: "12:30" },
-  ],
-  5: [
-    { dayOfWeek: 2, startsAt: "10:00", endsAt: "14:00" },
-    { dayOfWeek: 4, startsAt: "10:00", endsAt: "14:00" },
-    { dayOfWeek: 5, startsAt: "10:00", endsAt: "14:00" },
-  ],
-};*/ formatShiftsByDoctorId(shifts);
+const allDoctorsSchedulesNested = await Promise.all(doctors.map(d => getDoctorSchedules(d.id)));
+const allDoctorsSchedules = allDoctorsSchedulesNested.flat();
+
+const allAvailabilitiesNested = await Promise.all(
+  allDoctorsSchedules.map(s => getDoctorAvailabilitiesByScheduleId(s.id))
+);
+const allAvailabilities = allAvailabilitiesNested.flat();
+
+const today = new Date();
+const currentDayOfWeek = today.getDay();
+const diffToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+const monday = new Date(today);
+monday.setDate(today.getDate() + diffToMonday);
+monday.setHours(0,0,0,0);
+
+const datesOfWeek = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+});
+
+const shiftsByDoctorId: Record<number, { dayOfWeek: number; startsAt: string; endsAt: string }[]> = {};
+
+for (const doc of doctors) {
+    const schedules = allDoctorsSchedules.filter(s => s.doctorId === doc.id);
+    const docShifts: { dayOfWeek: number; startsAt: string; endsAt: string }[] = [];
+
+    for (let i = 0; i < 7; i++) {
+        const date = datesOfWeek[i];
+        const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+        const dayOfWeek = date.getDay();
+
+        const activeSchedule = schedules
+            .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+            .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+            .sort((a, b) => b._start.getTime() - a._start.getTime())[0];
+
+        if (activeSchedule) {
+            const availabilities = allAvailabilities.filter(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === dayOfWeek);
+            availabilities.forEach(a => {
+                docShifts.push({
+                    dayOfWeek: a.day_of_week,
+                    startsAt: convertirAHHMM(a.start_time),
+                    endsAt: convertirAHHMM(a.end_time)
+                });
+            });
+        }
+    }
+    shiftsByDoctorId[doc.id] = docShifts;
+}
 
 // Appoinment rows with scheduled_range parsed into start/end + Form+User for patient name
 const appointmentsByDoctorId: Record<
@@ -396,36 +413,52 @@ const pendingApts = Object.values(appointmentsByDoctorId)
             <th class="px-4 py-2.5 font-semibold">Mié</th>
             <th class="px-4 py-2.5 font-semibold">Jue</th>
             <th class="px-4 py-2.5 font-semibold">Vie</th>
+            {Object.values(shiftsByDoctorId).some(sh => sh.some(s => s.dayOfWeek === 6)) && (
+              <th class="px-4 py-2.5 font-semibold">Sáb</th>
+            )}
+            {Object.values(shiftsByDoctorId).some(sh => sh.some(s => s.dayOfWeek === 0)) && (
+              <th class="px-4 py-2.5 font-semibold">Dom</th>
+            )}
           </tr>
         </thead>
         <tbody class="divide-y divide-primary-100">
           {
-            doctors.map((doc) => {
-              const shifts = shiftsByDoctorId[doc.id] ?? [];
-              const byDay: { [key: number]: string } = {};
-              for (const s of shifts) {
-                byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
-              }
-              return (
-                <tr class="hover:bg-primary-50 transition-colors">
-                  <td class="px-4 py-3 font-semibold text-primary-800">
-                    {doc.user.name}
-                  </td>
-                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty.name}</td>
-                  {[1, 2, 3, 4, 5].map((d) => (
-                    <td class="px-4 py-3">
-                      {byDay[d] ? (
-                        <span class="font-mono text-primary-700 text-body-xxs">
-                          {byDay[d]}
-                        </span>
-                      ) : (
-                        <span class="text-cool-gray-30">—</span>
-                      )}
+            (() => {
+              const allShifts = Object.values(shiftsByDoctorId).flat();
+              const hasSat = allShifts.some(s => s.dayOfWeek === 6);
+              const hasSun = allShifts.some(s => s.dayOfWeek === 0);
+              const daysToRender = [1, 2, 3, 4, 5];
+              if (hasSat) daysToRender.push(6);
+              if (hasSun) daysToRender.push(0);
+
+              return doctors.map((doc) => {
+                const shifts = shiftsByDoctorId[doc.id] ?? [];
+                const byDay: { [key: number]: string } = {};
+                for (const s of shifts) {
+                  byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
+                }
+
+                return (
+                  <tr class="hover:bg-primary-50 transition-colors">
+                    <td class="px-4 py-3 font-semibold text-primary-800">
+                      {doc.user.name}
                     </td>
-                  ))}
-                </tr>
-              );
-            })
+                    <td class="px-4 py-3 text-cool-gray-60">{doc.specialty.name}</td>
+                    {daysToRender.map((d) => (
+                      <td class="px-4 py-3">
+                        {byDay[d] ? (
+                          <span class="font-mono text-primary-700 text-body-xxs">
+                            {byDay[d]}
+                          </span>
+                        ) : (
+                          <span class="text-cool-gray-30">—</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              });
+            })()
           }
         </tbody>
       </table>
@@ -451,7 +484,8 @@ const pendingApts = Object.values(appointmentsByDoctorId)
     <DoctorScheduleCalendar
       client:only="react"
       doctors={doctors}
-      shiftsByDoctorId={shiftsByDoctorId}
+      allSchedules={allDoctorsSchedules}
+      allAvailabilities={allAvailabilities}
       heightPx={620}
       initialView={initialView}
     />

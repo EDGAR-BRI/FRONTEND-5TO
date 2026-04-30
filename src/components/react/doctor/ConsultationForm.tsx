@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { FaHeartPulse, FaLungs, FaThermometer, FaWeightScale, FaRulerVertical, FaPlus, FaTrash, FaCheck, FaPills, FaBoxOpen, FaStethoscope, FaNotesMedical } from 'react-icons/fa6';
+import { finishConsultation } from '@/lib/services/medical/consultation/consultation.service';
+import type { FinishConsultationDto } from '@/lib/services/medical/consultation/consultation.interface';
 
 interface ConsultationFormProps {
     doctorId: string;
@@ -97,56 +99,80 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Preparamos el payload según el FinishConsultationDto
-        const payload = {
-            finished_at: new Date().toISOString(),
-            supplies: supplies.map(s => ({
-                supplyId: s.id,
-                quantity: Number(s.quantity)
-            })),
-            prescriptions: prescriptions.map(p => ({
-                supplyId: p.supplyId || undefined,
-                medication_name: p.medication_name,
-                dosage: p.dosage,
-                frequency: p.frequency,
-                duration: p.duration,
-                instructions: p.instructions,
-                active: true
-            })),
-            symptomsConsultas: symptoms.map(s => ({
-                symptomId: s.id,
-                severity: s.severity || 'Leve',
-                duration: s.duration,
-                notes: s.notes
-            })),
-            clinicalExaminations: [
-                {
-                    weight: vitals.weight ? Number(vitals.weight) : undefined,
-                    height: vitals.height ? Number(vitals.height) : undefined,
-                    temperature: vitals.temperature ? Number(vitals.temperature) : undefined,
-                    systolic_bp: vitals.systolic_bp ? Number(vitals.systolic_bp) : undefined,
-                    diastolic_bp: vitals.diastolic_bp ? Number(vitals.diastolic_bp) : undefined,
-                    heart_rate: vitals.heart_rate ? Number(vitals.heart_rate) : undefined,
-                    respiratory_rate: vitals.respiratory_rate ? Number(vitals.respiratory_rate) : undefined,
-                    oxygen_saturation: vitals.oxygen_saturation ? Number(vitals.oxygen_saturation) : undefined,
-                }
-            ],
-            consultationDiagnoses: diagnoses.map(d => ({
-                diagnosisId: d.id,
-                is_primary: d.is_primary,
-                condition_status: d.condition_status || 'Activo',
-                onset_date: d.onset_date ? new Date(d.onset_date).toISOString() : undefined
-            }))
-        };
+        try {
+            const consultationIdNum = Number(consultationId);
+            if (!Number.isFinite(consultationIdNum) || consultationIdNum <= 0) {
+                throw new Error("ID de consulta inválido");
+            }
 
-        console.log("PAYLOAD A ENVIAR AL BACKEND:", payload);
-        
-        // Simulación de envío
-        setTimeout(() => {
-            alert("Consulta finalizada correctamente (Simulación). Revisa la consola para ver el JSON generado.");
-            setIsSubmitting(false);
+            const hasMissingSymptomDuration = symptoms.some((s) => !String(s?.duration ?? "").trim());
+            if (hasMissingSymptomDuration) {
+                throw new Error("Completa la duración de todos los síntomas");
+            }
+
+            const hasInvalidSupplyQty = supplies.some((s) => {
+                const qty = Number.parseInt(String(s?.quantity ?? ""), 10);
+                return !Number.isFinite(qty) || qty <= 0;
+            });
+            if (hasInvalidSupplyQty) {
+                throw new Error("Cantidad de insumo inválida");
+            }
+
+            const payload: FinishConsultationDto = {
+                finished_at: new Date().toISOString(),
+                supplies: supplies.map((s) => ({
+                    supplyId: Number(s.id),
+                    quantity: Number.parseInt(String(s.quantity), 10),
+                })),
+                prescriptions: prescriptions.map((p) => ({
+                    supplyId: p.supplyId ? Number(p.supplyId) : undefined,
+                    medication_name: p.medication_name?.trim() ? p.medication_name.trim() : undefined,
+                    dosage: p.dosage?.trim() ? p.dosage.trim() : undefined,
+                    frequency: p.frequency?.trim() ? p.frequency.trim() : undefined,
+                    duration: p.duration?.trim() ? p.duration.trim() : undefined,
+                    instructions: p.instructions?.trim() ? p.instructions.trim() : undefined,
+                    active: true,
+                })),
+                symptomsConsultas: symptoms.map((s) => ({
+                    symptomId: Number(s.id),
+                    severity: String(s.severity ?? "Leve"),
+                    duration: String(s.duration ?? "").trim(),
+                    notes: s.notes?.trim() ? s.notes.trim() : undefined,
+                })),
+                clinicalExaminations: [
+                    {
+                        weight: vitals.weight ? Number(vitals.weight) : undefined,
+                        height: vitals.height ? Number(vitals.height) : undefined,
+                        temperature: vitals.temperature ? Number(vitals.temperature) : undefined,
+                        systolic_bp: vitals.systolic_bp ? Number(vitals.systolic_bp) : undefined,
+                        diastolic_bp: vitals.diastolic_bp ? Number(vitals.diastolic_bp) : undefined,
+                        heart_rate: vitals.heart_rate ? Number(vitals.heart_rate) : undefined,
+                        respiratory_rate: vitals.respiratory_rate ? Number(vitals.respiratory_rate) : undefined,
+                        oxygen_saturation: vitals.oxygen_saturation ? Number(vitals.oxygen_saturation) : undefined,
+                    },
+                ],
+                consultationDiagnoses: diagnoses.map((d) => ({
+                    diagnosisId: Number(d.id),
+                    is_primary: Boolean(d.is_primary),
+                    condition_status: d.condition_status?.trim()
+                        ? d.condition_status.trim()
+                        : undefined,
+                    onset_date: d.onset_date ? new Date(d.onset_date).toISOString() : undefined,
+                })),
+            };
+
+            console.log("PAYLOAD A ENVIAR AL BACKEND:", payload);
+
+            await finishConsultation(consultationIdNum, payload);
+
+            alert("Consulta finalizada correctamente.");
             window.location.href = `/modules/doctor/${doctorId}/schedule`;
-        }, 1000);
+        } catch (error) {
+            console.error(error);
+            alert(error instanceof Error ? error.message : "Error finalizando la consulta");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (

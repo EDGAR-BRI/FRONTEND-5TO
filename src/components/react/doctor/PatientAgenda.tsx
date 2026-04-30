@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FaCalendarDays,
   FaChevronRight,
@@ -11,63 +11,109 @@ import {
 } from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
+import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
+import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
+type AppointmentRow = {
+  id: number;
+  patient: string;
+  date: string;
+  time: string;
+  reason: string;
+  status: string;
+  statusColor: string;
+  notes: string;
+  doctor: string;
+};
 
+function formatDateParts(value: string | null | undefined) {
+  const d = value ? new Date(value) : null;
+  if (!d || Number.isNaN(d.getTime())) return { date: "-", time: "-" };
 
-const appointments = [
-  {
-    patient: "Carlos Mendoza",
-    date: "Hoy, 14 de Oct",
-    time: "09:00 AM",
-    reason: "Chequeo Post-Operatorio",
-    status: "CONFIRMADA",
-    statusColor: "text-emerald-600 bg-emerald-50",
-    notes: "Paciente requiere revisión de suturas y evaluación general de movilidad.",
-    doctor: "Dr. Ramírez"
-  },
-  {
-    patient: "Lucía Fernández",
-    date: "Hoy, 14 de Oct",
-    time: "11:30 AM",
-    reason: "Evaluación Arritmia",
-    status: "EN ESPERA",
-    statusColor: "text-amber-500 bg-amber-50",
-    notes: "Traer últimos resultados de Holter 24h.",
-    doctor: "Dra. Silva"
-  },
-  {
-    patient: "Roberto Gómez",
-    date: "Mañana, 15 de Oct",
-    time: "08:15 AM",
-    reason: "Control de Hipertensión",
-    status: "CONFIRMADA",
-    statusColor: "text-emerald-600 bg-emerald-50",
-    notes: "Revisar bitácora de presión arterial de los últimos 15 días.",
-    doctor: "Dr. Ramírez"
-  },
-  {
-    patient: "María Antonieta de las Nieves",
-    date: "Jueves, 16 de Oct",
-    time: "10:00 AM",
-    reason: "Consulta General",
-    status: "PENDIENTE",
-    statusColor: "text-blue-600 bg-blue-50",
-    notes: "Primera visita. Crear historial clínico completo.",
-    doctor: "Dra. Andrea Pérez"
-  },
-  {
-    patient: "José Gregorio Hernández",
-    date: "Viernes, 17 de Oct",
-    time: "02:30 PM",
-    reason: "Lectura de Exámenes",
-    status: "REPROGRAMADA",
-    statusColor: "text-purple-600 bg-purple-50",
-    notes: "Paciente avisó que llegaría 15 mins tarde.",
-    doctor: "Dr. Ramírez"
-  }
-];
+  const date = d.toLocaleDateString("es-VE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
+  const time = d.toLocaleTimeString("es-VE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-export default function PatientAgenda() {
-  const [selectedAppt, setSelectedAppt] = useState<typeof appointments[0] | null>(null);
+  return { date, time };
+}
+
+function mapConsultationToRow(c: ConsultationSummary): AppointmentRow {
+  const finished = Boolean(c.finished_at);
+  const status = finished ? "COMPLETADA" : "PENDIENTE";
+  const statusColor = finished ? "text-emerald-600 bg-emerald-50" : "text-blue-600 bg-blue-50";
+
+  const dateSource = c.started_at ?? c.date;
+  const { date, time } = formatDateParts(dateSource);
+
+  const patientName = c.invoice?.patient?.user?.name ?? c.invoice?.patient?.name ?? "Paciente";
+  const doctorName = c.doctor?.user?.name ?? "Doctor";
+
+  const totalUsd = c.invoice?.total_usd ? String(c.invoice.total_usd) : "-";
+  const notes = `Factura #${c.invoice?.id ?? "-"} • Total $${totalUsd}`;
+
+  return {
+    id: c.id,
+    patient: patientName,
+    date,
+    time,
+    reason: `Consulta #${c.id}`,
+    status,
+    statusColor,
+    notes,
+    doctor: doctorName,
+  };
+}
+
+export default function PatientAgenda({ doctorId }: { doctorId: string | number }) {
+  const [search, setSearch] = useState("");
+  const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [selectedAppt, setSelectedAppt] = useState<AppointmentRow | null>(null);
+
+  useEffect(() => {
+    const doctorIdNum = Number(doctorId);
+    if (!Number.isFinite(doctorIdNum) || doctorIdNum <= 0) {
+      setLoadError("doctorId inválido");
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+
+    listConsultationsByDoctor(doctorIdNum)
+      .then((data) => {
+        if (cancelled) return;
+        setAppointments(data.map(mapConsultationToRow));
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setLoadError(e instanceof Error ? e.message : "Error cargando consultas");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [doctorId]);
+
+  const filteredAppointments = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return appointments;
+    return appointments.filter((a) => {
+      return a.patient.toLowerCase().includes(q) || a.reason.toLowerCase().includes(q);
+    });
+  }, [appointments, search]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -78,6 +124,8 @@ export default function PatientAgenda() {
           <input 
             type="text" 
             placeholder="Buscar por paciente o motivo..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 focus:border-[#1e3a8a] transition-all"
           />
         </div>
@@ -98,10 +146,16 @@ export default function PatientAgenda() {
         </div>
 
         <div className="space-y-4">
-          {appointments.map((a, i) => (
+        {isLoading ? (
+        <div className="text-sm text-slate-500">Cargando consultas...</div>
+        ) : loadError ? (
+        <div className="text-sm text-rose-600">{loadError}</div>
+        ) : filteredAppointments.length === 0 ? (
+        <div className="text-sm text-slate-500">No hay consultas para mostrar.</div>
+        ) : filteredAppointments.map((a) => (
             <ActionCard 
-              key={i} 
-              className="!flex-wrap gap-y-3 cursor-pointer border border-slate-200 hover:border-[#1e3a8a]/30 hover:shadow-md transition-all !p-4"
+          key={a.id} 
+              className="flex-wrap! gap-y-3 cursor-pointer border border-slate-200 hover:border-[#1e3a8a]/30 hover:shadow-md transition-all p-4!"
               onClick={() => setSelectedAppt(a)}
             >
               <div className="flex flex-1 items-center gap-5 min-w-0 w-full sm:w-auto">
@@ -129,7 +183,7 @@ export default function PatientAgenda() {
 				<FaChevronRight size={18} className="text-slate-300 group-hover:text-[#1e3a8a] transition-colors" />
               </div>
             </ActionCard>
-          ))}
+    		  ))}
         </div>
       </div>
       <Modal
