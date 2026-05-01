@@ -2,6 +2,8 @@
 import MainLayout from "@/layouts/DoctorLayout.astro";
 import StaticCard from "@/components/react/primary/StaticCard";
 import PatientAgenda from "@/components/react/doctor/PatientAgenda";
+
+const { doctor_id } = Astro.params;
 ---
 
 <MainLayout>
@@ -13,7 +15,7 @@ import PatientAgenda from "@/components/react/doctor/PatientAgenda";
     </div>
 
     <StaticCard className="p-2 sm:p-6 bg-transparent border-none shadow-none">
-      <PatientAgenda client:load />
+      <PatientAgenda client:load doctorId={doctor_id as string} />
     </StaticCard>
     
   </div>

@@ -1,11 +1,9 @@
 ---
 import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
-import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import AppointmentForm from "@/components/react/AppointmentForm";
-import StaticCard from "@/components/react/primary/StaticCard";
-import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
+import AppointmentBookingManager from "@/components/react/AppointmentBookingManager";
+import { FaCalendarPlus } from "react-icons/fa6";
 
-const { pacient_id } = Astro.params;
+const { receptionist_id } = Astro.params;
 
 const coloresEstado: Record<string, string> = {
   Pendiente: "bg-amber-100 text-amber-700 border-amber-200",
@@ -54,6 +52,16 @@ const citasMock = [
         </p>
       </div>
 
+      <div class="flex items-center gap-4">
+        <a 
+          href={`/modules/receptionist/${receptionist_id}/register-patient`}
+          class="inline-flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary-600 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm whitespace-nowrap focus-visible:ring-[3px] focus-visible:ring-primary-300"
+        >
+          <FaCalendarPlus />
+          Agregar Paciente
+        </a>
+      </div>
+
       <div
         class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-100"
       >
@@ -71,24 +79,10 @@ const citasMock = [
       </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
-      <AppointmentForm client:load />
-
-      <StaticCard
-        className="lg:col-span-3 flex flex-col min-h-150 overflow-hidden"
-      >
-        <div class="overflow-x-auto w-full h-full">
-          <div class="min-w-[800px] h-full">
-            <AppointmentCalendar
-              role="receptionist"
-              citas={citasMock}
-              context={{ patientId: pacient_id }}
-              client:load
-              actions={[]}
-            />
-          </div>
-        </div>
-      </StaticCard>
-    </div>
+    <AppointmentBookingManager 
+      client:load 
+      role="receptionist" 
+      context={{ receptionist_id }} 
+    />
   </div>
-</PacientLayout>
+</ReceptionistLayout>

@@ -7,5 +7,6 @@ export type DoctorSchedConfigOption =
     },
     specialty: {
         name: string
+        consultation_price: number,
     }
 }
