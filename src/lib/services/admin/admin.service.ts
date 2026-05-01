@@ -384,3 +384,16 @@ export const getReportSnapshot = async (scope: ReportSnapshotScope): Promise<Rep
 		labelTertiary: "Ingreso asociado",
 	};
 };
+
+export const getExpenseLedger = async (params: { from: string, to: string }) => {
+	const searchParams = new URLSearchParams({
+		from: params.from,
+		to: params.to,
+		pageSize: '100', // Fetch more items
+	});
+	const response = await api(`/report/expense-ledger?${searchParams.toString()}`, { method: "GET" });
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<any>(response); // Returning the entire data object
+};

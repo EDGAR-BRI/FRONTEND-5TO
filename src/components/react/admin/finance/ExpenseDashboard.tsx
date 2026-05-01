@@ -4,9 +4,9 @@ import { Badge } from '@/components/react/primary/Badge';
 import { Button } from '@/components/react/primary/Button';
 import { StatsCard } from '@/components/react/primary/StatsCard';
 import { AddTransactionModal } from './AddTransactionModal';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { getFinanceDashboardData, type FinanceTransaction } from '@/lib/services/admin/admin.service';
+import { getExpenseLedger } from '@/lib/services/admin/admin.service';
 import {
     FaArrowTrendDown,
     FaDollarSign,
@@ -18,39 +18,50 @@ import {
 } from 'react-icons/fa6';
 
 interface Transaction {
-    id: number;
-    patientName: string;
-    code: string;
-    date: string;
-    detail: string;
-    provider: string;
+    id: string;
+    source: string;
+    occurredAt: string;
+    description: string;
+    counterparty: string;
     category: string;
-    amount: number;
-    status: 'completed' | 'pending' | 'cancelled';
+    amountUsd: number;
+    amountVes: number;
+    status: string;
 }
 
 export const ExpenseDashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [transactions, setTransactions] = useState<FinanceTransaction[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [summary, setSummary] = useState({
-        totalIncome: 0,
-        totalExpenses: 0,
-        netBalance: 0,
-        pendingPayments: 0
+        totalUsd: 0,
+        totalVes: 0,
+        bySource: {
+            PURCHASE: { totalUsd: 0 },
+            OPEX: { totalUsd: 0 },
+            PAYROLL: { totalUsd: 0 },
+        }
     });
 
     useEffect(() => {
         let mounted = true;
         (async () => {
             try {
-                const data = await getFinanceDashboardData();
+                // Fetch last 30 days by default
+                const toDate = new Date();
+                const fromDate = subDays(toDate, 30);
+                
+                const data = await getExpenseLedger({ 
+                    from: format(fromDate, 'yyyy-MM-dd'), 
+                    to: format(toDate, 'yyyy-MM-dd') 
+                });
+                
                 if (mounted) {
-                    setSummary(data.summary);
-                    setTransactions(data.transactions);
+                    setSummary(data.totals);
+                    setTransactions(data.items);
                 }
             } catch (err) {
-                console.error('Error fetching summary:', err);
+                console.error('Error fetching expense ledger:', err);
             } finally {
                 if (mounted) setIsLoading(false);
             }
@@ -61,38 +72,34 @@ export const ExpenseDashboard = () => {
         };
     }, []);
 
-    const filteredTransactions = useMemo(() => {
-        return transactions.filter(t => t.category === 'Gasto');
-    }, [transactions]);
-
     const avgExpense = useMemo(() => {
-        return filteredTransactions.length > 0 ? summary.totalExpenses / filteredTransactions.length : 0;
-    }, [filteredTransactions, summary.totalExpenses]);
+        return transactions.length > 0 ? summary.totalUsd / transactions.length : 0;
+    }, [transactions, summary.totalUsd]);
 
     const cancelledCount = useMemo(() => {
-        return filteredTransactions.filter(t => t.status === 'cancelled').length;
-    }, [filteredTransactions]);
+        return transactions.filter(t => t.status?.toLowerCase() === 'cancelled' || t.status?.toLowerCase() === 'anulled').length;
+    }, [transactions]);
 
     const columns: Column<Transaction>[] = useMemo(() => [
         {
-            header: "PROVEEDOR",
-            accessorKey: "patientName",
+            header: "PROVEEDOR / CONTRAPARTE",
+            accessorKey: "counterparty",
             cell: (item) => (
                 <div className="flex flex-col">
-                    <span className="font-semibold text-gray-900">{item.patientName}</span>
+                    <span className="font-semibold text-gray-900">{item.counterparty || 'N/A'}</span>
                     <span className="text-xs text-gray-500">
-                        {item.code} • {item.date ? format(new Date(item.date), 'dd MMM yyyy', { locale: es }) : 'Sin fecha'}
+                        {item.id} • {item.occurredAt ? format(new Date(item.occurredAt), 'dd MMM yyyy', { locale: es }) : 'Sin fecha'}
                     </span>
                 </div>
             )
         },
         {
-            header: "DETALLE (GASTO/COMPRA)",
-            accessorKey: "detail",
+            header: "DETALLE",
+            accessorKey: "description",
             cell: (item) => (
                 <div className="flex flex-col">
-                    <span className="text-gray-700">{item.detail}</span>
-                    <span className="text-xs text-gray-400">Proveedor: {item.provider}</span>
+                    <span className="text-gray-700">{item.description}</span>
+                    <span className="text-xs text-gray-400">Origen: {item.source}</span>
                 </div>
             )
         },
@@ -110,35 +117,42 @@ export const ExpenseDashboard = () => {
                     }}>
                         <div className="flex items-center gap-1">
                             <span>📉</span>
-                            <span>{item.category}</span>
+                            <span>{item.category || item.source}</span>
                         </div>
                     </Badge>
                 )
             }
         },
         {
-            header: "MONTO",
-            accessorKey: "amount",
+            header: "MONTO (USD)",
+            accessorKey: "amountUsd",
             cell: (item) => (
-                <span className="font-bold text-gray-900">
-                    ${item.amount.toFixed(2)}
-                </span>
+                <div className="flex flex-col">
+                    <span className="font-bold text-gray-900">
+                        ${(item.amountUsd || 0).toFixed(2)}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                        Bs. {(item.amountVes || 0).toFixed(2)}
+                    </span>
+                </div>
             )
         },
         {
             header: "ESTADO",
             accessorKey: "status",
             cell: (item) => {
-                const statusConfig = {
-                    completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completado' },
-                    pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pendiente' },
-                    cancelled: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Cancelado' }
-                };
-                const config = statusConfig[item.status] || statusConfig.pending;
+                const statusStr = (item.status || 'pending').toLowerCase();
+                let config = { bg: 'bg-yellow-100', text: 'text-yellow-700', label: item.status || 'Pendiente' };
+                if (statusStr.includes('paid') || statusStr.includes('complet')) {
+                    config = { bg: 'bg-green-100', text: 'text-green-700', label: 'Completado' };
+                } else if (statusStr.includes('cancel') || statusStr.includes('anul')) {
+                    config = { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Cancelado' };
+                }
+                
                 return (
                     <Badge styles={{ bg: config.bg, text: config.text, rounded: 'rounded-full' }}>
                         <div className="flex items-center gap-1">
-                            {item.status === 'completed' && <span>✓</span>}
+                            {config.label === 'Completado' && <span>✓</span>}
                             {config.label}
                         </div>
                     </Badge>
@@ -166,8 +180,8 @@ export const ExpenseDashboard = () => {
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatsCard
-                    title="Gastos Totales"
-                    value={`$${summary.totalExpenses.toFixed(2)}`}
+                    title="Gastos Totales (30d)"
+                    value={`$${summary.totalUsd.toFixed(2)}`}
                     color="danger"
                     icon={<FaArrowTrendDown size={18} />}
                 />
@@ -178,8 +192,8 @@ export const ExpenseDashboard = () => {
                     icon={<FaSackDollar size={18} />}
                 />
                 <StatsCard
-                    title="Cant. de Gastos"
-                    value={filteredTransactions.length}
+                    title="Cant. de Egresos"
+                    value={transactions.length}
                     color="primary"
                     icon={<FaSackDollar size={18} />}
                 />
@@ -230,7 +244,7 @@ export const ExpenseDashboard = () => {
                 <DataTable
                     className="rounded-none! border-none!"
                     endpoint=""
-                    data={filteredTransactions as Transaction[]}
+                    data={transactions}
                     columns={columns}
                     isLoading={isLoading}
                 />
