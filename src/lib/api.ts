@@ -139,16 +139,18 @@ export const removeToken = (): void => {
 
 interface ApiOptions extends RequestInit {
     headers?: Record<string, string>;
+    skipUnauthorizedRedirect?: boolean;
 }
 
 export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: AstroCookies) => {
     try {
+        const { skipUnauthorizedRedirect = false, ...requestOptions } = options;
         const token = getToken(cookies);
         const doctorId = getDoctorId(cookies);
 
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
-            ...options.headers,
+            ...requestOptions.headers,
         };
 
         if (token) {
@@ -159,7 +161,7 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
         }
 
         const config: RequestInit = {
-            ...options,
+            ...requestOptions,
             headers,
         };
 
@@ -177,7 +179,7 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
 
         const response = await fetch(targetUrl, config);
 
-        if (response.status === 401) {
+        if (response.status === 401 && !skipUnauthorizedRedirect) {
             if (typeof window !== "undefined") {
                 removeToken();
                 window.location.href = '/login';

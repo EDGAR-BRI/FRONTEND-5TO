@@ -8,6 +8,7 @@ export const loginWithCredentials = async (payload: LoginRequest): Promise<Login
 	const response = await api(`${BASE_PATH}/login`, {
 		method: "POST",
 		body: JSON.stringify(payload),
+		skipUnauthorizedRedirect: true,
 	});
 
 	if (!response.ok) {
