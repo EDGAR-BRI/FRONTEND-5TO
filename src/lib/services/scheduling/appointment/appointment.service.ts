@@ -30,11 +30,13 @@ export const getAppointments = async (filters?: { range?: string }): Promise<App
 	}
     return readEnvelopeData<AppointmentsOverview[]>(response);
 }
-export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: boolean = false): Promise<Appointment[]> => {
+import type { AstroCookies } from "astro";
+
+export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: boolean = false, cookies?: AstroCookies): Promise<Appointment[]> => {
     const url = `${BASE_PATH}/${selectUpcomingOnly ? 'upcoming/' : ''}doctor/${doctorId}`
     const response = await api(url, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
         method: "GET"
-    });
+    }, cookies);
     if(!response.ok){
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
