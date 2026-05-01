@@ -63,13 +63,11 @@ const patientInfo = {
 
     <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full items-stretch">
       <aside class="flex flex-col h-full">
-        {/* Le pasamos toda la info al componente de la tarjeta lateral */}
-        <BasicData client:load patient={patientInfo} />
+        <BasicData client:load patientId={pacient_id as string} />
       </aside>
 
       <section class="flex flex-col h-full">
-        {/* Le pasamos la info al componente de los formularios (Pestañas) */}
-        <ProfileTabs client:load patient={patientInfo} />
+        <ProfileTabs client:load patientId={pacient_id as string} />
       </section>
     </div>
   </main>

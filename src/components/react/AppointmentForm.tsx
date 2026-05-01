@@ -487,7 +487,21 @@ export default function AppointmentForm({
                 </div>
             ) : (
                 <div className="space-y-4">
+                    
                     {/* ── Paciente ── */}
+                    {role !== 'pacient' && (
+                        <SearchableSelect
+                            label="Paciente *"
+                            placeholder={filteredPatientOptions.length === 0 ? 'Sin pacientes disponibles' : '— Seleccionar paciente —'}
+                            options={filteredPatientOptions}
+                            value={patientId}
+                            onChange={(val) => setPatientId(val)}
+                            name="patient"
+                            searchPlaceholder="Buscar paciente por nombre o CI…"
+                        />
+                    )}
+
+                    {/* ── Paciente ──
                     <SearchableSelect
                         label="Paciente *"
                         placeholder={filteredPatientOptions.length === 0 ? 'Sin pacientes disponibles' : '— Seleccionar paciente —'}
@@ -496,7 +510,7 @@ export default function AppointmentForm({
                         onChange={(val) => setPatientId(val)}
                         name="patient"
                         searchPlaceholder="Buscar paciente por nombre o CI…"
-                    />
+                    /> */}
 
                     {/* ── Tipo de Cita ── */}
                     <Select

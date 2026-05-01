@@ -36,16 +36,7 @@ import { api } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
 
-// let patientData: any = null;
-// 1. Definimos datos falsos por defecto (Fallback)
-let patientData: any = {
-  id: pacient_id,
-  user: {
-    name: "Daniela Pérez (Mock)",
-    ci: "V-12345678"
-  },
-  tipo_sangre: "O+"
-};
+let patientData: any = null;
 let appointmentsData: any[] = [];
 
 
