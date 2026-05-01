@@ -73,6 +73,10 @@ export const setDoctorId = (doctorId: string): void => {
     });
 };
 
+export const removeDoctorId = (): void => {
+    Cookies.remove(DOCTOR_ID_KEY, { path: "/" });
+};
+
 export const setToken = (token: string): void => {
     Cookies.set(TOKEN_KEY, token, {
         expires: 7,

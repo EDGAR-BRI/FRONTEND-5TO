@@ -3,7 +3,7 @@ import "@/styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
 import BottomNavbar from "@/components/astro/BottomNavbar.astro";
-import { FaChartLine, FaHouse, FaMoneyBillWave, FaUsers } from "react-icons/fa6";
+import { FaCartShopping, FaChartLine, FaHouse, FaMoneyBillWave, FaUsers } from "react-icons/fa6";
 import { FaBoxesStacked } from "react-icons/fa6";
 import {
 	FaClipboardList,
@@ -28,6 +28,11 @@ const menuItems = [
 		label: "Gestión de insumos",
 		href: "/modules/admin/manage-supplies",
 		icon: FaBoxesStacked,
+	},
+	{
+		label: "Registrar compras",
+		href: "/modules/admin/compras",
+		icon: FaCartShopping,
 	},
 	{
 		label: "Gestión de servicios",

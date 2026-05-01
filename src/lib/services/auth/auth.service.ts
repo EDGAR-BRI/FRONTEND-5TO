@@ -1,4 +1,4 @@
-import { api, setToken, setUserName, setCI } from "@/lib/api";
+import { api, removeCI, removeDoctorId, removeToken, setToken, setUserName, setCI } from "@/lib/api";
 import type { LoginRequest, LoginResponseData, LoginUser, RegisterUserRequest, RegisterUserResponseData, Role } from "./auth.interface";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../_shared/envelope";
 
@@ -83,8 +83,8 @@ export const persistLogin = (data: LoginResponseData) => {
 };
 
 export const logout = () => {
-	setToken("");
-	setUserName("");
-	setCI("")
-	window.location.href = "/auth/login";
+	removeToken();
+	removeCI();
+	removeDoctorId();
+	window.location.href = "/login";
 };

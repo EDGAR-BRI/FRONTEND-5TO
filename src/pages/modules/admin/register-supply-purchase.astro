@@ -1,0 +1,19 @@
+---
+export const prerender = true;
+
+import MainLayout from '@/layouts/AdminLayout.astro';
+import { CreateSupplyPurchaseForm } from '@/components/react/admin/procurement/CreateSupplyPurchaseForm';
+---
+
+<MainLayout title="Admin | Registrar compra de insumos">
+    <section class="p-8 space-y-6">
+        <header class="space-y-1">
+            <h1 class="text-2xl font-semibold text-primary-800">Registrar compra de insumos</h1>
+            <p class="text-sm text-cool-gray-70">
+                Crea una compra y actualiza el inventario por lotes al confirmar el pago.
+            </p>
+        </header>
+
+        <CreateSupplyPurchaseForm client:load />
+    </section>
+</MainLayout>
