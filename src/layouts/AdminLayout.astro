@@ -20,19 +20,20 @@ const menuItems = [
 		icon: FaHouse,
 	},
 	{
-		label: "Gestionar usuarios",
-		href: "/modules/admin/manage-users",
-		icon: FaUsers,
-	},
-	{
-		label: "Gestión de insumos",
-		href: "/modules/admin/manage-supplies",
+		label: "Gestionar insumos",
 		icon: FaBoxesStacked,
-	},
-	{
-		label: "Registrar compras",
-		href: "/modules/admin/compras",
-		icon: FaCartShopping,
+		subItems: [
+			{
+				label: "Registrar compras",
+				href: "/modules/admin/compras",
+				icon: FaCartShopping,
+			},
+			{
+				label: "Inventario de insumos",
+				href: "/modules/admin/manage-supplies",
+				icon: FaBoxesStacked,
+			},
+		],
 	},
 	{
 		label: "Gestión de servicios",
@@ -52,6 +53,11 @@ const menuItems = [
 	{
 		label: "Gestión de nóminas",
 		href: "/modules/admin/manage-payroll",
+		icon: FaUsers,
+	},
+	{
+		label: "Gestionar usuarios",
+		href: "/modules/admin/manage-users",
 		icon: FaUsers,
 	},
 	{

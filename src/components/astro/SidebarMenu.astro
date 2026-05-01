@@ -17,22 +17,28 @@ const isPathActive = (targetPath?: string) => {
 
 <nav class="px-4 space-y-1 w-full min-w-0">
     {
-        menuItems.map((item) => {
+        menuItems.map((item, index) => {
             const hasActiveSubItem =
                 item.subItems?.some((subItem) => {
                     return isPathActive(subItem.href);
                 }) ?? false;
+            const accordionId = `sidebar-accordion-${index}`;
 
             return (
             <div>
                 {item.subItems ? (
-                    <details class="group w-full min-w-0 overflow-hidden" open={hasActiveSubItem}>
+                    <details
+                        class="group w-full min-w-0 overflow-hidden"
+                        data-sidebar-accordion={accordionId}
+                        open={hasActiveSubItem}
+                    >
                         <summary
+                            data-sidebar-accordion-trigger={accordionId}
                             class:list={[
-                                "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-md transition-colors cursor-pointer list-none min-w-0",
+                                "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-md transition-colors cursor-pointer list-none min-w-0 border-l-2 border-transparent",
                                 hasActiveSubItem
-                                    ? "bg-primary-800 text-white border-l-2 border-primary-600"
-                                    : "text-primary-100 hover:bg-primary-800 hover:text-primary-100 group-hover:text-white",
+                                    ? "bg-primary-800/60 text-white border-primary-300"
+                                    : "text-primary-100 hover:bg-primary-800/60 hover:text-white group-hover:text-white",
                             ]}
                         >
                             <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -59,20 +65,20 @@ const isPathActive = (targetPath?: string) => {
                                 ]}
                             />
                         </summary>
-                        <div class="sidebar-dropdown-content mt-1 ml-6 space-y-1 border-l-2 border-cool-gray-80 pl-4 pr-1">
+                        <div class="sidebar-dropdown-content mt-1 ml-3 space-y-1 border-l-2 border-primary-200/70 pl-2 pr-1">
                             {item.subItems.map((subItem) => (
                                 <a
                                     href={subItem.href}
                                     class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors min-w-0 ${
                                         isPathActive(subItem.href)
-                                               ? "text-primary-600 bg-primary-900/20"
-                                            : "text-primary-100 hover:text-primary-100 hover:bg-cool-gray-80"
+                                            ? "text-white bg-primary-800/60"
+                                            : "text-primary-100 hover:text-white hover:bg-primary-800/60"
                                     }`}
                                 >
 								{(() => {
 									const Icon = subItem.icon;
 									if (!Icon || typeof Icon === "string") return null;
-									return <Icon className="text-sm" />;
+									return <Icon className="text-sm shrink-0" />;
 								})()}
             						<span class="truncate">{subItem.label}</span>
                                 </a>
@@ -85,8 +91,8 @@ const isPathActive = (targetPath?: string) => {
                             href={item.href}
                             class={`flex items-center gap-6 px-4 py-3 rounded-md transition-colors group ${
                                 isPathActive(item.href)
-                                       ? "bg-primary-800 text-white border-l-2 border-primary-600"
-                                    : "text-primary-100 hover:bg-cool-gray-90 hover:text-white"
+                                    ? "bg-primary-800/60 text-white"
+                                    : "text-primary-100 hover:bg-primary-800/60 hover:text-white border-l-2 border-transparent"
                             }`}
                         >
                         {(() => {
@@ -96,8 +102,8 @@ const isPathActive = (targetPath?: string) => {
                                 <Icon
                                     className={`text-lg transition-colors ${
                                         isPathActive(item.href)
-                                            ? "text-primary-600"
-                                            : "text-primary-100 group-hover:text-primary-600"
+                                            ? "text-primary-300"
+                                            : "text-primary-100 group-hover:text-primary-300"
                                     }`}
                                 />
                             );
@@ -112,6 +118,58 @@ const isPathActive = (targetPath?: string) => {
         )})
     }
 </nav>
+
+<script is:inline type="module">
+    const storageKey = 'admin-sidebar-accordion-state';
+
+    const readState = () => {
+        try {
+            return JSON.parse(localStorage.getItem(storageKey) ?? '{}');
+        } catch {
+            return {};
+        }
+    };
+
+    const writeState = (state) => {
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+        } catch {
+            // Ignore storage errors in private or restricted browsing modes.
+        }
+    };
+
+    const syncSidebarAccordions = () => {
+        const savedState = readState();
+        document.querySelectorAll('[data-sidebar-accordion]').forEach((details) => {
+            const accordionId = details.getAttribute('data-sidebar-accordion');
+            if (!accordionId) return;
+
+            const activeRouteSection = details.hasAttribute('open');
+
+            if (savedState[accordionId] !== undefined) {
+                details.open = Boolean(savedState[accordionId]);
+            } else {
+                details.open = activeRouteSection;
+            }
+
+            const updateState = () => {
+                const currentState = readState();
+                currentState[accordionId] = details.open;
+                writeState(currentState);
+            };
+
+            if (!details.dataset.sidebarAccordionBound) {
+                details.addEventListener('toggle', updateState);
+                details.dataset.sidebarAccordionBound = 'true';
+            }
+
+            updateState();
+        });
+    };
+
+    syncSidebarAccordions();
+    document.addEventListener('astro:page-load', syncSidebarAccordions);
+</script>
 
 <style>
     summary::-webkit-details-marker {
