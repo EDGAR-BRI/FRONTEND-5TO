@@ -118,8 +118,19 @@ export function DataTable<T>({
 }
 
 const TableSkeleton = ({ columns: _columns }: { columns: number }) => (
-    <div className="animate-pulse bg-cool-gray-90 rounded border border-cool-gray-80">
-        <div className="h-10 bg-cool-gray-100 border-b border-cool-gray-80" />
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 border-b border-cool-gray-80" />)}
+    <div className="animate-pulse rounded-lg border border-primary-200 bg-white overflow-hidden shadow-sm">
+        <div className="h-12 border-b border-primary-100 bg-primary-50/70 px-4 flex items-center gap-3">
+            <div className="h-3 w-24 rounded-full bg-primary-200/80" />
+            <div className="h-3 w-16 rounded-full bg-primary-200/60" />
+            <div className="h-3 w-20 rounded-full bg-primary-200/70" />
+        </div>
+        {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-14 border-b border-primary-100 px-4 flex items-center gap-4 last:border-b-0">
+                <div className="h-3 w-10 rounded-full bg-primary-100" />
+                <div className="h-3 flex-1 rounded-full bg-primary-100/80" />
+                <div className="h-3 w-20 rounded-full bg-primary-100/70" />
+                <div className="h-3 w-16 rounded-full bg-primary-100/60" />
+            </div>
+        ))}
     </div>
 );

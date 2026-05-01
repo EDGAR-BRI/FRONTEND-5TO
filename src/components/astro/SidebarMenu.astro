@@ -15,7 +15,7 @@ const isPathActive = (targetPath?: string) => {
 };
 ---
 
-<nav class="px-4 space-y-1">
+<nav class="px-4 space-y-1 w-full min-w-0">
     {
         menuItems.map((item) => {
             const hasActiveSubItem =
@@ -26,16 +26,16 @@ const isPathActive = (targetPath?: string) => {
             return (
             <div>
                 {item.subItems ? (
-                    <details class="group" open={hasActiveSubItem}>
+                    <details class="group w-full min-w-0 overflow-hidden" open={hasActiveSubItem}>
                         <summary
                             class:list={[
-                                "w-full flex items-center justify-between px-4 py-3 rounded-md transition-colors cursor-pointer list-none",
+                                "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-md transition-colors cursor-pointer list-none min-w-0",
                                 hasActiveSubItem
                                     ? "bg-primary-800 text-white border-l-2 border-primary-600"
                                     : "text-primary-100 hover:bg-primary-800 hover:text-primary-100 group-hover:text-white",
                             ]}
                         >
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
                                 {(() => {
                                     const Icon = item.icon;
                                     if (!Icon || typeof Icon === "string") return null;
@@ -49,21 +49,21 @@ const isPathActive = (targetPath?: string) => {
                                         />
                                     );
                                 })()}
-                                <span class="font-medium text-sm tracking-wide">
+                                <span class="font-medium text-sm tracking-wide truncate">
                                     {item.label}
                                 </span>
                             </div>
                             <FaChevronDown
                                 class:list={[
-                                    "h-4 w-4 transition-transform duration-200 group-open:rotate-180",
+                                    "h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180",
                                 ]}
                             />
                         </summary>
-                        <div class="pl-4 mt-1 space-y-1 border-l-2 border-cool-gray-80 ml-6 sidebar-dropdown-content">
+                        <div class="sidebar-dropdown-content mt-1 ml-6 space-y-1 border-l-2 border-cool-gray-80 pl-4 pr-1">
                             {item.subItems.map((subItem) => (
                                 <a
                                     href={subItem.href}
-                                    class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors ${
+                                    class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors min-w-0 ${
                                         isPathActive(subItem.href)
                                                ? "text-primary-600 bg-primary-900/20"
                                             : "text-primary-100 hover:text-primary-100 hover:bg-cool-gray-80"
@@ -74,7 +74,7 @@ const isPathActive = (targetPath?: string) => {
 									if (!Icon || typeof Icon === "string") return null;
 									return <Icon className="text-sm" />;
 								})()}
-                                    <span>{subItem.label}</span>
+            						<span class="truncate">{subItem.label}</span>
                                 </a>
                             ))}
                         </div>
