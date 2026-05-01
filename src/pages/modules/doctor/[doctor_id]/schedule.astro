@@ -38,17 +38,34 @@ try {
 ---
 
 <MainLayout title="Agenda Médica">
-    <main
-        class="p-4 md:p-6 bg-[#f4f9ff] min-h-screen w-full flex flex-col gap-6"
-    >
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StatsCard
-                title="Citas Hoy"
-                value={citas.length}
-                color="primary"
-            />
-            <StatsCard title="Pacientes Atendidos" value="24" color="success" />
-            <StatsCard title="Tiempo Promedio" value="25 min" color="warning" />
+  <main class="p-4 md:p-6 bg-[#f4f9ff] min-h-screen w-full flex flex-col gap-6">
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <StatsCard title="Citas Hoy" value={citasMock.length} color="primary" />
+      <StatsCard title="Pacientes Atendidos" value="24" color="success" />
+      <StatsCard title="Tiempo Promedio" value="25 min" color="warning" />
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 flex-1">
+      
+      <section class="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+        <h2 class="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
+        <div class="flex-1">
+          <AppointmentCalendar
+            role="doctor"
+            citas={citasMock}
+            context={{ doctorId: doctor_id }}
+            actions={[
+              {
+                id: 'historial',
+                label: 'Ver Historial Clínico',
+                kind: 'link',
+                variant: 'primary',
+                hrefTemplate: '/modules/pacient/{id_paciente}/history'
+              }
+            ]}
+            client:load
+          />
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 flex-1">
