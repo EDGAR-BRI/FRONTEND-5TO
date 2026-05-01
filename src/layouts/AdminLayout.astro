@@ -41,10 +41,43 @@ const menuItems = [
 		],
 	},
 	{
-		label: "Gestión de servicios",
-		href: "/modules/admin/manage-services",
+		label: "Gestionar servicios",
 		icon: FaBoxesStacked,
+		subItems: [
+			{
+				label: "Pagar servicios",
+				href: "/modules/admin/manage-ervices",
+				icon: FaCartShopping,
+			},
+			{
+				label: "Catalogo de servicios",
+				href: "/modules/admin/manage-services",
+				icon: FaBoxesStacked,
+			},
+			{
+				label: "Historial de servicios",
+				href: "/modules/admin/manage-supplie",
+				icon: FaBoxesStacked,
+			},
+		],
 	},
+	{
+		label: "Gestión de nóminas",
+		icon: FaBoxesStacked,
+		subItems: [
+			{
+				label: "Pagar nóminas",
+				href: "/modules/admin/manage-payrollda",
+				icon: FaCartShopping,
+			},
+			{
+				label: "Historial de nóminas",
+				href: "/modules/admin/manage-payroll",
+				icon: FaBoxesStacked,
+			},
+		],
+	},
+	
 	// {
 	// 	label: "Gestión de ingresos",
 	// 	href: "/modules/admin/manage-billing",
@@ -55,11 +88,6 @@ const menuItems = [
 	// 	href: "/modules/admin/manage-expenses",
 	// 	icon: FaMoneyBillWave,
 	// },
-	{
-		label: "Gestión de nóminas",
-		href: "/modules/admin/manage-payroll",
-		icon: FaUsers,
-	},
 	{
 		label: "Gestionar usuarios",
 		href: "/modules/admin/manage-users",
