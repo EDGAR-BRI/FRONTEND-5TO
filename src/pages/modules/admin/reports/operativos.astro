@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
@@ -53,9 +51,9 @@ const slotsByTime = [
 			<p class="text-gray-500">Seguimiento de capacidad, tiempos y productividad con acceso a reportes detallados.</p>
 		</header>
 
-		<ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
+		<ReportTimeframeFilters client:visible title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
 
-		<ReportBackendSnapshot client:load scope="operativos" />
+		<ReportBackendSnapshot client:visible scope="operativos" />
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 			<StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">

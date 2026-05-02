@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
@@ -51,9 +49,9 @@ const goals = [
 			<p class="text-gray-500">KPIs de calidad asistencial y desempeno economico con reportes especializados.</p>
 		</header>
 
-		<ReportTimeframeFilters client:load title="Filtros de resultados" subtitle="Mueve los indicadores clínicos y financieros entre cortes diarios, semanales, mensuales o anuales." />
+		<ReportTimeframeFilters client:visible title="Filtros de resultados" subtitle="Mueve los indicadores clínicos y financieros entre cortes diarios, semanales, mensuales o anuales." />
 
-		<ReportBackendSnapshot client:load scope="resultados" />
+		<ReportBackendSnapshot client:visible scope="resultados" />
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 			<StatsCard title="Atenciones Exitosas" value="94%" trend="2.3%" trendUp={true} color="success">

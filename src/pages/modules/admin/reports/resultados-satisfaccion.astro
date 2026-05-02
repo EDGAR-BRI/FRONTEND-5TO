@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -27,7 +25,7 @@ const ratings = [
       <p class="text-gray-500">Analisis de experiencia en cada punto del flujo de atencion.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de satisfacción" subtitle="Evalúa la experiencia por día, semana, mes o año y detecta cambios en la percepción del paciente." />
+    <ReportTimeframeFilters client:visible title="Filtro de satisfacción" subtitle="Evalúa la experiencia por día, semana, mes o año y detecta cambios en la percepción del paciente." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Satisfaccion global" value="89%" trend="1.7%" trendUp={true} color="success"><FaFaceSmile slot="icon" size={18} /></StatsCard>

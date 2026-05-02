@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -27,7 +25,7 @@ const providers = [
       <p class="text-gray-500">Control de costo por orden y nivel de cumplimiento en entregas.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de proveedores" subtitle="Consulta rendimiento y puntualidad por día, semana, mes o año para detectar variaciones de abastecimiento." />
+    <ReportTimeframeFilters client:visible title="Filtro de proveedores" subtitle="Consulta rendimiento y puntualidad por día, semana, mes o año para detectar variaciones de abastecimiento." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Proveedores activos" value="14" trend="0.0%" trendUp={true} color="primary"><FaHandshakeSimple slot="icon" size={18} /></StatsCard>

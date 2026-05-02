@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
@@ -60,9 +58,9 @@ const concreteReports = [
 			</div>
 		</header>
 
-		<ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos de control." />
+		<ReportTimeframeFilters client:visible title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos de control." />
 
-		<ReportBackendSnapshot client:load scope="gastos" />
+		<ReportBackendSnapshot client:visible scope="gastos" />
 
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 			<StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">

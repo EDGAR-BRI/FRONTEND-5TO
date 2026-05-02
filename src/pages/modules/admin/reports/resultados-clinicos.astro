@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -26,7 +24,7 @@ const metrics = [
       <p class="text-gray-500">Calidad asistencial, efectividad y seguimiento de casos.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro clinico" subtitle="Revisa resultados clínicos por día, semana, mes o año para comparar calidad y seguimiento." />
+    <ReportTimeframeFilters client:visible title="Filtro clinico" subtitle="Revisa resultados clínicos por día, semana, mes o año para comparar calidad y seguimiento." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Casos exitosos" value="94%" trend="2.2%" trendUp={true} color="success"><FaFileCircleCheck slot="icon" size={18} /></StatsCard>

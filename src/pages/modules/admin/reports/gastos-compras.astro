@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -26,7 +24,7 @@ const rows = [
       <p class="text-gray-500">Comparativo semanal de compras para detectar desviaciones tempranas.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de compras" subtitle="Alterna entre periodos diarios, semanales, mensuales y anuales para revisar la compra de insumos." />
+    <ReportTimeframeFilters client:visible title="Filtro de compras" subtitle="Alterna entre periodos diarios, semanales, mensuales y anuales para revisar la compra de insumos." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Total mensual" value="$10,180" trend="5.8%" trendUp={false} color="danger"><FaCartFlatbed slot="icon" size={18} /></StatsCard>

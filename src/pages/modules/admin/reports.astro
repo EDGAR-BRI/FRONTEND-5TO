@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
@@ -63,9 +61,9 @@ const specialtiesStats = [
 			</div>
 		</header>
 
-		<ReportTimeframeFilters client:load title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
+		<ReportTimeframeFilters client:visible title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
 
-		<ReportBackendSnapshot client:load scope="resultados" />
+		<ReportBackendSnapshot client:visible scope="resultados" />
 
 		{/* Summary Cards */}
 		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

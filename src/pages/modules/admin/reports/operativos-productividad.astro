@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -27,7 +25,7 @@ const doctors = [
       <p class="text-gray-500">Rendimiento por profesional para balancear carga asistencial.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de saturación." />
+    <ReportTimeframeFilters client:visible title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de saturación." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Medicos en turno" value="12" trend="0.0%" trendUp={true} color="primary"><FaUserDoctor slot="icon" size={18} /></StatsCard>

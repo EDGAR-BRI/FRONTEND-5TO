@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -27,7 +25,7 @@ const months = [
       <p class="text-gray-500">Evolucion de gastos para identificar picos y sostenibilidad de costos.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de variacion" subtitle="Analiza la evolución del gasto por día, semana, mes o año y compara el comportamiento histórico." />
+    <ReportTimeframeFilters client:visible title="Filtro de variacion" subtitle="Analiza la evolución del gasto por día, semana, mes o año y compara el comportamiento histórico." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Variacion acumulada" value="+9.6%" trend="2.8%" trendUp={false} color="danger"><FaMoneyBillTrendUp slot="icon" size={18} /></StatsCard>

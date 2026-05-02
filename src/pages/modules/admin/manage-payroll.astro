@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import MainLayout from '@/layouts/AdminLayout.astro';
 import { PayrollDashboard } from '@/components/react/admin/finance/PayrollDashboard';
 ---
@@ -10,6 +8,6 @@ import { PayrollDashboard } from '@/components/react/admin/finance/PayrollDashbo
 		<h1 class="text-2xl font-semibold text-primary-800 mb-6">
 			Gestión de Nóminas
 		</h1>
-		<PayrollDashboard client:load />
+		<PayrollDashboard client:visible />
 	</section>
 </MainLayout>

@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
@@ -27,7 +25,7 @@ const agenda = [
       <p class="text-gray-500">Monitoreo diario de agenda para reducir ausencias y tiempos muertos.</p>
     </header>
 
-    <ReportTimeframeFilters client:load title="Filtro de citas" subtitle="Mira la agenda por día, semana, mes o año para detectar ausencias y horas pico." />
+    <ReportTimeframeFilters client:visible title="Filtro de citas" subtitle="Mira la agenda por día, semana, mes o año para detectar ausencias y horas pico." />
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatsCard title="Citas semanales" value="160" trend="4.3%" trendUp={true} color="primary"><FaCalendarCheck slot="icon" size={18} /></StatsCard>

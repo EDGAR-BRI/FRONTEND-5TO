@@ -45,6 +45,7 @@ const currentPath = Astro.url.pathname;
                 return (
                     <a
                         href={item.href}
+                        data-astro-prefetch="hover"
                         class:list={[
                             "flex flex-col items-center justify-center w-full h-full space-y-1",
                             isActive

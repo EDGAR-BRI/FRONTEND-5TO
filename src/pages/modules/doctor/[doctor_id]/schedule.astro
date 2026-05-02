@@ -73,7 +73,7 @@ try {
                                     "/modules/pacient/{id_paciente}/history",
                             },
                         ]}
-                        client:load
+                        client:visible
                     />
                 </div>
             </section>
@@ -84,7 +84,7 @@ try {
                   Asegúrate de usar client:load para que React controle los eventos de clic y el modal. 
                 */
                 }
-                <DailyAppointmentsAside citas={citas} client:load />
+                <DailyAppointmentsAside citas={citas} client:visible />
 
                 {
                     /* Esta tarjeta de herramientas rápidas puede seguir siendo estática si solo son enlaces */
