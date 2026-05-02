@@ -83,6 +83,46 @@ export const persistLogin = (data: LoginResponseData) => {
 	setCI(data.user.ci);
 };
 
+export const doctorLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "29778174",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "DOCTOR");
+};
+
+export const receptionistLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "31987430",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "RECEPCIONISTA");
+};
+
+export const patientLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "27617584",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "PACIENTE");
+};
+
+export const adminLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "31350493",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "ADMIN");
+};
+
 export const logout = () => {
 	removeToken();
 	removeCI();
