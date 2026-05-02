@@ -24,8 +24,12 @@ const menuItems = [
 	},
 	{
 		label: "Reportes",
-		href: `reports`,
 		icon: FaChartLine,
+		subItems: [
+			{ label: "Clínicos", href: `reports/clinical` },
+			{ label: "Financieros", href: `reports/finance` },
+			{ label: "Citas", href: `reports/appointments` },
+		]
 	},
 ];
 
