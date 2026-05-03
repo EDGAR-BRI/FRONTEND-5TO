@@ -18,12 +18,12 @@ const PUBLIC_ROUTES = ["/login", "/register", "/docs", "/api"];
 const PUBLIC_ROUTES_EXACT = ["/", "/login", "/register"];
 
 const API_URL = (() => {
-    const raw = process.env.PUBLIC_BACKEND_URL?.trim();
+    const raw = import.meta.env.PUBLIC_BACKEND_URL?.trim();
     console.log("[MIDDLEWARE] PUBLIC_BACKEND_URL:", raw);
-    if (!raw && process.env.DEV) {
-        return "http://localhost:3800/api/v1";
+    if (!raw && import.meta.env.DEV) {
+        return "http://localhost:3000/api/v1";
     }
-    return raw || "http://localhost:3800/api/v1";
+    return raw || "http://localhost:3000/api/v1";
 })();
 
 const getCookie = (cookies: any, name: string): string | null => {
