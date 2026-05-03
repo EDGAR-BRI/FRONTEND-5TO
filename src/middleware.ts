@@ -3,15 +3,15 @@ import { defineMiddleware } from "astro/middleware";
 const ROLE_ROUTES: Record<string, string> = {
     "admin": "ADMIN",
     "doctor": "DOCTOR",
-    "receptionist": "RECEPCIONISTA",
-    "pacient": "PACIENTE",
+    "receptionist": "RECEPTION",
+    "pacient": "PATIENT",
 };
 
 const ROLE_DASHBOARD: Record<string, string> = {
     "ADMIN": "/modules/admin/overview",
     "DOCTOR": "/modules/doctor",
-    "RECEPCIONISTA": "/modules/receptionist",
-    "PACIENTE": "/modules/pacient",
+    "RECEPTION": "/modules/receptionist",
+    "PATIENT": "/modules/pacient",
 };
 
 const PUBLIC_ROUTES = ["/login", "/register", "/docs", "/api"];
@@ -74,7 +74,7 @@ const getRoleFromPath = (pathname: string): string | null => {
 
 const getDashboardPath = (role: string, userId: number): string => {
     const base = ROLE_DASHBOARD[role] ?? "/login";
-    if (role === "DOCTOR" || role === "RECEPCIONISTA" || role === "PACIENTE") {
+    if (role === "DOCTOR" || role === "RECEPTION" || role === "PATIENT") {
         return `${base}/${userId}/overview`;
     }
     return base;
