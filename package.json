@@ -27,6 +27,7 @@
     "astro": "^5.17.1",
     "class-variance-authority": "^0.7.1",
     "date-fns": "^4.1.0",
+    "js-cookie": "^3.0.5",
     "preact": "^10.27.0",
     "react": "^19.2.4",
     "react-big-calendar": "^1.19.4",
@@ -47,7 +48,6 @@
     "@astrojs/node": "^9.5.5",
     "@types/js-cookie": "^3.0.6",
     "@types/react-big-calendar": "^1.16.3",
-    "js-cookie": "^3.0.5",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.1.18",
     "typesafe-path": "^0.2.2"

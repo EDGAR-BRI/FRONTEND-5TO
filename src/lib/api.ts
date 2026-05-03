@@ -99,8 +99,8 @@ export const setToken = (token: string): void => {
     Cookies.set(TOKEN_KEY, token, {
         expires: 7,
         path: "/",
-        sameSite: "lax", // Protege contra CSRF
-        secure: import.meta.env.PROD // Solo HTTPS en producción, permite HTTP en desarrollo
+        sameSite: "lax",
+        secure: false // Allow HTTP in development
     });
 };
 
