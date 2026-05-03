@@ -3,7 +3,7 @@ import "@/styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
 import BottomNavbar from "@/components/astro/BottomNavbar.astro";
-import { FaCalendarDays, FaHouse, FaUserDoctor, FaChartLine } from "react-icons/fa6";
+import { FaCalendarDays, FaHouse, FaUserDoctor, FaChartLine, FaUsers, FaFileMedical } from "react-icons/fa6";
 const { title } = Astro.props;
 
 const menuItems = [
@@ -16,6 +16,16 @@ const menuItems = [
 		label: "Agendas",
 		href: `schedule`,
 		icon: FaCalendarDays,
+	},
+	{
+		label: "Pacientes",
+		href: `patients`,
+		icon: FaUsers,
+	},
+	{
+		label: "Resultados",
+		href: `results`,
+		icon: FaFileMedical,
 	},
 	{
 		label: "Perfil",
