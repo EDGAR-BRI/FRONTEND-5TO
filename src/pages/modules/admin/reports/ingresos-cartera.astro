@@ -1,0 +1,74 @@
+---
+export const prerender = true;
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaFileInvoiceDollar, FaHourglassHalf, FaCircleExclamation } from "react-icons/fa6";
+
+const carteraAseguradoras = [
+  { ente: "Seguros Horizonte", corriente: "$5,400", vencido: "$0.00", provision: "$0", total: "$5,400" },
+  { ente: "Plan de Salud Alfa", corriente: "$3,200", vencido: "$1,840", provision: "$92", total: "$5,040" },
+  { ente: "Convenio Corporativo Y", corriente: "$1,200", vencido: "$400", provision: "$40", total: "$1,600" },
+];
+---
+
+<AdminLayout title="Ingresos - Cartera de Activos | Admin">
+  <div class="p-6 md:p-8 space-y-8">
+    <a href="/modules/admin/reports/ingresos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline">
+      <FaArrowLeft size={12} /> Volver a ingresos
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Cuentas por Cobrar (Activos)</h1>
+      <p class="text-gray-500 font-medium">Análisis de activos exigibles y provisión de cuentas incobrables.</p>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Cartera Total" value="$12,840" trend="3.5%" trendUp={true} color="warning">
+        <FaFileInvoiceDollar slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Antigüedad Promedio" value="24 Días" trend="2.1%" trendUp={false} color="success">
+        <FaHourglassHalf slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Provisión Estimada" value="$132" subText="Cuentas dudosas" color="danger">
+        <FaCircleExclamation slot="icon" size={20} />
+      </StatsCard>
+    </section>
+
+    <ReportTimeframeFilters client:load title="Análisis de Cartera" subtitle="Revisa los saldos deudores para asegurar la liquidez del patrimonio." />
+
+    <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-xl font-semibold text-gray-800">Cuentas Exigibles por Ente</h2>
+        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
+            Saldos Deudores
+        </span>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-primary-300">
+          <thead class="bg-primary-300">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Ente Deudor</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Corriente</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Vencido</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Provisión</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Saldo Neto</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-primary-300">
+            {carteraAseguradoras.map((c) => (
+              <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
+                <td class="px-4 py-3 text-sm text-gray-700 font-bold group-hover:text-primary-900">{c.ente}</td>
+                <td class="px-4 py-3 text-sm text-right text-gray-700 font-medium">{c.corriente}</td>
+                <td class="px-4 py-3 text-sm text-right text-red-600 font-bold">{c.vencido}</td>
+                <td class="px-4 py-3 text-sm text-right text-gray-500 italic">{c.provision}</td>
+                <td class="px-4 py-3 text-sm text-right font-black text-gray-900">{c.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</AdminLayout>
