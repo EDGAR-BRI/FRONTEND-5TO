@@ -3,6 +3,13 @@ export type DoctorSchedule = {
     doctorId: number;
     period_start: string;
     period_end: string | null;
+    availabilities: {
+            id: number,
+            day_of_week: number,
+            start_time: string,
+            end_time: string,
+            patient_limit: number,
+    }
 }
 
 export interface CreateDoctorScheduleDto {
@@ -14,7 +21,4 @@ export interface UpdateDoctorScheduleDto {
     doctorId?: number;
     period_start?: string | Date;
     period_end?: string | Date | null;
-}
-export interface selectActuallyAvailableDrs {
-    doctorOnly: boolean
 }
