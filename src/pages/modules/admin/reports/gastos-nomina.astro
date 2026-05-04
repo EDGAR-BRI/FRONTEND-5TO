@@ -4,17 +4,17 @@ export const prerender = true;
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
-import { FaArrowLeft, FaChartLine, FaCircleExclamation, FaMoneyBillTrendUp } from "react-icons/fa6";
+import { FaArrowLeft, FaUsers, FaChartPie, FaPercent } from "react-icons/fa6";
 
-const months = [
-  { month: "Enero", total: "$9,480", delta: "+1.2%" },
-  { month: "Febrero", total: "$10,020", delta: "+5.7%" },
-  { month: "Marzo", total: "$11,360", delta: "+13.4%" },
-  { month: "Abril", total: "$12,450", delta: "+9.6%" },
+const payrollData = [
+  { group: "Médicos Especialistas", amount: "$15,480", tax: "$2,322", net: "$13,158" },
+  { group: "Personal Enfermería", amount: "$8,020", tax: "$1,203", net: "$6,817" },
+  { group: "Administración", amount: "$4,360", tax: "$654", net: "$3,706" },
+  { group: "Servicios Generales", amount: "$2,450", tax: "$367", net: "$2,083" },
 ];
 ---
 
-<AdminLayout title="Gastos - Variacion mensual | Admin">
+<AdminLayout title="Gastos - Nómina Contable | Admin">
   <div class="p-6 md:p-8 space-y-8">
     
     <a href="/modules/admin/reports/gastos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
@@ -23,29 +23,29 @@ const months = [
     </a>
 
     <header class="space-y-2">
-      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Variación mensual de egresos</h1>
-      <p class="text-gray-500 font-medium">Evolución de gastos para identificar picos y sostenibilidad de costos.</p>
+      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Nómina y Cargas Sociales</h1>
+      <p class="text-gray-500 font-medium">Análisis de gastos de personal y retenciones de ley que afectan la utilidad del ejercicio.</p>
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Variación acumulada" value="+9.6%" trend="2.8%" trendUp={false} color="danger">
-        <FaMoneyBillTrendUp slot="icon" size={20} />
+      <StatsCard title="Gasto Salarial Bruto" value="$30,310" trend="4.2%" trendUp={true} color="primary">
+        <FaUsers slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Mes con mayor pico" value="Marzo" subText="+$1,340 vs Febrero" color="warning">
-        <FaChartLine slot="icon" size={20} />
+      <StatsCard title="Retenciones/Impuestos" value="$4,546" subText="Pasivo laboral" color="warning">
+        <FaChartPie slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Alertas abiertas" value="2" subText="Requiere revisión" color="danger">
-        <FaCircleExclamation slot="icon" size={20} />
+      <StatsCard title="Impacto sobre Ingresos" value="42%" subText="Estructura de costos" color="danger">
+        <FaPercent slot="icon" size={20} />
       </StatsCard>
     </section>
 
-    <ReportTimeframeFilters client:load title="Filtro de variación" subtitle="Analiza la evolución del gasto por día, semana, mes o año y compara el comportamiento histórico." />
+    <ReportTimeframeFilters client:load title="Corte de Nómina" subtitle="Desglose de honorarios y salarios para conciliación bancaria." />
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-xl font-semibold text-gray-800">Histórico reciente</h2>
+        <h2 class="text-xl font-semibold text-gray-800">Asientos de Nómina por Categoría</h2>
         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
-            4 meses
+            Resumen Operativo
         </span>
       </div>
       
@@ -53,20 +53,20 @@ const months = [
         <table class="min-w-full divide-y divide-primary-300">
           <thead class="bg-primary-300">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Mes</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Total</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Variación</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Grupo de Personal</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto Bruto</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Cargas/Imp.</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto Neto</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-primary-300">
             {
-              months.map((item) => (
+              payrollData.map((item) => (
                 <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
-                  <td class="px-4 py-3 text-sm text-gray-700 font-medium group-hover:text-primary-900">{item.month}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{item.total}</td>
-                  <td class={`px-4 py-3 text-sm text-right font-bold ${item.delta.startsWith('+') ? 'text-red-600' : 'text-emerald-600'}`}>
-                    {item.delta}
-                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-700 font-medium group-hover:text-primary-900">{item.group}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{item.amount}</td>
+                  <td class="px-4 py-3 text-sm text-right text-red-600 font-medium">{item.tax}</td>
+                  <td class="px-4 py-3 text-sm text-right text-emerald-700 font-black">{item.net}</td>
                 </tr>
               ))
             }
@@ -74,6 +74,5 @@ const months = [
         </table>
       </div>
     </section>
-
   </div>
 </AdminLayout>
