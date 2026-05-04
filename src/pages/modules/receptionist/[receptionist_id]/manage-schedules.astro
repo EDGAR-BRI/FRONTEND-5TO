@@ -1,10 +1,7 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import DoctorScheduleManager from '@/components/react/DoctorScheduleManager';
-import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
 import { FaArrowLeft, FaSliders } from 'react-icons/fa6';
-
-const doctors = await getActuallyAvailableDrs()
 
 ---
 
@@ -34,7 +31,6 @@ const doctors = await getActuallyAvailableDrs()
     <!-- ─── React Schedule Manager ────────────────────────────────────────── -->
     <DoctorScheduleManager
       client:only="react"
-      doctors={doctors}
     />
 
   </div>

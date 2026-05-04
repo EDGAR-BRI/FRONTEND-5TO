@@ -14,12 +14,4 @@ export const getDrsSelect = async (): Promise<DoctorSchedConfigOption[]> => {
     return readEnvelopeData<DoctorSchedConfigOption[]>(response);
 }
 
-export const getActuallyAvailableDrs = async (): Promise<DoctorSchedConfigOption[]> => {
-    const response = await api(BASE_PATH, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
-        method: "GET"
-    });
-    if(!response.ok){
-        throw new Error(await readEnvelopeErrorMessage(response));
-    }
-    return readEnvelopeData<DoctorSchedConfigOption[]>(response);
-}
+
