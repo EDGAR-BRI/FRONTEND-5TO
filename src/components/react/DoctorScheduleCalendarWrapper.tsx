@@ -5,7 +5,7 @@ import DoctorScheduleCalendar from './DoctorScheduleCalendar'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { DoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
-import { getActuallyAvailableDrs } from '@/lib/services/medical/doctor/doctor.service'
+import { getActuallyAvailableDrs } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { getDoctorSchedules } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { getDoctorAvailabilitiesByScheduleId } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
 import { formatShiftsByDoctorId, convertirAHHMM } from '@/utils/helper_functions'
@@ -34,7 +34,8 @@ export default function DoctorScheduleCalendarWrapper({
     setLoading(true)
     setError(null)
     try {
-      const fetchedDoctors = await getActuallyAvailableDrs()
+      const fetchedDoctors = await getActuallyAvailableDrs(true)
+      console.log("WASAAAAA", fetchedDoctors);
       setDoctors(fetchedDoctors)
 
       const allDoctorsSchedulesNested = await Promise.all(fetchedDoctors.map(d => getDoctorSchedules(d.id)))

@@ -15,3 +15,6 @@ export interface UpdateDoctorScheduleDto {
     period_start?: string | Date;
     period_end?: string | Date | null;
 }
+export interface selectActuallyAvailableDrs {
+    doctorOnly: boolean
+}
