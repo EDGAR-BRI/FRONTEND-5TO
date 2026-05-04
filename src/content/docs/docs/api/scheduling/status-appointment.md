@@ -4,20 +4,26 @@ title: Estatus de cita
 
 Base URL: `/api/v1/scheduling/status-appointment`
 
-## POST `/`
+## Qué hace
+
+Administra los estados de las citas, por ejemplo `Pendiente`, `Confirmada`, `Cancelada`.
+
+## Endpoints
+
+### POST `/`
 
 Body:
 
-- `name` (string, **requerido**, 2..80)
-- `color_hex?` (string HEX, ej: `#FFAA00`)
+- `name` (string, requerido, 2..80)
+- `color_hex` (string HEX opcional, por ejemplo `#FFAA00`)
 
-Request (JSON):
+Ejemplo:
 
 ```json
 { "name": "Pendiente", "color_hex": "#F59E0B" }
 ```
 
-Response (201):
+Respuesta 201:
 
 ```json
 {
@@ -26,6 +32,21 @@ Response (201):
 }
 ```
 
-## GET `/` / GET `/:id` / PUT `/:id` / DELETE `/:id`
+### GET `/`
 
-DELETE es hard delete.
+Lista todos los estados.
+
+### GET `/:id`
+
+Devuelve un estado por ID.
+
+### PUT `/:id`
+
+Body opcional:
+
+- `name` (string, 2..80)
+- `color_hex` (string HEX)
+
+### DELETE `/:id`
+
+Elimina el estado. Es `hard delete`.
