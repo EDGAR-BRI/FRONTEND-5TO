@@ -88,6 +88,7 @@ const fetchUserRole = async (userId: number, token: string): Promise<string | nu
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
             },
+            cache: 'no-store',
         });
         console.log("[MIDDLEWARE fetchUserRole] response status:", res.status);
         if (!res.ok) {
