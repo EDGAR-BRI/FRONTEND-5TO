@@ -5,11 +5,12 @@ export type DoctorSchedule = {
     period_end: string | null;
     availabilities: {
             id: number,
+            doctorScheduleId?: number,
             day_of_week: number,
             start_time: string,
             end_time: string,
             patient_limit: number,
-    }
+    }[]
 }
 
 export interface CreateDoctorScheduleDto {
