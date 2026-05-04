@@ -1,0 +1,123 @@
+---
+import SidebarMenu from "@/components/astro/SidebarMenu.astro";
+import type { MenuItems } from "@/types/MenuItemsTypes";
+import clinica from "@/assets/clinica.svg";
+import { FaArrowRightFromBracket, FaBars, FaXmark } from "react-icons/fa6";
+
+interface Props {
+	menuItems: MenuItems[];
+	currentPath: string;
+	logoutHref?: string;
+	title?: string;
+}
+
+const { menuItems, currentPath, logoutHref = "/logout", title = "Menú" } = Astro.props;
+---
+
+<div class="lg:hidden" data-mobile-drawer-root data-open="false">
+	<button
+		type="button"
+		class="fixed top-4 left-4 z-60 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary-500/40 bg-primary-700 text-white shadow-lg shadow-primary-900/20 backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+		aria-label="Abrir menú"
+		aria-controls="mobile-sidebar-drawer"
+		aria-expanded="false"
+		data-mobile-drawer-toggle
+	>
+		<FaBars className="h-5 w-5" />
+	</button>
+
+	<div
+		class="fixed inset-0 z-50 bg-primary-950/60 opacity-0 pointer-events-none transition-opacity duration-300"
+		data-mobile-drawer-overlay
+	></div>
+
+	<aside
+		id="mobile-sidebar-drawer"
+		class="fixed inset-y-0 left-0 z-55 flex h-full w-[84vw] max-w-sm -translate-x-full flex-col border-r border-primary-800/70 bg-primary-700/98 text-primary-100 shadow-2xl shadow-primary-900/30 backdrop-blur-md transition-transform duration-300 ease-in-out"
+		data-mobile-drawer-panel
+		aria-label={title}
+	>
+		<div class="flex items-center justify-between gap-3 border-b border-primary-800/70 px-5 py-4">
+			<a href="/" class="flex min-w-0 items-center gap-3">
+				<img src={clinica.src} alt="Logo de la clínica" class="h-10 w-auto shrink-0" />
+				<div class="min-w-0">
+					<div class="truncate text-sm font-semibold tracking-wide text-white">{title}</div>
+					<div class="truncate text-xs text-primary-200">Navegación principal</div>
+				</div>
+			</a>
+
+			<button
+				type="button"
+				class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-primary-500/30 text-white transition-colors hover:bg-primary-800/80"
+				aria-label="Cerrar menú"
+				data-mobile-drawer-close
+			>
+				<FaXmark className="h-5 w-5" />
+			</button>
+		</div>
+
+		<div class="flex-1 overflow-y-auto px-3 py-4">
+			<SidebarMenu menuItems={menuItems} currentPath={currentPath} />
+		</div>
+
+		<div class="border-t border-primary-800/70 bg-primary-800/70 p-4">
+			<a
+				href={logoutHref}
+				class={`flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${
+					currentPath === logoutHref
+						? "bg-primary-800 text-white"
+						: "text-primary-100 hover:bg-primary-800/90 hover:text-white"
+				}`}
+				data-astro-prefetch="hover"
+			>
+				<FaArrowRightFromBracket className="text-lg" />
+				<span class="text-sm font-semibold tracking-wide">Cerrar sesión</span>
+			</a>
+		</div>
+	</aside>
+</div>
+
+<script is:inline data-astro-rerun type="module">
+	const mountMobileDrawer = () => {
+		const root = document.querySelector('[data-mobile-drawer-root]');
+		if (!root) return;
+
+		const panel = root.querySelector('[data-mobile-drawer-panel]');
+		const overlay = root.querySelector('[data-mobile-drawer-overlay]');
+		const toggleButton = root.querySelector('[data-mobile-drawer-toggle]');
+		const closeButton = root.querySelector('[data-mobile-drawer-close]');
+
+		if (!panel || !overlay || !toggleButton || !closeButton) return;
+
+		if (root.dataset.drawerBound === 'true') return;
+		root.dataset.drawerBound = 'true';
+
+		const setOpen = (open) => {
+			root.dataset.open = open ? 'true' : 'false';
+			panel.classList.toggle('translate-x-0', open);
+			panel.classList.toggle('-translate-x-full', !open);
+			overlay.classList.toggle('opacity-0', !open);
+			overlay.classList.toggle('opacity-100', open);
+			overlay.classList.toggle('pointer-events-none', !open);
+			overlay.classList.toggle('pointer-events-auto', open);
+			toggleButton.setAttribute('aria-expanded', String(open));
+			document.body.classList.toggle('overflow-hidden', open);
+		};
+
+		const closeDrawer = () => setOpen(false);
+		const toggleDrawer = () => setOpen(root.dataset.open !== 'true');
+
+		toggleButton.addEventListener('click', toggleDrawer);
+		closeButton.addEventListener('click', closeDrawer);
+		overlay.addEventListener('click', closeDrawer);
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') closeDrawer();
+		});
+		root.querySelectorAll('a[href]').forEach((link) => {
+			link.addEventListener('click', closeDrawer);
+		});
+	};
+
+	mountMobileDrawer();
+	document.addEventListener('astro:page-load', mountMobileDrawer);
+</script>
