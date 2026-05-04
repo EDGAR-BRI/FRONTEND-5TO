@@ -5,9 +5,10 @@ import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { Spinner } from '@/components/react/primary/Spinner'
 import { FaCheck, FaMinus, FaPlus, FaXmark, FaRegCalendarXmark } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
+import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import { getDoctorAvailabilitiesByScheduleId, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
-import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule, getActuallyAvailableDrs } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
+import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
 export interface ScheduleDay {
@@ -89,7 +90,7 @@ export default function DoctorScheduleManager() {
     // Step 1: Fetch doctors on mount
     useEffect(() => {
         setLoadingDoctors(true)
-        getActuallyAvailableDrs(true)
+        getDrsSelect()
             .then(fetched => setDoctors(fetched))
             .catch(err => {
                 console.error('Error fetching doctors:', err)
