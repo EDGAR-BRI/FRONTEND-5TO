@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { DoctorSchedConfigOption } from "./doctor.interface";
+import type { DoctorSchedConfigOption, DoctorDetail } from "./doctor.interface";
 
 const BASE_PATH = "medical/doctor";
 
@@ -22,4 +22,14 @@ export const getActuallyAvailableDrs = async (): Promise<DoctorSchedConfigOption
         throw new Error(await readEnvelopeErrorMessage(response));
     }
     return readEnvelopeData<DoctorSchedConfigOption[]>(response);
+}
+
+export const getDoctorById = async (id: number): Promise<DoctorDetail> => {
+    const response = await api(`${BASE_PATH}/${id}`, {
+        method: "GET"
+    });
+    if(!response.ok){
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    return readEnvelopeData<DoctorDetail>(response);
 }
