@@ -243,37 +243,29 @@ export default function DoctorScheduleCalendarWrapper({
         </div>
       </div>
 
-      {/* Interactive calendar — only shown when a doctor is selected */}
-      {selectedDocId !== null ? (
-        <div id="calendar" className="bg-white rounded-xl border border-primary-200 shadow-sm p-5">
-          <div className="mb-4">
-            <h2 className="text-heading-6 text-primary-800">Vista de citas por médico</h2>
-            <p className="text-body-xs text-cool-gray-50 mt-0.5">
-              Las franjas azules representan el turno programado. Haz clic en una cita para ver detalles.
-            </p>
-          </div>
+      {/* Interactive calendar — always visible, loads data on doctor click */}
+      <div id="calendar" className="bg-white rounded-xl border border-primary-200 shadow-sm p-5">
+        <div className="mb-4">
+          <h2 className="text-heading-6 text-primary-800">Vista de citas por médico</h2>
+          <p className="text-body-xs text-cool-gray-50 mt-0.5">
+            {selectedDocId !== null
+              ? 'Las franjas azules representan el turno programado. Haz clic en una cita para ver detalles.'
+              : 'Selecciona un médico de la tabla o los botones para ver sus citas y turnos.'
+            }
+          </p>
+        </div>
 
-          {loadingSchedules ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <Spinner />
-              <p className="text-sm text-cool-gray-50">Cargando horarios del doctor...</p>
-            </div>
-          ) : (
-            <DoctorScheduleCalendar
-              doctors={doctors.filter(d => d.id === selectedDocId)}
-              allSchedules={allSchedules}
-              allAvailabilities={allAvailabilities}
-              heightPx={620}
-              initialView={initialView}
-            />
-          )}
-        </div>
-      ) : (
-        <div id="calendar" className="bg-white rounded-xl border border-primary-200 shadow-sm p-8 flex flex-col items-center justify-center gap-4">
-          <FaRegCalendarXmark className="text-3xl text-cool-gray-40" />
-          <p className="text-sm text-cool-gray-50 font-medium">Selecciona un médico para ver su calendario de citas</p>
-        </div>
-      )}
+        <DoctorScheduleCalendar
+          doctors={doctors}
+          allSchedules={allSchedules}
+          allAvailabilities={allAvailabilities}
+          heightPx={620}
+          initialView={initialView}
+          selectedDoctorId={selectedDocId}
+          onDoctorSelect={handleDoctorClick}
+          loadingSchedules={loadingSchedules}
+        />
+      </div>
     </div>
   )
 }
