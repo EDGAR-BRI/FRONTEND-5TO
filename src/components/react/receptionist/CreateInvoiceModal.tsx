@@ -183,9 +183,9 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
 
             const invoice = await addInvoice(invoicePayload);
             
-            // If fully paid (or at least attempt to update as requested)
+            // If fully paid
             if (totalPaid >= selectedAppointment.price) {
-                await updateAppointment(selectedAppointment.id, { typeId: 2 });
+                await updateAppointment(selectedAppointment.id, { statusId: 2 });
             }
 
             onSuccess(invoice);
