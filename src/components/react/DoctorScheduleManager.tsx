@@ -1,12 +1,13 @@
 // DoctorScheduleManager.tsx
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
-import { FaCheck, FaMinus, FaPlus, FaXmark } from 'react-icons/fa6'
+import { Spinner } from '@/components/react/primary/Spinner'
+import { FaCheck, FaMinus, FaPlus, FaXmark, FaRegCalendarXmark } from 'react-icons/fa6'
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import { getDoctorAvailabilitiesByScheduleId, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
-import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
+import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule, getActuallyAvailableDrs } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
 export interface ScheduleDay {
@@ -26,10 +27,6 @@ export interface ScheduleCycle {
     employee_id: number
     desc: string
     weeks: ScheduleWeek[]
-}
-
-export interface DoctorScheduleManagerProps {
-    doctors: DoctorSchedConfigOption[]
 }
 
 const WEEKDAYS = [
@@ -74,8 +71,12 @@ function emptyDefaultCycle(doctorId: number): ScheduleCycle {
     return { employee_id: doctorId, desc: 'Ciclo Regular', weeks: [{ week_number: 1, days: [] }] }
 }
 
-export default function DoctorScheduleManager({ doctors }: DoctorScheduleManagerProps) {
-    const [selectedDocId, setSelectedDocId] = useState<number>(doctors[0]?.id ?? 0)
+export default function DoctorScheduleManager() {
+    const [doctors, setDoctors] = useState<DoctorSchedConfigOption[]>([])
+    const [loadingDoctors, setLoadingDoctors] = useState(true)
+    const [errorDoctors, setErrorDoctors] = useState<string | null>(null)
+
+    const [selectedDocId, setSelectedDocId] = useState<number | null>(null)
     const [cycles, setCycles] = useState<Record<number, ScheduleCycle>>({})
     const [activeScheduleIds, setActiveScheduleIds] = useState<Record<number, number>>({})
     const [loadingDocId, setLoadingDocId] = useState<number | null>(null)
@@ -84,6 +85,18 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
     const [isSaving, setIsSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+    // Step 1: Fetch doctors on mount
+    useEffect(() => {
+        setLoadingDoctors(true)
+        getActuallyAvailableDrs(true)
+            .then(fetched => setDoctors(fetched))
+            .catch(err => {
+                console.error('Error fetching doctors:', err)
+                setErrorDoctors('No se pudieron cargar los médicos')
+            })
+            .finally(() => setLoadingDoctors(false))
+    }, [])
 
     const dayStartUTC = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
 
@@ -113,6 +126,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
         return created.id
     }, [activeScheduleIds])
 
+    // Step 2: Only fetch schedule data when a doctor is clicked
     const handleSelectDoctor = useCallback(async (docId: number) => {
         if (docId === selectedDocId) return
         setShowSuccess(false)
@@ -139,24 +153,6 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
             setLoadingDocId(null)
         }
     }, [selectedDocId, cycles, ensureActiveScheduleId])
-
-    const [initialFetchDone, setInitialFetchDone] = useState(false)
-    if (!initialFetchDone && doctors.length > 0) {
-        setInitialFetchDone(true)
-        const firstId = doctors[0].id
-        setLoadingDocId(firstId)
-        ensureActiveScheduleId(firstId)
-            .then((scheduleId) => getDoctorAvailabilitiesByScheduleId(scheduleId))
-            .then(availability => {
-                const cycle = availabilityToCycle(firstId, availability)
-                setCycles({ [firstId]: cycle })
-                setEditingCycle(structuredClone(cycle))
-            }).catch(() => {
-                setEditingCycle(emptyDefaultCycle(firstId))
-            }).finally(() => {
-                setLoadingDocId(null)
-            })
-    }
 
     const isLoading = loadingDocId === selectedDocId
 
@@ -226,7 +222,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
     }
 
     const handleSave = async () => {
-        if (!editingCycle) return
+        if (!editingCycle || selectedDocId === null) return
         setIsSaving(true)
         setShowSuccess(false)
         setErrorMsg(null)
@@ -283,6 +279,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
     }
 
     const handleDiscard = () => {
+        if (selectedDocId === null) return
         const saved = cycles[selectedDocId] ?? emptyDefaultCycle(selectedDocId)
         setEditingCycle(structuredClone(saved))
         setActiveWeekTab(1)
@@ -290,6 +287,34 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
 
     const activeWeek = editingCycle?.weeks.find(w => w.week_number === activeWeekTab)
     const weekCount = editingCycle?.weeks.length ?? 1
+
+    // Loading doctors state
+    if (loadingDoctors) {
+        return (
+            <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-8 flex flex-col items-center justify-center gap-4">
+                <Spinner />
+                <p className="text-sm text-cool-gray-50">Cargando médicos...</p>
+            </div>
+        )
+    }
+
+    if (errorDoctors) {
+        return (
+            <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-8 flex flex-col items-center justify-center gap-4">
+                <FaRegCalendarXmark className="text-3xl text-error" />
+                <p className="text-sm text-error font-medium">{errorDoctors}</p>
+            </div>
+        )
+    }
+
+    if (doctors.length === 0) {
+        return (
+            <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-8 flex flex-col items-center justify-center gap-4">
+                <FaRegCalendarXmark className="text-3xl text-cool-gray-40" />
+                <p className="text-sm text-cool-gray-50">No hay médicos disponibles registrados.</p>
+            </div>
+        )
+    }
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
@@ -329,34 +354,39 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                             Configuración de Turnos
                         </h2>
                         <p className="text-sm text-cool-gray-50 mt-1">
-                            Configura el ciclo de horarios. Puedes alternar turnos creando ciclos de varias semanas.
+                            {selectedDocId === null
+                                ? 'Selecciona un médico de la lista para configurar sus turnos.'
+                                : 'Configura el ciclo de horarios. Puedes alternar turnos creando ciclos de varias semanas.'
+                            }
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center border border-primary-200 rounded-lg overflow-hidden bg-cool-gray-10 px-2 py-1 gap-2">
-                            <span className="text-xs font-semibold text-primary-700">Duración del ciclo:</span>
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => handleWeekCountChange(weekCount - 1)}
-                                    disabled={weekCount <= 1 || isLoading || isSaving}
-                                    className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50"
-                                    aria-label="Disminuir semanas"
-                                >
-                                    <FaMinus className="text-xs" />
-                                </button>
-                                <span className="w-4 text-center text-sm font-bold text-primary-800">{weekCount}</span>
-                                <span className="text-xs text-primary-700 font-medium">{weekCount === 1 ? 'sem' : 'sems'}</span>
-                                <button
-                                    onClick={() => handleWeekCountChange(weekCount + 1)}
-                                    disabled={weekCount >= 4 || isLoading || isSaving}
-                                    className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50"
-                                    aria-label="Aumentar semanas"
-                                >
-                                    <FaPlus className="text-xs" />
-                                </button>
+                    {selectedDocId !== null && (
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center border border-primary-200 rounded-lg overflow-hidden bg-cool-gray-10 px-2 py-1 gap-2">
+                                <span className="text-xs font-semibold text-primary-700">Duración del ciclo:</span>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => handleWeekCountChange(weekCount - 1)}
+                                        disabled={weekCount <= 1 || isLoading || isSaving}
+                                        className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50"
+                                        aria-label="Disminuir semanas"
+                                    >
+                                        <FaMinus className="text-xs" />
+                                    </button>
+                                    <span className="w-4 text-center text-sm font-bold text-primary-800">{weekCount}</span>
+                                    <span className="text-xs text-primary-700 font-medium">{weekCount === 1 ? 'sem' : 'sems'}</span>
+                                    <button
+                                        onClick={() => handleWeekCountChange(weekCount + 1)}
+                                        disabled={weekCount >= 4 || isLoading || isSaving}
+                                        className="w-6 h-6 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50 flex items-center justify-center disabled:opacity-50"
+                                        aria-label="Aumentar semanas"
+                                    >
+                                        <FaPlus className="text-xs" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Notifications Banner */}
@@ -395,8 +425,16 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                     @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(20px); } }
                 `}</style>
 
+                {/* Empty state — no doctor selected yet */}
+                {selectedDocId === null && (
+                    <div className="p-12 flex-1 flex flex-col items-center justify-center gap-4 text-center">
+                        <FaRegCalendarXmark className="text-3xl text-cool-gray-40" />
+                        <p className="text-sm text-cool-gray-50 font-medium">Selecciona un médico de la lista para ver y configurar sus turnos</p>
+                    </div>
+                )}
+
                 {/* Loading skeleton */}
-                {isLoading && (
+                {selectedDocId !== null && isLoading && (
                     <div className="p-5 flex-1 flex flex-col gap-4 animate-pulse">
                         {Array.from({ length: 5 }).map((_, i) => (
                             <div key={i} className="h-12 rounded-lg bg-cool-gray-10 border border-cool-gray-20" />
@@ -405,7 +443,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                 )}
 
                 {/* Week Tabs */}
-                {!isLoading && weekCount > 1 && (
+                {selectedDocId !== null && !isLoading && weekCount > 1 && (
                     <div className="px-5 pt-3 border-b border-primary-100 bg-primary-50/50 flex gap-2">
                         {editingCycle!.weeks.map(w => (
                             <button
@@ -423,7 +461,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                 )}
 
                 {/* Day config list */}
-                {!isLoading && (
+                {selectedDocId !== null && !isLoading && (
                     <div className="p-5 flex-1 flex flex-col gap-4">
                         {WEEKDAYS.map(day => {
                             const dayShifts = activeWeek?.days.filter(d => d.day_number === day.val) || []
@@ -490,7 +528,7 @@ export default function DoctorScheduleManager({ doctors }: DoctorScheduleManager
                 )}
 
                 {/* Footer */}
-                {!isLoading && (
+                {selectedDocId !== null && !isLoading && (
                     <div className="p-4 border-t border-primary-100 bg-cool-gray-10 flex flex-wrap items-center justify-end gap-3 rounded-b-xl">
                         <Button
                             variant={ButtonTheme.SECONDARY}
