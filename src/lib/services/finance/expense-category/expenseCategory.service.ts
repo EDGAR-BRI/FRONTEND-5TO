@@ -14,6 +14,21 @@ export interface UpdateExpenseCategoryDto {
     name?: string;
 }
 
+export interface CreateExpenseInvoicePaymentDto {
+	paymentMethodId: number;
+	amount: string | number;
+	date_at?: string | Date;
+}
+
+export interface CreateExpenseInvoiceDto {
+	categoryId: number;
+	supplierId: number;
+	exchangeRateId?: number;
+	total_amount: number;
+	date_at?: string | Date;
+	payments: CreateExpenseInvoicePaymentDto[];
+}
+
 export interface InvoiceExpenseDto {
     id: number;
     total_amount: number | string;
@@ -21,6 +36,14 @@ export interface InvoiceExpenseDto {
     categoryId?: number;
     category?: { id?: number; name?: string | null };
     supplier?: { id?: number; name?: string | null };
+	exchangeRate?: { id?: number; rate?: number | string; createdAt?: string | null; is_active?: boolean };
+	payments?: Array<{
+		id?: number;
+		paymentMethodId?: number;
+		amount: number | string;
+		date_at?: string | null;
+		paymentMethod?: { id?: number; name?: string | null; currency?: string | null };
+	}>;
 }
 
 const PATH = "/expenses/category";
@@ -39,6 +62,19 @@ export const listInvoiceExpenses = async (): Promise<InvoiceExpenseDto[]> => {
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
 	return readEnvelopeData<InvoiceExpenseDto[]>(response);
+};
+
+export const createInvoiceExpense = async (payload: CreateExpenseInvoiceDto): Promise<InvoiceExpenseDto> => {
+	const response = await api("/expenses/invoice-expense", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+
+	return readEnvelopeData<InvoiceExpenseDto>(response);
 };
 
 export const createExpenseCategory = async (payload: CreateExpenseCategoryDto): Promise<ExpenseCategoryDto> => {

@@ -2,7 +2,7 @@
 import "@/styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
-import BottomNavbar from "@/components/astro/BottomNavbar.astro";
+import MobileSidebarDrawer from "@/components/astro/MobileSidebarDrawer.astro";
 import { FaCartShopping, FaChartLine, FaHouse, FaMoneyBillWave, FaUsers } from "react-icons/fa6";
 import { FaBoxesStacked } from "react-icons/fa6";
 import {
@@ -35,7 +35,7 @@ const menuItems = [
 			},
 			{
 				label: "Historial de compras",
-				href: "/modules/admin/manage-supplie",
+				href: "/modules/admin/historial-compras",
 				icon: FaBoxesStacked,
 			},
 		],
@@ -46,7 +46,7 @@ const menuItems = [
 		subItems: [
 			{
 				label: "Pagar servicios",
-				href: "/modules/admin/manage-ervices",
+						href: "/modules/admin/pagar-servicios",
 				icon: FaCartShopping,
 			},
 			{
@@ -55,8 +55,8 @@ const menuItems = [
 				icon: FaBoxesStacked,
 			},
 			{
-				label: "Historial de servicios",
-				href: "/modules/admin/manage-supplie",
+				label: "Servicios pagados",
+				href: "/modules/admin/paid-services-history",
 				icon: FaBoxesStacked,
 			},
 		],
@@ -140,7 +140,7 @@ const currentPath = Astro.url.pathname;
 		<!-- Main Wrapper: Padded on left for desktop sidebar -->
 		<div
 			id="main-content"
-			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300"
+			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300 pt-16 lg:pt-0"
 		>
 			<Sidebar menuItems={menuItems} currentPath={currentPath} />
 			<div class="flex-1 pb-16 lg:pb-0 p-6 md:p-8 space-y-8">
@@ -149,6 +149,6 @@ const currentPath = Astro.url.pathname;
 			</div>
 		</div>
 
-		<BottomNavbar />
+		<MobileSidebarDrawer menuItems={menuItems} currentPath={currentPath} title="Administración" />
 	</body>
 </html>
