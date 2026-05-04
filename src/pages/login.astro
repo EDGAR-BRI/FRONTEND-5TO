@@ -1,10 +1,11 @@
 ---
+export const prerender = false;
+
 import Layout from "@/layouts/Layout.astro";
-import Input from "@/components/astro/Input.astro";
 import clinica from "@/assets/clinica.svg";
 import fondo from "@/assets/fondo.avif";
 import UserLogo from "@/assets/User.png";
-import { LoginRedirectButton } from "@/components/react/auth/LoginRedirectButton";
+import LoginForm from "@/components/react/auth/LoginForm";
 ---
 
 <Layout>
@@ -35,30 +36,13 @@ import { LoginRedirectButton } from "@/components/react/auth/LoginRedirectButton
                     <div class="flex items-center justify-center mb-10">
                         <img class="w-40 h-auto object-contain" src={UserLogo.src} alt="" />
                     </div>
-                    <form
-                        class="flex flex-col gap-8 border-b-2 border-b-gray-400 pb-16"
-                        action=""
-                    >
-                        <Input
-                            placeholder="Usuario"
-                            type="text"
-                            name="usuario"
-                            id="usuario"
-                        />
-                        <Input
-                            placeholder="Contraseña"
-                            type="password"
-                            name="contraseña"
-                            id="contraseña"
-                        />
-                        <LoginRedirectButton client:load />
-                    </form>
+                    <LoginForm client:load className="flex flex-col gap-8 border-b-2 border-b-gray-400 pb-16" />
                     <footer class="flex flex-col gap-4 items-center">
                         <!-- <div class="border-t border-gray-400 w-full"></div> -->
                         <a class="text-gray-400 font-bold text-sm" href=""
                             >¿Olvidaste tu contraseña?</a
                         >
-                        <a class="text-gray-400 font-bold text-sm" href=""
+                        <a class="text-gray-400 font-bold text-sm" href="/register"
                             >¿No tienes una cuenta?</a
                         >
                     </footer>

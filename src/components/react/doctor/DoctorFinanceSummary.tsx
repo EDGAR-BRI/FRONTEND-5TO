@@ -1,6 +1,5 @@
-import React from 'react';
 import { StatsCard } from '@/components/react/primary/StatsCard';
-import { LuTrendingUp, LuTrendingDown, LuCircleDollarSign, LuClock } from 'react-icons/lu';
+import { FaArrowTrendDown, FaArrowTrendUp, FaClock, FaSackDollar } from 'react-icons/fa6';
 
 interface SummaryData {
     totalIncome: number;
@@ -18,7 +17,7 @@ export const DoctorFinanceSummary = ({ summary }: { summary: SummaryData }) => {
                 trend="12%"
                 trendUp={true}
                 color="success"
-                icon={<LuTrendingUp size={18} />}
+                icon={<FaArrowTrendUp size={18} />}
             />
             <StatsCard
                 title="Gastos Totales"
@@ -26,19 +25,19 @@ export const DoctorFinanceSummary = ({ summary }: { summary: SummaryData }) => {
                 trend="5%"
                 trendUp={false}
                 color="danger"
-                icon={<LuTrendingDown size={18} />}
+                icon={<FaArrowTrendDown size={18} />}
             />
             <StatsCard
                 title="Balance Neto"
                 value={`$${summary.netBalance.toFixed(2)}`}
                 color="primary"
-                icon={<LuCircleDollarSign size={18} />}
+                icon={<FaSackDollar size={18} />}
             />
             <StatsCard
                 title="Pagos Pendientes"
                 value={summary.pendingPayments.toString()}
                 color="warning"
-                icon={<LuClock size={18} />}
+                icon={<FaClock size={18} />}
             />
         </div>
     );

@@ -1,28 +1,85 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ContactInfo } from './ContactInfo';
 import { EmergencyContact } from './EmergencyContact';
 import { MedicalAppointments } from './MedicalAppointments';
 import { CurrentMedication } from './CurrentMedication';
 import { PaymentsBills } from './PaymentsBills';
 import StaticCard from '@/components/react/primary/StaticCard'; 
-
 import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
+import { Button } from '../primary/Button';
+import useSWR, { mutate } from 'swr'; // Importamos mutate para actualizar la UI en vivo
+import { fetcher } from '@/lib/fetcher';
+import { api } from '@/lib/api'; // Tu helper de peticiones
 
 import {
-  UserCircle, CalendarDays, Pill, Receipt, Settings2,
-  Mail, Phone, MapPin, User, ShieldAlert
-} from 'lucide-react';
-import { Button } from '../primary/Button';
+  FaCircleUser,
+  FaCalendarDays,
+  FaPills,
+  FaReceipt,
+  FaGears,
+  FaEnvelope,
+  FaPhone,
+  FaLocationDot,
+  FaUser,
+  FaShieldHalved,
+  FaDroplet,
+  FaNotesMedical
+} from 'react-icons/fa6';
 
-export const ProfileTabs = () => {
+export const ProfileTabs = ({ patientId }: { patientId: string }) => {
   const [activeTab, setActiveTab] = useState('personal');
+  
+  // 1. Traemos los datos actuales para rellenar el formulario inicial
+  const { data: patientData } = useSWR(`/medical/patient/${patientId}`, fetcher);
+
+  // 2. Estados del formulario (Solo para los datos que acepta tu BD)
+  const [bloodType, setBloodType] = useState('');
+  const [medicalHistory, setMedicalHistory] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sincronizamos los estados cuando llegan los datos del backend
+  useEffect(() => {
+    if (patientData?.data) {
+      setBloodType(patientData.data.tipo_sangre || '');
+      setMedicalHistory(patientData.data.medical_history || '');
+    }
+  }, [patientData]);
 
   const tabs = [
-    { id: 'personal', label: 'Inf. Personal', icon: UserCircle },
-    { id: 'citas', label: 'Citas Médicas', icon: CalendarDays },
-    { id: 'tratamientos', label: 'Tratamientos', icon: Pill },
-    { id: 'pagos', label: 'Facturación', icon: Receipt },
+    { id: 'personal', label: 'Inf. Personal', icon: FaCircleUser },
+    { id: 'citas', label: 'Citas Médicas', icon: FaCalendarDays },
+    { id: 'tratamientos', label: 'Tratamientos', icon: FaPills },
+    { id: 'pagos', label: 'Facturación', icon: FaReceipt },
   ];
+
+  // 3. Función que dispara el PUT
+  const handleSaveChanges = async (e: React.FormEvent, close: () => void) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      const response = await api(`/medical/patient/${patientId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          tipo_sangre: bloodType,
+          medical_history: medicalHistory
+        })
+      });
+
+      if (response.ok) {
+        // Magia de SWR: Le decimos que vuelva a cargar los datos en toda la pantalla
+        mutate(`/medical/patient/${patientId}`);
+        alert("¡Perfil actualizado con éxito!");
+        close(); // Cerramos el modal
+      } else {
+        alert("Hubo un error al actualizar el perfil.");
+      }
+    } catch (error) {
+      console.error("Error actualizando perfil:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <main className="flex flex-col gap-6 w-full h-full relative">
@@ -65,10 +122,10 @@ export const ProfileTabs = () => {
               
               <div className="grid grid-cols-1 gap-6 w-full">
                 <div className="w-full transition-all duration-300">
-                  <ContactInfo />
+                  <ContactInfo patientId={patientId} />
                 </div>
                 <div className="w-full transition-all duration-300">
-                  <EmergencyContact />
+                  <EmergencyContact patientId={patientId} />
                 </div>
               </div>
 
@@ -76,76 +133,75 @@ export const ProfileTabs = () => {
               <div className="pt-2 w-full">
                 <ModalTrigger
                   modalTitle="Gestionar Perfil"
-               
                   trigger={
                     <Button
                       label=""
                       className="w-full py-5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 text-base border-none"
                     >
-                      <Settings2 className="w-5 h-5" />
+                      <FaGears className="w-5 h-5" />
                       Gestionar y Editar Perfil Completo
                     </Button>
                   }
                 >
-
                   {({ close }) => (
-                    <form className="space-y-6 p-2" onSubmit={(e) => e.preventDefault()}>
+                    <form className="space-y-6 p-2" onSubmit={(e) => handleSaveChanges(e, close)}>
                       
+                      {/* DATOS MÉDICOS REALES (Los que sí van a la BD) */}
                       <StaticCard className="p-6">
                         <div className="flex items-center gap-2 mb-6 border-b border-primary-200 pb-3">
-                          <Phone className="w-4 h-4 text-primary-600" />
-                          <h4 className="text-xs font-black text-primary-700 uppercase tracking-widest">Información de Contacto</h4>
+                          <FaNotesMedical className="w-4 h-4 text-primary-600" />
+                          <h4 className="text-xs font-black text-primary-700 uppercase tracking-widest">Información Médica</h4>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        
+                        <div className="grid grid-cols-1 gap-5">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Correo Electrónico</label>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Tipo de Sangre</label>
                             <div className="relative">
-                              <input type="email" defaultValue="pedro.sanchez@gmail.com" className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <Mail className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
+                              <input 
+                                type="text" 
+                                value={bloodType}
+                                onChange={(e) => setBloodType(e.target.value)}
+                                placeholder="Ej: O+, A-, AB+" 
+                                maxLength={10}
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                              />
+                              <FaDroplet className="w-4 h-4 absolute right-3 top-3.5 text-red-400" />
                             </div>
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono Móvil</label>
-                            <div className="relative">
-                              <input type="text" defaultValue="+58 412-1234567" className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <Phone className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
-                            </div>
-                          </div>
-
-                          <div className="md:col-span-2 space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Dirección de Residencia</label>
-                            <div className="relative">
-                              <input type="text" defaultValue="Pueblo Nuevo, Edificio Sol, Apto 4B." className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <MapPin className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
-                            </div>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Historial / Condiciones</label>
+                            <textarea 
+                              rows={3}
+                              value={medicalHistory}
+                              onChange={(e) => setMedicalHistory(e.target.value)}
+                              placeholder="Escriba aquí condiciones preexistentes, alergias relevantes..."
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
+                            />
                           </div>
                         </div>
                       </StaticCard>
 
-                      <StaticCard className="p-6">
-                        <div className="flex items-center gap-2 mb-6 border-b border-red-100 pb-3">
-                          <ShieldAlert className="w-4 h-4 text-red-500" />
-                          <h4 className="text-xs font-black text-red-600 uppercase tracking-widest">Contacto de Emergencia</h4>
+                      {/* DATOS DE CONTACTO (UI Mock - Hasta que los agregues a Prisma) */}
+                      <StaticCard className="p-6 opacity-60">
+                        <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
+                          <div className="flex items-center gap-2">
+                            <FaPhone className="w-4 h-4 text-slate-500" />
+                            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest">Contacto (Próximamente)</h4>
+                          </div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Nombre Completo</label>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Correo Electrónico</label>
                             <div className="relative">
-                              <input type="text" defaultValue="María Rodríguez" className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" />
-                              <User className="w-4 h-4 absolute right-3 top-3.5 text-slate-300" />
+                              <input disabled type="email" defaultValue="pedro.sanchez@gmail.com" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm cursor-not-allowed" />
                             </div>
                           </div>
-
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Parentesco</label>
-                            <select className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 appearance-none bg-transparent">
-                              <option value="madre">Madre</option>
-                              <option value="padre">Padre</option>
-                              <option value="esposo">Esposo/a</option>
-                            </select>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono Móvil</label>
+                            <div className="relative">
+                              <input disabled type="text" defaultValue="+58 412-1234567" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm cursor-not-allowed" />
+                            </div>
                           </div>
                         </div>
                       </StaticCard>
@@ -160,9 +216,12 @@ export const ProfileTabs = () => {
                         </button>
                         <button
                           type="submit"
-                          className="flex-1 py-4 bg-primary-600 text-white font-bold rounded-2xl hover:bg-primary-700 shadow-lg"
+                          disabled={isSaving}
+                          className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg transition-all ${
+                            isSaving ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                          }`}
                         >
-                          Guardar Cambios
+                          {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                         </button>
                       </footer>
                     </form>
@@ -172,19 +231,20 @@ export const ProfileTabs = () => {
             </div>
           )}
 
+          {/* ... el resto de tus pestañas (citas, tratamientos, pagos) se quedan exactamente igual ... */}
           {activeTab === 'citas' && (
             <div className="animate-in slide-in-from-right-4 duration-500 w-full">
-              <MedicalAppointments />
+              <MedicalAppointments patientId={patientId} />
             </div>
           )}
           {activeTab === 'tratamientos' && (
             <div className="animate-in slide-in-from-right-4 duration-500 w-full">
-              <CurrentMedication />
+              <CurrentMedication patientId={patientId} />
             </div>
           )}
           {activeTab === 'pagos' && (
             <div className="animate-in fade-in duration-500 w-full">
-              <PaymentsBills />
+              <PaymentsBills patientId={patientId} />
             </div>
           )}
         </article>

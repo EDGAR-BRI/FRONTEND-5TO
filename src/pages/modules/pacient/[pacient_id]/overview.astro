@@ -2,154 +2,137 @@
 import PacientLayout from '@/layouts/PacientLayout.astro';
 import StaticCard from '@/components/react/primary/StaticCard';
 import ActionCard from '@/components/react/primary/ActionCard';
+import {
+  FaArrowDown,
+  FaArrowUp,
+  FaCalendarCheck,
+  FaCalendarDays,
+  FaCalendarPlus,
+  FaCircleInfo,
+  FaDroplet,
+  FaEnvelope,
+  FaFileMedical,
+  FaFlask,
+  FaFolderOpen,
+  FaHeart,
+  FaHeartPulse,
+  FaIdCard,
+  FaPhone,
+  FaPills,
+  FaPlus,
+  FaRegClock,
+  FaRegNoteSticky,
+  FaRegCalendarXmark,
+  FaStethoscope,
+  FaTablets,
+  FaTriangleExclamation,
+  FaUserDoctor,
+  FaUserPen,
+  FaVenus,
+  FaCapsules,
+} from 'react-icons/fa6';
+
+import { api } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
 
-// ─── Mock data derived from DB schema ──────────────────────────────────────
+let patientData: any = null;
+let appointmentsData: any[] = [];
+
+
+try {
+  const [patientRes, appointmentsRes] = await Promise.all([
+    api(`/medical/patient/${pacient_id}`, {}, Astro.cookies),
+    api(`/scheduling/appointment?patientId=${pacient_id}`, {}, Astro.cookies)
+  ]);
+
+  if (!patientRes.ok) {
+    return Astro.redirect('/no-encontrado');
+  }
+
+  const patientJson = await patientRes.json();
+  patientData = patientJson.data;
+
+  // Si hay citas, las guardamos (si falla esta, no rompemos la página entera)
+  if (appointmentsRes.ok) {
+    const apptJson = await appointmentsRes.json();
+    appointmentsData = Array.isArray(apptJson.data) ? apptJson.data : [];
+  }
+} catch (error) {
+  console.error("Error cargando el overview:", error);
+  return Astro.redirect('/error-servidor');
+}
+
+// ─── Format patient data ──────────────────────────────────────────────────
+const fullName = patientData?.user?.name || 'Paciente Desconocido';
+const ci = patientData?.user?.ci || 'Sin CI';
+const bloodType = patientData?.tipo_sangre || 'No registrado';
+
 const patient = {
   id: pacient_id ?? '001',
-  fullName: 'María Rodríguez González',
-  ci: 'V-12.345.678',
-  age: 34,
-  bloodType: 'O+',
-  sex: 'Femenino',
-  email: 'maria.rodriguez@example.com',
-  phone: '+58 (414) 555-0192',
-  emergencyContact: 'Pedro González · +58 (212) 555-0198',
-  avatarInitials: 'MR',
+  fullName: fullName,
+  ci: ci,
+  age: '-', 
+  bloodType: bloodType,
+  sex: '-', 
+  email: '-', 
+  phone: '-', 
+  emergencyContact: '-',
+  avatarInitials: fullName.substring(0, 2).toUpperCase(),
 };
 
-const stats = [
-  {
-    label: 'Consultas realizadas',
-    value: '12',
-    icon: 'fa-solid fa-stethoscope',
-    color: 'text-primary-500',
-    bg: 'bg-primary-200',
-    trend: '+2 este mes',
-    trendUp: true,
-  },
-  {
-    label: 'Próximas citas',
-    value: '2',
-    icon: 'fa-solid fa-calendar-check',
-    color: 'text-success',
-    bg: 'bg-green-100',
-    trend: 'Confirmadas',
-    trendUp: true,
-  },
-  {
-    label: 'Medicamentos en dósis',
-    value: '3',
-    icon: 'fa-solid fa-pills',
-    color: 'text-warning',
-    bg: 'bg-yellow-100',
-    trend: 'En curso',
-    trendUp: null,
-  },
-  
-];
+// ─── Format Appointments Data ─────────────────────────────────────────────
+const now = new Date();
 
-const upcomingAppointments = [
-  {
-    id: 'APT-001',
-    date: '2026-03-10',
-    time: '09:00 – 09:30 AM',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    reason: 'Control de rutina',
-    status: 'Confirmada',
-    type: 'Presencial',
-    statusClass: 'bg-green-100 text-success',
-  },
-  {
-    id: 'APT-002',
-    date: '2026-03-18',
-    time: '02:00 – 02:30 PM',
-    specialty: 'Cardiología',
-    doctor: 'Dra. Luisa Vargas',
-    reason: 'Seguimiento electrocardiograma',
-    status: 'Pendiente',
-    type: 'Presencial',
-    statusClass: 'bg-yellow-100 text-warning',
-  },
-];
+// Filtramos las citas que son en el futuro y no están canceladas
+const upcomingAppointments = appointmentsData
+  .filter(apt => new Date(apt.date_time) >= now && apt.status?.name !== 'Cancelada')
+  .sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime()) // Ordenar por fecha más próxima
+  .slice(0, 4) // Mostramos solo las 4 más próximas en el dashboard
+  .map(apt => ({
+    date: apt.date_time,
+    specialty: apt.doctor?.specialty?.name || 'Especialidad General',
+    status: apt.status?.name || 'Pendiente',
+    // Coloreamos el status dinámicamente según lo que venga de la BD
+    statusClass: apt.status?.name === 'Pendiente' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700', 
+    type: apt.type?.name || 'Consulta',
+    doctor: apt.doctor?.user?.name ? `${apt.doctor.user.name}` : 'No asignado',
+    time: new Date(apt.date_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }),
+    reason: apt.reson_visit || 'Sin motivo especificado'
+  }));
 
-const recentConsultations = [
-  {
-    date: '2026-02-20',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    diagnosis: 'Evolución favorable',
-    reason: 'Control mensual',
-    plan: 'Mantener tratamiento. Control en 4 semanas.',
-  },
-  {
-    date: '2026-01-10',
-    specialty: 'Urgencias',
-    doctor: 'Dr. Ramón Castillo',
-    diagnosis: 'Dolor musculoesquelético',
-    reason: 'Dolor torácico leve',
-    plan: 'AINEs y reposo. Signos de alarma explicados.',
-  },
-  {
-    date: '2025-12-05',
-    specialty: 'Cardiología',
-    doctor: 'Dra. Luisa Vargas',
-    diagnosis: 'Hipertensión leve controlada',
-    reason: 'Evaluación cardiovascular',
-    plan: 'Ajuste de dosis de Losartán. Dieta baja en sodio.',
-  },
-];
+// Filtramos las citas en el pasado o ya finalizadas para el historial reciente
+const recentConsultations = appointmentsData
+  .filter(apt => new Date(apt.date_time) < now || apt.status?.name === 'Finalizada')
+  .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()) // Ordenar de la más reciente a la más antigua
+  .slice(0, 3)
+  .map(apt => ({
+    date: new Date(apt.date_time).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }),
+    specialty: apt.doctor?.specialty?.name || 'Consulta',
+    doctor: apt.doctor?.user?.name ? `${apt.doctor.user.name}` : '-',
+    reason: apt.reson_visit || '-',
+    diagnosis: 'Pendiente', // El backend de consultas aún no está, así que dejamos el mock
+    plan: 'Pendiente' // Mock
+  }));
 
-const prescriptions = [
-  {
-    name: 'Losartán 50 mg',
-    sig: '1 tableta diaria (mañana)',
-    status: 'Activa',
-    statusClass: 'bg-green-100 text-success',
-    icon: 'fa-solid fa-capsules',
-  },
-  {
-    name: 'Atorvastatina 20 mg',
-    sig: '1 tableta diaria (noche)',
-    status: 'Activa',
-    statusClass: 'bg-green-100 text-success',
-    icon: 'fa-solid fa-pills',
-  },
-  {
-    name: 'Ibuprofeno 400 mg',
-    sig: 'Según dolor (máx. 3/día)',
-    status: 'PRN',
-    statusClass: 'bg-yellow-100 text-warning',
-    icon: 'fa-solid fa-tablets',
-  },
-];
-
-const labResults = [
-  { date: '2026-02-15', test: 'Hemograma completo', result: 'Sin alteraciones', status: 'Normal', statusClass: 'bg-green-100 text-success' },
-  { date: '2026-02-15', test: 'Glucosa en ayunas', result: '92 mg/dL', status: 'Normal', statusClass: 'bg-green-100 text-success' },
-  { date: '2026-02-15', test: 'Colesterol LDL', result: '118 mg/dL', status: 'Leve', statusClass: 'bg-yellow-100 text-warning' },
-  { date: '2026-01-22', test: 'Creatinina sérica', result: 'Pendiente lectura', status: 'Pendiente', statusClass: 'bg-red-100 text-error' },
-];
+// Mocks restantes que conectaremos después
+const stats: any[] = [];
+const prescriptions: any[] = [];
+const labResults: any[] = [];
+const alerts: any[] = [];
 
 const quickActions = [
-  { label: 'Agendar cita', icon: 'fa-solid fa-calendar-plus', href: 'schedule-appointment', color: 'from-primary-500 to-primary-700' },
-  { label: 'Historial clínico', icon: 'fa-solid fa-file-medical', href: 'history', color: 'from-teal-500 to-teal-700' },
-  { label: 'Mi perfil', icon: 'fa-solid fa-user-pen', href: 'profile', color: 'from-violet-500 to-violet-700' },
-  { label: 'Documentos', icon: 'fa-solid fa-folder-open', href: 'history', color: 'from-orange-400 to-orange-600' },
-];
-
-const alerts = [
-  { type: 'allergy', label: 'Penicilina', icon: 'fa-solid fa-triangle-exclamation', color: 'bg-red-100 text-error border-red-200' },
-  { type: 'condition', label: 'Hipertensión', icon: 'fa-solid fa-heart-pulse', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+  { label: 'Agendar cita', icon: FaCalendarPlus, href: 'schedule-appointment', color: 'from-primary-500 to-primary-700' },
+  { label: 'Historial clínico', icon: FaFileMedical, href: 'history', color: 'from-teal-500 to-teal-700' },
+  { label: 'Mi perfil', icon: FaUserPen, href: 'profile', color: 'from-violet-500 to-violet-700' },
+  { label: 'Documentos', icon: FaFolderOpen, href: 'history', color: 'from-orange-400 to-orange-600' },
 ];
 ---
 
 <PacientLayout title={`Dashboard - ${patient.fullName}`}>
   <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
 
-    <!-- ─── Header / Welcome ──────────────────────────────────────────────── -->
+    <!-- Header / Welcome -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
         <!-- Avatar -->
@@ -160,37 +143,41 @@ const alerts = [
           <p class="text-body-s text-primary-700 font-medium">Bienvenida de nuevo,</p>
           <h1 class="text-heading-4 text-primary-800 leading-tight">{patient.fullName}</h1>
           <p class="text-body-xs text-cool-gray-50 mt-0.5">
-            <i class="fa-solid fa-id-card mr-1"></i> {patient.ci}
+            <FaIdCard className="mr-1 inline-block" /> {patient.ci}
             &nbsp;·&nbsp;
-            <i class="fa-solid fa-droplet mr-1"></i> {patient.bloodType}
+            <FaDroplet className="mr-1 inline-block" /> {patient.bloodType}
             &nbsp;·&nbsp;
-            <i class="fa-solid fa-venus mr-1"></i> {patient.sex}
+            <FaVenus className="mr-1 inline-block" /> {patient.sex}
           </p>
         </div>
       </div>
 
       <!-- Alert badges (allergies / conditions) -->
       <div class="flex flex-wrap gap-2">
-        {alerts.map(alert => (
+        {alerts.map(({ icon: Icon, ...alert }) => (
           <span class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${alert.color}`}>
-            <i class={alert.icon}></i>
+            <Icon className="inline-block" />
             {alert.type === 'allergy' ? 'Alergia:' : 'Dx:'} {alert.label}
           </span>
         ))}
       </div>
     </div>
 
-    <!-- ─── Stat Cards ────────────────────────────────────────────────────── -->
+    <!-- ─── Stat Cards ─── -->
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-      {stats.map(stat => (
-        <StaticCard client:load className="p-5 !bg-primary-100">
+      {stats.map(({ icon: Icon, ...stat }) => (
+        <StaticCard client:visible className="p-5 !bg-primary-100">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
-              <i class={`${stat.icon} ${stat.color} text-base`}></i>
+              <Icon className={`${stat.color} text-base`} />
             </div>
             {stat.trendUp !== null && (
               <span class={`text-body-xxs font-medium px-2 py-0.5 rounded-full ${stat.trendUp ? 'bg-green-50 text-success' : 'bg-red-50 text-error'}`}>
-                <i class={`fa-solid ${stat.trendUp ? 'fa-arrow-up' : 'fa-arrow-down'} mr-0.5`}></i>
+                {stat.trendUp ? (
+									<FaArrowUp className="mr-0.5 inline-block" />
+								) : (
+									<FaArrowDown className="mr-0.5 inline-block" />
+								)}
                 {stat.trend}
               </span>
             )}
@@ -208,43 +195,39 @@ const alerts = [
       ))}
     </div>
 
-    <!-- ─── Quick Actions ─────────────────────────────────────────────────── -->
     <div>
       <h2 class="text-heading-6 text-primary-800 mb-3">Acciones rápidas</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {quickActions.map(action => (
-          <a
-            href={action.href}
-            class={`group relative overflow-hidden rounded-xl bg-linear-to-br ${action.color} p-5 flex flex-col items-center gap-2 text-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer`}
-          >
-            <i class={`${action.icon} text-2xl opacity-90`}></i>
-            <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
-            <!-- Decorative circle -->
-            <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
+        {quickActions.map(({ icon: Icon, ...action }) => (
+          <a href={action.href} class="block group relative overflow-hidden h-full">
+            <ActionCard client:visible className={`bg-linear-to-br ${action.color} p-5 flex-col items-center gap-2 text-white border-transparent hover:border-transparent h-full w-full justify-center`}>
+              <Icon className="text-2xl opacity-90" />
+              <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
+              <!-- Decorative circle -->
+              <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            </ActionCard>
           </a>
         ))}
       </div>
     </div>
 
-    <!-- ─── Two-column layout: Upcoming + Prescriptions ──────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
-      <!-- Próximas citas (wider) -->
-      <StaticCard client:load className="lg:col-span-3 !bg-white !p-0 flex flex-col overflow-hidden">
+      <StaticCard client:visible className="lg:col-span-3 !bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
-            <i class="fa-solid fa-calendar-days text-primary-500 mr-2"></i>
+            <FaCalendarDays className="text-primary-500 mr-2 inline-block" />
             Próximas citas
           </h2>
           <a href="schedule-appointment" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
-            Agendar nueva <i class="fa-solid fa-plus ml-0.5"></i>
+            Agendar nueva <FaPlus className="ml-0.5 inline-block" />
           </a>
         </div>
 
         <div class="divide-y divide-primary-100 flex-1">
           {upcomingAppointments.length === 0 && (
             <div class="p-6 text-center text-cool-gray-50 text-body-s">
-              <i class="fa-regular fa-calendar-xmark text-2xl mb-2 block"></i>
+              <FaRegCalendarXmark className="text-2xl mb-2 block mx-auto" />
               No tienes citas próximas
             </div>
           )}
@@ -272,12 +255,12 @@ const alerts = [
                     </span>
                   </div>
                   <p class="text-body-xs text-cool-gray-50 mt-0.5">
-                    <i class="fa-regular fa-user-doctor mr-1"></i>{apt.doctor}
+                    <FaUserDoctor className="mr-1 inline-block" />{apt.doctor}
                   </p>
                   <p class="text-body-xs text-primary-700 mt-0.5">
-                    <i class="fa-regular fa-clock mr-1"></i>{apt.time}
+                    <FaRegClock className="mr-1 inline-block" />{apt.time}
                     &nbsp;·&nbsp;
-                    <i class="fa-regular fa-note-sticky mr-1"></i>{apt.reason}
+                    <FaRegNoteSticky className="mr-1 inline-block" />{apt.reason}
                   </p>
                 </div>
               </div>
@@ -287,20 +270,20 @@ const alerts = [
       </StaticCard>
 
       <!-- Medicamentos -->
-      <StaticCard client:load className="lg:col-span-2 !bg-white !p-0 flex flex-col overflow-hidden">
+      <StaticCard client:visible className="lg:col-span-2 !bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
-            <i class="fa-solid fa-pills text-warning mr-2"></i>
+            <FaPills className="text-warning mr-2 inline-block" />
             Medicamentos
           </h2>
           <span class="text-body-xxs text-cool-gray-50">Activos</span>
         </div>
 
         <div class="divide-y divide-primary-100 flex-1">
-          {prescriptions.map(med => (
+          {prescriptions.map(({ icon: Icon, ...med }) => (
             <div class="px-5 py-4 hover:bg-primary-50 transition-colors flex items-start gap-3">
               <div class="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
-                <i class={`${med.icon} text-primary-600 text-sm`}></i>
+                <Icon className="text-primary-600 text-sm" />
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
@@ -321,10 +304,10 @@ const alerts = [
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
       <!-- Lab Results -->
-      <StaticCard client:load className="!bg-white !p-0 flex flex-col overflow-hidden">
+      <StaticCard client:visible className="!bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
-            <i class="fa-solid fa-flask text-primary-500 mr-2"></i>
+            <FaFlask className="text-primary-500 mr-2 inline-block" />
             Resultados de laboratorio
           </h2>
           <a href="history" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
@@ -348,10 +331,10 @@ const alerts = [
       </StaticCard>
 
       <!-- Recent Consultations -->
-      <StaticCard client:load className="!bg-white !p-0 flex flex-col overflow-hidden">
+      <StaticCard client:visible className="!bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
-            <i class="fa-solid fa-stethoscope text-primary-500 mr-2"></i>
+            <FaStethoscope className="text-primary-500 mr-2 inline-block" />
             Consultas recientes
           </h2>
           <a href="history" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
@@ -367,7 +350,7 @@ const alerts = [
                 <span class="text-body-xxs text-cool-gray-50">{c.date}</span>
               </div>
               <p class="text-body-xs text-cool-gray-60">
-                <i class="fa-regular fa-user-doctor mr-1"></i>{c.doctor}
+                <FaUserDoctor className="mr-1 inline-block" />{c.doctor}
               </p>
               <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-body-xs">
                 <div>
@@ -394,20 +377,20 @@ const alerts = [
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 class="text-heading-6 font-semibold mb-1">
-            <i class="fa-solid fa-circle-info mr-2 opacity-80"></i>
+            <FaCircleInfo className="mr-2 opacity-80 inline-block" />
             Información de contacto
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-body-xs text-primary-200">
-            <span><i class="fa-solid fa-envelope mr-1.5"></i>{patient.email}</span>
-            <span><i class="fa-solid fa-phone mr-1.5"></i>{patient.phone}</span>
-            <span class="sm:col-span-2"><i class="fa-solid fa-heart mr-1.5"></i>Emergencia: {patient.emergencyContact}</span>
+            <span><FaEnvelope className="mr-1.5 inline-block" />{patient.email}</span>
+            <span><FaPhone className="mr-1.5 inline-block" />{patient.phone}</span>
+            <span class="sm:col-span-2"><FaHeart className="mr-1.5 inline-block" />Emergencia: {patient.emergencyContact}</span>
           </div>
         </div>
         <a
           href="profile"
           class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-button-s font-medium transition-colors"
         >
-          <i class="fa-solid fa-user-pen"></i>
+          <FaUserPen />
           Editar perfil
         </a>
       </div>

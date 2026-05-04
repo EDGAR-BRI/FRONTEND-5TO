@@ -1,4 +1,3 @@
-import React from 'react';
 import ActionCard from '@/components/react/primary/ActionCard';
 import StaticCard from '@/components/react/primary/StaticCard';
 import { Badge } from '@/components/react/primary/Badge';

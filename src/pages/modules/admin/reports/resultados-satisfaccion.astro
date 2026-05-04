@@ -1,0 +1,67 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { Badge } from "@/components/react/primary/Badge";
+import StaticCard from "@/components/react/primary/StaticCard";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaFaceSmile, FaStar, FaUserCheck } from "react-icons/fa6";
+
+const ratings = [
+  { area: "Recepcion", score: "4.6/5", nps: "72", comments: "Atencion agil" },
+  { area: "Consulta", score: "4.7/5", nps: "78", comments: "Explicaciones claras" },
+  { area: "Caja", score: "4.2/5", nps: "61", comments: "Tiempo de espera" },
+  { area: "Farmacia", score: "4.5/5", nps: "69", comments: "Stock estable" },
+];
+---
+
+<AdminLayout title="Resultados - Satisfaccion | Admin">
+  <div class="space-y-6">
+    <a href="/modules/admin/reports/resultados" class="inline-flex items-center gap-2 text-sm text-primary-700 hover:underline">
+      <FaArrowLeft size={12} /> Volver a resultados
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-2xl font-bold text-gray-800">Satisfaccion de pacientes</h1>
+      <p class="text-gray-500">Analisis de experiencia en cada punto del flujo de atencion.</p>
+    </header>
+
+    <ReportTimeframeFilters client:visible title="Filtro de satisfacción" subtitle="Evalúa la experiencia por día, semana, mes o año y detecta cambios en la percepción del paciente." />
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <StatsCard title="Satisfaccion global" value="89%" trend="1.7%" trendUp={true} color="success"><FaFaceSmile slot="icon" size={18} /></StatsCard>
+      <StatsCard title="NPS general" value="70" trend="1.2%" trendUp={true} color="primary"><FaStar slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Encuestas respondidas" value="386" trend="3.3%" trendUp={true} color="warning"><FaUserCheck slot="icon" size={18} /></StatsCard>
+    </section>
+
+    <StaticCard>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-800">Percepcion por area</h2>
+          <Badge>Encuesta post consulta</Badge>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-primary-300">
+            <thead class="bg-primary-300">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Area</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Calificacion</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">NPS</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Comentario recurrente</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-primary-300">
+              {ratings.map((item) => (
+                <tr class="hover:bg-primary-500/20 transition-colors">
+                  <td class="px-4 py-3 text-sm text-cool-gray-90">{item.area}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.score}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.nps}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.comments}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </StaticCard>
+  </div>
+</AdminLayout>

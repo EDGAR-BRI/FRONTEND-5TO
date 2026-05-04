@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect, type ChangeEvent, type SyntheticEvent } from 'react';
 import { Modal } from '@/components/react/primary/Modal';
 import { Field } from '@/components/react/primary/Field';
 import { Select } from '@/components/react/primary/Select';
@@ -8,20 +8,34 @@ interface AddTransactionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
+    initialType?: 'income' | 'expense';
 }
 
-export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransactionModalProps) => {
-    const [formData, setFormData] = useState({
+export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 'expense' }: AddTransactionModalProps) => {
+    const [formData, setFormData] = useState<{
+        description: string;
+        amount: string;
+        date: string;
+        type: string;
+        category: string;
+        status: string;
+    }>({
         description: '',
         amount: '',
         date: '',
-        type: 'expense',
+        type: initialType,
         category: '',
         status: 'completed'
     });
+
+    useEffect(() => {
+        if (isOpen) {
+            setFormData(prev => ({ ...prev, type: initialType }));
+        }
+    }, [isOpen, initialType]);
     const [loading, setLoading] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -30,7 +44,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess }: AddTransacti
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         try {

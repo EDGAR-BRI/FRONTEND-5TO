@@ -1,37 +1,64 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { StatsCard } from '@/components/react/primary/StatsCard';
-import { LuUsers, LuPackage, LuBanknote, LuFileText } from 'react-icons/lu';
+import { FaBoxOpen, FaFileLines, FaSackDollar, FaUsers } from 'react-icons/fa6';
+import { getAdminOverviewStats } from '@/lib/services/admin/admin.service';
 
 export const OverviewStats = () => {
+    const [stats, setStats] = useState({
+        patients: 0,
+        criticalSupplies: 0,
+        monthIncome: 0,
+        reportsCount: 0,
+    });
+
+    useEffect(() => {
+        let mounted = true;
+
+        (async () => {
+            try {
+                const data = await getAdminOverviewStats();
+                if (mounted) {
+                    setStats(data);
+                }
+            } catch {
+                // Keep defaults if backend fails.
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatsCard
                 variant="compact"
                 title="Pacientes"
-                value={8249}
+                value={stats.patients}
                 color="primary"
-                icon={<LuUsers size={22} />}
+                icon={<FaUsers size={22} />}
             />
             <StatsCard
                 variant="compact"
                 title="Insumos Críticos"
-                value={12}
+                value={stats.criticalSupplies}
                 color="warning"
-                icon={<LuPackage size={22} />}
+                icon={<FaBoxOpen size={22} />}
             />
             <StatsCard
                 variant="compact"
                 title="Ingresos del Mes"
-                value="$45.200"
+                value={`$${stats.monthIncome.toFixed(2)}`}
                 color="success"
-                icon={<LuBanknote size={22} />}
+                icon={<FaSackDollar size={22} />}
             />
             <StatsCard
                 variant="compact"
-                title="Nuevos Reportes"
-                value={34}
+                title="Consultas Realizadas"
+                value={stats.reportsCount}
                 color="primary"
-                icon={<LuFileText size={22} />}
+                icon={<FaFileLines size={22} />}
             />
         </div>
     );

@@ -3,12 +3,13 @@ import { Tooltip } from './Tooltip';
 import { DayPicker } from 'react-day-picker';
 import { format, isValid, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { FaCalendarDays, FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 interface FieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'type' | 'onKeyDown'> {
     label?: string;
     autoFocus?: boolean;
     name: string;
-    type?: "text" | "email" | "password" | "number" | "date" | "radio";
+    type?: "text" | "email" | "password" | "number" | "date" | "time" | "radio";
     placeholder?: string;
     showTogglePassword?: boolean;
     pattern?: string;
@@ -246,21 +247,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                                 aria-label="Abrir calendario"
                                 tabIndex={-1}
                             >
-                                <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
+                                <FaCalendarDays className="h-5 w-5" />
                             </button>
                         )}
 
@@ -277,8 +264,8 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                                     weekStartsOn={1}
                                     locale={es}
                                     captionLayout="dropdown"
-                                    fromYear={1990}
-                                    toYear={new Date().getFullYear() + 10}
+                                    startMonth={new Date(1990, 0)}
+                                    endMonth={new Date(new Date().getFullYear() + 10, 11)}
                                     classNames={{
                                         months: 'flex flex-col',
                                         month: 'space-y-3',
@@ -304,6 +291,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                     <input
                         autoFocus={autoFocus ? true : undefined}
                         ref={setRef}
+                        key={`${name}-${effectiveInputType}`}
                         type={effectiveInputType}
                         name={name}
                         id={name}
@@ -317,7 +305,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         step={step}
                         inputMode={type === 'number' ? 'decimal' : undefined}
                         onKeyDown={handleKeyDown}
-                        className={`w-full h-10 text-primary-900 ${bgClass} border border-primary-300 rounded-md px-4 py-2 text-body-s placeholder-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isDate ? 'pr-10 gt-date-input' : ''}`}
+                        className={`w-full h-10 text-primary-900 ${bgClass} border border-primary-300 rounded-md px-4 py-2 text-body-s placeholder-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-60/10 focus:border-primary-60/40 hover:border-primary-60/60 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isDate || showTogglePassword ? 'pr-10' : ''} ${isDate ? 'gt-date-input' : ''}`}
                         {...props}
                     />
                 )}
@@ -335,60 +323,43 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-700 cursor-pointer"
                         aria-label="Abrir calendario"
                     >
-                        <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
+                        <FaCalendarDays className="h-5 w-5" />
                     </button>
                 )}
 
                 {showTogglePassword && (
                     <button
                         type="button"
-                        onClick={togglePassword}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-700 cursor-pointer"
+                        disabled={disabled}
+                        onMouseDown={(e) => {
+                            // Prevent focus loss on the input (helps on some browsers)
+                            e.preventDefault();
+                        }}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (disabled) return;
+                            togglePassword();
+                            // After toggling, the input may remount (key change). Refocus next tick.
+                            setTimeout(() => {
+                                const el = internalInputRef.current;
+                                if (!el) return;
+                                el.focus();
+                                try {
+                                    const len = el.value.length;
+                                    el.setSelectionRange(len, len);
+                                } catch {
+                                    // ignore
+                                }
+                            }, 0);
+                        }}
+                        aria-label={inputType === "password" ? "Mostrar contraseña" : "Ocultar contraseña"}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-primary-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {inputType === "password" ? (
-                            <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="M22 12s-4.667-8-10-8-10 8-10 8 4.667 8 10 8 10-8 10-8Z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
+                            <FaEye className="h-5 w-5" />
                         ) : (
-                            <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7c.44 0 .87-.03 1.28-.08" />
-                                <line x1="2" x2="22" y1="2" y2="22" />
-                            </svg>
+                            <FaEyeSlash className="h-5 w-5" />
                         )}
                     </button>
                 )}

@@ -1,4 +1,4 @@
-import { BarChart3 } from "lucide-react";
+import { FaChartColumn } from "react-icons/fa6";
 
 export default function ActivityChart() {
   const activityData = [
@@ -17,7 +17,7 @@ export default function ActivityChart() {
 
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-primary-800 text-sm flex items-center gap-2 uppercase tracking-wide">
-          <BarChart3 size={18} className="text-blue-500" /> Flujo de Pacientes
+			<FaChartColumn size={18} className="text-blue-500" /> Flujo de Pacientes
         </h3>
         <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">Últimos 6 días</span>
       </div>

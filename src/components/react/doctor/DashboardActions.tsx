@@ -1,29 +1,29 @@
-import { CalendarDays, Users, FlaskConical, UserCircle } from "lucide-react";
+import { FaCalendarDays, FaCircleUser, FaFlask, FaUsers } from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 
 export default function DashboardActions() {
   const actions = [
     { 
       label: "Agendar Citas", 
-      icon: <CalendarDays size={32} />, 
+      icon: <FaCalendarDays size={32} />, 
       href: "schedule", 
       bg: "!bg-[#2563eb] hover:!bg-blue-700 !border-none" 
     },
     { 
       label: "Mi Perfil", 
-      icon: <UserCircle size={32} />, 
+      icon: <FaCircleUser size={32} />, 
       href: "profile", 
       bg: "!bg-[#8b5cf6] hover:!bg-violet-700 !border-none" 
     },
     { 
       label: "Pacientes", 
-      icon: <Users size={32} />, 
+      icon: <FaUsers size={32} />, 
       href: "patients", 
       bg: "!bg-[#22c55e] hover:!bg-green-600 !border-none" 
     },
     { 
       label: "Resultados", 
-      icon: <FlaskConical size={32} />, 
+      icon: <FaFlask size={32} />, 
       href: "results", 
       bg: "!bg-[#f97316] hover:!bg-orange-600 !border-none" 
     }

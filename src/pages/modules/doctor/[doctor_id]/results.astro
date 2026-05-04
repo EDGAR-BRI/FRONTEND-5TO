@@ -3,7 +3,7 @@ import MainLayout from "@/layouts/DoctorLayout.astro";
 import StaticCard from "@/components/react/primary/StaticCard";
 import LaboratoryResults from "@/components/react/doctor/LaboratoryResults";
 
-import { FlaskConical } from "lucide-react";
+import { FaFlask } from "react-icons/fa6";
 ---
 
 <MainLayout>
@@ -16,12 +16,12 @@ import { FlaskConical } from "lucide-react";
       </div>
       
       <button class="px-5 py-3 text-sm font-bold text-white bg-[#1e3a8a] rounded-lg hover:bg-blue-800 transition-colors shadow-sm flex items-center gap-2">
-        <FlaskConical size={16} /> Solicitar Nueva Prueba
+		<FaFlask size={16} /> Solicitar Nueva Prueba
       </button>
     </div>
 
     <StaticCard className="p-0 bg-transparent border-none shadow-none">
-      <LaboratoryResults client:load />
+      <LaboratoryResults client:visible />
     </StaticCard>
     
   </div>

@@ -1,5 +1,6 @@
 ---
 import type { MenuItems } from "@/types/MenuItemsTypes";
+import { FaChevronDown } from "react-icons/fa6";
 
 interface Props {
     menuItems: MenuItems[];
@@ -7,121 +8,173 @@ interface Props {
 }
 
 const { menuItems, currentPath } = Astro.props;
+
+const isPathActive = (targetPath?: string) => {
+    if (!targetPath) return false;
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+};
 ---
 
-<nav class="px-4 space-y-1">
+<nav class="px-4 space-y-1 w-full min-w-0">
     {
-        menuItems.map((item, index) => (
+        menuItems.map((item, index) => {
+            const hasActiveSubItem =
+                item.subItems?.some((subItem) => {
+                    return isPathActive(subItem.href);
+                }) ?? false;
+            const accordionId = `sidebar-accordion-${index}`;
+
+            return (
             <div>
                 {item.subItems ? (
-                    <div class="group">
-                        <button
-                            class="w-full flex items-center justify-between px-4 py-3 text-primary-100 rounded-md hover:bg-primary-800 hover:text-primary-100 transition-colors group-hover:text-white sidebar-dropdown-toggle"
-                            aria-expanded="false"
+                    <details
+                        class="group w-full min-w-0 overflow-hidden"
+                        data-sidebar-accordion={accordionId}
+                        open={hasActiveSubItem}
+                    >
+                        <summary
+                            data-sidebar-accordion-trigger={accordionId}
+                            class:list={[
+                                "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-md transition-colors cursor-pointer list-none min-w-0 border-l-2 border-transparent",
+                                hasActiveSubItem
+                                    ? "bg-primary-800/60 text-white border-primary-300"
+                                    : "text-primary-100 hover:bg-primary-800/60 hover:text-white group-hover:text-white",
+                            ]}
                         >
-                            <div class="flex items-center gap-3">
-                                <i
-                                       class={`${item.icon} text-lg text-primary-100 group-hover:text-primary-600 transition-colors`}
-                                />
-                                <span class="font-medium text-sm tracking-wide">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                {(() => {
+                                    const Icon = item.icon;
+                                    if (!Icon || typeof Icon === "string") return null;
+                                    return (
+                                        <Icon
+                                            className={`text-lg transition-colors ${
+                                                hasActiveSubItem
+                                                    ? "text-primary-600"
+                                                    : "text-primary-100 group-hover:text-primary-600"
+                                            }`}
+                                        />
+                                    );
+                                })()}
+                                <span class="font-medium text-sm tracking-wide truncate">
                                     {item.label}
                                 </span>
                             </div>
-                            <svg
-                                class="arrow-icon h-4 w-4 transition-transform duration-200"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
-                        </button>
-                        <div class="hidden pl-4 mt-1 space-y-1 border-l-2 border-cool-gray-80 ml-6 sidebar-dropdown-content">
+                            <FaChevronDown
+                                class:list={[
+                                    "h-4 w-4 shrink-0 transition-transform duration-200 -rotate-90 group-open:rotate-0",
+                                ]}
+                            />
+                        </summary>
+                        <div class="sidebar-dropdown-content mt-1 ml-3 space-y-1 border-l-2 border-primary-200/70 pl-2 pr-1">
                             {item.subItems.map((subItem) => (
                                 <a
                                     href={subItem.href}
-                                    class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors ${
-                                        currentPath === subItem.href
-                                               ? "text-primary-600 bg-primary-900/20"
-                                            : "text-primary-100 hover:text-primary-100 hover:bg-cool-gray-80"
+                                    data-astro-prefetch="hover"
+                                    class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors min-w-0 ${
+                                        isPathActive(subItem.href)
+                                            ? "text-white bg-primary-800/60"
+                                            : "text-primary-100 hover:text-white hover:bg-primary-800/60"
                                     }`}
                                 >
-                                    <i class={`${subItem.icon} text-sm`} />
-                                    <span>{subItem.label}</span>
+								{(() => {
+									const Icon = subItem.icon;
+									if (!Icon || typeof Icon === "string") return null;
+									return <Icon className="text-sm shrink-0" />;
+								})()}
+            						<span class="truncate">{subItem.label}</span>
                                 </a>
                             ))}
                         </div>
-                    </div>
+                    </details>
                 ) : (
                     <div>
                         <a
                             href={item.href}
+                            data-astro-prefetch="hover"
                             class={`flex items-center gap-6 px-4 py-3 rounded-md transition-colors group ${
-                                currentPath === item.href
-                                       ? "bg-primary-800 text-white border-l-2 border-primary-600"
-                                    : "text-primary-100 hover:bg-cool-gray-90 hover:text-white"
+                                isPathActive(item.href)
+                                    ? "bg-primary-800/60 text-white"
+                                    : "text-primary-100 hover:bg-primary-800/60 hover:text-white border-l-2 border-transparent"
                             }`}
                         >
-                            <i
-                                class={`${item.icon} text-lg transition-colors ${
-                                    currentPath === item.href
-                                           ? "text-primary-600"
-                                           : "text-primary-100 group-hover:text-primary-600"
-                                }`}
-                            />
-                            <span class="font-semibold text-sm tracking-wide">
+                        {(() => {
+                            const Icon = item.icon;
+                            if (!Icon || typeof Icon === "string") return null;
+                            return (
+                                <Icon
+                                    className={`text-lg transition-colors ${
+                                        isPathActive(item.href)
+                                            ? "text-primary-300"
+                                            : "text-primary-100 group-hover:text-primary-300"
+                                    }`}
+                                />
+                            );
+                        })()}
+                            <span class="font-medium text-sm tracking-wide">
                                 {item.label}
                             </span>
                         </a>
                     </div>
                 )}
             </div>
-        ))
+        )})
     }
 </nav>
 
-<script>
-    function setupSidebarMenu() {
-        const toggles = document.querySelectorAll(".sidebar-dropdown-toggle");
+<script is:inline type="module">
+    const storageKey = 'admin-sidebar-accordion-state';
 
-        toggles.forEach((toggle) => {
-            if (toggle.hasAttribute("data-init")) return;
-            toggle.setAttribute("data-init", "true");
+    const readState = () => {
+        try {
+            return JSON.parse(localStorage.getItem(storageKey) ?? '{}');
+        } catch {
+            return {};
+        }
+    };
 
-            toggle.addEventListener("click", (e) => {
-                console.log("Sidebar menu item clicked");
-                const button = e.currentTarget as HTMLElement;
-                const container = button.parentElement;
-                const content = container?.querySelector(
-                    ".sidebar-dropdown-content",
-                );
-                const arrow = container?.querySelector(".arrow-icon");
+    const writeState = (state) => {
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+        } catch {
+            // Ignore storage errors in private or restricted browsing modes.
+        }
+    };
 
-                if (content && arrow) {
-                    const isHidden = content.classList.contains("hidden");
-                    if (isHidden) {
-                        content.classList.remove("hidden");
-                        content.classList.add("block");
-                        arrow.classList.add("rotate-180");
-                        button.setAttribute("aria-expanded", "true");
-                    } else {
-                        content.classList.add("hidden");
-                        content.classList.remove("block");
-                        arrow.classList.remove("rotate-180");
-                        button.setAttribute("aria-expanded", "false");
-                    }
-                }
-            });
+    const syncSidebarAccordions = () => {
+        const savedState = readState();
+        document.querySelectorAll('[data-sidebar-accordion]').forEach((details) => {
+            const accordionId = details.getAttribute('data-sidebar-accordion');
+            if (!accordionId) return;
+
+            const activeRouteSection = details.hasAttribute('open');
+
+            if (savedState[accordionId] !== undefined) {
+                details.open = Boolean(savedState[accordionId]);
+            } else {
+                details.open = activeRouteSection;
+            }
+
+            const updateState = () => {
+                const currentState = readState();
+                currentState[accordionId] = details.open;
+                writeState(currentState);
+            };
+
+            if (!details.dataset.sidebarAccordionBound) {
+                details.addEventListener('toggle', updateState);
+                details.dataset.sidebarAccordionBound = 'true';
+            }
+
+            updateState();
         });
-    }
+    };
 
-    // Run on view transitions navigation (and initial load)
-    document.addEventListener("astro:page-load", () => {
-        setupSidebarMenu();
-    });
+    syncSidebarAccordions();
+    document.addEventListener('astro:page-load', syncSidebarAccordions);
 </script>
+
+<style>
+    summary::-webkit-details-marker {
+        display: none;
+    }
+</style>

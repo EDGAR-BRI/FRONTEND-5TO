@@ -1,5 +1,11 @@
-import React from 'react';
-import { FileText, CreditCard, CheckCircle2, Calendar, Hash, Receipt } from 'lucide-react';
+import {
+  FaFileLines,
+  FaCreditCard,
+  FaCircleCheck,
+  FaCalendarDays,
+  FaHashtag,
+  FaReceipt,
+} from 'react-icons/fa6';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
 import StaticCard from '../primary/StaticCard';
@@ -17,7 +23,7 @@ export const BillDetailModal = ({ bill }: { bill: Bill }) => {
       
       <div className="flex items-center gap-4">
         <div className="bg-white p-4 rounded-2xl text-purple-500 shadow-sm border border-purple-50">
-          <CreditCard className="w-6 h-6" />
+          <FaCreditCard className="w-6 h-6" />
         </div>
         <div className="text-left">
           <p className="text-sm font-bold text-slate-800 tracking-tight">{bill.servicio}</p>
@@ -29,7 +35,7 @@ export const BillDetailModal = ({ bill }: { bill: Bill }) => {
         <div className="text-right">
           <p className="text-sm font-black text-slate-800">{bill.monto}</p>
           <div className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-bold bg-emerald-100 px-2.5 py-0.5 rounded-full mt-1 border border-emerald-200/50">
-            <CheckCircle2 className="w-3 h-3" /> Pagado
+            <FaCircleCheck className="w-3 h-3" /> Pagado
           </div>
         </div>
 
@@ -46,7 +52,7 @@ export const BillDetailModal = ({ bill }: { bill: Bill }) => {
 
               <div className="flex items-center gap-4 bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
                 <div className="bg-emerald-500 p-3 rounded-xl shadow-lg shadow-emerald-500/20">
-                  <FileText className="w-6 h-6 text-white" />
+                  <FaFileLines className="w-6 h-6 text-white" />
                 </div>
                 <div className="text-left">
                   <p className="text-emerald-600 text-[10px] font-black uppercase tracking-widest">Transacción Exitosa</p>
@@ -59,13 +65,13 @@ export const BillDetailModal = ({ bill }: { bill: Bill }) => {
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Fecha de Pago</label>
                     <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-emerald-500" /> {bill.fecha}
+                      <FaCalendarDays className="w-4 h-4 text-emerald-500" /> {bill.fecha}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Control / Hash</label>
                     <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <Hash className="w-4 h-4 text-blue-500" /> #{bill.id}00XVF
+                      <FaHashtag className="w-4 h-4 text-blue-500" /> #{bill.id}00XVF
                     </p>
                   </div>
                 </div>
@@ -84,7 +90,7 @@ export const BillDetailModal = ({ bill }: { bill: Bill }) => {
                     {/* Detalles del Pago */}
                     <div className="flex gap-4 items-center text-left">
                       <div className="bg-white p-3.5 rounded-2xl border border-emerald-100 shadow-sm shadow-emerald-100/20 text-emerald-600">
-                        <Receipt className="w-6 h-6" />
+                        <FaReceipt className="w-6 h-6" />
                       </div>
                       <div className="space-y-0.5">
                         <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest block">Total Cancelado</span>

@@ -1,29 +1,17 @@
-import React from 'react';
-import { Calendar, Clock, MapPin, User, FileText, CheckCircle2, Info } from 'lucide-react';
+import {
+  FaCalendarDays,
+  FaClock,
+  FaLocationDot,
+  FaFileLines,
+  FaCircleCheck,
+  FaCircleInfo,
+} from 'react-icons/fa6';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
-import { Badge } from '../primary/Badge';
 import StaticCard from '../primary/StaticCard';
 
-export const MedicalAppointments = () => {
-  const appointments = [
-    { 
-      especialidad: "Cardiología", 
-      doctor: "Dr. Alejandro Lira", 
-      fecha: "20 de Marzo, 2026",
-      hora: "09:30 AM", 
-      lugar: "Consultorio 402 - Clínica VitalFe & Alegría", 
-      status: "Próxima" 
-    },
-    { 
-      especialidad: "Medicina General", 
-      doctor: "Dra. Elena Rossi", 
-      fecha: "10 de Marzo, 2026",
-      hora: "11:00 AM", 
-      lugar: "Consultorio 105 - Clínica VitalFe & Alegría", 
-      status: "Asistió" 
-    }
-  ];
+export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
+  const appointments: any[] = [];
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
@@ -31,9 +19,18 @@ export const MedicalAppointments = () => {
         <h3 className="text-lg font-bold text-slate-800">Citas Programadas</h3>
       </div>
       
-      {appointments.map((app, i) => (
-        <AppointmentDetailModal key={i} appointment={app} />
-      ))}
+      {appointments.length > 0 ? (
+        appointments.map((app, i) => (
+          <AppointmentDetailModal key={i} appointment={app} />
+        ))
+      ) : (
+        <StaticCard className="p-16 text-center flex flex-col items-center gap-4 border-dashed">
+          <div className="bg-white p-6 rounded-full text-slate-300 shadow-sm">
+            <FaCalendarDays className="w-14 h-14" />
+          </div>
+          <p className="text-slate-800 font-bold text-lg">No hay citas programadas</p>
+        </StaticCard>
+      )}
     </div>
   );
 };
@@ -45,7 +42,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
     <StaticCard className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="flex items-center gap-4">
         <div className="bg-white p-4 rounded-2xl text-blue-600 shadow-sm border border-blue-50">
-          <Calendar className="w-6 h-6" />
+          <FaCalendarDays className="w-6 h-6" />
         </div>
         <div className="text-left">
           <div className="flex items-center gap-2">
@@ -68,10 +65,10 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
 
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-          <Clock className="w-3 h-3 text-blue-500" /> {appointment.hora}
+          <FaClock className="w-3 h-3 text-blue-500" /> {appointment.hora}
         </div>
         <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-          <MapPin className="w-3 h-3 text-red-400" /> {appointment.lugar.split('-')[0]}
+          <FaLocationDot className="w-3 h-3 text-red-400" /> {appointment.lugar.split('-')[0]}
         </div>
       </div>
 
@@ -87,7 +84,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
           <div className="space-y-6">
             <div className={`flex items-center gap-4 p-6 rounded-2xl border ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100'}`}>
               <div className={`${isCompleted ? 'bg-emerald-500' : 'bg-blue-600'} p-3 rounded-xl shadow-lg shadow-emerald-500/20`}>
-                <FileText className="w-6 h-6 text-white" />
+                <FaFileLines className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
                 <p className={`${isCompleted ? 'text-emerald-600' : 'text-blue-600'} text-[10px] font-black uppercase tracking-widest`}>
@@ -115,7 +112,11 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
               </div>
 
               <div className={`p-4 rounded-2xl border flex gap-3 ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>
-                {isCompleted ? <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5" /> : <Info className="w-5 h-5 text-amber-600 mt-0.5" />}
+                {isCompleted ? (
+                  <FaCircleCheck className="w-5 h-5 text-emerald-600 mt-0.5" />
+                ) : (
+                  <FaCircleInfo className="w-5 h-5 text-amber-600 mt-0.5" />
+                )}
                 <p className={`text-[11px] leading-tight font-medium ${isCompleted ? 'text-emerald-700' : 'text-amber-700'}`}>
                   {isCompleted ? 'Esta consulta ya fue procesada y se encuentra en su historial.' : 'Recuerde llegar 15 minutos antes con su identificación vigente.'}
                 </p>

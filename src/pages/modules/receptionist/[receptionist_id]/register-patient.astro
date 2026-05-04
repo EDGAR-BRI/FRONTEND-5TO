@@ -1,6 +1,7 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import RegisterPatientForm from '@/components/react/RegisterPatientForm';
+import { FaArrowLeft, FaCalendarPlus, FaUserPlus } from 'react-icons/fa6';
 ---
 
 <ReceptionistLayout title="Registrar Paciente – Recepción">
@@ -11,13 +12,13 @@ import RegisterPatientForm from '@/components/react/RegisterPatientForm';
       <div>
         <div class="flex items-center gap-2 mb-1">
           <a href="overview" class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors">
-            <i class="fa-solid fa-arrow-left mr-1"></i>Dashboard
+            <FaArrowLeft className="mr-1 inline-block" />Dashboard
           </a>
           <span class="text-cool-gray-30">/</span>
           <span class="text-body-xs text-cool-gray-50">Registrar paciente</span>
         </div>
         <h1 class="text-heading-4 text-primary-800">
-          <i class="fa-solid fa-user-plus text-primary-500 mr-2"></i>
+          <FaUserPlus className="text-primary-500 mr-2 inline-block" />
           Registrar Nuevo Paciente
         </h1>
         <p class="text-body-s text-cool-gray-50 mt-0.5">
@@ -29,7 +30,7 @@ import RegisterPatientForm from '@/components/react/RegisterPatientForm';
         href="appointments"
         class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
       >
-        <i class="fa-solid fa-calendar-plus"></i>
+        <FaCalendarPlus />
         Ir a citas
       </a>
     </div>

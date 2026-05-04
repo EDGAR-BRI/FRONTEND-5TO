@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { FlaskConical, AlertCircle, CheckCircle2, FileText, Activity, Clock } from "lucide-react";
+import {
+  FaChartLine,
+  FaCircleCheck,
+  FaCircleExclamation,
+  FaFileLines,
+  FaFlask,
+  FaRegClock,
+} from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 import { Button } from "../primary/Button";
@@ -12,7 +19,7 @@ const results = [
     date: "Hace 2 horas",
     status: "Crítico",
     statusColor: "text-red-600 bg-red-50 border-red-100",
-    icon: <AlertCircle size={14} />,
+    icon: <FaCircleExclamation size={14} />,
     value: "52.4 ng/L",
     reference: "< 14.0 ng/L",
     notes: "Niveles significativamente elevados. Sugiere daño miocárdico agudo. Requiere atención inmediata y correlación con ECG."
@@ -23,7 +30,7 @@ const results = [
     date: "Hoy, 08:30 AM",
     status: "Normal",
     statusColor: "text-emerald-600 bg-emerald-50 border-emerald-100",
-    icon: <CheckCircle2 size={14} />,
+    icon: <FaCircleCheck size={14} />,
     value: "175 mg/dL",
     reference: "< 200.0 mg/dL",
     notes: "Todos los valores lipídicos se encuentran dentro del rango normal. Mantener dieta y estilo de vida actual."
@@ -34,7 +41,7 @@ const results = [
     date: "Ayer",
     status: "Pendiente Revisión",
     statusColor: "text-blue-600 bg-blue-50 border-blue-100",
-    icon: <FileText size={14} />,
+    icon: <FaFileLines size={14} />,
     value: "Imágenes",
     reference: "N/A",
     notes: "Estudio completado por el equipo técnico. A la espera de la revisión y el informe detallado por el médico cardiólogo."
@@ -49,7 +56,7 @@ export default function RecentResults() {
 
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
-          <FlaskConical size={18} className="text-purple-500" /> Resultados de Laboratorio
+			<FaFlask size={18} className="text-purple-500" /> Resultados de Laboratorio
         </h3>
         <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-wider">
           3 Nuevos
@@ -103,7 +110,7 @@ export default function RecentResults() {
             
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 shrink-0 border border-purple-100">
-                <FlaskConical size={24} />
+				<FaFlask size={24} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
@@ -115,7 +122,7 @@ export default function RecentResults() {
             </div>
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                <Activity size={12} /> Prueba Realizada
+				<FaChartLine size={12} /> Prueba Realizada
               </p>
               <p className="text-lg font-bold text-[#1e3a8a] leading-snug">{selectedResult.test}</p>
             </div>
@@ -125,7 +132,7 @@ export default function RecentResults() {
                 variant="compact"
                 title="FECHA"
                 value={selectedResult.date}
-                icon={<Clock size={20} />}
+				icon={<FaRegClock size={20} />}
                 color="primary"
               />
               <StatsCard
@@ -134,14 +141,14 @@ export default function RecentResults() {
                 value={selectedResult.value}
                 subText={`Ref: ${selectedResult.reference}`}
                 subTextClass="text-slate-500 font-medium"
-                icon={<Activity size={20} />}
+				icon={<FaChartLine size={20} />}
                 color="primary"
               />
             </div>
 
             <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                <FileText size={12}/> Observaciones / Conclusión
+				<FaFileLines size={12}/> Observaciones / Conclusión
               </p>
               <p className="text-sm text-slate-600 leading-relaxed italic">
                 "{selectedResult.notes}"

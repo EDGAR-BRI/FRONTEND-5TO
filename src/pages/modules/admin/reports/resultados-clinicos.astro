@@ -1,0 +1,66 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { Badge } from "@/components/react/primary/Badge";
+import StaticCard from "@/components/react/primary/StaticCard";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaFileCircleCheck, FaHeartPulse, FaShieldHeart } from "react-icons/fa6";
+
+const metrics = [
+  { indicator: "Casos cerrados", goal: "320", actual: "338", status: "Sobre meta" },
+  { indicator: "Complicaciones", goal: "<5%", actual: "3.8%", status: "Controlado" },
+  { indicator: "Seguimientos completos", goal: "85%", actual: "88%", status: "Sobre meta" },
+];
+---
+
+<AdminLayout title="Resultados - Clinicos | Admin">
+  <div class="space-y-6">
+    <a href="/modules/admin/reports/resultados" class="inline-flex items-center gap-2 text-sm text-primary-700 hover:underline">
+      <FaArrowLeft size={12} /> Volver a resultados
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-2xl font-bold text-gray-800">Resultados clinicos</h1>
+      <p class="text-gray-500">Calidad asistencial, efectividad y seguimiento de casos.</p>
+    </header>
+
+    <ReportTimeframeFilters client:visible title="Filtro clinico" subtitle="Revisa resultados clínicos por día, semana, mes o año para comparar calidad y seguimiento." />
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <StatsCard title="Casos exitosos" value="94%" trend="2.2%" trendUp={true} color="success"><FaFileCircleCheck slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Eventos adversos" value="3.8%" trend="0.7%" trendUp={false} color="danger"><FaHeartPulse slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Adherencia protocolo" value="92%" trend="1.5%" trendUp={true} color="primary"><FaShieldHeart slot="icon" size={18} /></StatsCard>
+    </section>
+
+    <StaticCard>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-800">Panel de indicadores</h2>
+          <Badge>Cierre mensual</Badge>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-primary-300">
+            <thead class="bg-primary-300">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Indicador</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Meta</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Real</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-primary-300">
+              {metrics.map((item) => (
+                <tr class="hover:bg-primary-500/20 transition-colors">
+                  <td class="px-4 py-3 text-sm text-cool-gray-90">{item.indicator}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.goal}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.actual}</td>
+                  <td class="px-4 py-3 text-sm text-right text-cool-gray-60">{item.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </StaticCard>
+  </div>
+</AdminLayout>

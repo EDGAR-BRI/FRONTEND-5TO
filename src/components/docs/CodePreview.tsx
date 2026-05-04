@@ -20,6 +20,7 @@ export function CodePreview({ code, children, label }: CodePreviewProps) {
       {/* — CODE BLOCK — */}
       <div className="relative bg-cool-gray-90 overflow-hidden rounded-t-xl">
         <button
+          type="button"
           onClick={handleCopy}
           title="Copiar código"
           className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-md border border-cool-gray-70 bg-cool-gray-80 px-2 py-1 text-[11px] font-mono text-cool-gray-30 transition-colors hover:bg-cool-gray-70 hover:text-white"

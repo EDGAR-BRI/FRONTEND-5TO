@@ -1,5 +1,4 @@
-import React from 'react';
-import { Pill, Save, Info, Plus } from 'lucide-react';
+import { FaPills, FaFloppyDisk, FaCircleInfo, FaPlus } from 'react-icons/fa6';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Field } from '../primary/Field';
 import { Select } from '../primary/Select';
@@ -12,7 +11,7 @@ export const AddMedicationModal = () => {
       modalTitle="Registro de Tratamiento"
       trigger={
         <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-sm shadow-blue-100">
-          <Plus className="w-4 h-4" /> Añadir Medicamento
+          <FaPlus className="w-4 h-4" /> Añadir Medicamento
         </button>
       }
     >
@@ -20,7 +19,7 @@ export const AddMedicationModal = () => {
         <div className="space-y-6">
           <div className="flex items-center gap-4 bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
             <div className="bg-emerald-500 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
-              <Pill className="w-5 h-5 text-white" />
+              <FaPills className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
               <p className="text-emerald-600 text-[10px] font-black uppercase tracking-widest">Nuevo Tratamiento</p>
@@ -50,7 +49,7 @@ export const AddMedicationModal = () => {
           </StaticCard>
 
           <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 text-left">
-            <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <FaCircleInfo className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-[11px] text-amber-700 leading-tight">
               Asegúrese de seguir las indicaciones exactas de su médico.
             </p>
@@ -59,7 +58,7 @@ export const AddMedicationModal = () => {
           <div className="grid grid-cols-2 gap-4">
             <Button label="Cancelar" variant="secondary" onClick={close} adaptive />
             <Button label="Guardar Receta" variant="primary" onClick={close} adaptive>
-              <Save className="w-4 h-4" />
+              <FaFloppyDisk className="w-4 h-4" />
             </Button>
           </div>
         </div>
