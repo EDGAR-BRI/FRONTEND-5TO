@@ -11,6 +11,7 @@ import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 import { Button } from "../primary/Button";
 import { StatsCard } from "../primary/StatsCard";
+import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
 
 const results = [
   {
@@ -48,8 +49,11 @@ const results = [
   }
 ];
 
-export default function RecentResults() {
+export default function RecentResults({ consultations }: { consultations?: ConsultationSummary[] }) {
   const [selectedResult, setSelectedResult] = useState<typeof results[0] | null>(null);
+  
+  // Show default results if no consultations provided
+  const displayResults = consultations && consultations.length > 0 ? [] : results;
 
   return (
     <div className="p-6 h-full flex flex-col">

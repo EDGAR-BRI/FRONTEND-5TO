@@ -1,0 +1,76 @@
+---
+export const prerender = true;
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaMoneyBillTrendUp, FaArrowTrendUp, FaScaleBalanced } from "react-icons/fa6";
+
+const saldosIngresos = [
+  { codigo: "410501", cuenta: "Medicina General", debe: "$0.00", haber: "$18,450", saldo: "$18,450 CR" },
+  { codigo: "410502", cuenta: "Hospitalización", debe: "$0.00", haber: "$12,300", saldo: "$12,300 CR" },
+  { codigo: "410503", cuenta: "Laboratorio Clínico", debe: "$0.00", haber: "$6,150", saldo: "$6,150 CR" },
+  { codigo: "410504", cuenta: "Venta de Farmacia", debe: "$0.00", haber: "$4,100", saldo: "$4,100 CR" },
+];
+---
+
+<AdminLayout title="Ingresos - Ventas por Servicio | Admin">
+  <div class="p-6 md:p-8 space-y-8">
+    <a href="/modules/admin/reports/ingresos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+      <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
+      Volver a ingresos
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Ventas por Servicio (Ingresos)</h1>
+      <p class="text-gray-500 font-medium">Reconocimiento de ingresos devengados y saldos en cuentas de resultado.</p>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Ingresos Operativos" value="$41,000" trend="8.2%" trendUp={true} color="primary">
+        <FaMoneyBillTrendUp slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Margen Bruto" value="62%" trend="1.5%" trendUp={true} color="success">
+        <FaArrowTrendUp slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Punto de Equilibrio" value="Excedido" color="warning">
+        <FaScaleBalanced slot="icon" size={20} />
+      </StatsCard>
+    </section>
+
+    <ReportTimeframeFilters client:load title="Libro Auxiliar de Ingresos" subtitle="Auditoría de asientos contables por concepto de prestación de servicios." />
+
+    <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-xl font-semibold text-gray-800">Saldos de Cuentas (Haber)</h2>
+        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
+            Libro Mayor
+        </span>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-primary-300">
+          <thead class="bg-primary-300">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Código</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Cuenta Contable</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Debe</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Haber</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Saldo</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-primary-300">
+            {saldosIngresos.map((item) => (
+              <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
+                <td class="px-4 py-3 text-xs font-mono text-gray-500">{item.codigo}</td>
+                <td class="px-4 py-3 text-sm text-gray-700 font-medium group-hover:text-primary-900">{item.cuenta}</td>
+                <td class="px-4 py-3 text-sm text-right text-gray-400">{item.debe}</td>
+                <td class="px-4 py-3 text-sm text-right text-emerald-600 font-bold">{item.haber}</td>
+                <td class="px-4 py-3 text-sm text-right font-black text-gray-900">{item.saldo}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</AdminLayout>

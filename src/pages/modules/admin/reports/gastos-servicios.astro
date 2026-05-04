@@ -1,0 +1,82 @@
+---
+export const prerender = true;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaFileInvoice, FaHandHoldingDollar, FaScaleUnbalanced } from "react-icons/fa6";
+
+const providers = [
+  { name: "Mantenimiento Equipos", balance: "$2,540", status: "Pendiente", term: "30 días" },
+  { name: "Servicios Públicos", balance: "$1,620", status: "Pagado", term: "Contado" },
+  { name: "Seguridad Privada", balance: "$4,470", status: "Vencido", term: "15 días" },
+  { name: "Limpieza y Desinfección", balance: "$1,510", status: "Pendiente", term: "30 días" },
+];
+---
+
+<AdminLayout title="Gastos - Servicios y Terceros | Admin">
+  <div class="p-6 md:p-8 space-y-8">
+    
+    <a href="/modules/admin/reports/gastos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+      <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
+      Volver a gastos
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Cuentas por Pagar: Servicios</h1>
+      <p class="text-gray-500 font-medium">Gestión de pasivos corrientes y compromisos con terceros bajo el principio de devengo.</p>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Total Pasivo (Servicios)" value="$10,140" trend="2.1%" trendUp={true} color="primary">
+        <FaHandHoldingDollar slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Facturas por Liquidar" value="8" trend="12.5%" trendUp={false} color="warning">
+        <FaFileInvoice slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Ratio de Solvencia" value="1.8" subText="Corto plazo" color="success">
+        <FaScaleUnbalanced slot="icon" size={20} />
+      </StatsCard>
+    </section>
+
+    <ReportTimeframeFilters client:load title="Libro Auxiliar de Servicios" subtitle="Auditoría de facturación de terceros por periodo contable." />
+
+    <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-xl font-semibold text-gray-800">Estado de Cuentas por Pagar</h2>
+        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
+            Libro de Terceros
+        </span>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-primary-300">
+          <thead class="bg-primary-300">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Proveedor de Servicio</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Saldo Pendiente</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Condición</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-primary-300">
+            {
+              providers.map((item) => (
+                <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
+                  <td class="px-4 py-3 text-sm text-gray-700 font-medium group-hover:text-primary-900">{item.name}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{item.balance}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-600">{item.term}</td>
+                  <td class="px-4 py-3 text-sm text-right font-bold">
+                    <span class={item.status === 'Vencido' ? 'text-red-600' : item.status === 'Pagado' ? 'text-emerald-600' : 'text-amber-600'}>
+                      {item.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</AdminLayout>
