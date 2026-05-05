@@ -4,7 +4,7 @@ import { Button } from '@/components/react/primary/Button';
 import { Field } from '@/components/react/primary/Field';
 import { Select } from '@/components/react/primary/Select';
 import { SearchableSelect } from '@/components/react/primary/SearchableSelect';
-import { getScheduleOverview } from '@/lib/services/scheduling/appointment/appointment.service';
+import { getAppointments } from '@/lib/services/scheduling/appointment/appointment.service';
 import { getPaymentMethods } from '@/lib/services/finance/payment-method/payment_method.service';
 import { getExchangeRates } from '@/lib/services/finance/exchange-rate/exchange_rate.service';
 import { addInvoice } from '@/lib/services/finance/invoice/invoice.service';
@@ -16,6 +16,7 @@ import type { ExchangeRate } from '@/lib/services/finance/exchange-rate/exchange
 import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
 import type { Patient } from '@/lib/services/medical/patient/patient.interface';
 import { Spinner } from '@/components/react/primary/Spinner';
+import { Alert } from '@/utils/alerts';
 
 interface Props {
     isOpen: boolean;
@@ -51,14 +52,27 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
     const [newPaymentMethodId, setNewPaymentMethodId] = useState<string | number>('');
     const [newAmount, setNewAmount] = useState<string>('');
 
+    const resetForm = () => {
+        setSelectedAppointmentId('');
+        setPayments([]);
+        setPayerPatients([]);
+        setSelectedPayerId('');
+        setNewPaymentMethodId('');
+        setNewAmount('');
+        setErrorMsg(null);
+    };
+
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen) {
+            resetForm();
+            return;
+        }
 
         const fetchData = async () => {
             setLoading(true);
             try {
                 const [apps, methods, rates] = await Promise.all([
-                    getScheduleOverview({ range: 'today' }), 
+                    getAppointments({ range: 'today', statusId: 1}), 
                     getPaymentMethods(),
                     getExchangeRates()
                 ]);
@@ -132,6 +146,20 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
         return cur.includes('ves') || cur.includes('bolívar') || cur.includes('bolivar') || cur.includes('bs');
     };
 
+    const handleMethodChange = (val: string | number) => {
+        setNewPaymentMethodId(val);
+        const method = paymentMethods.find(m => m.id === Number(val));
+        if (method && remaining > 0) {
+            if (isVES(method) && exchangeRate) {
+                setNewAmount((remaining * Number(exchangeRate.rate)).toString());
+            } else {
+                setNewAmount(remaining.toString());
+            }
+        } else {
+            setNewAmount('');
+        }
+    };
+
     const handleAddPayment = () => {
         const method = paymentMethods.find(m => m.id === Number(newPaymentMethodId));
         if (!method || !newAmount || isNaN(Number(newAmount))) return;
@@ -166,6 +194,17 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
     const handleSubmit = async () => {
         if (!selectedAppointment || !exchangeRate) return;
         
+        if (totalPaid > selectedAppointment.price) {
+            const difference = totalPaid - selectedAppointment.price;
+            const proceed = await Alert.confirm(
+                'Monto Excedente',
+                `El monto de los pagos agregados supera el costo de la cita por $${difference.toFixed(2)}. ¿Desea proceder con el registro de la factura?`,
+                'Sí, proceder',
+                'Cancelar'
+            );
+            if (!proceed) return;
+        }
+
         setSubmitting(true);
         setErrorMsg(null);
         try {
@@ -263,12 +302,12 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                         <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-primary-700 font-medium">Monto Total Cita:</span>
-                                <span className="text-primary-900 font-bold text-lg">${selectedAppointment.price}</span>
+                                <span className="text-primary-900 font-bold text-lg">${selectedAppointment.price.toString()}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-primary-600">Restante por pagar:</span>
-                                <span className={`font-semibold ${remaining > 0 ? 'text-error' : 'text-success'}`}>
-                                    ${remaining.toFixed(2)}
+                                <span className={`font-semibold ${totalPaid >= selectedAppointment.price ? 'text-success' : 'text-error'}`}>
+                                    ${Math.max(0, remaining).toString()}
                                 </span>
                             </div>
                         </div>
@@ -282,7 +321,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                                 const method = paymentMethods.find(m => m.id === p.paymentMethodId);
                                 return (
                                     <div key={i} className="flex justify-between items-center bg-white p-2 rounded border border-primary-100 text-sm">
-                                        <span>{method?.name} - <span className="font-semibold">${p.amount_paid.toFixed(2)}</span> {isVES(method) && exchangeRate && <span className="text-xs text-primary-400">(Bs {(p.amount_paid * Number(exchangeRate.rate)).toFixed(2)})</span>} {p.igtf_amount > 0 && <span className="text-xs text-primary-500">(IGTF: ${p.igtf_amount.toFixed(2)})</span>}</span>
+                                        <span>{method?.name} - <span className="font-semibold">${p.amount_paid.toString()}</span> {isVES(method) && exchangeRate && <span className="text-xs text-primary-400">(Bs {(p.amount_paid * Number(exchangeRate.rate)).toString()})</span>} {p.igtf_amount > 0 && <span className="text-xs text-primary-500">(IGTF: ${p.igtf_amount.toString()})</span>}</span>
                                         <button onClick={() => handleRemovePayment(i)} className="text-error hover:underline text-xs">Eliminar</button>
                                     </div>
                                 );
@@ -290,34 +329,46 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                             {payments.length === 0 && <p className="text-xs text-primary-500 italic text-center py-2">No hay pagos agregados.</p>}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end bg-primary-50/50 p-3 rounded-lg border border-dashed border-primary-300">
-                            <div className="md:col-span-1">
-                                <Select
-                                    label="Método"
-                                    options={methodOptions}
-                                    value={newPaymentMethodId}
-                                    onChange={(val) => setNewPaymentMethodId(val)}
-                                    placeholder="Seleccionar"
-                                    name="method"
-                                />
+                        <div className="bg-primary-50/50 p-3 rounded-lg border border-dashed border-primary-300 space-y-3">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                                <div className="md:col-span-1">
+                                    <Select
+                                        label="Método"
+                                        options={methodOptions}
+                                        value={newPaymentMethodId}
+                                        onChange={handleMethodChange}
+                                        placeholder="Seleccionar"
+                                        name="method"
+                                    />
+                                </div>
+                                <div className="md:col-span-1">
+                                    <Field
+                                        label={selectedMethod && isVES(selectedMethod) ? 'Monto (Bs)' : 'Monto ($)'}
+                                        type="number"
+                                        name="amount"
+                                        value={newAmount}
+                                        onChange={(e) => setNewAmount(e.target.value)}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="md:col-span-1">
+                                    <Button 
+                                        label="Agregar" 
+                                        onClick={handleAddPayment} 
+                                        variant="secondary" 
+                                        className="w-full"
+                                        disabled={!newAmount || !newPaymentMethodId}
+                                    />
+                                </div>
                             </div>
-                            <div className="md:col-span-1">
-                                <Field
-                                    label={selectedMethod && isVES(selectedMethod) ? 'Monto (Bs)' : 'Monto ($)'}
-                                    type="number"
-                                    name="amount"
-                                    value={newAmount}
-                                    onChange={(e) => setNewAmount(e.target.value)}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <Button 
-                                label="Agregar" 
-                                onClick={handleAddPayment} 
-                                variant="secondary" 
-                                className="w-full"
-                                disabled={!newAmount || !newPaymentMethodId}
-                            />
+                            {selectedMethod && isVES(selectedMethod) && exchangeRate && (
+                                <div className="flex justify-between items-center text-[11px] text-primary-600 px-1 border-t border-primary-200/60 pt-2">
+                                    <span>Tasa BCV: <b>1$ = {Number(exchangeRate.rate).toString()} Bs</b></span>
+                                    <span>
+                                        Equivalente: <b className="text-primary-800">${(Number(newAmount || 0) / Number(exchangeRate.rate)).toString()}</b>
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
