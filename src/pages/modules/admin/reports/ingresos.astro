@@ -1,0 +1,178 @@
+---
+export const prerender = false;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ActionCard from "@/components/react/primary/ActionCard";
+import { Button } from "@/components/react/primary/Button";
+import StaticCard from "@/components/react/primary/StaticCard";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import {
+    FaArrowRight,
+    FaFileInvoice,
+    FaStethoscope,
+    FaHandHoldingMedical,
+    FaChartLine,
+    FaFilePdf,
+    FaPrint,
+    FaSackDollar,
+    FaMoneyCheckDollar
+} from "react-icons/fa6";
+
+const revenueBreakdown = [
+    { category: "Servicios Ambulatorios", amount: "$18,450", weight: "45%" },
+    { category: "Hospitalización", amount: "$12,300", weight: "30%" },
+    { category: "Laboratorio y Diagnóstico", amount: "$6,150", weight: "15%" },
+    { category: "Farmacia Interna", amount: "$4,100", weight: "10%" },
+];
+
+const coreRevenueModules = [
+    {
+        title: "Ventas por Servicio",
+        description: "Desglose de ingresos operativos por especialidad y unidad de negocio.",
+        href: "/modules/admin/reports/ingresos-servicios",
+        badge: "Ingreso Bruto",
+        icon: FaStethoscope
+    },
+    {
+        title: "Cuentas por Cobrar",
+        description: "Gestión de activos corrientes: facturas pendientes de aseguradoras y pacientes.",
+        href: "/modules/admin/reports/ingresos-cartera",
+        badge: "Cartera",
+        icon: FaFileInvoice
+    },
+    {
+        title: "Recaudación y Caja",
+        description: "Liquidación de ingresos efectivos, medios de pago y flujo de efectivo real.",
+        href: "/modules/admin/reports/ingresos-recaudacion",
+        badge: "Flujo Efectivo",
+        icon: FaMoneyCheckDollar
+    },
+];
+---
+
+<AdminLayout title="Gestión de Ingresos | Admin">
+    <div class="p-6 md:p-8 space-y-8">
+        
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte de Ingresos</h1>
+                <p class="text-gray-500 mt-1">Análisis de facturación, activos corrientes y realización del ingreso.</p>
+            </div>
+            <div class="flex gap-3">
+                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
+                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+            </div>
+        </header>
+
+        {/* TARJETAS DE ESTADÍSTICAS - ENFOQUE PATRIMONIAL */}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard title="Ingreso Bruto Total" value="$41,000" trend="8.2%" trendUp={true} color="success">
+                <FaSackDollar slot="icon" size={20} />
+            </StatsCard>
+            
+            <StatsCard title="Cuentas por Cobrar (Activo)" value="$12,840" trend="3.5%" trendUp={true} color="warning">
+                <FaFileInvoice slot="icon" size={20} />
+            </StatsCard>
+
+            <StatsCard title="Margen de Contribución" value="62%" trend="1.2%" trendUp={true} color="primary">
+                <FaChartLine slot="icon" size={20} />
+            </StatsCard>
+
+            <StatsCard title="Días en Cartera (Promedio)" value="24" trend="2.1%" trendUp={false} color="success">
+                <FaHandHoldingMedical slot="icon" size={20} />
+            </StatsCard>
+        </section>
+
+        {/* FILTROS */}
+        <ReportTimeframeFilters client:load title="Filtros de Ingresos" subtitle="Auditoría de ingresos por ciclo contable: diario, semanal, mensual o anual." />
+
+        <div class="space-y-8 mt-8">
+            <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="xl:col-span-2 space-y-6">
+                    <div class="flex items-center justify-between px-1">
+                        <h2 class="text-2xl font-bold text-gray-800">Ciclo de Ingresos Operativos</h2>
+                        <span class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary-100 text-primary-600 border border-primary-200 shadow-sm">
+                            Realización del Ingreso
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                        {coreRevenueModules.map((report) => (
+                            <a href={report.href} class="block group">
+                                <ActionCard className="h-full p-6 items-start justify-between border-primary-100 hover:border-primary-500 transition-all shadow-sm hover:shadow-md">
+                                    <div class="space-y-4">
+                                        <div class="flex justify-between items-start">
+                                            <span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight bg-primary-50 text-primary-600 border border-primary-100 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                                                {report.badge}
+                                            </span>
+                                            <report.icon className="text-primary-300 group-hover:text-primary-500 transition-colors" size={22} />
+                                        </div>
+                                        
+                                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-primary-600 transition-colors leading-tight">
+                                            {report.title}
+                                        </h3>
+                                        
+                                        <p class="text-sm text-gray-500 leading-relaxed font-medium">
+                                            {report.description}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="text-primary-400 mt-4 group-hover:text-primary-600 group-hover:translate-x-1 transition-all">
+                                        <FaArrowRight size={18} />
+                                    </div>
+                                </ActionCard>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ALERTAS DE INGRESOS */}
+                <div class="h-full">
+                    <StaticCard className="h-full border-primary-200 flex flex-col justify-center p-6">
+                        <div class="space-y-6">
+                            <h2 class="text-base font-black text-gray-400 uppercase tracking-[0.15em]">
+                                Alertas de Cartera
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="p-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm flex gap-3 items-start shadow-sm">
+                                    <FaFileInvoice className="mt-1 flex-shrink-0" size={16} />
+                                    <span class="font-medium leading-tight">Facturación de Aseguradora XYZ presenta mora mayor a 60 días.</span>
+                                </div>
+                                <div class="p-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm flex gap-3 items-start shadow-sm">
+                                    <FaMoneyCheckDollar className="mt-1 flex-shrink-0" size={16} />
+                                    <span class="font-medium leading-tight">Meta de recaudación efectiva superada por 15% esta semana.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </StaticCard>
+                </div>
+            </section>
+
+            {/* TABLA DE INGRESOS */}
+            <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800">Composición del Ingreso Operativo</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-primary-300">
+                        <thead class="bg-primary-300">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Centro de Costo / Servicio</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ingreso Facturado</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Peso en Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary-300">
+                            {revenueBreakdown.map((item) => (
+                                <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
+                                    <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{item.category}</td>
+                                    <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{item.amount}</td>
+                                    <td class="px-4 py-3 text-sm text-right text-cool-gray-60 font-bold">{item.weight}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+</AdminLayout>
