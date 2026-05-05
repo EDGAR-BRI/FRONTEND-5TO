@@ -1,341 +1,41 @@
 ---
-import ReceptionistLayout from "@/layouts/ReceptionistLayout.astro";
-import DoctorScheduleCalendar from "@/components/react/DoctorScheduleCalendar";
-import { ReceptionistStatsSummary } from "@/components/react/receptionist/ReceptionistStatsSummary";
+import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
+import { ReceptionistStatsSummary } from '@/components/react/receptionist/ReceptionistStatsSummary';
+import DoctorScheduleCalendarWrapper from '@/components/react/DoctorScheduleCalendarWrapper';
 import {
   FaArrowLeft,
-  FaCalendarCheck,
   FaCalendarPlus,
-  FaCalendarWeek,
-  FaCircleCheck,
-  FaClock,
   FaSliders,
-  FaTableCellsLarge,
-  FaUserDoctor,
-} from "react-icons/fa6";
+} from 'react-icons/fa6';
 
 const { receptionist_id: _receptionist_id } = Astro.params;
-const viewParam = Astro.url.searchParams.get("view");
+const viewParam = Astro.url.searchParams.get('view');
 const initialView =
-  viewParam === "day" || viewParam === "agenda" ? viewParam : "week";
-
-// ─── Mock data based on DB schema ───────────────────────────────────────────
-// UserDoctor → User join gives us name + specialty
-// ScheduleCycle → ScheduleWeek → ScheduleDay gives us shift windows per employee
-// Appoinment + Form → User gives us booked appointments per doctor
-
-const doctors = [
-  { id: 1, name: "Dr. Carlos Méndez", specialty: "Medicina General" },
-  { id: 2, name: "Dra. Luisa Vargas", specialty: "Cardiología" },
-  { id: 3, name: "Dra. Patricia Mora", specialty: "Ginecología" },
-  { id: 4, name: "Dr. Héctor Torres", specialty: "Traumatología" },
-  { id: 5, name: "Dra. Valentina Ríos", specialty: "Pediatría" },
-];
-
-// ScheduleDay rows for the active ScheduleCycle (dayOfWeek: 1=Mon … 5=Fri)
-const shiftsByDoctorId: Record<
-  number,
-  { dayOfWeek: number; startsAt: string; endsAt: string }[]
-> = {
-  1: [
-    { dayOfWeek: 1, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 2, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 3, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 4, startsAt: "07:30", endsAt: "13:00" },
-    { dayOfWeek: 5, startsAt: "07:30", endsAt: "13:00" },
-  ],
-  2: [
-    { dayOfWeek: 1, startsAt: "08:00", endsAt: "14:00" },
-    { dayOfWeek: 3, startsAt: "08:00", endsAt: "14:00" },
-    { dayOfWeek: 5, startsAt: "08:00", endsAt: "14:00" },
-  ],
-  3: [
-    { dayOfWeek: 2, startsAt: "09:00", endsAt: "13:00" },
-    { dayOfWeek: 4, startsAt: "09:00", endsAt: "13:00" },
-  ],
-  4: [
-    { dayOfWeek: 1, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 2, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 3, startsAt: "08:30", endsAt: "12:30" },
-    { dayOfWeek: 4, startsAt: "08:30", endsAt: "12:30" },
-  ],
-  5: [
-    { dayOfWeek: 2, startsAt: "10:00", endsAt: "14:00" },
-    { dayOfWeek: 4, startsAt: "10:00", endsAt: "14:00" },
-    { dayOfWeek: 5, startsAt: "10:00", endsAt: "14:00" },
-  ],
-};
-
-// Appoinment rows with scheduled_range parsed into start/end + Form+User for patient name
-const appointmentsByDoctorId: Record<
-  number,
-  {
-    id: number;
-    scheduledStart: string;
-    scheduledEnd: string;
-    patientName: string;
-    reason: string;
-    status: "Realizada" | "Confirmada" | "Sin Confirmar" | "Cancelada";
-    type: string;
-    price: string;
-  }[]
-> = {
-  1: [
-    {
-      id: 101,
-      scheduledStart: "2026-03-02 08:00",
-      scheduledEnd: "2026-03-02 08:30",
-      patientName: "Ana Sofía Parra",
-      reason: "Control de rutina",
-      status: "Realizada",
-      type: "Presencial",
-      price: "$40",
-    },
-    {
-      id: 102,
-      scheduledStart: "2026-03-02 09:00",
-      scheduledEnd: "2026-03-02 09:30",
-      patientName: "Luis Eduardo Blanco",
-      reason: "Revisión de exámenes",
-      status: "Realizada",
-      type: "Presencial",
-      price: "$40",
-    },
-    {
-      id: 103,
-      scheduledStart: "2026-03-02 10:00",
-      scheduledEnd: "2026-03-02 10:30",
-      patientName: "Carmen Rosa Fuentes",
-      reason: "Resfriado persistente",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$40",
-    },
-    {
-      id: 104,
-      scheduledStart: "2026-03-02 11:00",
-      scheduledEnd: "2026-03-02 11:30",
-      patientName: "José Ramón Blanco",
-      reason: "Dolor de cabeza crónico",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$40",
-    },
-    {
-      id: 115,
-      scheduledStart: "2026-03-03 08:00",
-      scheduledEnd: "2026-03-03 08:30",
-      patientName: "María Rodríguez",
-      reason: "Seguimiento HTA",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$40",
-    },
-    {
-      id: 116,
-      scheduledStart: "2026-03-03 09:30",
-      scheduledEnd: "2026-03-03 10:00",
-      patientName: "Roberto Fuentes",
-      reason: "Chequeo general",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$40",
-    },
-    {
-      id: 125,
-      scheduledStart: "2026-03-04 07:30",
-      scheduledEnd: "2026-03-04 08:00",
-      patientName: "Carlos Linares",
-      reason: "Control diabetes",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$40",
-    },
-  ],
-  2: [
-    {
-      id: 201,
-      scheduledStart: "2026-03-02 08:30",
-      scheduledEnd: "2026-03-02 09:00",
-      patientName: "Jorge Luis Rivas",
-      reason: "Seguimiento post-op",
-      status: "Realizada",
-      type: "Presencial",
-      price: "$80",
-    },
-    {
-      id: 202,
-      scheduledStart: "2026-03-02 10:00",
-      scheduledEnd: "2026-03-02 10:30",
-      patientName: "Beatriz Leal",
-      reason: "Electrocardiograma",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$80",
-    },
-    {
-      id: 203,
-      scheduledStart: "2026-03-02 12:00",
-      scheduledEnd: "2026-03-02 12:30",
-      patientName: "Ramón Díaz",
-      reason: "Dolor precordial",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$80",
-    },
-    {
-      id: 215,
-      scheduledStart: "2026-03-04 09:00",
-      scheduledEnd: "2026-03-04 09:30",
-      patientName: "Sandra Torres",
-      reason: "Revisión holter",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$80",
-    },
-    {
-      id: 216,
-      scheduledStart: "2026-03-06 08:00",
-      scheduledEnd: "2026-03-06 08:30",
-      patientName: "Luis Pérez",
-      reason: "Control hipertensión",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$80",
-    },
-  ],
-  3: [
-    {
-      id: 301,
-      scheduledStart: "2026-03-03 09:00",
-      scheduledEnd: "2026-03-03 09:30",
-      patientName: "Marta Elena Cruz",
-      reason: "Consulta general",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$60",
-    },
-    {
-      id: 302,
-      scheduledStart: "2026-03-03 10:30",
-      scheduledEnd: "2026-03-03 11:00",
-      patientName: "Andrea Salazar",
-      reason: "Control prenatal",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$60",
-    },
-    {
-      id: 315,
-      scheduledStart: "2026-03-05 09:30",
-      scheduledEnd: "2026-03-05 10:00",
-      patientName: "Isabel Moreno",
-      reason: "Ecografía obstétrica",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$60",
-    },
-  ],
-  4: [
-    {
-      id: 401,
-      scheduledStart: "2026-03-02 09:30",
-      scheduledEnd: "2026-03-02 10:00",
-      patientName: "Ramón Díaz Solano",
-      reason: "Dolor lumbar persistente",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$55",
-    },
-    {
-      id: 402,
-      scheduledStart: "2026-03-03 08:30",
-      scheduledEnd: "2026-03-03 09:00",
-      patientName: "Pablo Guerrero",
-      reason: "Fractura de tobillo",
-      status: "Realizada",
-      type: "Presencial",
-      price: "$55",
-    },
-  ],
-  5: [
-    {
-      id: 501,
-      scheduledStart: "2026-03-02 10:00",
-      scheduledEnd: "2026-03-02 10:30",
-      patientName: "Carmen Rosa Fuentes",
-      reason: "Vacunación",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$30",
-    },
-    {
-      id: 502,
-      scheduledStart: "2026-03-04 10:30",
-      scheduledEnd: "2026-03-04 11:00",
-      patientName: "Laura Jiménez",
-      reason: "Control de peso y talla",
-      status: "Confirmada",
-      type: "Presencial",
-      price: "$30",
-    },
-    {
-      id: 503,
-      scheduledStart: "2026-03-06 11:00",
-      scheduledEnd: "2026-03-06 11:30",
-      patientName: "Tomás Vega",
-      reason: "Infección respiratoria",
-      status: "Sin Confirmar",
-      type: "Presencial",
-      price: "$30",
-    },
-  ],
-};
-
-// Summary stats
-const totalShiftsToday = doctors.length;
-const totalApts = Object.values(appointmentsByDoctorId).flat().length;
-const confirmedApts = Object.values(appointmentsByDoctorId)
-  .flat()
-  .filter((a) => a.status === "Confirmada" || a.status === "Realizada").length;
-const pendingApts = Object.values(appointmentsByDoctorId)
-  .flat()
-  .filter((a) => a.status === "Sin Confirmar").length;
+  viewParam === 'day' || viewParam === 'agenda' ? viewParam : 'week';
 ---
 
 <script>
   function scrollToCalendar() {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("view") !== "day") return;
-    const el = document.getElementById("calendar");
+    if (params.get('view') !== 'day') return;
+    const el = document.getElementById('calendar');
     if (!el) return;
-    // getBoundingClientRect().top is viewport-relative. Add window.scrollY to get absolute document position.
     const absoluteTop = el.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: absoluteTop, behavior: "smooth" });
+    window.scrollTo({ top: absoluteTop, behavior: 'smooth' });
   }
 
-  // After Astro ClientRouter navigation (view transitions)
-  document.addEventListener("astro:page-load", () =>
+  document.addEventListener('astro:page-load', () =>
     setTimeout(scrollToCalendar, 200),
   );
-  // On direct page load, wait for full render+hydration before computing positions
-  window.addEventListener("load", () => setTimeout(scrollToCalendar, 200));
+  window.addEventListener('load', () => setTimeout(scrollToCalendar, 200));
 </script>
 
 <ReceptionistLayout title="Horarios – Recepción">
-  <div
-    class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in w-full min-w-0 overflow-x-hidden"
-  >
-    <!-- ─── Header ─────────────────────────────────────────────────────────── -->
-    <div
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-    >
+  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in w-full min-w-0 overflow-x-hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <div class="flex items-center gap-2 mb-1">
-          <a
-            href="overview"
-            class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors"
-          >
+          <a href="overview" class="text-primary-500 hover:text-primary-700 text-body-xs font-medium transition-colors">
             <FaArrowLeft className="mr-1 inline-block" />Dashboard
           </a>
           <span class="text-cool-gray-30">/</span>
@@ -365,125 +65,8 @@ const pendingApts = Object.values(appointmentsByDoctorId)
       </div>
     </div>
 
-  <!-- ─── Mini stats ──────────────────────────────────────────────────────── -->
-  <ReceptionistStatsSummary
-    client:load
-    stats={[
-      {
-        label: "Médicos en turno",
-        value: String(totalShiftsToday),
-        icon: FaUserDoctor,
-        color: "primary",
-      },
-      {
-        label: "Total citas (semana)",
-        value: String(totalApts),
-        icon: FaCalendarCheck,
-        color: "success",
-      },
-      {
-        label: "Confirmadas / Realizadas",
-        value: String(confirmedApts),
-        icon: FaCircleCheck,
-        color: "success",
-      },
-      {
-        label: "Sin confirmar",
-        value: String(pendingApts),
-        icon: FaClock,
-        color: "warning",
-      },
-    ]}
-  />
-</div>
+    <ReceptionistStatsSummary client:visible />
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <!-- ─── Doctor shift reference table ──────────────────────────────────── -->
-  <div
-    class="bg-white rounded-xl border mt-4 border-primary-200 shadow-sm overflow-hidden"
-  >
-    <div
-      class="px-5 py-4 border-b border-primary-200 flex items-center justify-between"
-    >
-      <h2 class="text-heading-6 text-primary-800">
-        <FaTableCellsLarge className="text-primary-500 mr-2 inline-block" />
-        Turnos de la semana
-      </h2>
-      <span class="text-body-xxs text-cool-gray-50">Ciclo semanal vigente</span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-body-xs">
-        <thead>
-          <tr
-            class="text-left text-cool-gray-50 border-b border-primary-100 bg-primary-50"
-          >
-            <th class="px-4 py-2.5 font-semibold">Médico</th>
-            <th class="px-4 py-2.5 font-semibold">Especialidad</th>
-            <th class="px-4 py-2.5 font-semibold">Lun</th>
-            <th class="px-4 py-2.5 font-semibold">Mar</th>
-            <th class="px-4 py-2.5 font-semibold">Mié</th>
-            <th class="px-4 py-2.5 font-semibold">Jue</th>
-            <th class="px-4 py-2.5 font-semibold">Vie</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-primary-100">
-          {
-            doctors.map((doc) => {
-              const shifts = shiftsByDoctorId[doc.id] ?? [];
-              const byDay: { [key: number]: string } = {};
-              for (const s of shifts) {
-                byDay[s.dayOfWeek] = `${s.startsAt}–${s.endsAt}`;
-              }
-              return (
-                <tr class="hover:bg-primary-50 transition-colors">
-                  <td class="px-4 py-3 font-semibold text-primary-800">
-                    {doc.name}
-                  </td>
-                  <td class="px-4 py-3 text-cool-gray-60">{doc.specialty}</td>
-                  {[1, 2, 3, 4, 5].map((d) => (
-                    <td class="px-4 py-3">
-                      {byDay[d] ? (
-                        <span class="font-mono text-primary-700 text-body-xxs">
-                          {byDay[d]}
-                        </span>
-                      ) : (
-                        <span class="text-cool-gray-30">—</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })
-          }
-        </tbody>
-      </table>
-    </div>
+    <DoctorScheduleCalendarWrapper client:load initialView={initialView} />
   </div>
-
-  <!-- ─── Interactive calendar ────────────────────────────────────────────── -->
-  <div
-    id="calendar"
-    class="bg-white rounded-xl border border-primary-200 shadow-sm p-5 mt-4"
-  >
-    <div class="mb-4">
-      <h2 class="text-heading-6 text-primary-800">
-        <FaCalendarWeek className="text-primary-500 mr-2 inline-block" />
-        Vista de citas por médico
-      </h2>
-      <p class="text-body-xs text-cool-gray-50 mt-0.5">
-        Las franjas azules representan el turno programado. Haz clic en una cita
-        para ver detalles.
-      </p>
-    </div>
-
-    <DoctorScheduleCalendar
-      client:only="react"
-      doctors={doctors}
-      shiftsByDoctorId={shiftsByDoctorId}
-      appointmentsByDoctorId={appointmentsByDoctorId}
-      heightPx={620}
-      initialView={initialView}
-    />
-  </div>
-</div>
 </ReceptionistLayout>

@@ -1,0 +1,17 @@
+---
+import MainLayout from '@/layouts/AdminLayout.astro';
+import ExpenseCategoryDashboard from '@/components/react/admin/finance/ExpenseCategoryDashboard';
+---
+
+<MainLayout title="Admin | Servicios Generales">
+	<section class="p-8 space-y-6">
+		<header class="space-y-1">
+			<h1 class="text-2xl font-semibold text-primary-800">Gestión de servicios generales</h1>
+			<p class="text-sm text-cool-gray-70">
+				Catálogo de servicios generales y operativos de la clínica (agua, luz, internet, etc).
+			</p>
+		</header>
+
+		<ExpenseCategoryDashboard client:only="react" />
+	</section>
+</MainLayout>

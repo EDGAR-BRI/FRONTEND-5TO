@@ -1,0 +1,11 @@
+---
+import MainLayout from '@/layouts/AdminLayout.astro';
+import CurrentMonthPayroll from '@/components/react/admin/finance/CurrentMonthPayroll';
+---
+
+<MainLayout title="Admin | Current Month Payroll">
+    <section class="p-8">
+        <h1 class="text-2xl font-semibold text-primary-800 mb-6">Current Month Payroll</h1>
+        <CurrentMonthPayroll client:visible />
+    </section>
+</MainLayout>

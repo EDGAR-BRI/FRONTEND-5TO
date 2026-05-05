@@ -9,6 +9,9 @@ import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
 import { FaRegCalendarXmark, FaUserDoctor } from 'react-icons/fa6'
+import type { DoctorSchedConfigOption } from "@/lib/services/medical/doctor/doctor.interface";
+import { getAppointmentsByDr } from '@/lib/services/scheduling/appointment/appointment.service'
+import { formatAppointmentsByDoctorId, convertirAHHMM } from '@/utils/helper_functions'
 
 
 export interface DoctorInfo {
@@ -30,7 +33,7 @@ export interface BookedAppointment {
   scheduledEnd: string
   patientName: string
   reason: string
-  status: 'Realizada' | 'Confirmada' | 'Sin Confirmar' | 'Cancelada'
+  status: string
   type: string
   price: string
 }
@@ -44,14 +47,17 @@ type CalendarEvent = {
 }
 
 export interface DoctorScheduleCalendarProps {
-  doctors: DoctorInfo[]
-  /** shiftsByDoctorId[doctorId] = array of shift day rules for the active ScheduleCycle */
-  shiftsByDoctorId: Record<number, ShiftDay[]>
-  /** appointmentsByDoctorId[doctorId] = booked appointments */
-  appointmentsByDoctorId: Record<number, BookedAppointment[]>
+  doctors: DoctorSchedConfigOption[]
+  allSchedules: { id: number, doctorId: number, period_start: string, period_end: string | null }[]
+  allAvailabilities: { doctorScheduleId?: number, day_of_week: number, start_time: string, end_time: string }[]
   heightPx?: number
-  /** 'week' (default) or 'day' to start the calendar in day view */
   initialView?: 'week' | 'day' | 'agenda'
+  /** Controlled selected doctor — null means none selected yet */
+  selectedDoctorId?: number | null
+  /** Callback when a doctor pill is clicked */
+  onDoctorSelect?: (docId: number) => void
+  /** Show a loading overlay over the calendar */
+  loadingSchedules?: boolean
 }
 
 const locales = { es }
@@ -95,41 +101,64 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 function parseDateTime(str: string): Date {
-  return new Date(str.includes('T') ? str : str.replace(' ', 'T'))
+  // Para evitar desfases por zona horaria al mostrar citas (Literal UTC):
+  // Eliminamos la 'Z' para que el navegador lo parsee como hora local y se vea exactamente lo guardado.
+  const cleanStr = str.replace('Z', '').replace(' ', 'T')
+  return new Date(cleanStr)
 }
 
-function buildShiftEvents(shifts: ShiftDay[], referenceDate: Date) {
-  const monday = startOfWeek(referenceDate, { weekStartsOn: 1 })
-  const events: CalendarEvent[] = []
 
-  for (const shift of shifts) {
-    // dayOfWeek:1=Mon…7=Sun → addDays from monday: Mon=0, Tue=1…
-    const day = addDays(monday, shift.dayOfWeek - 1)
-    const [sh, sm] = shift.startsAt.split(':').map(Number)
-    const [eh, em] = shift.endsAt.split(':').map(Number)
-    events.push({
-      title: 'Turno',
-      start: setMinutes(setHours(day, sh), sm),
-      end: setMinutes(setHours(day, eh), em),
-    })
-  }
-  return events
-}
 
 
 export default function DoctorScheduleCalendar({
   doctors,
-  shiftsByDoctorId,
-  appointmentsByDoctorId,
+  allSchedules,
+  allAvailabilities,
   heightPx = 640,
   initialView = 'week',
+  selectedDoctorId: controlledDocId,
+  onDoctorSelect,
+  loadingSchedules = false,
 }: DoctorScheduleCalendarProps) {
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number>(doctors[0]?.id ?? 0)
+  // Support both controlled (prop) and uncontrolled (internal) selection
+  const [internalDocId, setInternalDocId] = useState<number | null>(null)
+  const isControlled = controlledDocId !== undefined
+  const selectedDoctorId = isControlled ? controlledDocId : internalDocId
+
+  const handleDoctorPillClick = (docId: number) => {
+    if (!isControlled) setInternalDocId(docId)
+    onDoctorSelect?.(docId)
+  }
+
   const [referenceDate, setReferenceDate] = useState(new Date())
   const [selectedApt, setSelectedApt] = useState<BookedAppointment | null>(null)
   const { isOpen, openModal, closeModal } = useModal(false)
 
-  // ── Responsive: lock to agenda view on narrow screens ──────────────────
+  // ── Appointments fetch por doctor ───────────────────────────────────────
+  const [appointmentsByDoctorId, setAppointmentsByDoctorId] = useState<Record<number, BookedAppointment[]>>({})
+  const [loadingApts, setLoadingApts] = useState(false)
+
+  useEffect(() => {
+    // Don't fetch if no doctor selected
+    if (selectedDoctorId === null || selectedDoctorId === 0) return
+    // Si ya están cacheados, no volver a pedir
+    if (appointmentsByDoctorId[selectedDoctorId]) return
+
+    setLoadingApts(true)
+    getAppointmentsByDr(selectedDoctorId)
+      .then(raw => {
+        const formatted = formatAppointmentsByDoctorId(raw)
+        console.log(formatted)
+        setAppointmentsByDoctorId(prev => ({
+          ...prev,
+          [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
+        }))
+      })
+      .catch(err => console.error('Error fetching appointments:', err))
+      .finally(() => setLoadingApts(false))
+  }, [selectedDoctorId])
+
+  // ── Responsive ──────────────────────────────────────────────────────────
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 640px)')
@@ -138,11 +167,12 @@ export default function DoctorScheduleCalendar({
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
-  const closeAndClear = () => { closeModal(); setSelectedApt(null) }
 
-  const doctor = doctors.find(d => d.id === selectedDoctorId)
+  const closeAndClear = () => { closeModal(); setSelectedApt(null) }
+  const doctor = selectedDoctorId !== null ? doctors.find(d => d.id === selectedDoctorId) : null
 
   const aptEvents = useMemo(() => {
+    if (selectedDoctorId === null || selectedDoctorId === 0) return []
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
     return apts.map<CalendarEvent>(apt => ({
       id: apt.id,
@@ -154,9 +184,40 @@ export default function DoctorScheduleCalendar({
   }, [selectedDoctorId, appointmentsByDoctorId])
 
   const shiftEvents = useMemo(() => {
-    const shifts = shiftsByDoctorId[selectedDoctorId] ?? []
-    return buildShiftEvents(shifts, referenceDate)
-  }, [selectedDoctorId, shiftsByDoctorId, referenceDate])
+    if (selectedDoctorId === null || selectedDoctorId === 0) return []
+    const monday = startOfWeek(referenceDate, { weekStartsOn: 1 })
+    const events: CalendarEvent[] = []
+    const docSchedules = allSchedules.filter(s => s.doctorId === selectedDoctorId)
+
+    // Para la semana que se está viendo, calculamos el turno de cada día (7 días)
+    for (let i = 0; i < 7; i++) {
+      const date = addDays(monday, i)
+      // Buscamos el schedule activo para esta fecha en específico
+      const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0))
+      const dayOfWeek = date.getDay()
+
+      const activeSchedule = docSchedules
+        .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+        .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+        .sort((a, b) => b._start.getTime() - a._start.getTime())[0]
+
+      if (activeSchedule) {
+        const avails = allAvailabilities.filter(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === dayOfWeek)
+        for (const a of avails) {
+          const startsAt = convertirAHHMM(a.start_time)
+          const endsAt = convertirAHHMM(a.end_time)
+          const [sh, sm] = startsAt.split(':').map(Number)
+          const [eh, em] = endsAt.split(':').map(Number)
+          events.push({
+            title: 'Turno',
+            start: setMinutes(setHours(date, sh), sm),
+            end: setMinutes(setHours(date, eh), em),
+          })
+        }
+      }
+    }
+    return events
+  }, [selectedDoctorId, allSchedules, allAvailabilities, referenceDate])
 
   const eventStyleGetter = (event: CalendarEvent) => {
     const status = event.resource?.status ?? ''
@@ -182,31 +243,46 @@ export default function DoctorScheduleCalendar({
     }
   }
 
-  return (
+    return (
     <div className="flex flex-col gap-4">
+      {/* Doctor selector — sin cambios */}
+
+      {/* Loading indicator */}
+      {loadingApts && (
+        <div className="text-xs text-primary-500 flex items-center gap-2 animate-pulse">
+          <span className="w-2 h-2 rounded-full bg-primary-400 inline-block" />
+          Cargando citas...
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {doctors.map(doc => (
           <button
             key={doc.id}
-            onClick={() => setSelectedDoctorId(doc.id)}
+            onClick={() => handleDoctorPillClick(doc.id)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${doc.id === selectedDoctorId
               ? 'bg-primary-700 text-white border-primary-700 shadow-sm'
               : 'bg-white text-primary-800 border-primary-200 hover:bg-primary-50'
               }`}
           >
-            <span className="font-semibold">{doc.name}</span>
+            <span className="font-semibold">{doc.user.name}</span>
             <span className={`ml-1.5 text-xs ${doc.id === selectedDoctorId ? 'text-primary-200' : 'text-cool-gray-50'}`}>
-              {doc.specialty}
+              {doc.specialty.name}
             </span>
           </button>
         ))}
       </div>
 
       <div className="flex flex-wrap items-center gap-4 text-xs text-primary-700">
-        <span className="font-semibold text-primary-800">
-          <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
-          {doctor?.name} — {doctor?.specialty}
-        </span>
+        {doctor ? (
+          <span className="font-semibold text-primary-800">
+            <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
+            {doctor.user.name} — {doctor.specialty.name}
+          </span>
+        ) : (
+          <span className="font-medium text-cool-gray-50 italic">
+            Selecciona un médico para ver sus citas
+          </span>
+        )}
         <span className="ml-auto flex flex-wrap gap-3">
           {Object.entries(STATUS_COLORS).map(([label, color]) => (
             <span key={label} className="flex items-center gap-1">
@@ -302,11 +378,11 @@ export default function DoctorScheduleCalendar({
               </div>
               <div>
                 <p className="text-xs text-cool-gray-50 font-medium">Inicio</p>
-                <p>{selectedApt.scheduledStart}</p>
+                <p>{convertirAHHMM(selectedApt.scheduledStart)}</p>
               </div>
               <div>
                 <p className="text-xs text-cool-gray-50 font-medium">Fin</p>
-                <p>{selectedApt.scheduledEnd}</p>
+                <p>{convertirAHHMM(selectedApt.scheduledEnd)}</p>
               </div>
             </div>
 

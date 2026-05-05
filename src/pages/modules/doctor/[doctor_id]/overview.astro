@@ -13,14 +13,69 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/react/primary/
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
 
-import { FaArrowRight, FaHeart, FaIdCard, FaStar, FaUsers } from "react-icons/fa6";
+import { FaArrowRight, FaHeart, FaIdCard, FaStar, FaUsers, FaSackDollar } from "react-icons/fa6";
 
-const summary = {
-  totalIncome: 15420.5,
-  totalExpenses: 3240.2,
-  netBalance: 12180.3,
-  pendingPayments: 5,
+import { getDoctorByUserId } from "@/lib/services/medical/doctor/doctor.service";
+import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
+
+const { doctor_id } = Astro.params;
+const userId = Number(doctor_id);
+
+let doctor = null;
+let consultations = [];
+let summary = {
+  totalIncome: 0,
+  totalExpenses: 0,
+  netBalance: 0,
+  pendingPayments: 0,
 };
+
+if (userId && !isNaN(userId)) {
+  try {
+    console.log("Fetching doctor with userId:", userId);
+    doctor = await getDoctorByUserId(userId);
+    console.log("Doctor fetched:", doctor);
+    
+    const doctorId = doctor?.id || 0;
+    if (doctorId > 0) {
+      consultations = await listConsultationsByDoctor(doctorId);
+    }
+    
+    const completedConsultations = consultations.filter(c => c.finished_at);
+    const pendingConsultations = consultations.filter(c => !c.finished_at);
+    
+    const totalIncome = completedConsultations.reduce((acc, c) => {
+      return acc + (Number(c.invoice?.total_usd) || 0);
+    }, 0);
+    
+    const pendingPayments = pendingConsultations.filter(c => 
+      c.invoice?.status_invoice?.code === 'PENDING'
+    ).length;
+    
+    summary = {
+      totalIncome,
+      totalExpenses: 0,
+      netBalance: totalIncome,
+      pendingPayments,
+    };
+  } catch (error) {
+    console.error("Error fetching doctor data:", error);
+  }
+}
+
+const doctorName = doctor?.user?.name || "Doctor";
+const doctorCi = doctor?.user?.ci || "V-0";
+const specialtyName = doctor?.specialty?.name || "Especialidad";
+const consultationPrice = Number(doctor?.specialty?.consultation_price) || 0;
+
+const upcomingConsultations = consultations.filter(c => !c.finished_at);
+const completedConsultations = consultations.filter(c => c.finished_at);
+
+const uniquePatients = new Set(
+  consultations
+    .filter(c => c.invoice?.patient?.id)
+    .map(c => c.invoice.patient.id)
+).size;
 ---
 
 <MainLayout>
@@ -31,8 +86,8 @@ const summary = {
         <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
           
           <Avatar className="w-20 h-20 sm:w-28 sm:h-28 shadow-md border-2 border-slate-100 shrink-0">
-            <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt="Dra. Andrea Pérez" />
-            <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">AP</AvatarFallback>
+            <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt={doctorName} />
+            <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">{doctorName.split(' ').map(n => n[0]).join('').slice(0,2)}</AvatarFallback>
           </Avatar>
 
           <div class="flex-1 text-center sm:text-left">
@@ -40,21 +95,21 @@ const summary = {
               Panel Médico Oficial
             </p>
             <h1 class="text-3xl sm:text-4xl font-black text-[#1e293b] leading-none mb-4">
-              Dra. Andrea Pérez
+              {doctorName}
             </h1>
 
             <div class="flex flex-wrap justify-center sm:justify-start gap-3">
               <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
-				<FaIdCard size={16} className="text-blue-500 shrink-0" />
-                <span class="font-bold">V-12.345.678</span>
+ 				<FaIdCard size={16} className="text-blue-500 shrink-0" />
+                <span class="font-bold">V-{doctorCi}</span>
               </Badge>
               <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
-				<FaHeart size={16} className="text-red-500 shrink-0" />
-                <span class="font-bold">O POSITIVO</span>
+ 				<FaStar size={16} className="text-yellow-500 shrink-0" />
+                <span class="font-bold">{specialtyName.toUpperCase()}</span>
               </Badge>
               <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
-				<FaStar size={16} className="text-yellow-500 shrink-0" />
-                <span class="font-bold">CARDIÓLOGA</span>
+ 				<FaSackDollar size={16} className="text-emerald-500 shrink-0" />
+                <span class="font-bold">${consultationPrice} / consulta</span>
               </Badge>
             </div>
           </div>
@@ -62,24 +117,24 @@ const summary = {
       </StaticCard>
     </div>
 
-    <DoctorFinanceSummary client:load summary={summary} />
+    <DoctorFinanceSummary client:visible summary={summary} />
     
     <div class="mb-10">
       <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
         Gestión de Consultorio
       </h3>
-      <DashboardActions client:load />
+      <DashboardActions client:visible />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-2 space-y-8">
 
         <StaticCard className="overflow-hidden">
-          <UpcomingAppointments client:load />
+          <UpcomingAppointments client:visible />
         </StaticCard>
 
         <StaticCard className="overflow-hidden">
-          <RecentResults client:load />
+          <RecentResults client:visible />
         </StaticCard>
 
       </div>
@@ -93,7 +148,7 @@ const summary = {
             </h3>
           </div>
 
-          <PatientStats client:load />
+          <PatientStats client:visible />
 
           <button class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group">
 			Descargar Reporte Mensual <FaArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -101,7 +156,7 @@ const summary = {
         </StaticCard>
 
         <StaticCard className="p-8">
-          <SpecialtyChart client:load />
+          <SpecialtyChart client:visible />
         </StaticCard>
 
       </div>

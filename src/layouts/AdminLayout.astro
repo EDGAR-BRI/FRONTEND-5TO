@@ -2,8 +2,8 @@
 import "@/styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
-import BottomNavbar from "@/components/astro/BottomNavbar.astro";
-import { FaChartLine, FaHouse, FaMoneyBillWave, FaUsers } from "react-icons/fa6";
+import MobileSidebarDrawer from "@/components/astro/MobileSidebarDrawer.astro";
+import { FaCartShopping, FaChartLine, FaHouse, FaMoneyBillWave, FaUsers } from "react-icons/fa6";
 import { FaBoxesStacked } from "react-icons/fa6";
 import {
 	FaClipboardList,
@@ -21,19 +21,78 @@ const menuItems = [
 		icon: FaHouse,
 	},
 	{
+		label: "Gestionar insumos",
+		icon: FaBoxesStacked,
+		subItems: [
+			{
+				label: "Registrar compras",
+				href: "/modules/admin/compras",
+				icon: FaCartShopping,
+			},
+			{
+				label: "Inventario de insumos",
+				href: "/modules/admin/manage-supplies",
+				icon: FaBoxesStacked,
+			},
+			{
+				label: "Historial de compras",
+				href: "/modules/admin/historial-compras",
+				icon: FaBoxesStacked,
+			},
+		],
+	},
+	{
+		label: "Gestionar servicios",
+		icon: FaBoxesStacked,
+		subItems: [
+			{
+				label: "Pagar servicios",
+						href: "/modules/admin/pagar-servicios",
+				icon: FaCartShopping,
+			},
+			{
+				label: "Catalogo de servicios",
+				href: "/modules/admin/manage-services",
+				icon: FaBoxesStacked,
+			},
+			{
+				label: "Servicios pagados",
+				href: "/modules/admin/paid-services-history",
+				icon: FaBoxesStacked,
+			},
+		],
+	},
+	{
+		label: "Gestión de nóminas",
+		icon: FaBoxesStacked,
+		subItems: [
+			{
+				label: "Pagar nóminas (mes actual)",
+				href: "/modules/admin/manage-payroll/current",
+				icon: FaCartShopping,
+			},
+			{
+				label: "Historial de nóminas",
+				href: "/modules/admin/manage-payroll",
+				icon: FaBoxesStacked,
+			},
+		],
+	},
+	
+	// {
+	// 	label: "Gestión de ingresos",
+	// 	href: "/modules/admin/manage-billing",
+	// 	icon: FaMoneyBillWave,
+	// },
+	// {
+	// 	label: "Gestión de egresos",
+	// 	href: "/modules/admin/manage-expenses",
+	// 	icon: FaMoneyBillWave,
+	// },
+	{
 		label: "Gestionar usuarios",
 		href: "/modules/admin/manage-users",
 		icon: FaUsers,
-	},
-	{
-		label: "Gestión de insumos y servicios",
-		href: "/modules/admin/manage-supplies",
-		icon: FaBoxesStacked,
-	},
-	{
-		label: "Gestión de gastos e ingresos",
-		href: "/modules/admin/manage-expenses",
-		icon: FaMoneyBillWave,
 	},
 	{
 		label: "Reportes",
@@ -87,7 +146,7 @@ const currentPath = Astro.url.pathname;
 		<!-- Main Wrapper: Padded on left for desktop sidebar -->
 		<div
 			id="main-content"
-			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300"
+			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300 pt-16 lg:pt-0"
 		>
 			<Sidebar menuItems={menuItems} currentPath={currentPath} />
 			<div class="flex-1 pb-16 lg:pb-0 p-6 md:p-8 space-y-8">
@@ -96,6 +155,6 @@ const currentPath = Astro.url.pathname;
 			</div>
 		</div>
 
-		<BottomNavbar />
+		<MobileSidebarDrawer menuItems={menuItems} currentPath={currentPath} title="Administración" />
 	</body>
 </html>

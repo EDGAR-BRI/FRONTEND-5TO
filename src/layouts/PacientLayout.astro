@@ -2,7 +2,7 @@
 import "@/styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
-import BottomNavbar from "@/components/astro/BottomNavbar.astro";
+import MobileSidebarDrawer from "@/components/astro/MobileSidebarDrawer.astro";
 import { FaCalendarDays, FaFileMedical, FaHouse, FaUserDoctor } from "react-icons/fa6";
 const { title } = Astro.props;
 
@@ -47,14 +47,14 @@ const currentPath = Astro.url.pathname;
 	>
 		<div
 			id="main-content"
-			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300"
+			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-64 transition-[padding] duration-300 pt-16 lg:pt-0"
 		>
 			<Sidebar menuItems={menuItems} currentPath={currentPath} />
-			<div class="flex-1 pb-16 lg:pb-0">
+			<div class="flex-1 pb-8 lg:pb-0">
 				<slot />
 			</div>
 		</div>
 
-		<BottomNavbar />
+		<MobileSidebarDrawer menuItems={menuItems} currentPath={currentPath} title="Paciente" />
 	</body>
 </html>

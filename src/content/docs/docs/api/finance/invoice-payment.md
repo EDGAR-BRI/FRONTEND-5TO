@@ -12,6 +12,7 @@ Base URL: `/api/v1/finance/invoice-payment`
 - `currencyId` (Int, requerido)
 - `amount_paid` (Decimal, requerido)
 - `igtf_amount` (Decimal, default: `0`)
+- `date_at` (DateTime, opcional, default: `now()`)
 - `exchangeRateId` (Int, requerido) → FK a `ExchangeRate.id`
 
 Relaciones:
@@ -95,6 +96,10 @@ Qué hacen:
 - `GET /:id`: obtiene un pago.
 
 Respuesta `data`: `InvoicePayment[]` / `InvoicePayment`.
+
+Notas de respuesta:
+
+- Por conveniencia del frontend, el payload incluye la relación `invoice` (con `patient.ci/name` y `consultation.doctor.user.name` cuando exista).
 
 ## PUT `/:id`
 

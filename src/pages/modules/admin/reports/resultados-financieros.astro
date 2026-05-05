@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -27,19 +25,7 @@ const services = [
       <p class="text-gray-500 font-medium">Desempeño económico por servicio y avance contra objetivos.</p>
     </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Ingreso mensual" value="$35,580" trend="6.1%" trendUp={true} color="success">
-        <FaWallet slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Margen operativo" value="27%" trend="1.0%" trendUp={true} color="primary">
-        <FaCoins slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Cumplimiento de meta" value="94%" trend="2.6%" trendUp={true} color="warning">
-        <FaChartLine slot="icon" size={20} />
-      </StatsCard>
-    </section>
-
-    <ReportTimeframeFilters client:load title="Filtro financiero" subtitle="Compara resultados financieros por día, semana, mes o año y sigue el avance contra metas." />
+    <ReportTimeframeFilters client:visible title="Filtro financiero" subtitle="Compara resultados financieros por día, semana, mes o año y sigue el avance contra metas." />
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">

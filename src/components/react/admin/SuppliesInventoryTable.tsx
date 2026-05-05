@@ -1,6 +1,7 @@
 import { DataTable, type Column } from "@/components/react/primary/DataTable";
 import { Badge } from "@/components/react/primary/Badge";
 import EditProductModalTrigger from "@/components/react/admin/EditProductModalTrigger";
+import { ModalTrigger } from "@/components/react/primary/ModalTrigger";
 import type { InventoryItem } from "@/types/Inventory";
 
 const money = (value: number) =>
@@ -20,7 +21,17 @@ const statusBadgeStyles = (status: string) => {
     return { bg: "bg-primary-300/25", text: "text-primary-800", border: "border-primary-400" };
 };
 
-export default function SuppliesInventoryTable({ search, type }: { search: string; type: string }) {
+export default function SuppliesInventoryTable({
+    items,
+    isLoading,
+    onDeleted,
+    onUpdated,
+}: {
+    items: InventoryItem[];
+    isLoading?: boolean;
+    onDeleted: (id: number) => Promise<void>;
+    onUpdated?: () => void;
+}) {
     const columns: Column<InventoryItem>[] = [
         { header: "ID", accessorKey: "id", align: "left" },
         {
@@ -66,20 +77,38 @@ export default function SuppliesInventoryTable({ search, type }: { search: strin
             align: "center",
             cell: (item) => (
                 <div className="flex justify-center gap-3">
-                    <EditProductModalTrigger item={item} />
-                    <button className="text-error hover:text-red-700 text-sm font-medium transition-colors">Eliminar</button>
+                                        <EditProductModalTrigger item={item} onUpdated={onUpdated} />
+                                        <ModalTrigger
+                                                trigger={<button className="text-error hover:text-red-700 text-sm font-medium transition-colors">Eliminar</button>}
+                                                modalTitle={`Eliminar ${item.name}`}
+                                            >
+                                                {({ close }) => (
+                                                    <div className="space-y-4">
+                                                        <p>¿Estás seguro que deseas eliminar <strong>{item.name}</strong>? Esta acción no se puede deshacer.</p>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button className="rounded-lg border px-3 py-2" onClick={close}>Cancelar</button>
+                                                            <button
+                                                                className="rounded-lg bg-red-600 text-white px-3 py-2"
+                                                                onClick={async () => { try { await onDeleted(item.id); } finally { close(); } }}
+                                                            >
+                                                                Eliminar permanentemente
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                        </ModalTrigger>
                 </div>
             ),
         },
     ];
 
-    const endpoint = `/admin/supplies?search=${search}${type !== 'TODOS' ? `&type=${type}` : ''}`;
-
     return (
         <DataTable<InventoryItem>
             className="rounded-none! border-none!"
-            endpoint={endpoint}
+            endpoint=""
+            data={items}
             columns={columns}
+            isLoading={isLoading}
         />
     );
 }

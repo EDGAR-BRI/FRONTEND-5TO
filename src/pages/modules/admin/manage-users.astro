@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import MainLayout from "@/layouts/AdminLayout.astro";
 import UsersDashboard from "@/components/react/admin/UsersDashboard";
 ---
@@ -21,6 +19,6 @@ import UsersDashboard from "@/components/react/admin/UsersDashboard";
 			</div>
 		</header>
 
-		<UsersDashboard client:load />
+		<UsersDashboard client:visible />
 	</section>
 </MainLayout>

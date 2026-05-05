@@ -1,10 +1,8 @@
 ---
 import PacientLayout from "@/layouts/PacientLayout.astro";
-import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import StaticCard from "@/components/react/primary/StaticCard";
-import { FaCalendarPlus, FaCircleInfo } from "react-icons/fa6";
+import AppointmentBookingManager from "@/components/react/AppointmentBookingManager";
 
-const { pacient_id } = Astro.params;
+const pacient_id = Astro.params.pacient_id || "";
 
 const coloresEstado: Record<string, string> = {
   Pendiente: "bg-amber-100 text-amber-700 border-amber-200",
@@ -12,33 +10,6 @@ const coloresEstado: Record<string, string> = {
   Cancelada: "bg-red-100 text-red-700 border-red-200",
   Finalizada: "bg-blue-100 text-blue-700 border-blue-200",
 };
-
-const citasMock = [
-  {
-    id: 1,
-    doctor: "Dr. Juan Sun",
-    especialidad: "Cardiología",
-    fecha: "2026-03-05",
-    hora: "10:00 AM",
-    estado: "Confirmada",
-  },
-  {
-    id: 2,
-    doctor: "Dr. Samuel Rosales",
-    especialidad: "Medicina General",
-    fecha: "2026-03-12",
-    hora: "02:30 PM",
-    estado: "Pendiente",
-  },
-  {
-    id: 3,
-    doctor: "Dr. Edgar Briceño",
-    especialidad: "Urología",
-    fecha: "2026-03-20",
-    hora: "11:15 AM",
-    estado: "Cancelada",
-  },
-];
 ---
 
 <PacientLayout title="Agendar Cita | Paciente">
@@ -70,100 +41,11 @@ const citasMock = [
       </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
-      <StaticCard className="h-fit min-w-0">
-        <h2
-          class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"
-        >
-          <FaCalendarPlus className="text-blue-600" /> Nueva Cita
-        </h2>
-
-        <form class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Especialidad</label
-            >
-            <select
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            >
-              <option>Seleccione...</option>
-              <option>Cardiología</option>
-              <option>Medicina General</option>
-              <option>Odontología</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Doctor</label
-            >
-            <select
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              disabled
-            >
-              <option>Primero elija especialidad</option>
-            </select>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Fecha</label
-              >
-              <input
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Hora</label
-              >
-              <input
-                type="time"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Motivo (Opcional)</label
-            >
-            <textarea
-              rows="2"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-400"
-              placeholder="Ej: Chequeo de rutina..."></textarea>
-          </div>
-
-          <button
-            type="button"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors mt-2"
-          >
-            Verificar y Agendar
-          </button>
-          <p class="text-xs text-gray-400 text-center mt-2">
-            <FaCircleInfo className="inline-block" /> El sistema validará la disponibilidad
-            del doctor.
-          </p>
-        </form>
-      </StaticCard>
-
-      <StaticCard
-        className="lg:col-span-3 flex flex-col min-h-150 overflow-hidden"
-      >
-        <div class="overflow-x-auto w-full h-full">
-          <div class="min-w-[800px] h-full">
-            <AppointmentCalendar
-              role="pacient"
-              citas={citasMock}
-              context={{ patientId: pacient_id }}
-              client:load
-              actions={[]}
-            />
-          </div>
-        </div>
-      </StaticCard>
-    </div>
+    <AppointmentBookingManager 
+      client:visible 
+      role="pacient" 
+      userId={pacient_id}
+      context={{ patientId: pacient_id }}
+    />
   </div>
 </PacientLayout>

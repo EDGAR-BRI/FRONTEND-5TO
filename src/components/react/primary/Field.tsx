@@ -9,7 +9,7 @@ interface FieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
     label?: string;
     autoFocus?: boolean;
     name: string;
-    type?: "text" | "email" | "password" | "number" | "date" | "radio";
+    type?: "text" | "email" | "password" | "number" | "date" | "time" | "radio";
     placeholder?: string;
     showTogglePassword?: boolean;
     pattern?: string;

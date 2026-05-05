@@ -1,7 +1,9 @@
 ---
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import PaymentMethodsBox from '@/components/astro/PaymentMethodsBox.astro';
-import TodaysScheduleTable from '@/components/astro/TodaysScheduleTable.astro';
+import TodaysScheduleTable from '@/components/react/receptionist/TodaysScheduleTable';
+import { getUserName, getCI } from "@/lib/api";
+import { getInitials } from "@/utils/helper_functions"
 import {
 	ReceptionistStatsSummary,
 	type StatItem,
@@ -22,102 +24,20 @@ import { // Eliminable?
 } from 'react-icons/fa6';
 
 const { receptionist_id } = Astro.params;
-
 const receptionist = {
-  id: receptionist_id ?? '001',
-  fullName: 'Laura Castillo Díaz',
-  ci: 'V-18.902.341',
+  id: receptionist_id ?? '008',
+  fullName: getUserName(Astro.cookies),
+  ci: getCI(Astro.cookies),
   role: 'Recepcionista',
-  avatarInitials: 'LC',
-  shift: '07:00 AM – 03:00 PM',
+  avatarInitials: getInitials(getUserName(Astro.cookies)),
 };
 
 const todayStr = new Date().toISOString().split('T')[0];
-const agenda = [
-  {
-    id: 'APT-021',
-    time: '08:00',
-    patient: 'Ana Sofía Parra',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    reason: 'Control de rutina',
-    type: 'Presencial',
-    status: 'Realizada',
-    statusClass: 'bg-green-100 text-success border-green-200',
-    price: '$40',
-    paid: true,
-  },
-  {
-    id: 'APT-022',
-    time: '08:30',
-    patient: 'Jorge Luis Rivas',
-    specialty: 'Cardiología',
-    doctor: 'Dra. Luisa Vargas',
-    reason: 'Seguimiento post-operatorio',
-    type: 'Presencial',
-    status: 'Realizada',
-    statusClass: 'bg-green-100 text-success border-green-200',
-    price: '$80',
-    paid: true,
-  },
-  {
-    id: 'APT-023',
-    time: '09:00',
-    patient: 'Marta Elena Cruz',
-    specialty: 'Ginecología',
-    doctor: 'Dra. Patricia Mora',
-    reason: 'Consulta general',
-    type: 'Presencial',
-    status: 'Confirmada',
-    statusClass: 'bg-yellow-100 text-warning border-yellow-200',
-    price: '$60',
-    paid: false,
-  },
-  {
-    id: 'APT-024',
-    time: '09:30',
-    patient: 'Ramón Díaz Solano',
-    specialty: 'Traumatología',
-    doctor: 'Dr. Héctor Torres',
-    reason: 'Dolor lumbar persistente',
-    type: 'Presencial',
-    status: 'Confirmada',
-    statusClass: 'bg-yellow-100 text-warning border-yellow-200',
-    price: '$55',
-    paid: false,
-  },
-  {
-    id: 'APT-025',
-    time: '10:00',
-    patient: 'Carmen Rosa Fuentes',
-    specialty: 'Pediatría',
-    doctor: 'Dra. Valentina Ríos',
-    reason: 'Vacunación',
-    type: 'Presencial',
-    status: 'Sin Confirmar',
-    statusClass: 'bg-cool-gray-10 text-cool-gray-60 border-cool-gray-30',
-    price: '$30',
-    paid: false,
-  },
-  {
-    id: 'APT-026',
-    time: '10:30',
-    patient: 'Luis Eduardo Blanco',
-    specialty: 'Medicina General',
-    doctor: 'Dr. Carlos Méndez',
-    reason: 'Revisión de exámenes',
-    type: 'Presencial',
-    status: 'Sin Confirmar',
-    statusClass: 'bg-cool-gray-10 text-cool-gray-60 border-cool-gray-30',
-    price: '$40',
-    paid: false,
-  },
-];
 
 const quickActions = [
   { label: 'Registrar paciente', icon: FaUserPlus, href: 'register-patient', color: 'from-primary-500 to-primary-700' },
   { label: 'Agendar cita', icon: FaCalendarPlus, href: 'appointments', color: 'from-teal-500 to-teal-700' },
-  { label: 'Gestionar pagos', icon: FaCreditCard, href: 'payment', color: 'from-violet-500 to-violet-700' },
+  { label: 'Gestionar pagos', icon: FaCreditCard, href: 'invoice', color: 'from-violet-500 to-violet-700' },
   { label: 'Configurar horarios', icon: FaClock, href: 'manage-schedules', color: 'from-orange-400 to-orange-600' },
 ];
 ---
@@ -127,7 +47,7 @@ const quickActions = [
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white font-bold text-xl shadow-md select-none flex-shrink-0">
+        <div class="w-14 h-14 rounded-full bg-linear-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white font-bold text-xl shadow-md select-none shrink-0">
           {receptionist.avatarInitials}
         </div>
         <div>
@@ -137,13 +57,11 @@ const quickActions = [
             <FaIdCard className="mr-1 inline-block" />{receptionist.ci}
             &nbsp;·&nbsp;
             <FaUserTie className="mr-1 inline-block" />{receptionist.role}
-            &nbsp;·&nbsp;
-            <FaRegClock className="mr-1 inline-block" />Turno: {receptionist.shift}
           </p>
         </div>
       </div>
 
-      <div class="flex-shrink-0 flex items-center gap-2 bg-white border border-primary-200 rounded-xl px-4 py-3 shadow-sm">
+      <div class="shrink-0 flex items-center gap-2 bg-white border border-primary-200 rounded-xl px-4 py-3 shadow-sm">
         <FaCalendarDay className="text-primary-500 text-lg" />
         <div>
           <p class="text-body-xxs text-cool-gray-50 leading-none">Hoy</p>
@@ -152,13 +70,13 @@ const quickActions = [
       </div>
     </div>
 
-    <ReceptionistStatsSummary client:load/>
+    <ReceptionistStatsSummary client:visible/>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       
       <div class="lg:col-span-2 space-y-6 border border-primary-100 rounded-xl">
         <StaticCard>
-          <TodaysScheduleTable />
+          <TodaysScheduleTable client:visible />
         </StaticCard>
       </div>
 

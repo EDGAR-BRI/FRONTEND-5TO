@@ -4,18 +4,30 @@ title: Overrides de agenda del doctor
 
 Base URL: `/api/v1/scheduling/doctor-schedule-override`
 
-## POST `/`
+## Qué hace
+
+Permite bloquear o ajustar un día específico de trabajo de un doctor sin tocar la vigencia general del schedule.
+
+## Endpoints
+
+### POST `/`
 
 Body:
 
-- `doctorId` (int > 0, **requerido**, debe existir y estar activo)
-- `specific_date` (string ISO, **requerido**)
-- `is_working?` (boolean)
-- `start_time?` (string ISO)
-- `end_time?` (string ISO)
-- `reason?` (string, 1..500)
+- `doctorId` (int > 0, requerido, debe existir y estar activo)
+- `specific_date` (string ISO, requerido)
+- `is_working` (boolean opcional)
+- `start_time` (string ISO opcional)
+- `end_time` (string ISO opcional)
+- `reason` (string opcional, 1..500)
 
-Request (JSON):
+Reglas importantes:
+
+- Si envías `start_time`, debes enviar también `end_time`.
+- Si envías `end_time`, debes enviar también `start_time`.
+- Si `is_working = false`, puedes bloquear el día sin pasar horas.
+
+Ejemplo:
 
 ```json
 {
@@ -26,24 +38,25 @@ Request (JSON):
 }
 ```
 
-Response (201) (ejemplo, resumen):
+### GET `/`
 
-```json
-{
-  "message": "Override creado éxitosamente",
-  "data": {
-    "id": 1,
-    "doctorId": 3,
-    "specific_date": "2026-03-24T00:00:00.000Z",
-    "is_working": false,
-    "start_time": null,
-    "end_time": null,
-    "reason": "Día libre",
-    "doctor": { "id": 3, "userId": 12, "specialtyId": 1, "active": true, "user": { "id": 12, "ci": "20000000", "name": "Doctor" }, "specialty": { "id": 1, "name": "Medicina General", "active": true } }
-  }
-}
-```
+Lista todos los overrides, ordenados por doctor y fecha descendente.
 
-## GET `/` / GET `/:id` / PUT `/:id` / DELETE `/:id`
+### GET `/:id`
 
-DELETE es hard delete.
+Devuelve un override por ID.
+
+### PUT `/:id`
+
+Body opcional:
+
+- `doctorId` (int > 0)
+- `specific_date` (string ISO)
+- `is_working` (boolean)
+- `start_time` (string ISO)
+- `end_time` (string ISO)
+- `reason` (string 1..500)
+
+### DELETE `/:id`
+
+Elimina el override. Es `hard delete`.

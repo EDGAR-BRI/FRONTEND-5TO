@@ -35,7 +35,7 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 			const nextFromQuery = new URLSearchParams(window.location.search).get("next");
 			const nextPath = nextFromQuery || dashboardPathForUser(data.user, roleCode);
 
-			await Alert.success("Inicio de sesión exitoso", `Bienvenido/a, ${data.user.name}`, 900);
+			await Alert.success("Inicio de sesión exitoso", `Bienvenido/a, ${data.user.name}`, 1800);
 			window.location.href = nextPath;
 		} catch (err) {
 			await Alert.error(

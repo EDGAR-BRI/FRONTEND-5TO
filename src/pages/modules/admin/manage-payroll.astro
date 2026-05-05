@@ -1,0 +1,13 @@
+---
+import MainLayout from '@/layouts/AdminLayout.astro';
+import { PayrollDashboard } from '@/components/react/admin/finance/PayrollDashboard';
+---
+
+<MainLayout title="Admin | Payroll History">
+	<section class="p-8">
+		<h1 class="text-2xl font-semibold text-primary-800 mb-6">
+			Payroll History
+		</h1>
+		<PayrollDashboard client:visible />
+	</section>
+</MainLayout>
