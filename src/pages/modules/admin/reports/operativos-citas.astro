@@ -1,4 +1,6 @@
 ---
+export const prerender = true;
+
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -26,13 +28,19 @@ const agenda = [
       <p class="text-gray-500 font-medium">Monitoreo diario de agenda para reducir ausencias.</p>
     </header>
 
-    <ReportTimeframeFilters client:visible title="Filtro de citas" subtitle="Mira la agenda por día, semana, mes o año para detectar ausencias y horas pico." />
-
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <StatsCard title="Citas semanales" value="160" trend="4.3%" trendUp={true} color="primary"><FaCalendarCheck slot="icon" size={18} /></StatsCard>
-      <StatsCard title="No show" value="10%" trend="1.1%" trendUp={false} color="warning"><FaUserClock slot="icon" size={18} /></StatsCard>
-      <StatsCard title="Puntualidad" value="88%" trend="2.0%" trendUp={true} color="success"><FaClock slot="icon" size={18} /></StatsCard>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Citas semanales" value="160" trend="4.3%" trendUp={true} color="primary">
+        <FaCalendarCheck slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="No show" value="10%" trend="1.1%" trendUp={false} color="warning">
+        <FaUserClock slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Puntualidad" value="88%" trend="2.0%" trendUp={true} color="success">
+        <FaClock slot="icon" size={20} />
+      </StatsCard>
     </section>
+
+    <ReportTimeframeFilters client:load title="Filtro de citas" />
 
     <div class="mt-8">
       <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">

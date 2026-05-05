@@ -1,4 +1,6 @@
 ---
+export const prerender = true;
+
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -26,13 +28,21 @@ const doctors = [
       <p class="text-gray-500 font-medium">Análisis de rendimiento por profesional para optimizar la carga asistencial.</p>
     </header>
 
-    <ReportTimeframeFilters client:visible title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de saturación." />
-
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <StatsCard title="Medicos en turno" value="12" trend="0.0%" trendUp={true} color="primary"><FaUserDoctor slot="icon" size={18} /></StatsCard>
-      <StatsCard title="Atenciones promedio" value="20" trend="3.1%" trendUp={true} color="success"><FaStethoscope slot="icon" size={18} /></StatsCard>
-      <StatsCard title="Saturacion promedio" value="81%" trend="1.7%" trendUp={false} color="warning"><FaGaugeHigh slot="icon" size={18} /></StatsCard>
+    {/* TARJETAS DE ESTADÍSTICAS*/}
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Médicos en turno" value="12" trend="0.0%" trendUp={true} color="primary">
+        <FaUserDoctor slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Atenciones promedio" value="20" trend="3.1%" trendUp={true} color="success">
+        <FaStethoscope slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Saturación promedio" value="81%" trend="1.7%" trendUp={false} color="warning">
+        <FaGaugeHigh slot="icon" size={20} />
+      </StatsCard>
     </section>
+
+    {/*FILTROS */}
+    <ReportTimeframeFilters client:load title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de saturación." />
 
     <div class="mt-8">
       <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">
