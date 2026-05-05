@@ -122,16 +122,6 @@ function makeMockHistory(id: string) {
 
     ],
 
-    labs: [
-
-      { date: '2026-02-15', test: 'Hemograma', result: 'Sin alteraciones', status: 'Normal' },
-
-      { date: '2026-02-15', test: 'Glucosa', result: '92 mg/dL', status: 'Normal' },
-
-      { date: '2026-02-15', test: 'Colesterol LDL', result: '118 mg/dL', status: 'Leve' },
-
-    ],
-
     files: [
 
       { date: '2026-02-20', name: 'Resumen de consulta.pdf', type: 'PDF' },
@@ -349,40 +339,6 @@ const data = makeMockHistory(patientId)
       </div>
 
     </div>
-
-
-
-    <div class="bg-white border border-primary-200 rounded-lg p-4">
-
-      <h2 class="text-base font-semibold text-primary-800 mb-3">Resultados</h2>
-
-      <div class="space-y-2 text-sm">
-
-        {data.labs.map((l) => (
-
-          <div class="flex items-start justify-between gap-3 border border-primary-200 rounded-md p-3">
-
-            <div>
-
-              <div class="font-medium text-primary-800">{l.test}</div>
-
-              <div class="text-primary-700">{l.result}</div>
-
-              <div class="text-xs text-primary-700">{l.date}</div>
-
-            </div>
-
-            <div class="text-xs text-primary-700">{l.status}</div>
-
-          </div>
-
-        ))}
-
-      </div>
-
-    </div>
-
-
 
     <div class="lg:col-span-3 bg-white border border-primary-200 rounded-lg p-4">
 
