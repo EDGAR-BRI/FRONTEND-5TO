@@ -15,11 +15,11 @@ import StaticCard from "@/components/react/primary/StaticCard";
 
 import { FaArrowRight, FaHeart, FaIdCard, FaStar, FaUsers, FaSackDollar } from "react-icons/fa6";
 
-import { getDoctorById } from "@/lib/services/medical/doctor/doctor.service";
+import { getDoctorByUserId } from "@/lib/services/medical/doctor/doctor.service";
 import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
 
 const { doctor_id } = Astro.params;
-const doctorId = Number(doctor_id);
+const userId = Number(doctor_id);
 
 let doctor = null;
 let consultations = [];
@@ -30,10 +30,16 @@ let summary = {
   pendingPayments: 0,
 };
 
-if (doctorId && !isNaN(doctorId)) {
+if (userId && !isNaN(userId)) {
   try {
-    doctor = await getDoctorById(doctorId);
-    consultations = await listConsultationsByDoctor(doctorId);
+    console.log("Fetching doctor with userId:", userId);
+    doctor = await getDoctorByUserId(userId);
+    console.log("Doctor fetched:", doctor);
+    
+    const doctorId = doctor?.id || 0;
+    if (doctorId > 0) {
+      consultations = await listConsultationsByDoctor(doctorId);
+    }
     
     const completedConsultations = consultations.filter(c => c.finished_at);
     const pendingConsultations = consultations.filter(c => !c.finished_at);
@@ -60,7 +66,7 @@ if (doctorId && !isNaN(doctorId)) {
 const doctorName = doctor?.user?.name || "Doctor";
 const doctorCi = doctor?.user?.ci || "V-0";
 const specialtyName = doctor?.specialty?.name || "Especialidad";
-const consultationPrice = doctor?.specialty?.consultation_price || 0;
+const consultationPrice = Number(doctor?.specialty?.consultation_price) || 0;
 
 const upcomingConsultations = consultations.filter(c => !c.finished_at);
 const completedConsultations = consultations.filter(c => c.finished_at);
