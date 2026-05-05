@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -27,19 +25,7 @@ const providers = [
       <p class="text-gray-500 font-medium">Control de costo por orden y nivel de cumplimiento en entregas.</p>
     </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Proveedores activos" value="14" trend="0.0%" trendUp={true} color="primary">
-        <FaHandshakeSimple slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Cumplimiento promedio" value="91%" trend="1.6%" trendUp={true} color="success">
-        <FaClipboardCheck slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Retraso promedio" value="2.3 dias" trend="0.8%" trendUp={false} color="warning">
-        <FaClock slot="icon" size={20} />
-      </StatsCard>
-    </section>
-
-    <ReportTimeframeFilters client:load title="Filtro de proveedores" subtitle="Consulta rendimiento y puntualidad por día, semana, mes o año para detectar variaciones de abastecimiento." />
+    <ReportTimeframeFilters client:visible title="Filtro de proveedores" subtitle="Consulta rendimiento y puntualidad por día, semana, mes o año para detectar variaciones de abastecimiento." />
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">

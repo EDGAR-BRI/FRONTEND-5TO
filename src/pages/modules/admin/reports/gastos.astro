@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
@@ -63,24 +61,9 @@ const concreteReports = [
             </div>
         </header>
 
-        {/* ARJETAS DE ESTADÍSTICAS */}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Gasto Total (Mes)" value="$12,450" trend="4.1%" trendUp={false} color="danger">
-                <FaSackDollar slot="icon" size={20} />
-            </StatsCard>
-            <StatsCard title="Compras de Insumos" value="$4,980" trend="2.5%" trendUp={true} color="warning">
-                <FaCartFlatbed slot="icon" size={20} />
-            </StatsCard>
-            <StatsCard title="Facturas Procesadas" value="63" trend="1.2%" trendUp={true} color="primary">
-                <FaFileInvoiceDollar slot="icon" size={20} />
-            </StatsCard>
-            <StatsCard title="Variacion vs Mes Anterior" value="-3.8%" trend="0.6%" trendUp={false} color="success">
-                <FaMoneyBillTrendUp slot="icon" size={20} />
-            </StatsCard>
-        </section>
+		<ReportTimeframeFilters client:visible title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos de control." />
 
-        {/*FILTROS*/}
-        <ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos." />
+		<ReportBackendSnapshot client:visible scope="gastos" />
 
         <div class="space-y-8 mt-8">
             <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">

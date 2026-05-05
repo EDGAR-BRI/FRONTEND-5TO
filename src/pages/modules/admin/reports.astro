@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
@@ -52,29 +50,9 @@ const specialtiesStats = [
             </div>
         </header>
 
-        {/* MÉTRICAS SUPERIORES */}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-xl border border-primary-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><FaMoneyBillWave size={24} /></div>
-                <div><p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total</p><p class="text-2xl font-bold text-gray-800">$0.00</p></div>
-            </div>
-            <div class="bg-white p-6 rounded-xl border border-primary-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center text-green-600"><FaChartLine size={24} /></div>
-                <div><p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Métrica 2</p><p class="text-2xl font-bold text-gray-800">0</p></div>
-            </div>
-            <div class="bg-white p-6 rounded-xl border border-primary-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600"><FaArrowTrendUp size={24} /></div>
-                <div><p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Métrica 3</p><p class="text-2xl font-bold text-gray-800">$0.00</p></div>
-            </div>
-        </div>
+		<ReportTimeframeFilters client:visible title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
 
-        {/*TARJETAS DE ESTADÍSTICAS */}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Ingresos Totales (Mes)" value="$21,000" trend="12.5%" trendUp={true} color="success"><FaArrowTrendUp slot="icon" size={20} /></StatsCard>
-            <StatsCard title="Consultas Atendidas" value="1,420" trend="5.2%" trendUp={true} color="primary"><FaStethoscope slot="icon" size={20} /></StatsCard>
-            <StatsCard title="Pacientes Nuevos" value="84" trend="2.1%" trendUp={false} color="warning"><FaUserPlus slot="icon" size={20} /></StatsCard>
-            <StatsCard title="Tasa de Ausentismo" value="12%" trend="0.5%" trendUp={false} color="danger"><FaBan slot="icon" size={20} /></StatsCard>
-        </section>
+		<ReportBackendSnapshot client:visible scope="resultados" />
 
         {/* FILTROS */}
         <ReportTimeframeFilters client:load title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />

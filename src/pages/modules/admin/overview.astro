@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { OverviewStats } from "@/components/react/admin/OverviewStats";
 import RecentUsersTable from "@/components/react/admin/RecentUsersTable";
@@ -17,7 +15,7 @@ import { FaBox, FaUser } from "react-icons/fa6";
 			</p>
 		</header>
 
-		<OverviewStats client:load />
+		<OverviewStats client:visible />
 
 		<div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div
@@ -28,7 +26,7 @@ import { FaBox, FaUser } from "react-icons/fa6";
 						Usuarios Recientes
 					</h2>
 				</div>
-				<RecentUsersTable client:load />
+				<RecentUsersTable client:visible />
 			</div>
 
 			<div

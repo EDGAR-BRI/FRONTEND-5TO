@@ -10,7 +10,7 @@ const facturas = await getInvoices().catch(() => []);
 
 <ReceptionistLayout title="Facturación">
     <InvoiceManagement 
-        client:load 
+        client:visible 
         receptionistId={receptionist_id!} 
         initialInvoices={facturas} 
     />

@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import MainLayout from '@/layouts/AdminLayout.astro';
 import { CreateSupplyPurchaseForm } from '@/components/react/admin/procurement/CreateSupplyPurchaseForm';
 ---
@@ -14,6 +12,6 @@ import { CreateSupplyPurchaseForm } from '@/components/react/admin/procurement/C
             </p>
         </header>
 
-        <CreateSupplyPurchaseForm client:load />
+        <CreateSupplyPurchaseForm client:visible />
     </section>
 </MainLayout>

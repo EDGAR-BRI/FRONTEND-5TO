@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import "@/styles/global.css";
+---
+
+<Layout>
+  <div class="mx-auto max-w-4xl px-6 py-16">
+    <h1 class="text-3xl font-bold mb-4">Documentación</h1>
+    <p class="text-gray-600 mb-6">Esta es la página de documentación. Puedes añadir aquí un índice o redirigir a la documentación interna.</p>
+    <ul class="list-disc list-inside text-gray-700">
+      <li><a href="/docs/api/README.html" class="text-primary-600 hover:underline">API docs (si existen)</a></li>
+      <li><a href="/README.html" class="text-primary-600 hover:underline">Proyecto README</a></li>
+    </ul>
+  </div>
+</Layout>

@@ -63,11 +63,11 @@ const patientInfo = {
 
     <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full items-stretch">
       <aside class="flex flex-col h-full">
-        <BasicData client:load patientId={pacient_id as string} />
+        <BasicData client:visible patientId={pacient_id as string} />
       </aside>
 
       <section class="flex flex-col h-full">
-        <ProfileTabs client:load patientId={pacient_id as string} />
+        <ProfileTabs client:visible patientId={pacient_id as string} />
       </section>
     </div>
   </main>

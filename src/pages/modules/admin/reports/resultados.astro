@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
@@ -60,24 +58,9 @@ const goals = [
             </div>
         </header>
 
-        {/* TARJETAS DE ESTADÍSTICAS AL TOPE */}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Atenciones Exitosas" value="94%" trend="2.3%" trendUp={true} color="success">
-                <FaFileCircleCheck slot="icon" size={20} />
-            </StatsCard>
-            <StatsCard title="Pacientes Satisfechos" value="89%" trend="1.7%" trendUp={true} color="primary">
-                <FaUserCheck slot="icon" size={20} />
-            </StatsCard>
-            <StatsCard title="Crecimiento Mensual" value="11.2%" trend="0.9%" trendUp={true} color="success">
-                <FaArrowTrendUp slot="icon" size={20} />
-            </StatsCard>
-            <StatsCard title="Meta Cumplida" value="92%" trend="3.0%" trendUp={true} color="warning">
-                <FaChartLine slot="icon" size={20} />
-            </StatsCard>
-        </section>
+		<ReportTimeframeFilters client:visible title="Filtros de resultados" subtitle="Mueve los indicadores clínicos y financieros entre cortes diarios, semanales, mensuales o anuales." />
 
-        {/* FILTROS CON ESPACIO */}
-        <ReportTimeframeFilters client:load title="Filtros de resultados" subtitle="Mueve los indicadores clínicos y financieros entre cortes temporales." />
+		<ReportBackendSnapshot client:visible scope="resultados" />
 
         <div class="space-y-8 mt-8">
             <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">

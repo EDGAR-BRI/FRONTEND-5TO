@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -29,18 +27,7 @@ const durations = [
       <p class="text-gray-500 font-medium">Análisis de flujo y tiempos de espera por especialidad médica.</p>
     </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Espera" value="14 min" trend="1.3%" trendUp={false} color="warning">
-        <FaHourglassHalf slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Consulta" value="21 min" trend="0.4%" trendUp={true} color="primary">
-        <FaClock slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Transfer" value="4.5 min" trend="0.2%" trendUp={false} color="danger">
-        <FaArrowsLeftRight slot="icon" size={20} />
-      </StatsCard>
-    </section>
-    <ReportTimeframeFilters client:load title="Filtro de tiempos" subtitle="Ajusta el rango para visualizar la eficiencia operativa por áreas." />
+    <ReportTimeframeFilters client:visible title="Filtro de tiempos" subtitle="Ajusta el corte temporal para revisar duración, espera y transferencia por día, semana, mes o año." />
 
     <div class="mt-8">
       <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">

@@ -1,6 +1,4 @@
 ---
-export const prerender = true;
-
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -27,19 +25,13 @@ const months = [
       <p class="text-gray-500 font-medium">Evolución de gastos para identificar picos y sostenibilidad de costos.</p>
     </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Variación acumulada" value="+9.6%" trend="2.8%" trendUp={false} color="danger">
-        <FaMoneyBillTrendUp slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Mes con mayor pico" value="Marzo" subText="+$1,340 vs Febrero" color="warning">
-        <FaChartLine slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Alertas abiertas" value="2" subText="Requiere revisión" color="danger">
-        <FaCircleExclamation slot="icon" size={20} />
-      </StatsCard>
-    </section>
+    <ReportTimeframeFilters client:visible title="Filtro de variacion" subtitle="Analiza la evolución del gasto por día, semana, mes o año y compara el comportamiento histórico." />
 
-    <ReportTimeframeFilters client:load title="Filtro de variación" subtitle="Analiza la evolución del gasto por día, semana, mes o año y compara el comportamiento histórico." />
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <StatsCard title="Variacion acumulada" value="+9.6%" trend="2.8%" trendUp={false} color="danger"><FaMoneyBillTrendUp slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Mes con mayor pico" value="Marzo" subText="+$1,340 vs Febrero" color="warning"><FaChartLine slot="icon" size={18} /></StatsCard>
+      <StatsCard title="Alertas abiertas" value="2" subText="Requiere revision" color="danger"><FaCircleExclamation slot="icon" size={18} /></StatsCard>
+    </section>
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">

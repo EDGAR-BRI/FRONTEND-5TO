@@ -70,13 +70,13 @@ const quickActions = [
       </div>
     </div>
 
-    <ReceptionistStatsSummary client:load/>
+    <ReceptionistStatsSummary client:visible/>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       
       <div class="lg:col-span-2 space-y-6 border border-primary-100 rounded-xl">
         <StaticCard>
-          <TodaysScheduleTable client:load />
+          <TodaysScheduleTable client:visible />
         </StaticCard>
       </div>
 
