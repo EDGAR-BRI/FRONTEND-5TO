@@ -7,7 +7,7 @@ import { FaCheck, FaMinus, FaPlus, FaXmark, FaRegCalendarXmark } from 'react-ico
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
-import { getDoctorAvailabilitiesByScheduleId, createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
 import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
@@ -101,20 +101,15 @@ export default function DoctorScheduleManager() {
 
     const dayStartUTC = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
 
-    const ensureActiveScheduleId = useCallback(async (doctorId: number) => {
-        if (activeScheduleIds[doctorId]) return activeScheduleIds[doctorId]
-
+    const fetchActiveScheduleData = useCallback(async (doctorId: number): Promise<{ id: number, availabilities: DoctorAvailability[] }> => {
         const todayStart = dayStartUTC(new Date())
-        const schedules = await getDoctorSchedules(doctorId)
+        // Optimize: Fetch only the active schedule (periodEnd=null) which already includes its availabilities
+        const schedules = await getDoctorSchedules(doctorId, 'null')
 
-        const active = schedules
-            .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
-            .filter(s => s._start <= todayStart && (s._end === null || s._end > todayStart))
-            .sort((a, b) => b._start.getTime() - a._start.getTime())[0]
-
-        if (active) {
+        if (schedules && schedules.length > 0) {
+            const active = schedules[0]
             setActiveScheduleIds(prev => ({ ...prev, [doctorId]: active.id }))
-            return active.id
+            return { id: active.id, availabilities: active.availabilities ?? [] }
         }
 
         const created = await createDoctorSchedule({
@@ -124,8 +119,8 @@ export default function DoctorScheduleManager() {
         })
 
         setActiveScheduleIds(prev => ({ ...prev, [doctorId]: created.id }))
-        return created.id
-    }, [activeScheduleIds])
+        return { id: created.id, availabilities: [] }
+    }, [])
 
     // Step 2: Only fetch schedule data when a doctor is clicked
     const handleSelectDoctor = useCallback(async (docId: number) => {
@@ -141,9 +136,8 @@ export default function DoctorScheduleManager() {
 
         setLoadingDocId(docId)
         try {
-            const scheduleId = await ensureActiveScheduleId(docId)
-            const availability = await getDoctorAvailabilitiesByScheduleId(scheduleId)
-            const cycle = availabilityToCycle(docId, availability)
+            const { availabilities } = await fetchActiveScheduleData(docId)
+            const cycle = availabilityToCycle(docId, availabilities)
             setCycles(prev => ({ ...prev, [docId]: cycle }))
             setEditingCycle(structuredClone(cycle))
         } catch (err) {
@@ -153,7 +147,7 @@ export default function DoctorScheduleManager() {
         } finally {
             setLoadingDocId(null)
         }
-    }, [selectedDocId, cycles, ensureActiveScheduleId])
+    }, [selectedDocId, cycles, fetchActiveScheduleData])
 
     const isLoading = loadingDocId === selectedDocId
 
@@ -229,7 +223,11 @@ export default function DoctorScheduleManager() {
         setErrorMsg(null)
 
         try {
-            const scheduleId = await ensureActiveScheduleId(selectedDocId)
+            let scheduleId = activeScheduleIds[selectedDocId]
+            if (!scheduleId) {
+                const data = await fetchActiveScheduleData(selectedDocId)
+                scheduleId = data.id
+            }
             const todayStart = dayStartUTC(new Date())
             const todayISO = todayStart.toISOString().slice(0, 10)
 
