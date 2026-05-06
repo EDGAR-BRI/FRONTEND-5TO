@@ -1,4 +1,4 @@
-import { api, setToken, setUserName, setCI } from "@/lib/api";
+import { api, removeCI, removeDoctorId, removeToken, setToken, setUserName, setCI } from "@/lib/api";
 import type { LoginRequest, LoginResponseData, LoginUser, RegisterUserRequest, RegisterUserResponseData, Role } from "./auth.interface";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../_shared/envelope";
 
@@ -8,6 +8,7 @@ export const loginWithCredentials = async (payload: LoginRequest): Promise<Login
 	const response = await api(`${BASE_PATH}/login`, {
 		method: "POST",
 		body: JSON.stringify(payload),
+		skipUnauthorizedRedirect: true,
 	});
 
 	if (!response.ok) {
@@ -82,9 +83,49 @@ export const persistLogin = (data: LoginResponseData) => {
 	setCI(data.user.ci);
 };
 
+export const doctorLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "29778174",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "DOCTOR");
+};
+
+export const receptionistLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "31987430",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "RECEPCIONISTA");
+};
+
+export const patientLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "27617584",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "PACIENTE");
+};
+
+export const adminLogin = async () => {
+	const credentials: LoginRequest = {
+		ci: "31350493",
+		password: "123456",
+	};
+	const data = await loginWithCredentials(credentials);
+	persistLogin(data);
+	return dashboardPathForUser(data.user, "ADMIN");
+};
+
 export const logout = () => {
-	setToken("");
-	setUserName("");
-	setCI("")
-	window.location.href = "/auth/login";
+	removeToken();
+	removeCI();
+	removeDoctorId();
+	window.location.href = "/login";
 };

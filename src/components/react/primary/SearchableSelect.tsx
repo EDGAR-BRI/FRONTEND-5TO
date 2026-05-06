@@ -176,7 +176,7 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
         return () => window.removeEventListener('resize', handleResize);
     }, [isOpen]);
 
-    const bgClass = variant === "secondary" ? "bg-cool-gray-100" : "bg-cool-gray-90";
+    const bgClass = variant === "secondary" ? "bg-primary-100" : "bg-primary-100";
 
     return (
         <div className="flex flex-col gap-2 w-full">
@@ -204,7 +204,7 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                 <div
                     ref={setRef}
                     tabIndex={0}
-                    className={`w-full h-10 rounded-md px-4 py-2 text-body-s text-white flex items-center justify-between cursor-pointer transition-all border border-cool-gray-80  outline-none relative select-none ${bgClass} ${isOpen ? 'border-primary-60 ring-2 ring-primary-60/50' : 'border-cool-gray-60 hover:border-primary-60'} focus:border-primary-60 focus:ring-1 focus:ring-primary-60`}
+                    className={`w-full h-10 rounded-md px-4 py-2 text-body-s text-primary-800 flex items-center justify-between cursor-pointer transition-all border border-primary-300  outline-none relative select-none ${bgClass} ${isOpen ? 'border-primary-60 ring-2 ring-primary-60/50' : 'border-primary-300 hover:border-primary-60'} focus:border-primary-60 focus:ring-1 focus:ring-primary-60`}
                     onClick={toggle}
                     onKeyDown={(e) => {
                         if (onKeyDown) onKeyDown(e);
@@ -216,13 +216,13 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                         }
                     }}
                 >
-                    <span className={!selectedOption ? "text-cool-gray-40" : "truncate pr-4"}>
+                    <span className={!selectedOption ? "text-primary-300" : "truncate pr-4"}>
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
 
                     {/* Arrow Icon */}
                     <FaChevronDown
-                        className={`w-4 h-4 text-cool-gray-40 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-primary-300 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
                     />
                 </div>
 
@@ -233,7 +233,7 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                         <div className="fixed inset-0 z-50" onClick={() => setIsOpen(false)}></div>
 
                         <div
-                            className="fixed z-50 bg-cool-gray-90 border border-cool-gray-70 rounded-md shadow-lg overflow-hidden animate-fade-in-down animate-duration-200 flex flex-col"
+                            className="fixed z-50 bg-primary-100 border border-primary-300 rounded-md shadow-lg overflow-hidden animate-fade-in-down animate-duration-200 flex flex-col"
                             style={{
                                 top: coords.top !== undefined ? coords.top : 'auto',
                                 bottom: coords.bottom !== undefined ? coords.bottom : 'auto',
@@ -243,11 +243,11 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                             }}
                         >
                             {/* Search Header */}
-                            <div className="p-2 border-b border-cool-gray-80 bg-cool-gray-95 sticky top-0 z-10">
+                            <div className="p-2 border-b border-primary-300 bg-primary-100 sticky top-0 z-10">
                                 <input
                                     ref={searchInputRef}
                                     type="text"
-                                    className="w-full bg-cool-gray-80 text-white text-sm rounded border border-cool-gray-70 px-3 py-1.5 focus:outline-none focus:border-primary-60 placeholder-cool-gray-50"
+                                    className="w-full bg-primary-100 text-primary-800 text-sm rounded border border-primary-300 px-3 py-1.5 focus:outline-none focus:border-primary-60 placeholder:text-primary-50"
                                     placeholder={searchPlaceholder}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -262,7 +262,7 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                                     filteredOptions.map((option, index) => (
                                         <li
                                             key={option.value}
-                                            className={`px-4 py-2 cursor-pointer transition-colors text-white hover:bg-primary-60/20 hover:text-primary-40 text-sm ${(highlightedIndex === index) ? 'bg-primary-60/20 text-primary-40' : (selectedValue === option.value ? 'bg-primary-60/10 text-primary-40' : '')}`}
+                                            className={`px-4 py-2 cursor-pointer transition-colors text-primary-700 hover:bg-primary-60/20 hover:text-primary-40 text-sm ${(highlightedIndex === index) ? 'bg-primary-60/20 text-primary-40' : (selectedValue === option.value ? 'bg-primary-60/10 text-primary-40' : '')}`}
                                             onMouseEnter={() => setHighlightedIndex(index)}
                                             onClick={() => handleSelect(option.value)}
                                         >
@@ -270,7 +270,7 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="px-4 py-3 text-cool-gray-50 text-sm text-center italic">
+                                    <li className="px-4 py-3 text-primary-300 text-sm text-center italic">
                                         No se encontraron resultados
                                     </li>
                                 )}

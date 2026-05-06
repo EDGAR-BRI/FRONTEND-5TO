@@ -52,6 +52,12 @@ export interface DoctorScheduleCalendarProps {
   allAvailabilities: { doctorScheduleId?: number, day_of_week: number, start_time: string, end_time: string }[]
   heightPx?: number
   initialView?: 'week' | 'day' | 'agenda'
+  /** Controlled selected doctor — null means none selected yet */
+  selectedDoctorId?: number | null
+  /** Callback when a doctor pill is clicked */
+  onDoctorSelect?: (docId: number) => void
+  /** Show a loading overlay over the calendar */
+  loadingSchedules?: boolean
 }
 
 const locales = { es }
@@ -110,8 +116,20 @@ export default function DoctorScheduleCalendar({
   allAvailabilities,
   heightPx = 640,
   initialView = 'week',
+  selectedDoctorId: controlledDocId,
+  onDoctorSelect,
+  loadingSchedules = false,
 }: DoctorScheduleCalendarProps) {
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number>(doctors[0]?.id ?? 0)
+  // Support both controlled (prop) and uncontrolled (internal) selection
+  const [internalDocId, setInternalDocId] = useState<number | null>(null)
+  const isControlled = controlledDocId !== undefined
+  const selectedDoctorId = isControlled ? controlledDocId : internalDocId
+
+  const handleDoctorPillClick = (docId: number) => {
+    if (!isControlled) setInternalDocId(docId)
+    onDoctorSelect?.(docId)
+  }
+
   const [referenceDate, setReferenceDate] = useState(new Date())
   const [selectedApt, setSelectedApt] = useState<BookedAppointment | null>(null)
   const { isOpen, openModal, closeModal } = useModal(false)
@@ -121,6 +139,8 @@ export default function DoctorScheduleCalendar({
   const [loadingApts, setLoadingApts] = useState(false)
 
   useEffect(() => {
+    // Don't fetch if no doctor selected
+    if (selectedDoctorId === null || selectedDoctorId === 0) return
     // Si ya están cacheados, no volver a pedir
     if (appointmentsByDoctorId[selectedDoctorId]) return
 
@@ -131,7 +151,7 @@ export default function DoctorScheduleCalendar({
         console.log(formatted)
         setAppointmentsByDoctorId(prev => ({
           ...prev,
-          [selectedDoctorId]: formatted[selectedDoctorId] ?? [],
+          [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
         }))
       })
       .catch(err => console.error('Error fetching appointments:', err))
@@ -149,9 +169,10 @@ export default function DoctorScheduleCalendar({
   }, [])
 
   const closeAndClear = () => { closeModal(); setSelectedApt(null) }
-  const doctor = doctors.find(d => d.id === selectedDoctorId)
+  const doctor = selectedDoctorId !== null ? doctors.find(d => d.id === selectedDoctorId) : null
 
   const aptEvents = useMemo(() => {
+    if (selectedDoctorId === null || selectedDoctorId === 0) return []
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
     return apts.map<CalendarEvent>(apt => ({
       id: apt.id,
@@ -163,6 +184,7 @@ export default function DoctorScheduleCalendar({
   }, [selectedDoctorId, appointmentsByDoctorId])
 
   const shiftEvents = useMemo(() => {
+    if (selectedDoctorId === null || selectedDoctorId === 0) return []
     const monday = startOfWeek(referenceDate, { weekStartsOn: 1 })
     const events: CalendarEvent[] = []
     const docSchedules = allSchedules.filter(s => s.doctorId === selectedDoctorId)
@@ -236,7 +258,7 @@ export default function DoctorScheduleCalendar({
         {doctors.map(doc => (
           <button
             key={doc.id}
-            onClick={() => setSelectedDoctorId(doc.id)}
+            onClick={() => handleDoctorPillClick(doc.id)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${doc.id === selectedDoctorId
               ? 'bg-primary-700 text-white border-primary-700 shadow-sm'
               : 'bg-white text-primary-800 border-primary-200 hover:bg-primary-50'
@@ -251,10 +273,16 @@ export default function DoctorScheduleCalendar({
       </div>
 
       <div className="flex flex-wrap items-center gap-4 text-xs text-primary-700">
-        <span className="font-semibold text-primary-800">
-          <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
-          {doctor?.user.name} — {doctor?.specialty.name}
-        </span>
+        {doctor ? (
+          <span className="font-semibold text-primary-800">
+            <FaUserDoctor className="mr-1 text-primary-500 inline-block" />
+            {doctor.user.name} — {doctor.specialty.name}
+          </span>
+        ) : (
+          <span className="font-medium text-cool-gray-50 italic">
+            Selecciona un médico para ver sus citas
+          </span>
+        )}
         <span className="ml-auto flex flex-wrap gap-3">
           {Object.entries(STATUS_COLORS).map(([label, color]) => (
             <span key={label} className="flex items-center gap-1">

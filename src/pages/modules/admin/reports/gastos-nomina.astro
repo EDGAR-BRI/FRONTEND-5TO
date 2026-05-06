@@ -1,0 +1,78 @@
+---
+export const prerender = false;
+
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import { FaArrowLeft, FaUsers, FaChartPie, FaPercent } from "react-icons/fa6";
+
+const payrollData = [
+  { group: "Médicos Especialistas", amount: "$15,480", tax: "$2,322", net: "$13,158" },
+  { group: "Personal Enfermería", amount: "$8,020", tax: "$1,203", net: "$6,817" },
+  { group: "Administración", amount: "$4,360", tax: "$654", net: "$3,706" },
+  { group: "Servicios Generales", amount: "$2,450", tax: "$367", net: "$2,083" },
+];
+---
+
+<AdminLayout title="Gastos - Nómina Contable | Admin">
+  <div class="p-6 md:p-8 space-y-8">
+    
+    <a href="/modules/admin/reports/gastos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+      <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
+      Volver a gastos
+    </a>
+
+    <header class="space-y-2">
+      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Nómina y Cargas Sociales</h1>
+      <p class="text-gray-500 font-medium">Análisis de gastos de personal y retenciones de ley que afectan la utilidad del ejercicio.</p>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatsCard title="Gasto Salarial Bruto" value="$30,310" trend="4.2%" trendUp={true} color="primary">
+        <FaUsers slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Retenciones/Impuestos" value="$4,546" subText="Pasivo laboral" color="warning">
+        <FaChartPie slot="icon" size={20} />
+      </StatsCard>
+      <StatsCard title="Impacto sobre Ingresos" value="42%" subText="Estructura de costos" color="danger">
+        <FaPercent slot="icon" size={20} />
+      </StatsCard>
+    </section>
+
+    <ReportTimeframeFilters client:load title="Corte de Nómina" subtitle="Desglose de honorarios y salarios para conciliación bancaria." />
+
+    <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-xl font-semibold text-gray-800">Asientos de Nómina por Categoría</h2>
+        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
+            Resumen Operativo
+        </span>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-primary-300">
+          <thead class="bg-primary-300">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Grupo de Personal</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto Bruto</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Cargas/Imp.</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto Neto</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-primary-300">
+            {
+              payrollData.map((item) => (
+                <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
+                  <td class="px-4 py-3 text-sm text-gray-700 font-medium group-hover:text-primary-900">{item.group}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{item.amount}</td>
+                  <td class="px-4 py-3 text-sm text-right text-red-600 font-medium">{item.tax}</td>
+                  <td class="px-4 py-3 text-sm text-right text-emerald-700 font-black">{item.net}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</AdminLayout>

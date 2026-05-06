@@ -14,7 +14,7 @@ const currentPath = Astro.url.pathname;
 ---
 
 <nav
-    class="fixed bottom-0 left-0 w-full bg-cool-gray-100 border-t border-cool-gray-80 lg:hidden z-50 pb-safe"
+    class="fixed bottom-0 left-0 w-full bg-primary-100 border-t border-cool-gray-80 lg:hidden z-50 pb-safe"
 >
     <div class="flex justify-around items-center h-16 px-2">
         {
@@ -45,6 +45,7 @@ const currentPath = Astro.url.pathname;
                 return (
                     <a
                         href={item.href}
+                        data-astro-prefetch="hover"
                         class:list={[
                             "flex flex-col items-center justify-center w-full h-full space-y-1",
                             isActive

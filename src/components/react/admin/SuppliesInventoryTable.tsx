@@ -1,6 +1,7 @@
 import { DataTable, type Column } from "@/components/react/primary/DataTable";
 import { Badge } from "@/components/react/primary/Badge";
 import EditProductModalTrigger from "@/components/react/admin/EditProductModalTrigger";
+import { ModalTrigger } from "@/components/react/primary/ModalTrigger";
 import type { InventoryItem } from "@/types/Inventory";
 
 const money = (value: number) =>
@@ -76,13 +77,26 @@ export default function SuppliesInventoryTable({
             align: "center",
             cell: (item) => (
                 <div className="flex justify-center gap-3">
-                    <EditProductModalTrigger item={item} onUpdated={onUpdated} />
-                    <button
-                        className="text-error hover:text-red-700 text-sm font-medium transition-colors"
-                        onClick={() => void onDeleted(item.id)}
-                    >
-                        Eliminar
-                    </button>
+                                        <EditProductModalTrigger item={item} onUpdated={onUpdated} />
+                                        <ModalTrigger
+                                                trigger={<button className="text-error hover:text-red-700 text-sm font-medium transition-colors">Eliminar</button>}
+                                                modalTitle={`Eliminar ${item.name}`}
+                                            >
+                                                {({ close }) => (
+                                                    <div className="space-y-4">
+                                                        <p>¿Estás seguro que deseas eliminar <strong>{item.name}</strong>? Esta acción no se puede deshacer.</p>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button className="rounded-lg border px-3 py-2" onClick={close}>Cancelar</button>
+                                                            <button
+                                                                className="rounded-lg bg-red-600 text-white px-3 py-2"
+                                                                onClick={async () => { try { await onDeleted(item.id); } finally { close(); } }}
+                                                            >
+                                                                Eliminar permanentemente
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                        </ModalTrigger>
                 </div>
             ),
         },

@@ -37,6 +37,24 @@ import type { AstroCookies } from "astro";
 
 const TOKEN_KEY = "auth_token";
 
+export const decodeJWT = (token: string): { id: number; ci: string; iat: number; exp: number } | null => {
+    try {
+        const parts = token.split(".");
+        if (parts.length !== 3) return null;
+        const payload = parts[1];
+        const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+        return JSON.parse(decoded);
+    } catch {
+        return null;
+    }
+};
+
+export const getUserIdFromToken = (token: string | null): number | null => {
+    if (!token) return null;
+    const decoded = decodeJWT(token);
+    return decoded?.id ?? null;
+};
+
 export const getToken = (cookies?: AstroCookies): string | null => {
     // Si estamos en el servidor y tenemos acceso a las cookies de Astro
     if (typeof window === "undefined" && cookies) {
@@ -73,12 +91,16 @@ export const setDoctorId = (doctorId: string): void => {
     });
 };
 
+export const removeDoctorId = (): void => {
+    Cookies.remove(DOCTOR_ID_KEY, { path: "/" });
+};
+
 export const setToken = (token: string): void => {
     Cookies.set(TOKEN_KEY, token, {
         expires: 7,
         path: "/",
-        sameSite: "lax", // Protege contra CSRF
-        secure: import.meta.env.PROD // Solo HTTPS en producción, permite HTTP en desarrollo
+        sameSite: "lax",
+        secure: false // Allow HTTP in development
     });
 };
 
@@ -135,16 +157,18 @@ export const removeToken = (): void => {
 
 interface ApiOptions extends RequestInit {
     headers?: Record<string, string>;
+    skipUnauthorizedRedirect?: boolean;
 }
 
 export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: AstroCookies) => {
     try {
+        const { skipUnauthorizedRedirect = false, ...requestOptions } = options;
         const token = getToken(cookies);
         const doctorId = getDoctorId(cookies);
 
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
-            ...options.headers,
+            ...requestOptions.headers,
         };
 
         if (token) {
@@ -155,7 +179,7 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
         }
 
         const config: RequestInit = {
-            ...options,
+            ...requestOptions,
             headers,
         };
 
@@ -173,7 +197,7 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
 
         const response = await fetch(targetUrl, config);
 
-        if (response.status === 401) {
+        if (response.status === 401 && !skipUnauthorizedRedirect) {
             if (typeof window !== "undefined") {
                 removeToken();
                 window.location.href = '/login';

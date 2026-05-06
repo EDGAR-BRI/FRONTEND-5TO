@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { DoctorSchedConfigOption } from "./doctor.interface";
+import type { DoctorSchedConfigOption, DoctorDetail } from "./doctor.interface";
 
 const BASE_PATH = "medical/doctor";
 
@@ -22,4 +22,39 @@ export const getActuallyAvailableDrs = async (): Promise<DoctorSchedConfigOption
         throw new Error(await readEnvelopeErrorMessage(response));
     }
     return readEnvelopeData<DoctorSchedConfigOption[]>(response);
+}
+
+export const getDoctorById = async (id: number): Promise<DoctorDetail | null> => {
+    try {
+        const response = await api(`${BASE_PATH}/${id}`, {
+            method: "GET"
+        });
+        if(!response.ok){
+            console.error("Error fetching doctor:", response.status, await response.text());
+            return null;
+        }
+        const data = await readEnvelopeData<DoctorDetail>(response);
+        console.log("Doctor data response:", data);
+        return data;
+    } catch (error) {
+        console.error("Error in getDoctorById:", error);
+        return null;
+    }
+}
+
+export const getDoctorByUserId = async (userId: number): Promise<DoctorDetail | null> => {
+    try {
+        const response = await api(`${BASE_PATH}/by-user/${userId}`, {
+            method: "GET"
+        });
+        if(!response.ok){
+            console.error("Error fetching doctor by userId:", response.status);
+            return null;
+        }
+        const data = await readEnvelopeData<DoctorDetail>(response);
+        return data;
+    } catch (error) {
+        console.error("Error in getDoctorByUserId:", error);
+        return null;
+    }
 }
