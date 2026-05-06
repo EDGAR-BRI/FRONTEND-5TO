@@ -1,9 +1,9 @@
-import { FaArrowTrendUp, FaCalendarDays, FaUsers } from "react-icons/fa6";
+import { FaArrowTrendUp, FaCalendarDays, FaUsers, FaFlask } from "react-icons/fa6";
 
 interface Props {
   label: string;
   value: string;
-  iconType: "calendar" | "users";
+  iconType: "calendar" | "users" | "beaker";
   trend?: string;
 }
 
@@ -11,6 +11,7 @@ export default function StatCard({ label, value, iconType, trend }: Props) {
   const icons = {
     calendar: { icon: <FaCalendarDays size={20} />, bg: "bg-blue-50 text-blue-500" },
     users: { icon: <FaUsers size={20} />, bg: "bg-green-50 text-green-500" },
+    beaker: { icon: <FaFlask size={20} />, bg: "bg-purple-50 text-purple-500" },
   };
 
   return (
