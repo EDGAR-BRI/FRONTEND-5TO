@@ -7,6 +7,7 @@ import {
   FaHeartPulse,
   FaCreditCard,
   FaChartLine,
+  FaUserPen,
 } from "react-icons/fa6";
 import StaticCard from "@/components/react/primary/StaticCard";
 // Importamos tu complemento de Avatar
@@ -16,25 +17,36 @@ import { fetcher } from "@/lib/fetcher";
 import { Spinner } from "@/components/react/primary/Spinner";
 
 export const BasicData = ({ patientId }: { patientId: string }) => {
-  const { data: patientData, error, isLoading } = useSWR(`/medical/patient/${patientId}`, fetcher);
-
+  const { data: patientData, error, isLoading } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
+  console.log("Datos del paciente obtenidos:", patientData, "Error:", error, "Cargando:", isLoading);
   if (isLoading) return (
     <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full items-center justify-center">
       <Spinner />
     </StaticCard>
   );
 
-  if (error) return (
+  const hasNoProfile = !patientData?.data && (error?.status === 404 || !patientData);
+  
+  if (hasNoProfile) return (
     <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full items-center justify-center">
-      <span className="text-red-500 font-medium text-sm">Error al cargar datos</span>a
+      <div className="text-center space-y-3">
+        <FaUser className="w-12 h-12 text-slate-300 mx-auto" />
+        <p className="text-slate-500 font-medium text-sm">Perfil no completado</p>
+        <p className="text-slate-400 text-xs">Complete su información médica para ver sus datos aquí.</p>
+      </div>
     </StaticCard>
   );
 
-  const fullName = patientData?.user?.name || 'Desconocido';
-  const ci = patientData?.user?.ci || '-';
+  const fullName = patientData?.data?.patient?.name || 'Desconocido';
+  const ci = patientData?.data?.patient?.ci || '-';
   const initials = fullName.substring(0, 2).toUpperCase();
-  const bloodType = patientData?.tipo_sangre || 'No registrado';
-  const medicalHistory = patientData?.medical_history || 'Sin registros';
+  const bloodType = patientData?.data?.blood_type || 'No registrado';
+  const chronicDiseases = patientData?.data?.chronic_diseases || 'Sin registros';
+  const allergies = patientData?.data?.allergies || '-';
+  const lastVisit = patientData?.data?.last_visit_at ? new Date(patientData.data.last_visit_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Sin registros';
+  const birthDate = patientData?.data?.birth_date ? new Date(patientData.data.birth_date) : null;
+  const age = birthDate ? Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : '-';
+  const sex = patientData?.data?.sex || '-';
   return (
     <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full">
 
@@ -65,13 +77,13 @@ export const BasicData = ({ patientId }: { patientId: string }) => {
         <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
           <FaCalendarDays className="w-6 h-6 text-primary-600 mb-1" />
           <span className="text-[10px] font-bold text-slate-400 uppercase italic">Edad</span>
-          <span className="text-lg font-bold text-slate-800">-</span>
+          <span className="text-lg font-bold text-slate-800">{age}</span>
         </StaticCard>
 
         <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
           <FaUser className="w-6 h-6 text-primary-600 mb-1" />
           <span className="text-[10px] font-bold text-slate-400 uppercase italic">Género</span>
-          <span className="text-lg font-bold text-slate-800">-</span>
+          <span className="text-lg font-bold text-slate-800">{sex}</span>
         </StaticCard>
 
         <StaticCard className="flex flex-col items-center justify-center gap-1 py-4 text-center">
@@ -95,15 +107,15 @@ export const BasicData = ({ patientId }: { patientId: string }) => {
           <FaShieldHalved className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div>
             <span className="block text-xs font-bold text-red-700">Alergias</span>
-            <span className="text-xs text-red-600/80 font-medium">-</span>
+            <span className="text-xs text-red-600/80 font-medium">{allergies}</span>
           </div>
         </div>
 
         <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
           <FaChartLine className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
           <div>
-            <span className="block text-xs font-bold text-blue-700">Historial / Condición</span>
-            <span className="text-xs text-blue-600/80 font-medium line-clamp-2">{medicalHistory}</span>
+            <span className="block text-xs font-bold text-blue-700">Enfermedades Crónicas</span>
+            <span className="text-xs text-blue-600/80 font-medium line-clamp-2">{chronicDiseases}</span>
           </div>
         </div>
 
@@ -111,7 +123,7 @@ export const BasicData = ({ patientId }: { patientId: string }) => {
           <FaHeartPulse className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
           <div>
             <span className="block text-xs font-bold text-slate-700">Última Visita</span>
-            <span className="text-xs text-slate-500 font-medium">12 de Marzo, 2026</span>
+            <span className="text-xs text-slate-500 font-medium">{lastVisit}</span>
           </div>
         </div>
       </div>

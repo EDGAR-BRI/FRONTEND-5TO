@@ -1,9 +1,20 @@
-import { FaWallet } from 'react-icons/fa6';
+import { FaWallet, FaCircleCheck, FaCircleExclamation, FaClock } from 'react-icons/fa6';
 import { BillDetailModal } from './BillDetailModal';
 import StaticCard from '@/components/react/primary/StaticCard';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/fetcher';
+import { Spinner } from '@/components/react/primary/Spinner';
 
 export const PaymentsBills = ({ patientId }: { patientId: string }) => {
-  const payments: any[] = [];
+  const { data: invoicesData, isLoading } = useSWR(`/finance/invoice/patient/${patientId}`, fetcher);
+
+  if (isLoading) return (
+    <StaticCard className="p-16 text-center flex flex-col items-center gap-4 border-dashed">
+      <Spinner />
+    </StaticCard>
+  );
+
+  const invoices = invoicesData?.data || [];
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
@@ -12,9 +23,9 @@ export const PaymentsBills = ({ patientId }: { patientId: string }) => {
       </div>
 
       <div className="space-y-4">
-        {payments.length > 0 ? (
-          payments.map((pago, i) => (
-            <BillDetailModal key={i} bill={pago} />
+        {invoices.length > 0 ? (
+          invoices.map((invoice: any, i: number) => (
+            <BillDetailModal key={i} bill={invoice} />
           ))
         ) : (
           <StaticCard className="p-16 text-center flex flex-col items-center gap-4 border-dashed">
