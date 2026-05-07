@@ -29,7 +29,6 @@ import {
   FaUserPen,
   FaVenus,
   FaCapsules,
-  FaUsers,
 } from 'react-icons/fa6';
 
 import { api } from '@/lib/api';
@@ -122,7 +121,6 @@ const alerts: any[] = [];
 
 const quickActions = [
   { label: 'Agendar cita', icon: FaCalendarPlus, href: 'schedule-appointment', color: 'from-primary-500 to-primary-700' },
-  { label: 'Mis Familiares', icon: FaUsers, href: 'family', color: 'from-blue-500 to-blue-700' },
   { label: 'Historial clínico', icon: FaFileMedical, href: 'history', color: 'from-teal-500 to-teal-700' },
   { label: 'Mi perfil', icon: FaUserPen, href: 'profile', color: 'from-violet-500 to-violet-700' },
   { label: 'Documentos', icon: FaFolderOpen, href: 'history', color: 'from-orange-400 to-orange-600' },
@@ -195,7 +193,7 @@ const quickActions = [
       ))}
     </div>
 
-    <div>
+    <!-- <div>
       <h2 class="text-heading-6 text-primary-800 mb-3">Acciones rápidas</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickActions.map(({ icon: Icon, ...action }) => (
@@ -209,7 +207,7 @@ const quickActions = [
           </a>
         ))}
       </div>
-    </div>
+    </div> -->
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
