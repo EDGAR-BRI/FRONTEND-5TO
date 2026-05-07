@@ -1,0 +1,12 @@
+---
+import PacientLayout from '@/layouts/PacientLayout.astro';
+import { FamilyGroupManager } from '@/components/react/pacient/FamilyGroupManager';
+
+const pacient_id = Astro.params.pacient_id || '';
+---
+
+<PacientLayout title="Grupo familiar | Paciente">
+  <div class="p-4 sm:p-6 lg:p-8 min-w-0">
+    <FamilyGroupManager client:visible patientId={pacient_id} />
+  </div>
+</PacientLayout>

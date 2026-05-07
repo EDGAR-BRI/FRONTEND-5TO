@@ -1,5 +1,32 @@
 ---
 export const prerender = false;
 
-return Astro.redirect('/modules/pacient/1/overview');
+import { api, getToken, getUserIdFromToken } from '@/lib/api';
+
+const token = getToken(Astro.cookies);
+const userId = getUserIdFromToken(token);
+
+if (!userId) {
+	return Astro.redirect('/login');
+}
+
+try {
+	const response = await api(`/medical/patient/user/${userId}`, { method: 'GET' }, Astro.cookies);
+	if (!response.ok) {
+		return Astro.redirect('/no-encontrado');
+	}
+
+	const json = await response.json();
+	const patients = Array.isArray(json?.data) ? json.data : [];
+
+	if (patients.length === 0) {
+		return Astro.redirect('/no-encontrado');
+	}
+
+	const primaryPatient = patients.find((p: any) => p?.active !== false) || patients[0];
+	return Astro.redirect(`/modules/pacient/${primaryPatient.id}/overview`);
+} catch (error) {
+	console.error('[pacient/index] Error resolving patient by user:', error);
+	return Astro.redirect('/error-servidor');
+}
 ---

@@ -37,8 +37,8 @@ export const LoginRedirectButton: React.FC<LoginRedirectButtonProps> = ({
 			admin: "/modules/admin/overview",
 			doctor: "/modules/doctor/1/overview",
 			medico: "/modules/doctor/1/overview",
-			pacient: "/modules/pacient/1/overview",
-			paciente: "/modules/pacient/1/overview",
+			pacient: "/modules/pacient",
+			paciente: "/modules/pacient",
 			receptionist: "/modules/receptionist/1/overview",
 			recepcionista: "/modules/receptionist/1/overview",
 		};
