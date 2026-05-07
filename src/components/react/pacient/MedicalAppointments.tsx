@@ -9,9 +9,20 @@ import {
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
 import StaticCard from '../primary/StaticCard';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/fetcher';
+import { Spinner } from '@/components/react/primary/Spinner';
 
 export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
-  const appointments: any[] = [];
+  const { data: appointmentsData, isLoading } = useSWR(`/scheduling/appointment/patient/${patientId}`, fetcher);
+
+  if (isLoading) return (
+    <StaticCard className="p-16 text-center flex flex-col items-center gap-4 border-dashed">
+      <Spinner />
+    </StaticCard>
+  );
+
+  const appointments = appointmentsData?.data || [];
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
@@ -20,7 +31,7 @@ export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
       </div>
       
       {appointments.length > 0 ? (
-        appointments.map((app, i) => (
+        appointments.map((app: any, i: number) => (
           <AppointmentDetailModal key={i} appointment={app} />
         ))
       ) : (
@@ -36,7 +47,14 @@ export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
 };
 
 const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
-  const isCompleted = appointment.status === 'Asistió';
+  const specialty = appointment.doctor?.specialty?.name || 'General';
+  const doctorName = appointment.doctor?.user?.name || 'No asignado';
+  const statusName = appointment.status?.name || 'Programada';
+  const isCompleted = statusName === 'Atendido' || statusName === 'Completada';
+  
+  const appointmentDate = new Date(appointment.date_time);
+  const fecha = appointmentDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  const hora = appointmentDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <StaticCard className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -46,29 +64,28 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
         </div>
         <div className="text-left">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-bold text-slate-800">{appointment.especialidad}</p>
+            <p className="text-sm font-bold text-slate-800">{specialty}</p>
             
-            {/* ETIQUETAS IGUALES A CURRENT MEDICATION */}
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
               isCompleted 
                 ? 'bg-emerald-100 text-emerald-700' 
                 : 'bg-blue-100 text-blue-700'
             }`}>
-              {appointment.status}
+              {statusName}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1 flex items-center gap-1 italic">
-            Recetado por: {appointment.doctor}
+            Dr(a): {doctorName}
           </p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-          <FaClock className="w-3 h-3 text-blue-500" /> {appointment.hora}
+          <FaClock className="w-3 h-3 text-blue-500" /> {hora}
         </div>
         <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-          <FaLocationDot className="w-3 h-3 text-red-400" /> {appointment.lugar.split('-')[0]}
+          <FaCalendarDays className="w-3 h-3 text-red-400" /> {fecha}
         </div>
       </div>
 
@@ -90,7 +107,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
                 <p className={`${isCompleted ? 'text-emerald-600' : 'text-blue-600'} text-[10px] font-black uppercase tracking-widest`}>
                   {isCompleted ? 'Consulta Finalizada' : 'Cita Programada'}
                 </p>
-                <h2 className="text-xl font-bold text-slate-800 tracking-tight">{appointment.especialidad}</h2>
+                <h2 className="text-xl font-bold text-slate-800 tracking-tight">{specialty}</h2>
               </div>
             </div>
 
@@ -98,17 +115,17 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Médico Especialista</label>
-                  <p className="text-sm font-semibold text-slate-700">{appointment.doctor}</p>
+                  <p className="text-sm font-semibold text-slate-700">{doctorName}</p>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Fecha Programada</label>
-                  <p className="text-sm font-semibold text-slate-700">{appointment.fecha}</p>
+                  <p className="text-sm font-semibold text-slate-700">{fecha}</p>
                 </div>
               </div>
               
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Ubicación de la Clínica</label>
-                <p className="text-sm font-semibold text-slate-700">{appointment.lugar}</p>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Hora</label>
+                <p className="text-sm font-semibold text-slate-700">{hora}</p>
               </div>
 
               <div className={`p-4 rounded-2xl border flex gap-3 ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>

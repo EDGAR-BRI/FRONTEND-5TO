@@ -30,18 +30,26 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
   const [activeTab, setActiveTab] = useState('personal');
   
   // 1. Traemos los datos actuales para rellenar el formulario inicial
-  const { data: patientData } = useSWR(`/medical/patient/${patientId}`, fetcher);
+  const { data: patientData } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
 
   // 2. Estados del formulario (Solo para los datos que acepta tu BD)
   const [bloodType, setBloodType] = useState('');
-  const [medicalHistory, setMedicalHistory] = useState('');
+  const [chronicDiseases, setChronicDiseases] = useState('');
+  const [allergies, setAllergies] = useState('');
+  const [email, setEmail] = useState('');
+  const [mainPhone, setMainPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Sincronizamos los estados cuando llegan los datos del backend
   useEffect(() => {
     if (patientData?.data) {
-      setBloodType(patientData.data.tipo_sangre || '');
-      setMedicalHistory(patientData.data.medical_history || '');
+      setBloodType(patientData.data.blood_type || '');
+      setChronicDiseases(patientData.data.chronic_diseases || '');
+      setAllergies(patientData.data.allergies || '');
+      setEmail(patientData.data.email || '');
+      setMainPhone(patientData.data.main_phone || '');
+      setAddress(patientData.data.address || '');
     }
   }, [patientData]);
 
@@ -58,17 +66,21 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
     setIsSaving(true);
 
     try {
-      const response = await api(`/medical/patient/${patientId}`, {
+      const response = await api(`/medical/info-patient/patient/${patientId}`, {
         method: 'PUT',
         body: JSON.stringify({
-          tipo_sangre: bloodType,
-          medical_history: medicalHistory
+          blood_type: bloodType,
+          chronic_diseases: chronicDiseases,
+          allergies: allergies,
+          email: email,
+          main_phone: mainPhone,
+          address: address
         })
       });
 
       if (response.ok) {
         // Magia de SWR: Le decimos que vuelva a cargar los datos en toda la pantalla
-        mutate(`/medical/patient/${patientId}`);
+        mutate(`/medical/info-patient/patient/${patientId}`);
         alert("¡Perfil actualizado con éxito!");
         close(); // Cerramos el modal
       } else {
@@ -170,37 +182,75 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Historial / Condiciones</label>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Enfermedades Crónicas</label>
                             <textarea 
                               rows={3}
-                              value={medicalHistory}
-                              onChange={(e) => setMedicalHistory(e.target.value)}
-                              placeholder="Escriba aquí condiciones preexistentes, alergias relevantes..."
+                              value={chronicDiseases}
+                              onChange={(e) => setChronicDiseases(e.target.value)}
+                              placeholder="Escriba aquí condiciones preexistentes..."
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Alergias</label>
+                            <textarea 
+                              rows={2}
+                              value={allergies}
+                              onChange={(e) => setAllergies(e.target.value)}
+                              placeholder="Escriba aquí alergias relevantes..."
                               className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
                             />
                           </div>
                         </div>
                       </StaticCard>
 
-                      {/* DATOS DE CONTACTO (UI Mock - Hasta que los agregues a Prisma) */}
-                      <StaticCard className="p-6 opacity-60">
+                      {/* DATOS DE CONTACTO */}
+                      <StaticCard className="p-6">
                         <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
                           <div className="flex items-center gap-2">
                             <FaPhone className="w-4 h-4 text-slate-500" />
-                            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest">Contacto (Próximamente)</h4>
+                            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest">Información de Contacto</h4>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Correo Electrónico</label>
                             <div className="relative">
-                              <input disabled type="email" defaultValue="pedro.sanchez@gmail.com" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm cursor-not-allowed" />
+                              <input 
+                                type="email" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="correo@ejemplo.com"
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                              />
+                              <FaEnvelope className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
                             </div>
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono Móvil</label>
                             <div className="relative">
-                              <input disabled type="text" defaultValue="+58 412-1234567" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm cursor-not-allowed" />
+                              <input 
+                                type="text" 
+                                value={mainPhone}
+                                onChange={(e) => setMainPhone(e.target.value)}
+                                placeholder="+58 412-1234567"
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                              />
+                              <FaPhone className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5 md:col-span-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Dirección</label>
+                            <div className="relative">
+                              <input 
+                                type="text" 
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="Dirección completa"
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                              />
+                              <FaLocationDot className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
                             </div>
                           </div>
                         </div>
