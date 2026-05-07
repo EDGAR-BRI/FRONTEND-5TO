@@ -1,13 +1,12 @@
 export type PatientInfo =
 {
-    id: number;
     patientId?: number;
 
     ci: string;
     name: string;
     last_name: string;
     sex: 'MALE' | 'FEMALE';
-    birth_date: string;
+    birth_date: Date;
 
     blood_type?: string | null;
     nacionality?: string | null;
@@ -25,12 +24,4 @@ export type PatientInfo =
     previous_surgeries?: string | null;
 
     last_visit_at?: Date | null;
-}
-
-export type UpdateContactInfoPayload = {
-    main_phone?: string;
-    secondary_phone?: string;
-    email?: string;
-    address?: string;
-    city?: string;
 }
