@@ -71,7 +71,7 @@ export const dashboardPathForUser = (user: LoginUser, roleCodeOverride?: string)
 			console.log("CASO RECEPCIONISTA")
 			return `/modules/receptionist/${id}/overview`;
 		case "PACIENTE":
-			return `/modules/pacient/${id}/overview`;
+				return "/modules/pacient";
 		default:
 			return "/modules/admin/overview";
 	}
