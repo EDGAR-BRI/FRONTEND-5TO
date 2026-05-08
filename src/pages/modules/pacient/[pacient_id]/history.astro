@@ -34,15 +34,16 @@ try {
   const selectedCi = normalizeCi(selectedPatient.ci || selectedPatient.user?.ci);
   const expectedCi = normalizeCi(authCi);
 
-  if (selectedCi !== expectedCi) {
-    const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
-    const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
-    const ownerPatients = Array.isArray(ownerPatientsJson?.data) ? ownerPatientsJson.data : [];
-    const mainOwnerPatient = ownerPatients.find((patient: any) => {
-      const patientCi = normalizeCi(patient?.ci);
-      const linkedUserCi = normalizeCi(patient?.user?.ci);
-      return patientCi === expectedCi || linkedUserCi === expectedCi;
-    });
+    if (selectedCi !== expectedCi) {
+      const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
+      const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
+      const raw = ownerPatientsJson?.data;
+      const ownerPatients = Array.isArray(raw) ? raw : raw ? [raw] : [];
+      const mainOwnerPatient = ownerPatients.find((patient: any) => {
+        const patientCi = normalizeCi(patient?.ci);
+        const linkedUserCi = normalizeCi(patient?.user?.ci);
+        return patientCi === expectedCi || linkedUserCi === expectedCi;
+      });
 
     if (!mainOwnerPatient) {
       return Astro.redirect('/no-encontrado');

@@ -185,7 +185,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
             }
 
             const data = await res.json();
-            const patients = Array.isArray(data?.data) ? data.data : [];
+            // Backend is 1:1 (user -> single patient). Keep Set logic for future-proofing.
+            const raw = data?.data;
+            const patients = Array.isArray(raw) ? raw : raw ? [raw] : [];
             const allowedPatientIds = new Set(patients.map((patient: any) => Number(patient?.id)));
 
             if (!allowedPatientIds.has(routePatientId)) {

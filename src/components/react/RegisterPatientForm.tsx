@@ -6,8 +6,8 @@ import { CheckBox } from '@/components/react/primary/CheckBox'
 import { Modal } from '@/components/react/primary/Modal'
 import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import { useModal } from '@/hooks/UseModal'
-import { listUsers, createUser } from '@/lib/services/User/user.service'
-import { addPatient } from '@/lib/services/medical/patient/patient.service'
+import { listUsers } from '@/lib/services/User/user.service'
+import { addPatient, addPatientFromReception } from '@/lib/services/medical/patient/patient.service'
 import { addPatientInfo } from '@/lib/services/medical/info-patient/info_patient.service'
 import type { UserDto } from '@/lib/services/User/user.interface'
 import type { IconType } from 'react-icons'
@@ -180,9 +180,9 @@ export default function RegisterPatientForm({
         // Si se va a crear usuario (no enlazar), backend exige CI numérica 6-9.
         if (!linkedUserId && !hideUserLinking && !form.linkExistingUser) {
             if (!/^[0-9]+$/.test(form.ci.trim())) {
-                e.ci = 'Para crear usuario, la cédula debe contener solo números'
+                e.ci = 'Para crear paciente, la cédula debe contener solo números'
             } else if (!hasLengthInRange(form.ci, 6, 9)) {
-                e.ci = 'Para crear usuario, la cédula debe tener entre 6 y 9 números'
+                e.ci = 'Para crear paciente, la cédula debe tener entre 6 y 9 números'
             }
         }
 
@@ -205,9 +205,12 @@ export default function RegisterPatientForm({
             e.selectedUserId = 'Debes seleccionar un usuario'
         }
         if (!hideUserLinking && !linkedUserId && !form.linkExistingUser && !form.tempPassword.trim()) {
-            e.tempPassword = 'La contraseña es requerida'
+            // Password is auto-generated in backend for reception flow.
+            // Keep this field optional in UI for now to avoid layout churn.
+            // (It can be removed later.)
+            // e.tempPassword = 'La contraseña es requerida'
         } else if (!hideUserLinking && !linkedUserId && !form.linkExistingUser && !hasLengthInRange(form.tempPassword, 6, 200)) {
-            e.tempPassword = 'La contraseña debe tener entre 6 y 200 caracteres'
+            // e.tempPassword = 'La contraseña debe tener entre 6 y 200 caracteres'
         }
 
         setErrors(e)
@@ -225,15 +228,41 @@ export default function RegisterPatientForm({
             if (linkedUserId) {
                 patientUserId = linkedUserId;
             } else if (!hideUserLinking && !form.linkExistingUser) {
-                // Flow 2: Create new user
-                const newUser = await createUser({
+                // Flow 2: Reception flow (backend creates User + Patient atomically)
+                const created = await addPatientFromReception({
                     ci: form.ci,
                     name: `${form.firstName} ${form.lastName}`,
-                    password: form.tempPassword,
-                    roleId: 4 // PACIENTE
                 });
-                patientUserId = newUser.id;
-                setUsers(prev => [...prev, newUser]);
+
+                // Ensure downstream flow (optional InfoPatient) has a patientId.
+                // This bypasses the old createUser + addPatient sequence.
+                if (createInfoPatientOnRegister) {
+                    const birthDate = new Date(form.birthDate);
+                    const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
+
+                    await addPatientInfo({
+                        patientId: created.id,
+                        ci: form.ci,
+                        name: form.firstName,
+                        last_name: form.lastName,
+                        sex,
+                        birth_date: birthDate,
+                        blood_type: form.bloodType || null,
+                        nacionality: form.nationality || null,
+                        main_phone: form.phone || null,
+                        email: form.email || null,
+                        address: form.address || null,
+                        city: form.city || null,
+                        allergies: form.allergies || null,
+                        chronic_diseases: form.chronicDiseases || null,
+                        current_medications: form.currentMedications || null,
+                        previous_surgeries: form.previousSurgeries || null
+                    });
+                }
+
+                openSuccess();
+                onSuccess?.();
+                return;
             }
 
             if (!patientUserId) {

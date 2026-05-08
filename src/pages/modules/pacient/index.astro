@@ -23,7 +23,8 @@ try {
 	}
 
 	const json = await response.json();
-	const patients = Array.isArray(json?.data) ? json.data : [];
+	const raw = json?.data;
+	const patients = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
 	if (patients.length === 0) {
 		return Astro.redirect('/no-encontrado');

@@ -70,7 +70,8 @@ try {
   if (!userId || !authCi || selectedCi !== expectedCi) {
     const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
     const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
-    const ownerPatients = Array.isArray(ownerPatientsJson?.data) ? ownerPatientsJson.data : [];
+    const ownerRaw = ownerPatientsJson?.data;
+    const ownerPatients = Array.isArray(ownerRaw) ? ownerRaw : ownerRaw ? [ownerRaw] : [];
     const mainOwnerPatient = ownerPatients.find((patient: any) => {
       const patientCi = normalizeCi(patient?.ci);
       const linkedUserCi = normalizeCi(patient?.user?.ci);
@@ -98,7 +99,8 @@ try {
   } else {
     const linkedPatientsRes = await api(`/medical/patient/user/${linkedUserId}`, {}, Astro.cookies);
     const linkedPatientsJson = linkedPatientsRes.ok ? await linkedPatientsRes.json() : null;
-    const linkedPatients = Array.isArray(linkedPatientsJson?.data) ? linkedPatientsJson.data : [selectedPatient];
+    const linkedRaw = linkedPatientsJson?.data;
+    const linkedPatients = Array.isArray(linkedRaw) ? linkedRaw : linkedRaw ? [linkedRaw] : [selectedPatient];
 
     const appointmentResponses = await Promise.all(
       linkedPatients.map((patient: any) => api(`/scheduling/appointment/patient/${patient.id}`, {}, Astro.cookies))

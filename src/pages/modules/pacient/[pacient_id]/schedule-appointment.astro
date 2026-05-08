@@ -45,7 +45,8 @@ try {
   if (selectedCi !== expectedCi) {
     const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
     const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
-    const ownerPatients = Array.isArray(ownerPatientsJson?.data) ? ownerPatientsJson.data : [];
+    const raw = ownerPatientsJson?.data;
+    const ownerPatients = Array.isArray(raw) ? raw : raw ? [raw] : [];
     const mainOwnerPatient = ownerPatients.find((patient: any) => {
       const patientCi = normalizeCi(patient?.ci);
       const linkedUserCi = normalizeCi(patient?.user?.ci);
