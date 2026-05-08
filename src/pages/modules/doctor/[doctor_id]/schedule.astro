@@ -105,44 +105,9 @@ try {
         </div>
       </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 flex-1">
-            <section
-                class="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150"
-            >
-                <h2 class="text-xl font-bold text-slate-800 mb-6">
-                    Calendario de Consultas
-                </h2>
-                <div class="flex-1">
-                    <AppointmentCalendar
-                        role="doctor"
-                        citas={citas}
-                        context={{ doctorId: doctor_id }}
-                        actions={[
-                            {
-                                id: "historial",
-                                label: "Ver Historial Clínico",
-                                kind: "link",
-                                variant: "primary",
-                                hrefTemplate:
-                                    "/modules/pacient/{id_paciente}/history",
-                            },
-                        ]}
-                        client:visible
-                    />
-                </div>
-            </section>
 
             <aside class="flex flex-col gap-6">
-                {
-                    /* Aquí inyectamos nuestra nueva Isla reactiva.
-                  Asegúrate de usar client:load para que React controle los eventos de clic y el modal. 
-                */
-                }
                 <DailyAppointmentsAside citas={citas} client:visible />
-
-                {
-                    /* Esta tarjeta de herramientas rápidas puede seguir siendo estática si solo son enlaces */
-                }
                 <StaticCard className="">
                     <h3 class="font-bold mb-4">Herramientas Rápidas</h3>
                     <nav class="grid gap-2">
@@ -159,6 +124,6 @@ try {
                     </nav>
                 </StaticCard>
             </aside>
-        </div>
+      
     </main>
 </MainLayout>

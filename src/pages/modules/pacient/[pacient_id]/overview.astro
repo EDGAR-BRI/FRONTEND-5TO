@@ -40,23 +40,37 @@ let appointmentsData: any[] = [];
 
 
 try {
-  const [patientRes, appointmentsRes] = await Promise.all([
-    api(`/medical/patient/${pacient_id}`, {}, Astro.cookies),
-    api(`/scheduling/appointment?patientId=${pacient_id}`, {}, Astro.cookies)
-  ]);
+  // AQUI DEBE USAR EL SERVICIO DEL PACIENTE NO USAR LA API DIRECTAMENTE DESDE AQUI (aGREGAR COSAS ALLI SI LO NECESITAN)
+  // In this route, `pacient_id` is the authenticated userId.
+  const patientRes = await api(`/medical/patient/user/${pacient_id}`, {}, Astro.cookies);
 
   if (!patientRes.ok) {
     return Astro.redirect('/no-encontrado');
   }
 
   const patientJson = await patientRes.json();
-  patientData = patientJson.data;
+  const patients = Array.isArray(patientJson.data) ? patientJson.data : [];
 
-  // Si hay citas, las guardamos (si falla esta, no rompemos la página entera)
-  if (appointmentsRes.ok) {
-    const apptJson = await appointmentsRes.json();
-    appointmentsData = Array.isArray(apptJson.data) ? apptJson.data : [];
+  if (patients.length === 0) {
+    return Astro.redirect('/no-encontrado');
   }
+
+  // Keep one patient record for profile cards and aggregate appointments for all linked patients.
+  patientData = patients[0];
+
+  const appointmentResponses = await Promise.all(
+    patients.map((patient: any) => api(`/scheduling/appointment/patient/${patient.id}`, {}, Astro.cookies))
+  );
+
+  const appointmentJsonList = await Promise.all(
+    appointmentResponses
+      .filter((res) => res.ok)
+      .map((res) => res.json())
+  );
+
+  appointmentsData = appointmentJsonList.flatMap((item) =>
+    Array.isArray(item?.data) ? item.data : []
+  );
 } catch (error) {
   console.error("Error cargando el overview:", error);
   return Astro.redirect('/error-servidor');

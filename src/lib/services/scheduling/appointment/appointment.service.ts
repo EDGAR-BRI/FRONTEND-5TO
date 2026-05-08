@@ -35,7 +35,7 @@ import type { AstroCookies } from "astro";
 
 export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: boolean = false, cookies?: AstroCookies): Promise<Appointment[]> => {
     const url = `${BASE_PATH}/${selectUpcomingOnly ? 'upcoming/' : ''}doctor/${doctorId}`
-    const response = await api(url, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
+    const response = await api(url, { 
         method: "GET"
     }, cookies);
     if(!response.ok){
