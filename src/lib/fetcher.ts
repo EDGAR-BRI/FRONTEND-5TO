@@ -33,25 +33,17 @@ export const fetcher = async (args: FetcherArgs) => {
 
     const json = await response.json();
 
-    // --- BLOQUE DE SEGURIDAD ---
-    // 1. Si el backend devuelve { data: [...] }
-    if (json.data && Array.isArray(json.data)) {
-        console.log("✅ Data encontrada (formato json.data):", json.data.length);
+    if (json?.data !== undefined) {
         return json.data;
     }
-    
-    // 2. Si el backend devuelve directamente el array [...]
+
     if (Array.isArray(json)) {
-        console.log("✅ Data encontrada (formato array directo):", json.length);
         return json;
     }
 
-    // 3. Si devuelve paginación { items: [...], total: 10 }
-    if (json.items && Array.isArray(json.items)) {
-         console.log("✅ Data encontrada (formato json.items):", json.items.length);
+    if (json?.items && Array.isArray(json.items)) {
         return json.items;
     }
 
-    //console.warn("⚠️ Formato de respuesta desconocido:", json);
-    return []; // Retornamos array vacío para que no explote el .map
+    return json;
 };

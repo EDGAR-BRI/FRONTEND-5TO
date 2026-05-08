@@ -2,22 +2,34 @@
 import PacientLayout from "@/layouts/PacientLayout.astro";
 import { BasicData } from "@/components/react/pacient/BasicData";
 import { ProfileTabs } from "@/components/react/pacient/ProfileTabs";
-import { FaUserPen, FaCircleExclamation } from "react-icons/fa6";
+import { FaCalendarDays, FaCircleExclamation, FaDroplet, FaPhone, FaUser, FaUserPen } from "react-icons/fa6";
 import { api } from "@/lib/api";
 
 const { pacient_id } = Astro.params;
 
 let patientData: any = null;
+let infoPatientData: any = null;
 let errorFetch = false;
 
-// 1. Buscamos los datos reales del paciente en el servidor
 try {
-  const res = await api(`/medical/patient/${pacient_id}`, {}, Astro.cookies);
-  if (res.ok) {
-    const json = await res.json();
+  const [patientRes, infoRes] = await Promise.all([
+    api(`/medical/patient/${pacient_id}`, {}, Astro.cookies),
+    api(`/medical/info-patient/patient/${pacient_id}`, {}, Astro.cookies),
+  ]);
+
+  if (patientRes.ok) {
+    const json = await patientRes.json();
     patientData = json.data;
-  } else {
-    errorFetch = true;
+  }
+
+  if (infoRes.ok) {
+    const json = await infoRes.json();
+    infoPatientData = json.data;
+  }
+
+  errorFetch = !patientData && !infoPatientData;
+
+  if (errorFetch) {
     console.warn(`Paciente ${pacient_id} no encontrado en BD para el Perfil.`);
   }
 } catch (error) {
@@ -25,50 +37,103 @@ try {
   console.error("Error de conexión al cargar el perfil:", error);
 }
 
-// 2. Preparamos el objeto con Fallbacks por si la BD está vacía (Mock)
-const patientInfo = {
-  id: pacient_id,
-  userId: patientData?.userId || null,
-  name: patientData?.user?.name || "Usuario de Prueba",
-  ci: patientData?.user?.ci || "V-00000000",
-  bloodType: patientData?.tipo_sangre || "",
-  medicalHistory: patientData?.medical_history || "",
-  email: patientData?.user?.email || "", 
-  phone: patientData?.user?.phone || "",
+const patientRecord = infoPatientData?.patient ?? patientData?.user ?? patientData ?? null;
+const fullName = patientRecord?.name || "Paciente sin nombre";
+const ci = patientRecord?.ci || patientData?.ci || "V-00000000";
+const initials = fullName
+  .split(" ")
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part: string) => part[0]?.toUpperCase())
+  .join("") || "P";
+
+const birthDate = infoPatientData?.birth_date ? new Date(infoPatientData.birth_date) : null;
+const age = birthDate
+  ? Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  : null;
+
+const formatDate = (value: string | Date | null | undefined) => {
+  if (!value) return "No registrado";
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "No registrado";
+
+  return date.toLocaleDateString("es-VE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 };
+
+const profileStats = [
+  { label: "Edad", value: age ?? "No registrada", icon: FaCalendarDays },
+  { label: "Sexo", value: infoPatientData?.sex || "No registrado", icon: FaUser },
+  { label: "Sangre", value: infoPatientData?.blood_type || "No registrada", icon: FaDroplet },
+  { label: "Teléfono", value: infoPatientData?.main_phone || "No registrado", icon: FaPhone },
+];
 ---
 
 <PacientLayout title="Perfil del Paciente">
-  <main class="p-4 md:p-6 bg-[#f4f9ff] min-h-screen w-full">
-    
-    <header class="w-full mb-8 flex items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400">
-      <div class="bg-blue-100 p-3 rounded-xl shrink-0">
-        <FaUserPen className="w-8 h-8 text-blue-600" />
-      </div>
-      <div class="flex-1">
-        <h1 class="text-2xl font-bold text-slate-800">Mi Perfil</h1>
-        <p class="text-slate-500 text-sm font-medium">
-          Gestiona tu información personal y médica.
-        </p>
-      </div>
-      
-      {/* Aviso visual si estamos usando Mock Data */}
-      {errorFetch && (
-        <div class="hidden sm:flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-lg border border-amber-200 text-sm font-medium">
-          <FaCircleExclamation className="text-amber-500" />
-          Modo Prueba (Sin BD)
+  <main class="min-h-screen w-full bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.16),_transparent_34%),linear-gradient(180deg,_#f8fbff_0%,_#eef4fb_100%)] px-4 py-6 md:px-6 md:py-8">
+    <div class="mx-auto flex w-full max-w-[1400px] flex-col gap-6">
+      <header class="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur md:p-8">
+        <div class="absolute inset-0 bg-gradient-to-r from-sky-50 via-transparent to-indigo-50 opacity-90" />
+        <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex items-start gap-4 md:gap-5">
+            <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-lg shadow-sky-200">
+              <FaUserPen className="h-8 w-8" />
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <h1 class="text-3xl font-black tracking-tight text-slate-900 md:text-4xl">Mi Perfil</h1>
+                {errorFetch && (
+                  <span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-700">
+                    <FaCircleExclamation className="h-3.5 w-3.5 text-amber-500" />
+                    Sin datos completos
+                  </span>
+                )}
+              </div>
+
+              <p class="max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
+                Gestiona la información médica y de contacto del paciente con datos reales del backend.
+              </p>
+
+              <div class="flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+                <span class="rounded-full bg-slate-100 px-3 py-1">CI: {ci}</span>
+                <span class="rounded-full bg-slate-100 px-3 py-1">Nacimiento: {formatDate(infoPatientData?.birth_date)}</span>
+                <span class="rounded-full bg-slate-100 px-3 py-1">Última visita: {formatDate(patientData?.last_visit_at)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto lg:min-w-[560px]">
+            {profileStats.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div class="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
+                  <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                    <Icon className="h-3.5 w-3.5 text-sky-500" />
+                    {item.label}
+                  </div>
+                  <p class="mt-2 text-sm font-bold text-slate-900">{item.value}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      )}
-    </header>
+      </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full items-stretch">
-      <aside class="flex flex-col h-full">
-        <BasicData client:visible patientId={pacient_id as string} />
-      </aside>
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)]">
+        <aside class="flex flex-col">
+          <BasicData client:visible patientId={pacient_id as string} initialData={infoPatientData} />
+        </aside>
 
-      <section class="flex flex-col h-full">
-        <ProfileTabs client:visible patientId={pacient_id as string} />
-      </section>
+        <section class="flex flex-col">
+          <ProfileTabs client:visible patientId={pacient_id as string} initialData={infoPatientData} />
+        </section>
+      </div>
     </div>
   </main>
 </PacientLayout>

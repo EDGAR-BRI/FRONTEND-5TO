@@ -23,35 +23,74 @@ import {
   FaUser,
   FaShieldHalved,
   FaDroplet,
-  FaNotesMedical
+  FaNotesMedical,
+  FaVenusMars,
+  FaCalendarWeek,
+  FaMapLocationDot,
+  FaBriefcaseMedical
 } from 'react-icons/fa6';
 
-export const ProfileTabs = ({ patientId }: { patientId: string }) => {
+type ProfileTabsProps = {
+  patientId: string;
+  initialData?: any;
+};
+
+export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
   const [activeTab, setActiveTab] = useState('personal');
   
-  // 1. Traemos los datos actuales para rellenar el formulario inicial
-  const { data: patientData } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
+  const { data: patientData } = useSWR(
+    `/medical/info-patient/patient/${patientId}`,
+    fetcher,
+    {
+      fallbackData: initialData,
+      revalidateOnMount: !initialData,
+    }
+  );
 
-  // 2. Estados del formulario (Solo para los datos que acepta tu BD)
+  const info = patientData ?? initialData ?? null;
+
+  const formatDateInput = (value: string | null | undefined) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().slice(0, 10);
+  };
+
+  // Estados del formulario alineados con info-patient
+  const [sex, setSex] = useState('MALE');
+  const [birthDate, setBirthDate] = useState('');
   const [bloodType, setBloodType] = useState('');
+  const [secondaryPhone, setSecondaryPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [profession, setProfession] = useState('');
   const [chronicDiseases, setChronicDiseases] = useState('');
   const [allergies, setAllergies] = useState('');
-  const [email, setEmail] = useState('');
   const [mainPhone, setMainPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [currentMedications, setCurrentMedications] = useState('');
+  const [previousSurgeries, setPreviousSurgeries] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sincronizamos los estados cuando llegan los datos del backend
   useEffect(() => {
-    if (patientData?.data) {
-      setBloodType(patientData.data.blood_type || '');
-      setChronicDiseases(patientData.data.chronic_diseases || '');
-      setAllergies(patientData.data.allergies || '');
-      setEmail(patientData.data.email || '');
-      setMainPhone(patientData.data.main_phone || '');
-      setAddress(patientData.data.address || '');
+    if (info) {
+      setSex(info.sex || 'MALE');
+      setBirthDate(formatDateInput(info.birth_date));
+      setBloodType(info.blood_type || '');
+      setSecondaryPhone(info.secondary_phone || '');
+      setEmail(info.email || '');
+      setNationality(info.nacionality || '');
+      setProfession(info.profession || '');
+      setMainPhone(info.main_phone || '');
+      setAddress(info.address || '');
+      setCity(info.city || '');
+      setChronicDiseases(info.chronic_diseases || '');
+      setAllergies(info.allergies || '');
+      setCurrentMedications(info.current_medications || '');
+      setPreviousSurgeries(info.previous_surgeries || '');
     }
-  }, [patientData]);
+  }, [info]);
 
   const tabs = [
     { id: 'personal', label: 'Inf. Personal', icon: FaCircleUser },
@@ -69,20 +108,27 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
       const response = await api(`/medical/info-patient/patient/${patientId}`, {
         method: 'PUT',
         body: JSON.stringify({
+          sex,
+          birth_date: birthDate || undefined,
           blood_type: bloodType,
+          secondary_phone: secondaryPhone,
+          email: email,
+          nacionality: nationality,
+          profession: profession,
           chronic_diseases: chronicDiseases,
           allergies: allergies,
-          email: email,
           main_phone: mainPhone,
-          address: address
+          address: address,
+          city: city,
+          current_medications: currentMedications,
+          previous_surgeries: previousSurgeries,
         })
       });
 
       if (response.ok) {
-        // Magia de SWR: Le decimos que vuelva a cargar los datos en toda la pantalla
         mutate(`/medical/info-patient/patient/${patientId}`);
         alert("¡Perfil actualizado con éxito!");
-        close(); // Cerramos el modal
+        close();
       } else {
         alert("Hubo un error al actualizar el perfil.");
       }
@@ -94,11 +140,10 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
   };
 
   return (
-    <main className="flex flex-col gap-6 w-full h-full relative">
+    <main className="relative flex h-full w-full flex-col gap-6">
 
-      {/* NAVEGACIÓN SEMÁNTICA - RESPONSIVE */}
       <nav 
-        className="flex flex-wrap bg-white p-1.5 gap-2 rounded-lg shadow-sm border border-primary-200 transition-all hover:border-primary-400 w-full" 
+        className="flex w-full flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-[0_12px_40px_rgba(15,23,42,0.06)]"
         aria-label="Menú de perfil"
       >
         {tabs.map((tab) => {
@@ -111,9 +156,9 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
               label="" 
-              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold flex-1 min-w-[130px] transition-all border ${
+              className={`flex min-w-32.5 flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold transition-all ${
                 isActive 
-                  ? '!bg-blue-600 !text-white shadow-md border-transparent' 
+                  ? 'bg-sky-600! text-white! shadow-lg shadow-sky-200 border-transparent' 
                   : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50'
               }`}
             >
@@ -127,28 +172,27 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
       </nav>
 
       {/* CONTENIDO DE LAS PESTAÑAS */}
-      <section className="flex-1 w-full">
+      <section className="w-full flex-1">
         <article className="h-full w-full">
           {activeTab === 'personal' && (
-            <div className="flex flex-col gap-6 animate-in fade-in duration-500 w-full">
+            <div className="flex w-full flex-col gap-6 animate-in fade-in duration-500">
               
-              <div className="grid grid-cols-1 gap-6 w-full">
+              <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
                 <div className="w-full transition-all duration-300">
-                  <ContactInfo patientId={patientId} />
+                  <ContactInfo patientId={patientId} initialData={info} />
                 </div>
                 <div className="w-full transition-all duration-300">
-                  <EmergencyContact patientId={patientId} />
+                  <EmergencyContact patientId={patientId} initialData={info} />
                 </div>
               </div>
 
-              {/* IMPLEMENTACIÓN DEL MODAL TRIGGER */}
-              <div className="pt-2 w-full">
+              <div className="w-full pt-2">
                 <ModalTrigger
                   modalTitle="Gestionar Perfil"
                   trigger={
                     <Button
                       label=""
-                      className="w-full py-5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 text-base border-none"
+                      className="flex w-full items-center justify-center gap-3 rounded-2xl border-none bg-sky-600 py-5 text-base font-bold text-white shadow-lg shadow-sky-200 transition-all hover:bg-sky-700"
                     >
                       <FaGears className="w-5 h-5" />
                       Gestionar y Editar Perfil Completo
@@ -158,14 +202,43 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                   {({ close }) => (
                     <form className="space-y-6 p-2" onSubmit={(e) => handleSaveChanges(e, close)}>
                       
-                      {/* DATOS MÉDICOS REALES (Los que sí van a la BD) */}
-                      <StaticCard className="p-6">
-                        <div className="flex items-center gap-2 mb-6 border-b border-primary-200 pb-3">
-                          <FaNotesMedical className="w-4 h-4 text-primary-600" />
-                          <h4 className="text-xs font-black text-primary-700 uppercase tracking-widest">Información Médica</h4>
+                      <StaticCard className="rounded-3xl border border-slate-200 bg-white p-6">
+                        <div className="mb-6 flex items-center gap-2 border-b border-slate-200 pb-3">
+                          <FaNotesMedical className="h-4 w-4 text-sky-600" />
+                          <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">Información Médica</h4>
                         </div>
                         
                         <div className="grid grid-cols-1 gap-5">
+                          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase italic">Sexo</label>
+                              <div className="relative">
+                                <select 
+                                  value={sex}
+                                  onChange={(e) => setSex(e.target.value)}
+                                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2"
+                                >
+                                  <option value="MALE">Masculino</option>
+                                  <option value="FEMALE">Femenino</option>
+                                </select>
+                                <FaVenusMars className="absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase italic">Fecha de nacimiento</label>
+                              <div className="relative">
+                                <input 
+                                  type="date" 
+                                  value={birthDate}
+                                  onChange={(e) => setBirthDate(e.target.value)}
+                                  className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                                />
+                                <FaCalendarWeek className="absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
+                              </div>
+                            </div>
+                          </div>
+
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Tipo de Sangre</label>
                             <div className="relative">
@@ -175,9 +248,36 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                                 onChange={(e) => setBloodType(e.target.value)}
                                 placeholder="Ej: O+, A-, AB+" 
                                 maxLength={10}
-                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
                               />
                               <FaDroplet className="w-4 h-4 absolute right-3 top-3.5 text-red-400" />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase italic">Nacionalidad</label>
+                              <input 
+                                type="text" 
+                                value={nationality}
+                                onChange={(e) => setNationality(e.target.value)}
+                                placeholder="Ej: Venezolana"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase italic">Profesión</label>
+                              <div className="relative">
+                                <input 
+                                  type="text" 
+                                  value={profession}
+                                  onChange={(e) => setProfession(e.target.value)}
+                                  placeholder="Ej: Ingeniero"
+                                  className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                                />
+                                <FaBriefcaseMedical className="absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
+                              </div>
                             </div>
                           </div>
 
@@ -188,7 +288,7 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                               value={chronicDiseases}
                               onChange={(e) => setChronicDiseases(e.target.value)}
                               placeholder="Escriba aquí condiciones preexistentes..."
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
+                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
                             />
                           </div>
 
@@ -199,21 +299,42 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                               value={allergies}
                               onChange={(e) => setAllergies(e.target.value)}
                               placeholder="Escriba aquí alergias relevantes..."
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
+                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Medicamentos Actuales</label>
+                            <textarea 
+                              rows={2}
+                              value={currentMedications}
+                              onChange={(e) => setCurrentMedications(e.target.value)}
+                              placeholder="Escriba aquí medicamentos activos..."
+                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Cirugías Previas</label>
+                            <textarea 
+                              rows={2}
+                              value={previousSurgeries}
+                              onChange={(e) => setPreviousSurgeries(e.target.value)}
+                              placeholder="Escriba aquí cirugías previas..."
+                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
                             />
                           </div>
                         </div>
                       </StaticCard>
 
-                      {/* DATOS DE CONTACTO */}
-                      <StaticCard className="p-6">
-                        <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
+                      <StaticCard className="rounded-3xl border border-slate-200 bg-white p-6">
+                        <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
                           <div className="flex items-center gap-2">
-                            <FaPhone className="w-4 h-4 text-slate-500" />
-                            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest">Información de Contacto</h4>
+                            <FaPhone className="h-4 w-4 text-slate-500" />
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-600">Información de Contacto</h4>
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 uppercase italic">Correo Electrónico</label>
                             <div className="relative">
@@ -222,7 +343,7 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="correo@ejemplo.com"
-                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
                               />
                               <FaEnvelope className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
                             </div>
@@ -235,7 +356,20 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                                 value={mainPhone}
                                 onChange={(e) => setMainPhone(e.target.value)}
                                 placeholder="+58 412-1234567"
-                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                              />
+                              <FaPhone className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono Secundario</label>
+                            <div className="relative">
+                              <input 
+                                type="text" 
+                                value={secondaryPhone}
+                                onChange={(e) => setSecondaryPhone(e.target.value)}
+                                placeholder="+58 424-1234567"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
                               />
                               <FaPhone className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
                             </div>
@@ -248,27 +382,40 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
                                 placeholder="Dirección completa"
-                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
                               />
                               <FaLocationDot className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Ciudad</label>
+                            <div className="relative">
+                              <input 
+                                type="text" 
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                placeholder="Ciudad"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                              />
+                              <FaMapLocationDot className="absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
                             </div>
                           </div>
                         </div>
                       </StaticCard>
 
-                      <footer className="flex gap-4 mt-8">
+                      <footer className="mt-8 flex gap-4">
                         <button
                           type="button"
                           onClick={close}
-                          className="flex-1 py-4 border border-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-slate-50 transition-all"
+                          className="flex-1 rounded-2xl border border-slate-200 py-4 font-bold text-slate-500 transition-all hover:bg-slate-50"
                         >
                           Cancelar
                         </button>
                         <button
                           type="submit"
                           disabled={isSaving}
-                          className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-lg transition-all ${
-                            isSaving ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                          className={`flex-1 rounded-2xl py-4 font-bold text-white shadow-lg transition-all ${
+                            isSaving ? 'cursor-not-allowed bg-sky-400' : 'bg-sky-600 hover:bg-sky-700'
                           }`}
                         >
                           {isSaving ? 'Guardando...' : 'Guardar Cambios'}
@@ -281,19 +428,18 @@ export const ProfileTabs = ({ patientId }: { patientId: string }) => {
             </div>
           )}
 
-          {/* ... el resto de tus pestañas (citas, tratamientos, pagos) se quedan exactamente igual ... */}
           {activeTab === 'citas' && (
-            <div className="animate-in slide-in-from-right-4 duration-500 w-full">
+            <div className="w-full animate-in slide-in-from-right-4 duration-500">
               <MedicalAppointments patientId={patientId} />
             </div>
           )}
           {activeTab === 'tratamientos' && (
-            <div className="animate-in slide-in-from-right-4 duration-500 w-full">
+            <div className="w-full animate-in slide-in-from-right-4 duration-500">
               <CurrentMedication patientId={patientId} />
             </div>
           )}
           {activeTab === 'pagos' && (
-            <div className="animate-in fade-in duration-500 w-full">
+            <div className="w-full animate-in fade-in duration-500">
               <PaymentsBills patientId={patientId} />
             </div>
           )}
