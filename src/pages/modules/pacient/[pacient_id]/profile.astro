@@ -3,9 +3,17 @@ import PacientLayout from "@/layouts/PacientLayout.astro";
 import { BasicData } from "@/components/react/pacient/BasicData";
 import { ProfileTabs } from "@/components/react/pacient/ProfileTabs";
 import { FaCalendarDays, FaCircleExclamation, FaDroplet, FaPhone, FaUser, FaUserPen } from "react-icons/fa6";
-import { api } from "@/lib/api";
+import { api, getCI, getToken, getUserIdFromToken } from "@/lib/api";
 
 const { pacient_id } = Astro.params;
+const token = getToken(Astro.cookies);
+const userId = getUserIdFromToken(token);
+const authCi = getCI(Astro.cookies)?.trim() || null;
+
+const normalizeCi = (value: string | null | undefined) =>
+  value
+    ? value.toString().trim().toUpperCase().replace(/^[VEJPG]-?/i, "").replace(/\s+/g, "")
+    : "";
 
 let patientData: any = null;
 let infoPatientData: any = null;
@@ -31,6 +39,26 @@ try {
 
   if (errorFetch) {
     console.warn(`Paciente ${pacient_id} no encontrado en BD para el Perfil.`);
+  }
+
+  const selectedCi = normalizeCi(patientData?.ci || patientData?.user?.ci);
+  const expectedCi = normalizeCi(authCi);
+
+  if (!userId || !authCi || selectedCi !== expectedCi) {
+    const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
+    const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
+    const ownerPatients = Array.isArray(ownerPatientsJson?.data) ? ownerPatientsJson.data : [];
+    const mainOwnerPatient = ownerPatients.find((patient: any) => {
+      const patientCi = normalizeCi(patient?.ci);
+      const linkedUserCi = normalizeCi(patient?.user?.ci);
+      return patientCi === expectedCi || linkedUserCi === expectedCi;
+    });
+
+    if (!mainOwnerPatient) {
+      return Astro.redirect('/no-encontrado');
+    }
+
+    return Astro.redirect(`/modules/pacient/${mainOwnerPatient.id}/profile`);
   }
 } catch (error) {
   errorFetch = true;
@@ -74,10 +102,10 @@ const profileStats = [
 ---
 
 <PacientLayout title="Perfil del Paciente">
-  <main class="min-h-screen w-full bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.16),_transparent_34%),linear-gradient(180deg,_#f8fbff_0%,_#eef4fb_100%)] px-4 py-6 md:px-6 md:py-8">
-    <div class="mx-auto flex w-full max-w-[1400px] flex-col gap-6">
+  <main class="min-h-screen w-full bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_34%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] px-4 py-6 md:px-6 md:py-8">
+    <div class="mx-auto flex w-full max-w-350 flex-col gap-6">
       <header class="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur md:p-8">
-        <div class="absolute inset-0 bg-gradient-to-r from-sky-50 via-transparent to-indigo-50 opacity-90" />
+        <div class="absolute inset-0 bg-linear-to-r from-sky-50 via-transparent to-indigo-50 opacity-90" />
         <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-start gap-4 md:gap-5">
             <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-lg shadow-sky-200">
@@ -107,7 +135,7 @@ const profileStats = [
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto lg:min-w-[560px]">
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto lg:min-w-140">
             {profileStats.map((item) => {
               const Icon = item.icon;
 

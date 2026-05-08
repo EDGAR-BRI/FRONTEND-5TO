@@ -1,12 +1,18 @@
 ---
 export const prerender = false;
 
-import { api, getToken, getUserIdFromToken } from '@/lib/api';
+import { api, getCI, getToken, getUserIdFromToken } from '@/lib/api';
 
 const token = getToken(Astro.cookies);
 const userId = getUserIdFromToken(token);
+const authCi = getCI(Astro.cookies)?.trim() || null;
 
-if (!userId) {
+const normalizeCi = (value: string | null | undefined) =>
+	value
+		? value.toString().trim().toUpperCase().replace(/^[VEJPG]-?/i, '').replace(/\s+/g, '')
+		: '';
+
+if (!userId || !authCi) {
 	return Astro.redirect('/login');
 }
 
@@ -23,7 +29,16 @@ try {
 		return Astro.redirect('/no-encontrado');
 	}
 
-	const primaryPatient = patients.find((p: any) => p?.active !== false) || patients[0];
+	const normalizedAuthCi = normalizeCi(authCi);
+	const primaryPatient = patients.find((p: any) => {
+		const patientCi = normalizeCi(p?.ci);
+		const linkedUserCi = normalizeCi(p?.user?.ci);
+		return patientCi === normalizedAuthCi || linkedUserCi === normalizedAuthCi;
+	});
+
+	if (!primaryPatient) {
+		return Astro.redirect('/no-encontrado');
+	}
 	return Astro.redirect(`/modules/pacient/${primaryPatient.id}/overview`);
 } catch (error) {
 	console.error('[pacient/index] Error resolving patient by user:', error);

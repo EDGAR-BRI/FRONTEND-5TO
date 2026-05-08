@@ -167,14 +167,29 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return redirect("/no-encontrado");
     }
 
-    // Patient pages must only access their own user ID segment in URL.
+    // Patient pages must belong to the authenticated user's patient group.
     if (requiredRole === "PATIENT") {
         const match = pathname.match(/^\/modules\/pacient\/(\d+)(?:\/|$)/);
         if (match) {
-            const routeUserId = Number(match[1]);
+            const routePatientId = Number(match[1]);
+            const res = await fetch(`${API_URL}/medical/patient/user/${userId}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                cache: 'no-store',
+            });
 
-            if (routeUserId !== userId) {
-                console.log("[MIDDLEWARE] PATIENT route user mismatch. token userId:", userId, "route userId:", routeUserId);
+            if (!res.ok) {
+                return redirect("/no-encontrado");
+            }
+
+            const data = await res.json();
+            const patients = Array.isArray(data?.data) ? data.data : [];
+            const allowedPatientIds = new Set(patients.map((patient: any) => Number(patient?.id)));
+
+            if (!allowedPatientIds.has(routePatientId)) {
+                console.log("[MIDDLEWARE] PATIENT route not in family group. token userId:", userId, "route patientId:", routePatientId);
                 return redirect("/no-encontrado");
             }
         }

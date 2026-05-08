@@ -31,9 +31,17 @@ import {
   FaCapsules,
 } from 'react-icons/fa6';
 
-import { api } from '@/lib/api';
+import { api, getCI, getToken, getUserIdFromToken } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
+const token = getToken(Astro.cookies);
+const userId = getUserIdFromToken(token);
+const authCi = getCI(Astro.cookies)?.trim() || null;
+
+const normalizeCi = (value: string | null | undefined) =>
+  value
+    ? value.toString().trim().toUpperCase().replace(/^[VEJPG]-?/i, '').replace(/\s+/g, '')
+    : '';
 
 let patientData: any = null;
 let infoPatientData: any = null;
@@ -54,6 +62,26 @@ try {
 
   if (!selectedPatient) {
     return Astro.redirect('/no-encontrado');
+  }
+
+  const selectedCi = normalizeCi(selectedPatient.ci || selectedPatient.user?.ci);
+  const expectedCi = normalizeCi(authCi);
+
+  if (!userId || !authCi || selectedCi !== expectedCi) {
+    const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
+    const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
+    const ownerPatients = Array.isArray(ownerPatientsJson?.data) ? ownerPatientsJson.data : [];
+    const mainOwnerPatient = ownerPatients.find((patient: any) => {
+      const patientCi = normalizeCi(patient?.ci);
+      const linkedUserCi = normalizeCi(patient?.user?.ci);
+      return patientCi === expectedCi || linkedUserCi === expectedCi;
+    });
+
+    if (!mainOwnerPatient) {
+      return Astro.redirect('/no-encontrado');
+    }
+
+    return Astro.redirect(`/modules/pacient/${mainOwnerPatient.id}/overview`);
   }
 
   patientData = selectedPatient;

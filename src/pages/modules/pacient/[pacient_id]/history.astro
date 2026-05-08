@@ -1,8 +1,59 @@
 ---
 import PacientLayout from '@/layouts/PacientLayout.astro';
 import PatientClinicalHistoryTemplate from '@/components/astro/PatientClinicalHistoryTemplate.astro';
+import { api, getCI, getToken, getUserIdFromToken } from '@/lib/api';
 
 const patientId = Astro.params.pacient_id ?? 'unknown';
+const token = getToken(Astro.cookies);
+const userId = getUserIdFromToken(token);
+const authCi = getCI(Astro.cookies)?.trim() || null;
+
+const normalizeCi = (value: string | null | undefined) =>
+  value
+    ? value.toString().trim().toUpperCase().replace(/^[VEJPG]-?/i, '').replace(/\s+/g, '')
+    : '';
+
+if (!userId || !authCi) {
+  return Astro.redirect('/login');
+}
+
+try {
+  const selectedPatientRes = await api(`/medical/patient/${patientId}`, {}, Astro.cookies);
+
+  if (!selectedPatientRes.ok) {
+    return Astro.redirect('/no-encontrado');
+  }
+
+  const selectedPatientJson = await selectedPatientRes.json();
+  const selectedPatient = selectedPatientJson?.data ?? null;
+
+  if (!selectedPatient) {
+    return Astro.redirect('/no-encontrado');
+  }
+
+  const selectedCi = normalizeCi(selectedPatient.ci || selectedPatient.user?.ci);
+  const expectedCi = normalizeCi(authCi);
+
+  if (selectedCi !== expectedCi) {
+    const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
+    const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
+    const ownerPatients = Array.isArray(ownerPatientsJson?.data) ? ownerPatientsJson.data : [];
+    const mainOwnerPatient = ownerPatients.find((patient: any) => {
+      const patientCi = normalizeCi(patient?.ci);
+      const linkedUserCi = normalizeCi(patient?.user?.ci);
+      return patientCi === expectedCi || linkedUserCi === expectedCi;
+    });
+
+    if (!mainOwnerPatient) {
+      return Astro.redirect('/no-encontrado');
+    }
+
+    return Astro.redirect(`/modules/pacient/${mainOwnerPatient.id}/history`);
+  }
+} catch (error) {
+  console.error('[pacient/history] Error resolving patient by CI:', error);
+  return Astro.redirect('/error-servidor');
+}
 ---
 
 <PacientLayout>
