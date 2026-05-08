@@ -1,7 +1,5 @@
 AGENTS (Frontend)
 
-Muy conciso — sólo lo que un agente probablemente no adivinaría.
-
 Entradas y comandos clave
 - Desarrollo local:
   - cd FRONTEND-5TO && npm install
