@@ -42,14 +42,3 @@ export const addPatient = async (payload: createPatientRequest): Promise<Patient
     }
     return readEnvelopeData<Patient>(response);
 };
-
-export const addPatientFromReception = async (payload: createPatientReceptionRequest): Promise<Patient> => {
-    const response = await api(`${BASE_PATH}/reception`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-        throw new Error(await readEnvelopeErrorMessage(response));
-    }
-    return readEnvelopeData<Patient>(response);
-};
