@@ -21,7 +21,7 @@ const { doctor_id } = Astro.params;
 const userId = Number(doctor_id);
 
 let doctor = null;
-let consultations = [];
+let consultations: any[] = [];
 let summary = {
   totalIncome: 0,
   totalExpenses: 0,

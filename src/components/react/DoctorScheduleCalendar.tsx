@@ -51,13 +51,7 @@ export interface DoctorScheduleCalendarProps {
   allSchedules: { id: number, doctorId: number, period_start: string, period_end: string | null }[]
   allAvailabilities: { doctorScheduleId?: number, day_of_week: number, start_time: string, end_time: string }[]
   heightPx?: number
-  initialView?: 'week' | 'day' | 'agenda'
-  /** Controlled selected doctor — null means none selected yet */
-  selectedDoctorId?: number | null
-  /** Callback when a doctor pill is clicked */
-  onDoctorSelect?: (docId: number) => void
-  /** Show a loading overlay over the calendar */
-  loadingSchedules?: boolean
+  initialView?: 'month' | 'week' | 'day' | 'agenda'
 }
 
 const locales = { es }
@@ -96,8 +90,9 @@ const formatos: Formats = {
 const STATUS_COLORS: Record<string, string> = {
   Realizada: '#22c55e',
   Confirmada: '#f59e0b',
-  'Sin Confirmar': '#9ca3af',
+  Pendiente: '#9ca3af',
   Cancelada: '#ef4444',
+  Finalizada: '#22c55e',
 }
 
 function parseDateTime(str: string): Date {
@@ -338,7 +333,7 @@ export default function DoctorScheduleCalendar({
           eventPropGetter={eventStyleGetter}
           onSelectEvent={onSelectEvent}
           onNavigate={(date) => setReferenceDate(date)}
-          views={isMobile ? ['agenda'] : ['week', 'day', 'agenda']}
+          views={isMobile ? ['agenda'] : ['month', 'week', 'day', 'agenda']}
           defaultView={isMobile ? 'agenda' : initialView}
           key={isMobile ? 'mobile' : 'desktop'}
           step={30}

@@ -69,7 +69,7 @@ export function formatAppointmentsByDoctorId(
     type: string
     price: string
 }[]> {
-    const VALID_STATUSES = ['Realizada', 'Confirmada', 'Sin Confirmar', 'Cancelada'] as const
+    const VALID_STATUSES = ['Realizada', 'Confirmada', 'Pendiente', 'Cancelada', 'Finalizada'] as const
     type Status = typeof VALID_STATUSES[number]
 
     return appointments.reduce((acc, a) => {
@@ -80,7 +80,7 @@ export function formatAppointmentsByDoctorId(
 
         const status = VALID_STATUSES.includes(a.status.name as Status)
             ? a.status.name as Status
-            : 'Sin Confirmar'
+            : 'Pendiente'
 
         acc[a.doctorId].push({
             id: a.id,
