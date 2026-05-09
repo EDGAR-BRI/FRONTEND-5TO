@@ -17,7 +17,7 @@ export interface ShiftDay {
 }
 
 export interface DoctorScheduleCalendarWrapperProps {
-  initialView: 'week' | 'day' | 'agenda'
+  initialView: 'month' | 'week' | 'day' | 'agenda'
 }
 
 export default function DoctorScheduleCalendarWrapper({

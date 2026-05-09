@@ -4,7 +4,6 @@ import MainLayout from "@/layouts/DoctorLayout.astro";
 import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
 import DashboardActions from "@/components/react/doctor/DashboardActions";
 import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments";
-import RecentResults from "@/components/react/doctor/RecentResults";
 import SpecialtyChart from "@/components/react/doctor/ActivityChart";
 import PatientStats from "@/components/react/doctor/PatientStats";
 
@@ -22,7 +21,7 @@ const { doctor_id } = Astro.params;
 const userId = Number(doctor_id);
 
 let doctor = null;
-let consultations = [];
+let consultations: any[] = [];
 let summary = {
   totalIncome: 0,
   totalExpenses: 0,
@@ -131,10 +130,6 @@ const uniquePatients = new Set(
 
         <StaticCard className="overflow-hidden">
           <UpcomingAppointments client:visible />
-        </StaticCard>
-
-        <StaticCard className="overflow-hidden">
-          <RecentResults client:visible />
         </StaticCard>
 
       </div>
