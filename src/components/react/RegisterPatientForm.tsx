@@ -1,15 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Field } from '@/components/react/primary/Field'
 import { Select } from '@/components/react/primary/Select'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
-import { CheckBox } from '@/components/react/primary/CheckBox'
 import { Modal } from '@/components/react/primary/Modal'
-import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import { useModal } from '@/hooks/UseModal'
-import { listUsers, createUser } from '@/lib/services/User/user.service'
-import { addPatient } from '@/lib/services/medical/patient/patient.service'
+import { addPatientFromReception } from '@/lib/services/medical/patient/patient.service'
 import { addPatientInfo } from '@/lib/services/medical/info-patient/info_patient.service'
-import type { UserDto } from '@/lib/services/User/user.interface'
 import type { IconType } from 'react-icons'
 import {
     FaCircleExclamation,
@@ -18,7 +14,6 @@ import {
     FaNotesMedical,
     FaPhone,
     FaUserCheck,
-    FaUserLock,
 } from 'react-icons/fa6'
 
 // ─── Section Header ──────────────────────────────────────────────────────────
@@ -46,7 +41,7 @@ interface EmergencyContact {
 interface PatientForm {
     firstName: string
     lastName: string
-    ci: string            // Cédula de identidad
+    ci: string
     birthDate: string
     gender: string
     bloodType: string
@@ -64,14 +59,6 @@ interface PatientForm {
     smokingStatus: string
     alcoholUse: string
 
-    hasInsurance: boolean
-    insuranceCompany: string
-    insurancePolicyNumber: string
-
-    linkExistingUser: boolean
-    selectedUserId: number | null
-    tempPassword: string
-
     emergencyContact: EmergencyContact
 }
 
@@ -81,12 +68,9 @@ const EMPTY_FORM: PatientForm = {
     phone: '', email: '', address: '', city: '',
     allergies: '', chronicDiseases: '', currentMedications: '',
     previousSurgeries: '', smokingStatus: '', alcoholUse: '',
-    hasInsurance: false, insuranceCompany: '', insurancePolicyNumber: '',
-    linkExistingUser: true, selectedUserId: null, tempPassword: '',
     emergencyContact: { name: '', relation: '', phone: '' },
 }
 
-// Aca reemplazariamos por fetch de datos
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(v => ({ value: v, label: v }))
 const GENDERS = [{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Femenino' }]
 const SMOKING = [
@@ -100,30 +84,19 @@ const RELATION_OPTIONS = [
     { value: 'hijo', label: 'Hijo/a' }, { value: 'hermano', label: 'Hermano/a' }, { value: 'otro', label: 'Otro' },
 ]
 
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+
+const hasLengthInRange = (value: string, min: number, max: number) => {
+    const trimmed = value.trim()
+    return trimmed.length >= min && trimmed.length <= max
+}
+
 export default function RegisterPatientForm() {
     const [form, setForm] = useState<PatientForm>(EMPTY_FORM)
     const [isSaving, setIsSaving] = useState(false)
     const [globalError, setGlobalError] = useState<string | null>(null)
     const [errors, setErrors] = useState<Partial<Record<keyof PatientForm, string>>>({})
     const { isOpen: isSuccessOpen, openModal: openSuccess, closeModal: closeSuccess } = useModal(false)
-
-    const [users, setUsers] = useState<UserDto[]>([])
-    const [isLoadingUsers, setIsLoadingUsers] = useState(false)
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-            setIsLoadingUsers(true)
-            try {
-                const data = await listUsers()
-                setUsers(data)
-            } catch (error) {
-                console.error("Error fetching users:", error)
-            } finally {
-                setIsLoadingUsers(false)
-            }
-        }
-        fetchUsers()
-    }, [])
 
     const set = (field: keyof PatientForm, value: string | boolean | number | null) =>
         setForm(prev => ({ ...prev, [field]: value }))
@@ -134,18 +107,28 @@ export default function RegisterPatientForm() {
     const validate = () => {
         const e: Partial<Record<keyof PatientForm, string>> = {}
         if (!form.firstName.trim()) e.firstName = 'Requerido'
+        else if (!hasLengthInRange(form.firstName, 2, 120)) e.firstName = 'Debe tener entre 2 y 120 caracteres'
+
         if (!form.lastName.trim()) e.lastName = 'Requerido'
+        else if (!hasLengthInRange(form.lastName, 2, 120)) e.lastName = 'Debe tener entre 2 y 120 caracteres'
+
         if (!form.ci.trim()) e.ci = 'Requerido'
+        else if (!hasLengthInRange(form.ci, 3, 30)) e.ci = 'La cédula debe tener entre 3 y 30 caracteres'
+
         if (!form.birthDate) e.birthDate = 'Requerido'
         if (!form.gender) e.gender = 'Requerido'
-        if (!form.phone.trim()) e.phone = 'Requerido'
 
-        if (form.linkExistingUser && !form.selectedUserId) {
-            e.selectedUserId = 'Debes seleccionar un usuario'
-        }
-        if (!form.linkExistingUser && !form.tempPassword.trim()) {
-            e.tempPassword = 'La contraseña es requerida'
-        }
+        if (form.bloodType.trim() && !hasLengthInRange(form.bloodType, 1, 10)) e.bloodType = 'Debe tener entre 1 y 10 caracteres'
+        if (form.nationality.trim() && !hasLengthInRange(form.nationality, 2, 100)) e.nationality = 'Debe tener entre 2 y 100 caracteres'
+        if (form.phone.trim() && !hasLengthInRange(form.phone, 6, 20)) e.phone = 'Debe tener entre 6 y 20 caracteres'
+        if (form.email.trim() && !isValidEmail(form.email.trim())) e.email = 'El email no es válido'
+        if (form.address.trim() && !hasLengthInRange(form.address, 5, 500)) e.address = 'Debe tener entre 5 y 500 caracteres'
+        if (form.city.trim() && !hasLengthInRange(form.city, 2, 100)) e.city = 'Debe tener entre 2 y 100 caracteres'
+
+        if (form.allergies.trim() && !hasLengthInRange(form.allergies, 1, 5000)) e.allergies = 'Debe tener entre 1 y 5000 caracteres'
+        if (form.chronicDiseases.trim() && !hasLengthInRange(form.chronicDiseases, 1, 5000)) e.chronicDiseases = 'Debe tener entre 1 y 5000 caracteres'
+        if (form.currentMedications.trim() && !hasLengthInRange(form.currentMedications, 1, 5000)) e.currentMedications = 'Debe tener entre 1 y 5000 caracteres'
+        if (form.previousSurgeries.trim() && !hasLengthInRange(form.previousSurgeries, 1, 5000)) e.previousSurgeries = 'Debe tener entre 1 y 5000 caracteres'
 
         setErrors(e)
         return Object.keys(e).length === 0
@@ -155,37 +138,15 @@ export default function RegisterPatientForm() {
         setGlobalError(null)
         if (!validate()) return
         setIsSaving(true)
-        
+
         try {
-            let patientUserId = form.selectedUserId;
-
-            if (!form.linkExistingUser) {
-                // Flow 2: Create new user
-                const newUser = await createUser({
-                    ci: form.ci,
-                    name: `${form.firstName} ${form.lastName}`,
-                    password: form.tempPassword,
-                    roleId: 4 // PACIENTE
-                });
-                patientUserId = newUser.id;
-                setUsers(prev => [...prev, newUser]);
-            }
-
-            if (!patientUserId) {
-                throw new Error("No se pudo obtener el ID del usuario para vincular al paciente.");
-            }
-
-            // Create patient
-            const patient = await addPatient({
-                userId: patientUserId,
+            const patient = await addPatientFromReception({
                 ci: form.ci,
-                name: `${form.firstName} ${form.lastName}`
-            });
+                name: `${form.firstName} ${form.lastName}`,
+            })
 
-            // Create patient info
-            const birthDate = new Date(form.birthDate);
-            // Ensure sex maps to MALE/FEMALE
-            const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
+            const birthDate = new Date(form.birthDate)
+            const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE'
 
             await addPatientInfo({
                 patientId: patient.id,
@@ -204,12 +165,12 @@ export default function RegisterPatientForm() {
                 chronic_diseases: form.chronicDiseases || null,
                 current_medications: form.currentMedications || null,
                 previous_surgeries: form.previousSurgeries || null
-            });
+            })
 
             openSuccess()
         } catch (error: any) {
-            console.error("Error during registration flow:", error);
-            setGlobalError(error.message || "Ocurrió un error al registrar el paciente.");
+            console.error("Error during registration flow:", error)
+            setGlobalError(error.message || "Ocurrió un error al registrar el paciente.")
         } finally {
             setIsSaving(false)
         }
@@ -284,7 +245,7 @@ export default function RegisterPatientForm() {
                 <SectionHeader icon={FaPhone} title="Información de Contacto" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Field
-                        name="phone" label="Teléfono principal *"
+                        name="phone" label="Teléfono principal"
                         placeholder="Ej. 0414-1234567"
                         value={form.phone}
                         onChange={e => set('phone', e.target.value)}
@@ -391,48 +352,6 @@ export default function RegisterPatientForm() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                <SectionHeader icon={FaUserLock} title="Vincular a Usuario Preexistente" subtitle="Selecciona un usuario preexistente o crea uno nuevo" />
-                <div className="space-y-4">
-                    <CheckBox
-                        name="linkExistingUser"
-                        label="Vincular a usuario preexistente"
-                        variant="switch"
-                        checked={form.linkExistingUser}
-                        onChange={e => set('linkExistingUser', e.target.checked)}
-                    />
-                    {form.linkExistingUser ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                            <div className="flex flex-col gap-1 w-full">
-                                <SearchableSelect
-                                    name="selectedUserId"
-                                    options={users.map(u => ({ value: u.id, label: `${u.name} - ${u.ci}` }))}
-                                    value={form.selectedUserId || ""}
-                                    onChange={v => set('selectedUserId', Number(v))}
-                                    placeholder={isLoadingUsers ? "Cargando usuarios..." : "Buscar usuario por nombre o CI"}
-                                    label="Seleccionar Usuario *"
-                                />
-                                {errors.selectedUserId && <p className="text-xs text-error mt-1">{errors.selectedUserId}</p>}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                            <div className="flex flex-col gap-1 w-full">
-                                <Field
-                                    name="tempPassword" label="Contraseña temporal para nuevo usuario *"
-                                    type="password"
-                                    showTogglePassword
-                                    placeholder="Mín. 8 caracteres"
-                                    value={form.tempPassword}
-                                    onChange={e => set('tempPassword', e.target.value)}
-                                />
-                                {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 pb-4">
                 {globalError && (
                     <p className="text-sm text-error font-medium mr-auto flex items-center gap-1">
@@ -456,7 +375,7 @@ export default function RegisterPatientForm() {
                             <p className="text-cool-gray-50">CI: {form.ci}</p>
                         </div>
                     </div>
-                    <p>El paciente ha sido registrado exitosamente en el sistema. Puede agendar una cita para esta visita desde la agenda.</p>
+                    <p>El paciente ha sido registrado exitosamente en el sistema. Se creó un usuario asociado con la cédula como contraseña.</p>
                     <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
                         <Button label="Registrar otro" variant={ButtonTheme.SECONDARY} size="sm" onClick={() => { closeSuccess(); handleReset() }} />
                         <Button label="Agendar cita" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => window.location.href = window.location.pathname.replace('/register-patient', '/appointments')}  />

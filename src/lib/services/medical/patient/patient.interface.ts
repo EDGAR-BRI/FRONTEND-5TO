@@ -22,3 +22,8 @@ export type createPatientRequest = {
     ci: string;
     name: string;
 }
+
+export type createPatientReceptionRequest = {
+    ci: string;
+    name: string;
+}
