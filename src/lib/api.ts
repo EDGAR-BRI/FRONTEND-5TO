@@ -185,29 +185,23 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
 
         const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
         
-        // Asignamos la URL completa a una variable para poder auditarla
         const targetUrl = `${API_URL}${cleanEndpoint}`;
-
-        // === INICIO DE AUDITORÍA ESTRICTA ===
-        console.log("----- DEBUGGING FETCH -----");
-        console.log("1. Variable API_URL:", API_URL);
-        console.log("2. URL Final Ensamblada:", targetUrl);
-        console.log("---------------------------");
-        // === FIN DE AUDITORÍA ESTRICTA ===
 
         const response = await fetch(targetUrl, config);
 
-        if (response.status === 401 && !skipUnauthorizedRedirect) {
+        if ((response.status === 401 || response.status === 403) && !skipUnauthorizedRedirect) {
             if (typeof window !== "undefined") {
                 removeToken();
-                window.location.href = '/login';
+                window.location.href = '/login?reason=session_expired';
             } else {
-                throw new Error("Unauthorized");
+                throw new Error(response.status === 401 ? "Unauthorized" : "Forbidden");
             }
         }
         return response;
     } catch (error) {
-        console.error("Error fetching API:", error);
+        if (import.meta.env.DEV) {
+            console.error("Error fetching API:", error);
+        }
         throw error;
     }
 };

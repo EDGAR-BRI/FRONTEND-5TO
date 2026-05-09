@@ -17,13 +17,15 @@ const ROLE_DASHBOARD: Record<string, string> = {
 const PUBLIC_ROUTES = ["/login", "/register", "/docs", "/api"];
 const PUBLIC_ROUTES_EXACT = ["/", "/login", "/register"];
 
+const isDev = import.meta.env.DEV;
+
 const API_URL = (() => {
-    const raw = import.meta.env.PUBLIC_BACKEND_URL?.trim();
-    console.log("[MIDDLEWARE] PUBLIC_BACKEND_URL:", raw);
-    if (!raw && import.meta.env.DEV) {
-        return "http://localhost:3000/api/v1";
+    const raw = process.env.PUBLIC_BACKEND_URL?.trim();
+    if (isDev) console.log("[MIDDLEWARE] PUBLIC_BACKEND_URL:", raw);
+    if (!raw && process.env.DEV) {
+        return "http://localhost:3800/api/v1";
     }
-    return raw || "http://localhost:3000/api/v1";
+    return raw || "http://localhost:3800/api/v1";
 })();
 
 const getCookie = (cookies: any, name: string): string | null => {
@@ -82,24 +84,23 @@ const getDashboardPath = (role: string, userId: number): string => {
 
 const fetchUserRole = async (userId: number, token: string): Promise<string | null> => {
     try {
-        console.log("[MIDDLEWARE fetchUserRole] userId:", userId, "token exists:", !!token);
+        if (isDev) console.log("[MIDDLEWARE fetchUserRole] userId:", userId, "token exists:", !!token);
         const res = await fetch(`${API_URL}/auth/user/${userId}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
             },
-            cache: 'no-store',
         });
-        console.log("[MIDDLEWARE fetchUserRole] response status:", res.status);
+        if (isDev) console.log("[MIDDLEWARE fetchUserRole] response status:", res.status);
         if (!res.ok) {
-            console.log("[MIDDLEWARE fetchUserRole] response not ok");
+            if (isDev) console.log("[MIDDLEWARE fetchUserRole] response not ok");
             return null;
         }
         const data = await res.json();
-        console.log("[MIDDLEWARE fetchUserRole] data:", JSON.stringify(data));
+        if (isDev) console.log("[MIDDLEWARE fetchUserRole] data:", JSON.stringify(data));
         return normalizeRoleCode(data.data.role?.code ?? "");
     } catch (err) {
-        console.log("[MIDDLEWARE fetchUserRole] error:", err);
+        if (isDev) console.log("[MIDDLEWARE fetchUserRole] error:", err);
         return null;
     }
 };
@@ -108,7 +109,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const { url, cookies, redirect } = context;
     const pathname = url.pathname;
 
-    console.log("[MIDDLEWARE] Request to:", pathname);
+    if (isDev) console.log("[MIDDLEWARE] Request to:", pathname);
 
     if (pathname.startsWith("/_astro") || pathname.startsWith("/assets")) {
         return next();
@@ -136,67 +137,37 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     const requiredRole = getRoleFromPath(pathname);
-    console.log("[MIDDLEWARE] requiredRole:", requiredRole);
+    if (isDev) console.log("[MIDDLEWARE] requiredRole:", requiredRole);
     if (!requiredRole) {
         return next();
     }
 
     const token = getCookie(cookies, "auth_token");
-    console.log("[MIDDLEWARE] token exists:", !!token);
+    if (isDev) console.log("[MIDDLEWARE] token exists:", !!token);
     if (!token) {
-        console.log("[MIDDLEWARE] No token, redirecting to /login");
+        if (isDev) console.log("[MIDDLEWARE] No token, redirecting to /login");
         return redirect("/login");
     }
 
     const userId = getUserIdFromToken(token);
-    console.log("[MIDDLEWARE] userId:", userId);
+    if (isDev) console.log("[MIDDLEWARE] userId:", userId);
     if (!userId) {
-        console.log("[MIDDLEWARE] Invalid token, redirecting to /login");
+        if (isDev) console.log("[MIDDLEWARE] Invalid token, redirecting to /login");
         return redirect("/login");
     }
 
     const userRole = await fetchUserRole(userId, token);
-    console.log("[MIDDLEWARE] userRole:", userRole);
+    if (isDev) console.log("[MIDDLEWARE] userRole:", userRole);
     if (!userRole) {
-        console.log("[MIDDLEWARE] No userRole from API, redirecting to /login");
+        if (isDev) console.log("[MIDDLEWARE] No userRole from API, redirecting to /login");
         return redirect("/login");
     }
 
     if (userRole !== requiredRole) {
-        console.log("[MIDDLEWARE] Role mismatch:", userRole, "!=", requiredRole, "redirecting to /no-encontrado");
+        if (isDev) console.log("[MIDDLEWARE] Role mismatch:", userRole, "!=", requiredRole, "redirecting to /no-encontrado");
         return redirect("/no-encontrado");
     }
 
-    // Patient pages must belong to the authenticated user's patient group.
-    if (requiredRole === "PATIENT") {
-        const match = pathname.match(/^\/modules\/pacient\/(\d+)(?:\/|$)/);
-        if (match) {
-            const routePatientId = Number(match[1]);
-            const res = await fetch(`${API_URL}/medical/patient/user/${userId}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                cache: 'no-store',
-            });
-
-            if (!res.ok) {
-                return redirect("/no-encontrado");
-            }
-
-            const data = await res.json();
-            // Backend is 1:1 (user -> single patient). Keep Set logic for future-proofing.
-            const raw = data?.data;
-            const patients = Array.isArray(raw) ? raw : raw ? [raw] : [];
-            const allowedPatientIds = new Set(patients.map((patient: any) => Number(patient?.id)));
-
-            if (!allowedPatientIds.has(routePatientId)) {
-                console.log("[MIDDLEWARE] PATIENT route not in family group. token userId:", userId, "route patientId:", routePatientId);
-                return redirect("/no-encontrado");
-            }
-        }
-    }
-
-    console.log("[MIDDLEWARE] Access granted");
+    if (isDev) console.log("[MIDDLEWARE] Access granted");
     return next();
 });

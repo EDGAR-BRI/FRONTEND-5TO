@@ -42,7 +42,6 @@ export const AddPayrollModal = ({ isOpen, onClose, onSuccess }: AddPayrollModalP
         try {
             // Simular petición
             await new Promise(resolve => setTimeout(resolve, 800));
-            console.log("Nómina guardada:", formData);
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {

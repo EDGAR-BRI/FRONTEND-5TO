@@ -143,7 +143,6 @@ export default function DoctorScheduleCalendar({
     getAppointmentsByDr(selectedDoctorId)
       .then(raw => {
         const formatted = formatAppointmentsByDoctorId(raw)
-        console.log(formatted)
         setAppointmentsByDoctorId(prev => ({
           ...prev,
           [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],

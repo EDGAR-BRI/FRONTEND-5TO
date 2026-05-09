@@ -31,9 +31,7 @@ let summary = {
 
 if (userId && !isNaN(userId)) {
   try {
-    console.log("Fetching doctor with userId:", userId);
     doctor = await getDoctorByUserId(userId);
-    console.log("Doctor fetched:", doctor);
     
     const doctorId = doctor?.id || 0;
     if (doctorId > 0) {

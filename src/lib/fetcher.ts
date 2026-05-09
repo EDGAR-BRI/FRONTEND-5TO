@@ -21,8 +21,6 @@ export const fetcher = async (args: FetcherArgs) => {
         url = args;
     }
 
-    console.log(`📡 SWR Fetching: ${url} (ID: ${id})`); // LOG DE DEBUG
-
     const endpoint = id !== undefined ? `${url}/${id}` : url;
     const response = await api(endpoint, options ?? {});
 

@@ -122,7 +122,6 @@ const { doctor } = Astro.props;
   document.getElementById("save-profile")?.addEventListener("click", () => {
     const file = fileInput?.files?.[0];
     if (file) {
-      console.log("Listo para subir archivo:", file.name);
       alert(`Imagen "${file.name}" lista para procesar.`);
     } else {
       alert("No has cambiado la foto todavía.");

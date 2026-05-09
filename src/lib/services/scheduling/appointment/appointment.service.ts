@@ -20,7 +20,7 @@ export const getScheduleOverview = async (filters?: { range?: string }): Promise
 export const getAppointments = async (filters?: { range?: string, statusId?: number }): Promise<AppointmentsOverview[]> => {
     const params = new URLSearchParams();
     if (filters?.range) params.set("range", filters.range);
-    if (filters?.statusId) {console.log("enrando"); params.set("statusId", String(filters.statusId));}
+    if (filters?.statusId) params.set("statusId", String(filters.statusId));
     const endpoint = params.toString() ? `${BASE_PATH}?${params.toString()}` : BASE_PATH;
 
     const response = await api(endpoint, {
