@@ -1,5 +1,6 @@
 ---
 import MainLayout from '@/layouts/AdminLayout.astro';
+import SpecialtyDashboard from '@/components/react/admin/finance/SpecialtyDashboard';
 ---
 
 <MainLayout title="Admin | Honorarios Médicos">
@@ -7,6 +8,6 @@ import MainLayout from '@/layouts/AdminLayout.astro';
 		<h1 class="text-2xl font-semibold text-primary-800 mb-6">
 			Gestión de Honorarios y Porcentajes Médicos
 		</h1>
-        <p>Esta vista está en desarrollo.</p>
+		<SpecialtyDashboard client:load />
 	</section>
 </MainLayout>
