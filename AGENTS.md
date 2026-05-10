@@ -18,6 +18,8 @@ Preferencias del equipo (no genéricas)
 - Preferir islas dinámicas con React para UI interactiva (Astro + React islands). Hidratación parcial en lugar de hidratar páginas completas.
 - Priorizar componentes "primary" del design system para CTAs y formularios principales; si hay duda, elige la variante primary.
 
+- Always use the alerts utility at FRONTEND-5TO/src/utils/alerts.ts for user notifications (toasts, confirmations, etc).
+
 Docs
 - La documentación del frontend vive en FRONTEND-5TO/src/content/docs/docs/ y se sirve con el comando dev.
 
