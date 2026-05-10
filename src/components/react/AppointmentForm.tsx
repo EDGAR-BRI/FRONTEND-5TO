@@ -217,11 +217,13 @@ export default function AppointmentForm({
 
     const filteredPatientOptions: SelectOption[] = useMemo(() => {
         let filtered = patients;
-        if (role === 'pacient' && userId) {
+        if (role === 'pacient' && context?.patientId) {
+            filtered = patients.filter(p => String(p.id) === String(context.patientId));
+        } else if (role === 'pacient' && userId) {
             filtered = patients.filter(p => String(p.userId) === String(userId));
         }
         return filtered.map(p => ({ value: p.id, label: `${p.name} - ${p.ci}` }))
-    }, [patients, role, userId])
+    }, [patients, role, userId, context?.patientId])
 
     const appointmentTypeOptions: SelectOption[] = useMemo(() => {
         return appointmentTypes.map(t => ({ value: t.id, label: t.name }))
@@ -699,7 +701,7 @@ export default function AppointmentForm({
                     {/* ── Feedback ── */}
                     {feedback && (
                         <div
-                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]"
+                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-60"
                             style={{ animation: 'toastSlideUpCenter 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
                         >
                             <div className={`px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border ${feedback.type === 'success'

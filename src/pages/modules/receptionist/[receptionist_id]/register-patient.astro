@@ -28,7 +28,7 @@ import { FaArrowLeft, FaCalendarPlus, FaUserPlus } from 'react-icons/fa6';
 
       <a
         href="appointments"
-        class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
+        class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-primary-200 text-primary-700 text-button-s font-semibold hover:bg-primary-50 transition-colors shadow-sm"
       >
         <FaCalendarPlus />
         Ir a citas
@@ -36,7 +36,7 @@ import { FaArrowLeft, FaCalendarPlus, FaUserPlus } from 'react-icons/fa6';
     </div>
 
     <!-- Form -->
-    <RegisterPatientForm client:only="react" />
+    <RegisterPatientForm client:only="react" createInfoPatientOnRegister={true} />
 
   </div>
 </ReceptionistLayout>

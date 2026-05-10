@@ -1,38 +1,52 @@
-import { FaShieldHalved, FaUser, FaPhone } from 'react-icons/fa6';
+import { FaShieldHalved, FaPhone, FaPills, FaSyringe } from 'react-icons/fa6';
 import StaticCard from '@/components/react/primary/StaticCard';
 
-export const EmergencyContact = ({ patientId }: { patientId: string }) => {
-  const data = {
-    nombre: "-",
-    parentesco: "-",
-    telefono: "-"
-  };
+type EmergencyContactProps = {
+  patientId: string;
+  initialData?: any;
+};
+
+export const EmergencyContact = ({ initialData }: EmergencyContactProps) => {
+  const info = initialData ?? null;
+  const secondaryPhone = info?.secondary_phone || '-';
+  const medications = info?.current_medications || 'Sin registros';
+  const surgeries = info?.previous_surgeries || 'Sin registros';
 
   return (
-    <StaticCard className="w-full p-6">
-      <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <FaShieldHalved className="w-4 h-4 text-red-500" />
-        Contacto de Emergencia
+    <StaticCard className="w-full rounded-[24px] border border-slate-200 bg-white/90 p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-sm font-black text-slate-900">
+        <FaShieldHalved className="h-4 w-4 text-amber-500" />
+        Datos complementarios
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-slate-100 shadow-sm">
-          <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-50">
-            <FaUser className="w-4 h-4 text-slate-400" />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 shadow-sm">
+          <div className="rounded-lg border border-slate-100 bg-white p-2 shadow-sm">
+            <FaPhone className="h-4 w-4 text-slate-400" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase italic">Nombre / Parentesco</p>
-            <p className="text-sm font-medium text-slate-700">{data.nombre} ({data.parentesco})</p>
+            <p className="text-[10px] font-bold uppercase italic text-slate-400">Teléfono secundario</p>
+            <p className="text-sm font-medium text-slate-700">{secondaryPhone}</p>
           </div>
         </div>
 
-        <section className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-slate-100 shadow-sm">
-          <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-50">
-            <FaPhone className="w-4 h-4 text-slate-400" />
+        <section className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 shadow-sm">
+          <div className="rounded-lg border border-slate-100 bg-white p-2 shadow-sm">
+            <FaPills className="h-4 w-4 text-slate-400" />
           </div>
           <section>
-            <p className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono</p>
-            <p className="text-sm font-medium text-slate-700">{data.telefono}</p>
+            <p className="text-[10px] font-bold uppercase italic text-slate-400">Medicamentos actuales</p>
+            <p className="text-sm font-medium text-slate-700 line-clamp-2">{medications}</p>
+          </section>
+        </section>
+
+        <section className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 shadow-sm md:col-span-2">
+          <div className="rounded-lg border border-slate-100 bg-white p-2 shadow-sm">
+            <FaSyringe className="h-4 w-4 text-slate-400" />
+          </div>
+          <section>
+            <p className="text-[10px] font-bold uppercase italic text-slate-400">Cirugías previas</p>
+            <p className="text-sm font-medium text-slate-700 line-clamp-2">{surgeries}</p>
           </section>
         </section>
       </div>

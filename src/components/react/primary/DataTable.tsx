@@ -75,15 +75,24 @@ export function DataTable<T>({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-primary-300">
-                        {safeData.map((item: any, rowIndex: number) => (
-                            <tr key={rowIndex} className="hover:bg-primary-500/30 transition-colors">
+                        {safeData.map((item: any, rowIndex: number) => {
+                            // NOTE: Nunca uses el índice como key si la tabla puede filtrarse/ordenarse.
+                            // Preferimos un key estable por registro (por convención: `id`).
+                            const maybeId = (item as any)?.id;
+                            const rowKey = (typeof maybeId === "string" || typeof maybeId === "number")
+                                ? maybeId
+                                : rowIndex;
+
+                            return (
+                                <tr key={rowKey} className="hover:bg-primary-500/30 transition-colors">
                                 {columns.map((col, colIndex) => (
                                     <td key={colIndex} className={`px-6 py-4 whitespace-nowrap ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}`}>
                                         {col.cell ? col.cell(item) : (item as any)[col.accessorKey as string]}
                                     </td>
                                 ))}
-                            </tr>
-                        ))}
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

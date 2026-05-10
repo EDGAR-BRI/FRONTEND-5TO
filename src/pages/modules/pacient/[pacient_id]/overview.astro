@@ -31,31 +31,90 @@ import {
   FaCapsules,
 } from 'react-icons/fa6';
 
-import { api } from '@/lib/api';
+import { api, getCI, getToken, getUserIdFromToken } from '@/lib/api';
 
 const { pacient_id } = Astro.params;
+const token = getToken(Astro.cookies);
+const userId = getUserIdFromToken(token);
+const authCi = getCI(Astro.cookies)?.trim() || null;
+
+const normalizeCi = (value: string | null | undefined) =>
+  value
+    ? value.toString().trim().toUpperCase().replace(/^[VEJPG]-?/i, '').replace(/\s+/g, '')
+    : '';
 
 let patientData: any = null;
+let infoPatientData: any = null;
 let appointmentsData: any[] = [];
 
 
 try {
-  const [patientRes, appointmentsRes] = await Promise.all([
-    api(`/medical/patient/${pacient_id}`, {}, Astro.cookies),
-    api(`/scheduling/appointment?patientId=${pacient_id}`, {}, Astro.cookies)
-  ]);
+  // `pacient_id` es el ID del paciente seleccionado en la URL.
+  // Primero cargamos ese registro y luego derivamos el grupo familiar desde su `userId`.
+  const selectedPatientRes = await api(`/medical/patient/${pacient_id}`, {}, Astro.cookies);
 
-  if (!patientRes.ok) {
+  if (!selectedPatientRes.ok) {
     return Astro.redirect('/no-encontrado');
   }
 
-  const patientJson = await patientRes.json();
-  patientData = patientJson.data;
+  const selectedPatientJson = await selectedPatientRes.json();
+  const selectedPatient = selectedPatientJson?.data ?? null;
 
-  // Si hay citas, las guardamos (si falla esta, no rompemos la página entera)
-  if (appointmentsRes.ok) {
-    const apptJson = await appointmentsRes.json();
-    appointmentsData = Array.isArray(apptJson.data) ? apptJson.data : [];
+  if (!selectedPatient) {
+    return Astro.redirect('/no-encontrado');
+  }
+
+  const selectedCi = normalizeCi(selectedPatient.ci || selectedPatient.user?.ci);
+  const expectedCi = normalizeCi(authCi);
+
+  if (!userId || !authCi || selectedCi !== expectedCi) {
+    const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
+    const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
+    const ownerRaw = ownerPatientsJson?.data;
+    const ownerPatients = Array.isArray(ownerRaw) ? ownerRaw : ownerRaw ? [ownerRaw] : [];
+    const mainOwnerPatient = ownerPatients.find((patient: any) => {
+      const patientCi = normalizeCi(patient?.ci);
+      const linkedUserCi = normalizeCi(patient?.user?.ci);
+      return patientCi === expectedCi || linkedUserCi === expectedCi;
+    });
+
+    if (!mainOwnerPatient) {
+      return Astro.redirect('/no-encontrado');
+    }
+
+    return Astro.redirect(`/modules/pacient/${mainOwnerPatient.id}/overview`);
+  }
+
+  patientData = selectedPatient;
+
+  const infoPatientRes = await api(`/medical/info-patient/patient/${selectedPatient.id}`, {}, Astro.cookies);
+  if (infoPatientRes.ok) {
+    const infoPatientJson = await infoPatientRes.json();
+    infoPatientData = infoPatientJson?.data ?? null;
+  }
+
+  const linkedUserId = selectedPatient.user?.id || selectedPatient.userId;
+  if (!linkedUserId) {
+    appointmentsData = [];
+  } else {
+    const linkedPatientsRes = await api(`/medical/patient/user/${linkedUserId}`, {}, Astro.cookies);
+    const linkedPatientsJson = linkedPatientsRes.ok ? await linkedPatientsRes.json() : null;
+    const linkedRaw = linkedPatientsJson?.data;
+    const linkedPatients = Array.isArray(linkedRaw) ? linkedRaw : linkedRaw ? [linkedRaw] : [selectedPatient];
+
+    const appointmentResponses = await Promise.all(
+      linkedPatients.map((patient: any) => api(`/scheduling/appointment/patient/${patient.id}`, {}, Astro.cookies))
+    );
+
+    const appointmentJsonList = await Promise.all(
+      appointmentResponses
+        .filter((res) => res.ok)
+        .map((res) => res.json())
+    );
+
+    appointmentsData = appointmentJsonList.flatMap((item) =>
+      Array.isArray(item?.data) ? item.data : []
+    );
   }
 } catch (error) {
   console.error("Error cargando el overview:", error);
@@ -65,7 +124,7 @@ try {
 // ─── Format patient data ──────────────────────────────────────────────────
 const fullName = patientData?.user?.name || 'Paciente Desconocido';
 const ci = patientData?.user?.ci || 'Sin CI';
-const bloodType = patientData?.tipo_sangre || 'No registrado';
+const bloodType = infoPatientData?.blood_type || 'No registrado';
 
 const patient = {
   id: pacient_id ?? '001',
@@ -299,7 +358,10 @@ const quickActions = [
     </div>
 
     <!-- ─── Recent Consultations ────────────────────────────── -->
-    <div class="grid grid-cols-1 lg:grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <!-- Recent Consultations -->
+      <StaticCard client:visible className="!bg-white !p-0 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
           <h2 class="text-heading-6 text-primary-800">
             <FaStethoscope className="text-primary-500 mr-2 inline-block" />

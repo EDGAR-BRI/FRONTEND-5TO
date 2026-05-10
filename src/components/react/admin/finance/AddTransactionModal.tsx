@@ -50,7 +50,6 @@ export const AddTransactionModal = ({ isOpen, onClose, onSuccess, initialType = 
         try {
             // Simular petición
             await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log("Transacción guardada:", formData);
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {

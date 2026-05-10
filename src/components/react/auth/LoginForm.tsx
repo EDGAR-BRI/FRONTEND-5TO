@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from "react";
+import { useState, useEffect, type SyntheticEvent } from "react";
 import { Button } from "@/components/react/primary/Button";
 import { Field } from "@/components/react/primary/Field";
 import { listRoles, loginWithCredentials, dashboardPathForUser, persistLogin } from "@/lib/services/auth/auth.service";
@@ -14,6 +14,19 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 	const [ci, setCi] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [sessionExpired, setSessionExpired] = useState(false);
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		if (params.get("reason") === "session_expired") {
+			setSessionExpired(true);
+			Alert.info("Sesión expirada", "Tu sesión ha expirado. Inicia sesión nuevamente.");
+			// Limpiar query param de la URL sin recargar
+			const url = new URL(window.location.href);
+			url.searchParams.delete("reason");
+			window.history.replaceState({}, "", url.toString());
+		}
+	}, []);
 
 	const onSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -79,6 +92,11 @@ export default function LoginForm({ className, buttonLabel = "Iniciar sesión" }
 	};
 	return (
 		<form className={className} onSubmit={onSubmit}>
+			{sessionExpired && (
+				<div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm mb-2 flex items-center gap-2">
+					<span className="font-semibold">Tu sesión ha expirado.</span> Inicia sesión para continuar.
+				</div>
+			)}
 			<div className="flex flex-col gap-1">
 				<Field
 					name="ci"
