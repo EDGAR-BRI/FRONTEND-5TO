@@ -11,7 +11,7 @@ import {
 const { receptionist_id: _receptionist_id } = Astro.params;
 const viewParam = Astro.url.searchParams.get('view');
 const initialView =
-  viewParam === 'day' || viewParam === 'agenda' ? viewParam : 'week';
+  viewParam === 'month' || viewParam === 'day' || viewParam === 'agenda' ? viewParam : 'week';
 ---
 
 <script>

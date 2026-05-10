@@ -16,7 +16,7 @@ export interface ShiftDay {
 }
 
 export interface DoctorScheduleCalendarWrapperProps {
-  initialView: 'week' | 'day' | 'agenda'
+  initialView: 'month' | 'week' | 'day' | 'agenda'
 }
 
 /** Returns { mondayISO, sundayISO } for the current week */

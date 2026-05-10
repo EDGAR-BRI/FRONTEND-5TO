@@ -68,7 +68,6 @@ export const dashboardPathForUser = (user: LoginUser, roleCodeOverride?: string)
 		case "DOCTOR":
 			return `/modules/doctor/${id}/overview`;
 		case "RECEPCIONISTA":
-			console.log("CASO RECEPCIONISTA")
 			return `/modules/receptionist/${id}/overview`;
 		case "PACIENTE":
 				return "/modules/pacient";

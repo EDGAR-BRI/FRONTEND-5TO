@@ -155,7 +155,6 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                 })),
             };
 
-            console.log("PAYLOAD A ENVIAR AL BACKEND:", payload);
 
             await finishConsultation(consultationIdNum, payload);
 

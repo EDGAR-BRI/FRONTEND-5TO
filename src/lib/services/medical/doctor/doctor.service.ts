@@ -34,10 +34,9 @@ export const getDoctorById = async (id: number): Promise<DoctorDetail | null> =>
             return null;
         }
         const data = await readEnvelopeData<DoctorDetail>(response);
-        console.log("Doctor data response:", data);
         return data;
     } catch (error) {
-        console.error("Error in getDoctorById:", error);
+        if (import.meta.env.DEV) console.error("Error in getDoctorById:", error);
         return null;
     }
 }

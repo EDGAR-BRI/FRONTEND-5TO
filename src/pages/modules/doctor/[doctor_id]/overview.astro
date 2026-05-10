@@ -21,7 +21,7 @@ const { doctor_id } = Astro.params;
 const userId = Number(doctor_id);
 
 let doctor = null;
-let consultations = [];
+let consultations: any[] = [];
 let summary = {
   totalIncome: 0,
   totalExpenses: 0,
@@ -31,9 +31,7 @@ let summary = {
 
 if (userId && !isNaN(userId)) {
   try {
-    console.log("Fetching doctor with userId:", userId);
     doctor = await getDoctorByUserId(userId);
-    console.log("Doctor fetched:", doctor);
     
     const doctorId = doctor?.id || 0;
     if (doctorId > 0) {
