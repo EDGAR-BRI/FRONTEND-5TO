@@ -6,6 +6,7 @@ import type {
 	CreateConsultationDto,
 	FinishConsultationDto,
 	UpdateConsultationDto,
+	PatientConsultationHistory,
 } from "./consultation.interface";
 
 const BASE_PATH = "medical/consultation";
@@ -24,6 +25,14 @@ export const listConsultationsByDoctor = async (doctorId: number): Promise<Consu
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
 	return readEnvelopeData<ConsultationSummary[]>(response);
+};
+
+export const listConsultationsByPatient = async (patientId: number): Promise<PatientConsultationHistory[]> => {
+	const response = await api(`${BASE_PATH}/patient/${patientId}`, { method: "GET" });
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<PatientConsultationHistory[]>(response);
 };
 
 export const getConsultationById = async (id: number): Promise<ConsultationDetail> => {
@@ -80,3 +89,5 @@ export const deleteConsultation = async (id: number): Promise<ConsultationSummar
 	}
 	return readEnvelopeData<ConsultationSummary>(response);
 };
+
+export type { PatientConsultationHistory } from "./consultation.interface";

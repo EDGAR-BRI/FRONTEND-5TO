@@ -1,6 +1,6 @@
 ---
 import PacientLayout from '@/layouts/PatientLayout.astro';
-import PatientClinicalHistoryTemplate from '@/components/astro/PatientClinicalHistoryTemplate.astro';
+import PatientHistory from '@/components/react/pacient/PatientHistory';
 import { api, getCI, getToken, getUserIdFromToken } from '@/lib/api';
 
 const patientId = Astro.params.pacient_id ?? 'unknown';
@@ -58,5 +58,5 @@ try {
 ---
 
 <PacientLayout>
-  <PatientClinicalHistoryTemplate patientId={patientId} mode="pacient" />
+  <PatientHistory client:load patientId={Number(patientId)} />
 </PacientLayout>
