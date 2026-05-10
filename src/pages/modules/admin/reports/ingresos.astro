@@ -35,13 +35,6 @@ const coreRevenueModules = [
         icon: FaStethoscope
     },
     {
-        title: "Cuentas por Cobrar",
-        description: "Gestión de activos corrientes: facturas pendientes de aseguradoras y pacientes.",
-        href: "/modules/admin/reports/ingresos-cartera",
-        badge: "Cartera",
-        icon: FaFileInvoice
-    },
-    {
         title: "Recaudación y Caja",
         description: "Liquidación de ingresos efectivos, medios de pago y flujo de efectivo real.",
         href: "/modules/admin/reports/ingresos-recaudacion",
@@ -97,7 +90,7 @@ const coreRevenueModules = [
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
                         {coreRevenueModules.map((report) => (
                             <a href={report.href} class="block group">
                                 <ActionCard className="h-full p-6 items-start justify-between border-primary-100 hover:border-primary-500 transition-all shadow-sm hover:shadow-md">
