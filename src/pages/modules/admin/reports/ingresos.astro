@@ -7,11 +7,10 @@ import { Button } from "@/components/react/primary/Button";
 import StaticCard from "@/components/react/primary/StaticCard";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
+import { getIncomeSummary } from "@/lib/services/report/income.service";
 import {
     FaArrowRight,
-    FaFileInvoice,
     FaStethoscope,
-    FaHandHoldingMedical,
     FaChartLine,
     FaFilePdf,
     FaPrint,
@@ -19,24 +18,31 @@ import {
     FaMoneyCheckDollar
 } from "react-icons/fa6";
 
-const revenueBreakdown = [
-    { category: "Servicios Ambulatorios", amount: "$18,450", weight: "45%" },
-    { category: "Hospitalización", amount: "$12,300", weight: "30%" },
-    { category: "Laboratorio y Diagnóstico", amount: "$6,150", weight: "15%" },
-    { category: "Farmacia Interna", amount: "$4,100", weight: "10%" },
-];
+const incomeSummary = await getIncomeSummary();
+
+const currency = new Intl.NumberFormat("es-VE", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+});
+
+const revenueBreakdown = incomeSummary.data.breakdownBySpecialty.map((item) => ({
+    category: item.specialty,
+    amount: currency.format(item.incomeUsd),
+    weight: `${item.percentage.toFixed(1)}%`,
+}));
 
 const coreRevenueModules = [
     {
         title: "Ventas por Servicio",
-        description: "Desglose de ingresos operativos por especialidad y unidad de negocio.",
+        description: "Desglose de ingresos operativos por especialidad médica y consultas facturadas.",
         href: "/modules/admin/reports/ingresos-servicios",
         badge: "Ingreso Bruto",
         icon: FaStethoscope
     },
     {
         title: "Recaudación y Caja",
-        description: "Liquidación de ingresos efectivos, medios de pago y flujo de efectivo real.",
+        description: "Liquidación de pagos recibidos, medios de pago y saldo pendiente de facturas.",
         href: "/modules/admin/reports/ingresos-recaudacion",
         badge: "Flujo Efectivo",
         icon: FaMoneyCheckDollar
@@ -50,7 +56,7 @@ const coreRevenueModules = [
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte de Ingresos</h1>
-                <p class="text-gray-500 mt-1">Análisis de facturación, activos corrientes y realización del ingreso.</p>
+                <p class="text-gray-500 mt-1">Análisis de facturación, recaudo y realización del ingreso por consultas.</p>
             </div>
             <div class="flex gap-3">
                 <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
@@ -58,22 +64,16 @@ const coreRevenueModules = [
             </div>
         </header>
 
-        {/* TARJETAS DE ESTADÍSTICAS - ENFOQUE PATRIMONIAL */}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatsCard title="Ingreso Bruto Total" value="$41,000" trend="8.2%" trendUp={true} color="success">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+            <StatsCard title="Ingreso Bruto Total" value={currency.format(incomeSummary.data.summary.grossIncomeUsd)} trend={`${Math.abs(incomeSummary.data.summary.grossIncomeTrendPct).toFixed(1)}%`} trendUp={incomeSummary.data.summary.grossIncomeTrendPct >= 0} color="success">
                 <FaSackDollar slot="icon" size={20} />
             </StatsCard>
 
-            <StatsCard title="Margen de Contribución" value="62%" trend="1.2%" trendUp={true} color="primary">
+            <StatsCard title="Tasa de Recaudo" value={`${incomeSummary.data.summary.collectionRate.toFixed(1)}%`} trend={`${Math.abs(incomeSummary.data.summary.collectedTrendPct).toFixed(1)}%`} trendUp={incomeSummary.data.summary.collectedTrendPct >= 0} color="primary">
                 <FaChartLine slot="icon" size={20} />
-            </StatsCard>
-
-            <StatsCard title="Días en Cartera (Promedio)" value="24" trend="2.1%" trendUp={false} color="success">
-                <FaHandHoldingMedical slot="icon" size={20} />
             </StatsCard>
         </section>
 
-        {/* FILTROS */}
         <ReportTimeframeFilters client:load title="Filtros de Ingresos" subtitle="Auditoría de ingresos por ciclo contable: diario, semanal, mensual o anual." />
 
         <div class="space-y-8 mt-8">
@@ -82,7 +82,7 @@ const coreRevenueModules = [
                     <div class="flex items-center justify-between px-1">
                         <h2 class="text-2xl font-bold text-gray-800">Ciclo de Ingresos Operativos</h2>
                         <span class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary-100 text-primary-600 border border-primary-200 shadow-sm">
-                            Realización del Ingreso
+                            Consultas facturadas
                         </span>
                     </div>
 
@@ -121,31 +121,28 @@ const coreRevenueModules = [
                     <StaticCard className="h-full border-primary-200 flex flex-col justify-center p-6">
                         <div class="space-y-6">
                             <h2 class="text-base font-black text-gray-400 uppercase tracking-[0.15em]">
-                                Alertas de Cartera
+                                Alertas de Cobro
                             </h2>
                             <div class="space-y-4">
-                                <div class="p-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm flex gap-3 items-start shadow-sm">
-                                    <FaFileInvoice className="mt-1 shrink-0" size={16} />
-                                    <span class="font-medium leading-tight">Facturación de Aseguradora XYZ presenta mora mayor a 60 días.</span>
-                                </div>
-                                <div class="p-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm flex gap-3 items-start shadow-sm">
-                                    <FaMoneyCheckDollar className="mt-1 shrink-0" size={16} />
-                                    <span class="font-medium leading-tight">Meta de recaudación efectiva superada por 15% esta semana.</span>
-                                </div>
+                                {incomeSummary.data.alerts.map((alert) => (
+                                    <div class={`p-3 rounded-xl border text-sm flex gap-3 items-start shadow-sm ${alert.severity === 'danger' ? 'border-red-200 bg-red-50 text-red-700' : alert.severity === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-700' : alert.severity === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-blue-200 bg-blue-50 text-blue-700'}`}>
+                                        <FaMoneyCheckDollar className="mt-1 shrink-0" size={16} />
+                                        <span class="font-medium leading-tight">{alert.message}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </StaticCard>
                 </div>
             </section>
 
-            {/* TABLA DE INGRESOS */}
             <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
                 <h2 class="text-xl font-semibold text-gray-800">Composición del Ingreso Operativo</h2>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-primary-300">
                         <thead class="bg-primary-300">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Centro de Costo / Servicio</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Especialidad</th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ingreso Facturado</th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Peso en Ingresos</th>
                             </tr>

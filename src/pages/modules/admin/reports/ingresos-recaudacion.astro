@@ -4,12 +4,22 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaCoins, FaMoneyCheckDollar, FaScaleBalanced } from "react-icons/fa6";
+import { getIncomeSummary } from "@/lib/services/report/income.service";
 
-const conciliacionMedios = [
-  { medio: "Transferencias Bancarias", sistema: "$21,400", banco: "$21,400", dif: "$0.00", estado: "Conciliado" },
-  { medio: "Tarjetas de Crédito/Débito", sistema: "$4,560", banco: "$4,560", dif: "$0.00", estado: "Conciliado" },
-  { medio: "Efectivo en Caja", sistema: "$2,200", banco: "$2,160", dif: "-$40.00", estado: "Pendiente" },
-];
+const incomeSummary = await getIncomeSummary();
+const currency = new Intl.NumberFormat("es-VE", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+const conciliacionMedios = incomeSummary.data.collectionByPaymentMethod.map((item) => ({
+  medio: item.paymentMethod,
+  sistema: currency.format(item.amountUsd),
+  igtf: currency.format(item.igtfUsd),
+  pagos: item.payments,
+  estado: item.amountUsd > 0 ? "Registrado" : "Sin movimiento",
+}));
 ---
 
 <AdminLayout title="Ingresos - Recaudación y Caja | Admin">
@@ -22,17 +32,17 @@ const conciliacionMedios = [
 
     <header class="space-y-2">
       <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Recaudación y Disponibilidad</h1>
-      <p class="text-gray-500 font-medium">Conciliación de flujos de efectivo y validación de saldos contra estados bancarios.</p>
+      <p class="text-gray-500 font-medium">Resumen de pagos recibidos, medios de cobro e IGTF registrado.</p>
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Efectivo y Equivalentes" value="$28,120" trend="2.1%" trendUp={true} color="success">
+      <StatsCard title="Efectivo y Equivalentes" value={currency.format(incomeSummary.data.summary.collectedUsd)} trend={`${Math.abs(incomeSummary.data.summary.collectedTrendPct).toFixed(1)}%`} trendUp={incomeSummary.data.summary.collectedTrendPct >= 0} color="success">
         <FaCoins slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Eficiencia de Recaudo" value="68.7%" subText="Conversión Activo -> Caja" color="primary">
+      <StatsCard title="Eficiencia de Recaudo" value={`${incomeSummary.data.summary.collectionRate.toFixed(1)}%`} subText="Conversión factura -> cobro" color="primary">
         <FaMoneyCheckDollar slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Partidas Pendientes" value="-$40.00" subText="Diferencia de Arqueo" color="danger">
+      <StatsCard title="Partidas Pendientes" value={currency.format(incomeSummary.data.summary.pendingBalanceUsd)} subText="Saldo por cobrar" color="danger">
         <FaScaleBalanced slot="icon" size={20} />
       </StatsCard>
     </section>
@@ -41,7 +51,7 @@ const conciliacionMedios = [
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-xl font-semibold text-gray-800">Conciliación por Medio de Pago</h2>
+        <h2 class="text-xl font-semibold text-gray-800">Recaudación por Medio de Pago</h2>
         <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20 shadow-sm">
             Disponibilidad Real
         </span>
@@ -52,9 +62,9 @@ const conciliacionMedios = [
           <thead class="bg-primary-300">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Medio de Recepción</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Saldo Libro</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Saldo Banco</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Diferencia</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Monto Recibido</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">IGTF</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Pagos</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
             </tr>
           </thead>
@@ -63,18 +73,10 @@ const conciliacionMedios = [
               <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
                 <td class="px-4 py-4 text-sm text-gray-700 font-bold group-hover:text-primary-900">{m.medio}</td>
                 <td class="px-4 py-4 text-sm text-right text-gray-600 font-medium">{m.sistema}</td>
-                <td class="px-4 py-4 text-sm text-right text-gray-800 font-bold">{m.banco}</td>
-                <td class={`px-4 py-4 text-sm text-right font-bold ${m.dif !== "$0.00" ? 'text-red-600' : 'text-emerald-600'}`}>
-                  {m.dif}
-                </td>
-                <td class="px-4 py-4 text-sm text-right">
-                    <span class={`font-bold ${
-                      m.estado === 'Conciliado' 
-                      ? 'text-emerald-600' 
-                      : 'text-primary-600'
-                    }`}>
-                        {m.estado}
-                    </span>
+                <td class="px-4 py-4 text-sm text-right text-gray-800 font-bold">{m.igtf}</td>
+                <td class="px-4 py-4 text-sm text-right text-gray-600 font-medium">{m.pagos}</td>
+                <td class="px-4 py-4 text-sm text-right font-bold text-emerald-600">
+                  {m.estado}
                 </td>
               </tr>
             ))}

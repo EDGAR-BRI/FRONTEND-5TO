@@ -4,13 +4,22 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaMoneyBillTrendUp, FaArrowTrendUp, FaScaleBalanced } from "react-icons/fa6";
+import { getIncomeSummary } from "@/lib/services/report/income.service";
 
-const saldosIngresos = [
-  { codigo: "410501", cuenta: "Medicina General", debe: "$0.00", haber: "$18,450", saldo: "$18,450 CR" },
-  { codigo: "410502", cuenta: "Hospitalización", debe: "$0.00", haber: "$12,300", saldo: "$12,300 CR" },
-  { codigo: "410503", cuenta: "Laboratorio Clínico", debe: "$0.00", haber: "$6,150", saldo: "$6,150 CR" },
-  { codigo: "410504", cuenta: "Venta de Farmacia", debe: "$0.00", haber: "$4,100", saldo: "$4,100 CR" },
-];
+const incomeSummary = await getIncomeSummary();
+const currency = new Intl.NumberFormat("es-VE", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+const saldosIngresos = incomeSummary.data.breakdownBySpecialty.map((item, index) => ({
+  codigo: `4105${String(index + 1).padStart(2, "0")}`,
+  cuenta: item.specialty,
+  debe: currency.format(0),
+  haber: currency.format(item.incomeUsd),
+  saldo: `${currency.format(item.incomeUsd)} CR`,
+}));
 ---
 
 <AdminLayout title="Ingresos - Ventas por Servicio | Admin">
@@ -26,13 +35,13 @@ const saldosIngresos = [
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Ingresos Operativos" value="$41,000" trend="8.2%" trendUp={true} color="primary">
+      <StatsCard title="Ingresos Operativos" value={currency.format(incomeSummary.data.summary.grossIncomeUsd)} trend={`${Math.abs(incomeSummary.data.summary.grossIncomeTrendPct).toFixed(1)}%`} trendUp={incomeSummary.data.summary.grossIncomeTrendPct >= 0} color="primary">
         <FaMoneyBillTrendUp slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Margen Bruto" value="62%" trend="1.5%" trendUp={true} color="success">
+      <StatsCard title="Tasa de Recaudo" value={`${incomeSummary.data.summary.collectionRate.toFixed(1)}%`} trend={`${Math.abs(incomeSummary.data.summary.collectedTrendPct).toFixed(1)}%`} trendUp={incomeSummary.data.summary.collectedTrendPct >= 0} color="success">
         <FaArrowTrendUp slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Punto de Equilibrio" value="Excedido" color="warning">
+      <StatsCard title="Facturas Pendientes" value={incomeSummary.data.summary.pendingInvoices} color="warning">
         <FaScaleBalanced slot="icon" size={20} />
       </StatsCard>
     </section>
@@ -41,7 +50,7 @@ const saldosIngresos = [
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-xl font-semibold text-gray-800">Saldos de Cuentas (Haber)</h2>
+        <h2 class="text-xl font-semibold text-gray-800">Saldos por Especialidad</h2>
         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
             Libro Mayor
         </span>
@@ -52,7 +61,7 @@ const saldosIngresos = [
           <thead class="bg-primary-300">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Código</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Cuenta Contable</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Especialidad</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Debe</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Haber</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Saldo</th>

@@ -3,9 +3,15 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 };
 
 export const readEnvelopeData = async <T,>(response: Response): Promise<T> => {
-	const json: unknown = await response.json();
-	if (isRecord(json) && "data" in json) return (json as { data: T }).data;
-	return json as T;
+	try {
+		const json: unknown = await response.json();
+		if (isRecord(json) && "data" in json) return (json as { data: T }).data;
+		if (isRecord(json) && "message" in json) return json as unknown as T;
+		return json as T;
+	} catch {
+		const text = await response.text().catch(() => '');
+		throw new Error(`Invalid JSON response: ${text.slice(0, 100)}`);
+	}
 };
 
 export const readEnvelopeErrorMessage = async (response: Response): Promise<string> => {
