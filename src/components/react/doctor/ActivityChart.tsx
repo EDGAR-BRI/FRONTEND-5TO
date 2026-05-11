@@ -13,7 +13,7 @@ export default function ActivityChart() {
   const max = Math.max(...activityData.map((d) => d.count));
 
   return (
-    <div className="bg-white p-2">
+    <div className="bg-white p-2 h-full flex flex-col justify-between ">
 
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-primary-800 text-sm flex items-center gap-2 uppercase tracking-wide">
@@ -28,7 +28,7 @@ export default function ActivityChart() {
         <h4 className="text-2xl font-black text-slate-800">122</h4>
       </div>
 
-      <div className="flex items-end justify-between gap-2 h-32 w-full px-2">
+      <div className="flex items-end justify-between gap-2 h-32 w-full px-2 flex-1">
         {activityData.map((data, i) => {
           let barColor = "bg-slate-200"; 
           if (data.count >= 30) barColor = "bg-orange-500"; 
@@ -51,10 +51,10 @@ export default function ActivityChart() {
         })}
       </div>
 
-      <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
+      {/* <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
         <p className="text-[9px] text-slate-400 font-medium italic">* Datos de consulta semanal</p>
         <button className="text-[9px] font-black text-blue-600 uppercase hover:text-blue-800 transition-colors">Ver Detalles</button>
-      </div>
+      </div> */}
     </div>
   );
 }

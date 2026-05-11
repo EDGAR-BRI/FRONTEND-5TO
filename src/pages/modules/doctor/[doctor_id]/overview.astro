@@ -4,7 +4,7 @@ import MainLayout from "@/layouts/DoctorLayout.astro";
 import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
 import DashboardActions from "@/components/react/doctor/DashboardActions";
 import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments";
-import SpecialtyChart from "@/components/react/doctor/ActivityChart";
+import ActivityChart from "@/components/react/doctor/ActivityChart";
 import PatientStats from "@/components/react/doctor/PatientStats";
 
 
@@ -15,13 +15,11 @@ import StaticCard from "@/components/react/primary/StaticCard";
 import { FaArrowRight, FaHeart, FaIdCard, FaStar, FaUsers, FaSackDollar } from "react-icons/fa6";
 
 import { getDoctorByUserId } from "@/lib/services/medical/doctor/doctor.service";
-import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
 
 const { doctor_id } = Astro.params;
 const userId = Number(doctor_id);
 
 let doctor = null;
-let consultations: any[] = [];
 let summary = {
   totalIncome: 0,
   totalExpenses: 0,
@@ -34,26 +32,13 @@ if (userId && !isNaN(userId)) {
     doctor = await getDoctorByUserId(userId);
     
     const doctorId = doctor?.id || 0;
-    if (doctorId > 0) {
-      consultations = await listConsultationsByDoctor(doctorId);
-    }
-    
-    const completedConsultations = consultations.filter(c => c.finished_at);
-    const pendingConsultations = consultations.filter(c => !c.finished_at);
-    
-    const totalIncome = completedConsultations.reduce((acc, c) => {
-      return acc + (Number(c.invoice?.total_usd) || 0);
-    }, 0);
-    
-    const pendingPayments = pendingConsultations.filter(c => 
-      c.invoice?.status_invoice?.code === 'PENDING'
-    ).length;
+
     
     summary = {
-      totalIncome,
+      totalIncome: 0,
       totalExpenses: 0,
-      netBalance: totalIncome,
-      pendingPayments,
+      netBalance: 0,
+      pendingPayments: 0,
     };
   } catch (error) {
     console.error("Error fetching doctor data:", error);
@@ -61,25 +46,14 @@ if (userId && !isNaN(userId)) {
 }
 
 const doctorName = doctor?.user?.name || "Doctor";
-const doctorCi = doctor?.user?.ci || "V-0";
 const specialtyName = doctor?.specialty?.name || "Especialidad";
-const consultationPrice = Number(doctor?.specialty?.consultation_price) || 0;
 
-const upcomingConsultations = consultations.filter(c => !c.finished_at);
-const completedConsultations = consultations.filter(c => c.finished_at);
-
-const uniquePatients = new Set(
-  consultations
-    .filter(c => c.invoice?.patient?.id)
-    .map(c => c.invoice.patient.id)
-).size;
 ---
 
 <MainLayout>
-  <div class="bg-slate-50 min-h-screen p-8 font-sans">
+  <main class="bg-slate-50 min-h-screen p-8 font-sans @container">
 
-    <div class="mb-10">
-      <StaticCard className="p-6">
+      <StaticCard className="p-6 mb-10">
         <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
           
           <Avatar className="w-20 h-20 sm:w-28 sm:h-28 shadow-md border-2 border-slate-100 shrink-0">
@@ -95,26 +69,18 @@ const uniquePatients = new Set(
               {doctorName}
             </h1>
 
+            <!-- aqui tengo que poner aCTIONcARD -->
             <div class="flex flex-wrap justify-center sm:justify-start gap-3">
-              <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
- 				<FaIdCard size={16} className="text-blue-500 shrink-0" />
-                <span class="font-bold">V-{doctorCi}</span>
-              </Badge>
               <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
  				<FaStar size={16} className="text-yellow-500 shrink-0" />
                 <span class="font-bold">{specialtyName.toUpperCase()}</span>
-              </Badge>
-              <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
- 				<FaSackDollar size={16} className="text-emerald-500 shrink-0" />
-                <span class="font-bold">${consultationPrice} / consulta</span>
               </Badge>
             </div>
           </div>
         </div>
       </StaticCard>
-    </div>
 
-    <DoctorFinanceSummary client:visible summary={summary} />
+    <!-- <DoctorFinanceSummary client:visible summary={summary} /> -->
     
     <div class="mb-10">
       <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
@@ -123,36 +89,21 @@ const uniquePatients = new Set(
       <DashboardActions client:visible />
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-2 space-y-8">
+    <div class="flex flex-col @[900px]:flex-row gap-8">
+      <!-- <div class="lg:col-span-2 space-y-8"> -->
 
-        <StaticCard className="overflow-hidden">
+        <StaticCard className="overflow-hidden flex-2">
           <UpcomingAppointments client:visible />
         </StaticCard>
 
-      </div>
+      <!-- </div> -->
 
-      <div class="space-y-8">
-        
-        <StaticCard className="p-8">
-          <div class="flex justify-between items-center mb-8">
-            <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
-				<FaUsers size={18} className="text-emerald-500" /> Resumen de Pacientes
-            </h3>
-          </div>
-
-          <PatientStats client:visible />
-
-          <button class="w-full mt-8 py-4 rounded-2xl bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-[#1e3a8a] hover:text-white transition-all border border-dashed border-slate-300 flex items-center justify-center gap-2 group">
-			Descargar Reporte Mensual <FaArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+      <!-- <div class="space-y-8"> -->
+        <StaticCard className="p-8 flex-1">
+          <ActivityChart client:visible />
         </StaticCard>
 
-        <StaticCard className="p-8">
-          <SpecialtyChart client:visible />
-        </StaticCard>
-
-      </div>
+      <!-- </div> -->
     </div>
-  </div>
+  </main>
 </MainLayout>
