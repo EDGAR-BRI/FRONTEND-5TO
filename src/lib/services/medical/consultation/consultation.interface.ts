@@ -84,6 +84,67 @@ export interface ConsultationDetail {
 	supplies: ConsultationSupplyDto[];
 }
 
+export interface PatientSymptomRef {
+	id: number;
+	name: string;
+}
+
+export interface PatientSymptomDto {
+	id: number;
+	severity: string;
+	duration: string;
+	notes: string | null;
+	symptom: PatientSymptomRef;
+}
+
+export interface PatientDiagnosisRef {
+	id: number;
+	code: string;
+	description: string;
+}
+
+export interface PatientDiagnosisDto {
+	id: number;
+	is_primary: boolean;
+	condition_status: string | null;
+	onset_date: string | null;
+	diagnosis: PatientDiagnosisRef;
+}
+
+export interface PatientClinicalExaminationDto {
+	id: number;
+	weight: string | null;
+	height: string | null;
+	temperature: string | null;
+	systolic_bp: number | null;
+	diastolic_bp: number | null;
+	heart_rate: number | null;
+	respiratory_rate: number | null;
+	oxygen_saturation: string | null;
+}
+
+export interface PatientPrescriptionDto {
+	id: number;
+	medication_name: string | null;
+	dosage: string | null;
+	frequency: string | null;
+	duration: string | null;
+	instructions: string | null;
+	active: boolean;
+}
+
+export interface PatientConsultationHistory {
+	id: number;
+	date: string;
+	started_at: string | null;
+	finished_at: string | null;
+	doctor: Omit<ConsultationDoctorRef, "userId">;
+	symptomsConsultations: PatientSymptomDto[];
+	consultationDiagnoses: PatientDiagnosisDto[];
+	clinicalExaminations: PatientClinicalExaminationDto[];
+	prescriptions: PatientPrescriptionDto[];
+}
+
 export interface CreateConsultationDto {
 	invoiceId: number;
 	doctorId: number;

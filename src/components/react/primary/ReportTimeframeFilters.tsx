@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Select, type SelectOption } from "@/components/react/primary/Select";
 import { Badge } from "@/components/react/primary/Badge";
 import { Button } from "@/components/react/primary/Button";
 import StaticCard from "@/components/react/primary/StaticCard";
+import { Select, type SelectOption } from "@/components/react/primary/Select";
 
 export type ReportTimeframe = "day" | "week" | "month" | "year";
 
@@ -18,13 +18,11 @@ const presetOptions: Record<ReportTimeframe, SelectOption[]> = {
 		{ value: "today", label: "Hoy" },
 		{ value: "yesterday", label: "Ayer" },
 		{ value: "last-7-days", label: "Últimos 7 días" },
-		{ value: "custom-day", label: "Rango diario" },
 	],
 	week: [
 		{ value: "current-week", label: "Semana actual" },
 		{ value: "previous-week", label: "Semana anterior" },
 		{ value: "last-4-weeks", label: "Últimas 4 semanas" },
-		{ value: "custom-week", label: "Rango semanal" },
 	],
 	month: [
 		{ value: "current-month", label: "Mes actual" },
@@ -54,11 +52,77 @@ const defaultPresetByPeriod: Record<ReportTimeframe, string> = {
 	year: "current-year",
 };
 
+const pad = (value: number) => String(value).padStart(2, "0");
+
+const formatDate = (date: Date) => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+
+const startOfUTCMonth = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+
+const startOfUTCWeek = (date: Date) => {
+	const current = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+	const diff = (current.getUTCDay() + 6) % 7;
+	current.setUTCDate(current.getUTCDate() - diff);
+	return current;
+};
+
+const shiftUTCDate = (date: Date, days: number) => {
+	const next = new Date(date);
+	next.setUTCDate(next.getUTCDate() + days);
+	return next;
+};
+
+const getRangeFromPreset = (period: ReportTimeframe, preset: string) => {
+	const today = new Date();
+	const currentDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+
+	switch (preset) {
+		case "yesterday":
+			return { from: formatDate(shiftUTCDate(currentDay, -1)), to: formatDate(shiftUTCDate(currentDay, -1)) };
+		case "last-7-days":
+			return { from: formatDate(shiftUTCDate(currentDay, -6)), to: formatDate(currentDay) };
+		case "current-week":
+			return { from: formatDate(startOfUTCWeek(today)), to: formatDate(currentDay) };
+		case "previous-week": {
+			const previousWeekStart = shiftUTCDate(startOfUTCWeek(today), -7);
+			const previousWeekEnd = shiftUTCDate(previousWeekStart, 6);
+			return { from: formatDate(previousWeekStart), to: formatDate(previousWeekEnd) };
+		}
+		case "last-4-weeks":
+			return { from: formatDate(shiftUTCDate(currentDay, -27)), to: formatDate(currentDay) };
+		case "current-month":
+			return { from: formatDate(startOfUTCMonth(today)), to: formatDate(currentDay) };
+		case "previous-month": {
+			const previousMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1));
+			const previousMonthEnd = new Date(Date.UTC(previousMonth.getUTCFullYear(), previousMonth.getUTCMonth() + 1, 0));
+			return { from: formatDate(previousMonth), to: formatDate(previousMonthEnd) };
+		}
+		case "last-3-months":
+			return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 2, 1))), to: formatDate(currentDay) };
+		case "last-6-months":
+			return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 5, 1))), to: formatDate(currentDay) };
+		case "current-year":
+			return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear(), 0, 1))), to: formatDate(currentDay) };
+		case "previous-year":
+			return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear() - 1, 0, 1))), to: formatDate(new Date(Date.UTC(today.getUTCFullYear() - 1, 11, 31))) };
+		case "last-3-years":
+			return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear() - 2, 0, 1))), to: formatDate(currentDay) };
+		case "last-5-years":
+			return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear() - 4, 0, 1))), to: formatDate(currentDay) };
+		case "today":
+		default:
+			if (period === "week") return { from: formatDate(startOfUTCWeek(today)), to: formatDate(currentDay) };
+			if (period === "year") return { from: formatDate(new Date(Date.UTC(today.getUTCFullYear(), 0, 1))), to: formatDate(currentDay) };
+			if (period === "day") return { from: formatDate(currentDay), to: formatDate(currentDay) };
+			return { from: formatDate(startOfUTCMonth(today)), to: formatDate(currentDay) };
+	}
+};
+
 interface ReportTimeframeFiltersProps {
 	className?: string;
 	title?: string;
 	subtitle?: string;
 	initialPeriod?: ReportTimeframe;
+	initialPreset?: string;
 }
 
 export default function ReportTimeframeFilters({
@@ -66,11 +130,13 @@ export default function ReportTimeframeFilters({
 	title = "Filtros temporales",
 	subtitle = "Ajusta el periodo de análisis para revisar indicadores por día, semana, mes o año.",
 	initialPeriod = "month",
+	initialPreset,
 }: ReportTimeframeFiltersProps) {
+	const resolvedInitialPreset = initialPreset ?? defaultPresetByPeriod[initialPeriod];
 	const [period, setPeriod] = useState<ReportTimeframe>(initialPeriod);
-	const [preset, setPreset] = useState<string>(defaultPresetByPeriod[initialPeriod]);
+	const [preset, setPreset] = useState<string>(resolvedInitialPreset);
 	const [appliedPeriod, setAppliedPeriod] = useState<ReportTimeframe>(initialPeriod);
-	const [appliedPreset, setAppliedPreset] = useState<string>(defaultPresetByPeriod[initialPeriod]);
+	const [appliedPreset, setAppliedPreset] = useState<string>(resolvedInitialPreset);
 
 	const activePresets = useMemo(() => presetOptions[period], [period]);
 
@@ -87,6 +153,16 @@ export default function ReportTimeframeFilters({
 
 	const currentPresetLabel = activePresets.find((option) => option.value === preset)?.label ?? "Selecciona un rango";
 	const appliedPresetLabel = presetOptions[appliedPeriod].find((option) => option.value === appliedPreset)?.label ?? "Sin aplicar";
+
+	const applyFilters = () => {
+		const range = getRangeFromPreset(period, preset);
+		const url = new URL(window.location.href);
+		url.searchParams.set("from", range.from);
+		url.searchParams.set("to", range.to);
+		url.searchParams.set("period", period);
+		url.searchParams.set("preset", preset);
+		window.location.href = url.toString();
+	};
 
 	return (
 		<StaticCard>
@@ -127,6 +203,7 @@ export default function ReportTimeframeFilters({
 							onClick={() => {
 								setAppliedPeriod(period);
 								setAppliedPreset(preset);
+								applyFilters();
 							}}
 						/>
 					</div>

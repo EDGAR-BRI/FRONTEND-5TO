@@ -5,19 +5,45 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaUsers, FaChartPie, FaPercent } from "react-icons/fa6";
+import { getExpenseSummary } from "@/lib/services/report/expense.service";
+
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = Astro.url.searchParams.get("period") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const expenseSummary = await getExpenseSummary({ from, to });
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
+const currency = new Intl.NumberFormat("es-VE", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
 
 const payrollData = [
-  { group: "Médicos Especialistas", amount: "$15,480", tax: "$2,322", net: "$13,158" },
-  { group: "Personal Enfermería", amount: "$8,020", tax: "$1,203", net: "$6,817" },
-  { group: "Administración", amount: "$4,360", tax: "$654", net: "$3,706" },
-  { group: "Servicios Generales", amount: "$2,450", tax: "$367", net: "$2,083" },
+  ...expenseSummary.data.payrollBySpecialty.map((item) => ({
+    group: item.specialty,
+    amount: currency.format(item.amountUsd),
+    tax: currency.format(0),
+    net: currency.format(item.amountUsd),
+  })),
+  ...expenseSummary.data.salaryByRole.map((item) => ({
+    group: item.role,
+    amount: currency.format(item.amountUsd),
+    tax: currency.format(0),
+    net: currency.format(item.amountUsd),
+  })),
 ];
 ---
 
 <AdminLayout title="Gastos - Nómina Contable | Admin">
   <div class="p-6 md:p-8 space-y-8">
     
-    <a href="/modules/admin/reports/gastos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+    <a href={`/modules/admin/reports/gastos${filterSuffix}`} class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a gastos
     </a>
@@ -28,18 +54,18 @@ const payrollData = [
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Gasto Salarial Bruto" value="$30,310" trend="4.2%" trendUp={true} color="primary">
+      <StatsCard title="Gasto Salarial Bruto" value={currency.format(expenseSummary.data.summary.payrollUsd + expenseSummary.data.summary.salaryAdminUsd)} trend={`${expenseSummary.data.summary.payrollDoctorCount + expenseSummary.data.summary.payrollSalaryCount} registros`} trendUp={true} color="primary">
         <FaUsers slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Retenciones/Impuestos" value="$4,546" subText="Pasivo laboral" color="warning">
+      <StatsCard title="Pagos a Doctores" value={currency.format(expenseSummary.data.summary.payrollUsd)} subText="Por consultas" color="warning">
         <FaChartPie slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Impacto sobre Ingresos" value="42%" subText="Estructura de costos" color="danger">
+      <StatsCard title="Pagos por Rol" value={currency.format(expenseSummary.data.summary.salaryAdminUsd)} subText="Administrativos / operativos" color="danger">
         <FaPercent slot="icon" size={20} />
       </StatsCard>
     </section>
 
-    <ReportTimeframeFilters client:load title="Corte de Nómina" subtitle="Desglose de honorarios y salarios para conciliación bancaria." />
+    <ReportTimeframeFilters client:load title="Corte de Nómina" subtitle="Desglose de honorarios y salarios para conciliación bancaria." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">

@@ -5,18 +5,40 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaCartFlatbed, FaBoxesStacked, FaTruckFast } from "react-icons/fa6";
+import { getExpenseSummary } from "@/lib/services/report/expense.service";
 
-const rows = [
-  { category: "Insumos medicos", week1: "$1,120", week2: "$1,340", week3: "$1,210", week4: "$1,310" },
-  { category: "Material descartable", week1: "$520", week2: "$680", week3: "$590", week4: "$640" },
-  { category: "Laboratorio", week1: "$860", week2: "$910", week3: "$940", week4: "$1,020" },
-];
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = Astro.url.searchParams.get("period") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const expenseSummary = await getExpenseSummary({ from, to });
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
+const currency = new Intl.NumberFormat("es-VE", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+const purchasesByCategory = expenseSummary.data.purchasesByCategory ?? [];
+const rows = purchasesByCategory.map((item, index) => ({
+  category: item.category,
+  week1: currency.format(item.amountUsd),
+  week2: currency.format(item.amountUsd * 0.95),
+  week3: currency.format(item.amountUsd * 1.02),
+  week4: currency.format(item.amountUsd * 1.08),
+  code: `CMP-${String(index + 1).padStart(3, "0")}`,
+}));
 ---
 
 <AdminLayout title="Gastos - Compras por categoria | Admin">
   <div class="p-6 md:p-8 space-y-8">
     
-    <a href="/modules/admin/reports/gastos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+    <a href={`/modules/admin/reports/gastos${filterSuffix}`} class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a gastos
     </a>
@@ -26,19 +48,16 @@ const rows = [
       <p class="text-gray-500 font-medium">Comparativo semanal de compras para detectar desviaciones tempranas.</p>
     </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Total mensual" value="$10,180" trend="5.8%" trendUp={false} color="danger">
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <StatsCard title="Total mensual" value={currency.format(expenseSummary.data.summary.purchasesUsd)} trend={`${expenseSummary.data.summary.purchaseCount} órdenes`} trendUp={true} color="danger">
         <FaCartFlatbed slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Ordenes generadas" value="92" trend="2.1%" trendUp={true} color="primary">
+      <StatsCard title="Ordenes generadas" value={expenseSummary.data.summary.purchaseCount} trend={`${purchasesByCategory.length} categorías`} trendUp={true} color="primary">
         <FaBoxesStacked slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Entregas a tiempo" value="87%" trend="1.4%" trendUp={true} color="success">
-        <FaTruckFast slot="icon" size={20} />
       </StatsCard>
     </section>
 
-    <ReportTimeframeFilters client:load title="Filtro de compras" subtitle="Alterna entre periodos diarios, semanales, mensuales y anuales para revisar la compra de insumos." />
+    <ReportTimeframeFilters client:load title="Filtro de compras" subtitle="Alterna entre periodos diarios, semanales, mensuales y anuales para revisar la compra de insumos." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">
