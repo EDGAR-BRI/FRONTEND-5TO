@@ -23,6 +23,7 @@ import { Field } from '@/components/react/primary/Field'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import StaticCard from '@/components/react/primary/StaticCard'
 import { FaCalendarPlus } from 'react-icons/fa6'
+import PaymentConfirmationModal from '@/components/react/pacient/PaymentConfirmationModal';
 
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import { getPatients } from '@/lib/services/medical/patient/patient.service'
@@ -34,6 +35,7 @@ import type { AppointmentType } from '@/lib/services/scheduling/appointment-type
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
 import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface'
 import type { SelectOption } from '@/components/react/primary/Select'
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -237,6 +239,8 @@ export default function AppointmentForm({
     const [motivo, setMotivo] = useState('')
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [pendingAppointmentData, setPendingAppointmentData] = useState<any>(null);
 
     // ── Fecha ────────────────────────────────────────────────────────────────
     const [datePreset, setDatePreset] = useState<DatePreset>('specific')
@@ -418,38 +422,36 @@ export default function AppointmentForm({
     // ── Submit ───────────────────────────────────────────────────────────────
     const handleSubmit = async () => {
         if (!isValid) return
-        setLoading(true)
         setFeedback(null)
-        try {
-            const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
-            const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
-            const dateObj = new Date(dateTimeString);
 
-            // Validation against past dates
-            const now = new Date();
-            if (resolvedHour === 'Cualquiera') {
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-                if (selectedDay < today) {
-                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
-                    setLoading(false);
-                    return;
-                }
-            } else {
-                if (dateObj < now) {
-                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
-                    setLoading(false);
-                    return;
-                }
+        const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
+        const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
+        const dateObj = new Date(dateTimeString);
+        const now = new Date();
+
+        // Validaciones de fecha pasada 
+        if (resolvedHour === 'Cualquiera') {
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            if (selectedDay < today) {
+                setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
+                return;
             }
+        } else {
+            if (dateObj < now) {
+                setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
+                return;
+            }
+        }
 
+        // Obtener datos visuales para el modal
+        const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
+        const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
+        const dateTimeUTC = `${resolvedDate}T${horaFinal}:00.000Z`;
 
-            const dateTimeUTC = `${resolvedDate}T${horaFinal}:00.000Z`;
-
-            const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
-            const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
-
-            await createAppointment({
+        // Preparamos la data, pero NO la enviamos a Prisma aún
+        setPendingAppointmentData({
+            payload: {
                 patientId: Number(patientId),
                 doctorId: Number(doctorId),
                 date_time: dateTimeUTC,
@@ -457,11 +459,37 @@ export default function AppointmentForm({
                 statusId: 1,
                 typeId: Number(appointmentTypeId),
                 price: consultationPrice
-            })
+            },
+            display: {
+                doctorName: selectedDoctor?.user.name || 'Doctor',
+                specialty: selectedDoctor?.specialty.name || 'Consulta General',
+                date: resolvedDate,
+                time: horaFinal,
+                price: consultationPrice
+            }
+        });
+
+        // Abrimos el modal
+        setIsPaymentModalOpen(true);
+    }
+
+    
+    const handleConfirmPayment = async (paymentMethod: string, reference?: string) => {
+        setIsPaymentModalOpen(false); // Cerramos el modal
+        setLoading(true);
+        try {
+            const finalPayload = {
+                ...pendingAppointmentData.payload,
+                payment_method: paymentMethod,
+                reference: reference || undefined 
+            };
+            
+            await createAppointment(finalPayload);
 
             setFeedback({ type: 'success', msg: 'Cita pautada correctamente. Pendiente de confirmación.' })
             onSuccess?.()
             setMotivo('')
+            setPendingAppointmentData(null);
         } catch (err: any) {
             console.error('Error creando cita:', err)
             setFeedback({ type: 'error', msg: err.message || 'No se pudo pautar la cita. Intenta de nuevo.' })
@@ -737,6 +765,13 @@ export default function AppointmentForm({
                         onClick={handleSubmit}
                         className="mt-1"
                     />
+                    <PaymentConfirmationModal 
+                    isOpen={isPaymentModalOpen}
+                    onClose={() => setIsPaymentModalOpen(false)}
+                    onConfirm={handleConfirmPayment}
+                    appointmentData={pendingAppointmentData?.display || null}
+                    />
+
                 </div>
             )}
         </StaticCard>
