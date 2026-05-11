@@ -1,111 +1,41 @@
 ---
+export const prerender = false;
+
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import DailyBookPdfButton from "@/components/react/admin/reports/DailyBookPdfButton";
-import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
-import { StatsCard } from "@/components/react/primary/StatsCard";
-import { Button } from "@/components/react/primary/Button";
-import {
-    FaArrowTrendUp,
-    FaBan,
-    FaPrint,
-    FaStethoscope,
-    FaUserPlus,
-    FaMoneyBillWave,
-    FaChartLine
-} from "react-icons/fa6";
+import DailyBookPdfButton from "@/components/react/admin/reports/DailyBookPdfButton";
+import RevenueTimelineChart from "@/components/react/admin/reports/RevenueTimelineChart";
+import SpecialtyDemandChart from "@/components/react/admin/reports/SpecialtyDemandChart";
 
-// Fake data for charts
-const monthlyRevenue = [
-    { month: "Ene", value: 12500 },
-    { month: "Feb", value: 15200 },
-    { month: "Mar", value: 14800 },
-    { month: "Abr", value: 18500 },
-    { month: "May", value: 17200 },
-    { month: "Jun", value: 21000 },
-];
-
-const maxRevenue = Math.max(...monthlyRevenue.map((d) => d.value));
-
-const specialtiesStats = [
-    { name: "Cardiología", percentage: 35, color: "bg-primary-500" },
-    { name: "Pediatría", percentage: 25, color: "bg-success" },
-    { name: "Medicina General", percentage: 20, color: "bg-warning" },
-    { name: "Dermatología", percentage: 15, color: "bg-cool-gray-50" },
-    { name: "Otros", percentage: 5, color: "bg-cool-gray-30" },
-];
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = (Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year" | null) ?? "month";
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
 ---
 
 <AdminLayout title="Reportes y Estadísticas | Admin">
-    <div class="p-6 md:p-8 space-y-8">
-        {/* Header*/}
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-800">Reportes Financieros y de Uso</h1>
-                <p class="text-gray-500 mt-1">Análisis de rendimiento, ingresos y distribución de pacientes.</p>
-            </div>
-            <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
-        </header>
-
-		<section class="space-y-3">
-			<div class="flex items-center justify-between gap-3 flex-wrap">
-				<div>
-					<h2 class="text-lg font-bold text-gray-800">Libro Diario Mensual</h2>
-					<p class="text-sm text-gray-500">Genera un PDF clásico por mes con ingresos, compras, nómina y servicios.</p>
-				</div>
+	<div class="p-6 md:p-8 space-y-8">
+		<header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+			<div>
+				<h1 class="text-3xl font-bold text-gray-800">Reportes Financieros y de Uso</h1>
+				<p class="text-gray-500 mt-1">Análisis de rendimiento, ingresos y distribución de pacientes.</p>
 			</div>
 			<DailyBookPdfButton client:load />
+		</header>
+
+		<ReportTimeframeFilters
+			client:visible
+			title="Filtros del centro de reportes"
+			subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos y demanda."
+			initialPeriod={period}
+			initialPreset={preset ?? undefined}
+		/>
+
+		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+			<div class="xl:col-span-2">
+				<RevenueTimelineChart client:load from={from} to={to} period={period} />
+			</div>
+			<SpecialtyDemandChart client:load from={from} to={to} />
 		</section>
-
-		<ReportTimeframeFilters client:visible title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
-
-        <div id="seccion-operativos" class="space-y-8">
-            
-            {/* SECCIÓN DE GRÁFICOS*/}
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-                <div class="lg:col-span-2 bg-white rounded-xl border border-primary-200 p-6 shadow-sm">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-lg font-bold text-gray-800">Evolución de Ingresos</h2>
-                        <select class="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-primary-500">
-                            <option>Últimos 6 meses</option>
-                            <option>Este año</option>
-                        </select>
-                    </div>
-                    <div class="h-64 flex items-end justify-between gap-3 pt-4 border-b border-gray-100 pb-2">
-                        {monthlyRevenue.map((data) => (
-                            <div class="relative flex flex-col items-center flex-1 group h-full justify-end">
-                            
-                                <div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-10 shadow-lg font-bold">
-                                    ${data.value.toLocaleString()}
-                                </div>
-                                <div 
-                                    class="w-full bg-primary-500 hover:bg-primary-600 transition-all rounded-t-md shadow-sm" 
-                                    style={`height: ${(data.value / maxRevenue) * 100}%`} 
-                                />
-                                <span class="text-[10px] text-gray-500 mt-2 font-bold uppercase">{data.month}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Demanda por Especialidad */}
-                <div class="bg-white rounded-xl border border-primary-200 p-6 shadow-sm flex flex-col">
-                    <h2 class="text-lg font-bold text-gray-800 mb-6">Demanda por Especialidad</h2>
-                    <div class="space-y-6 flex-1 justify-center flex flex-col">
-                        {specialtiesStats.map((stat) => (
-                            <div>
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-xs font-bold text-gray-600 uppercase">{stat.name}</span>
-                                    <span class="text-sm font-black text-gray-900">{stat.percentage}%</span>
-                                </div>
-                                <div class="w-full bg-gray-100 rounded-full h-2.5">
-                                    <div class={`h-2.5 rounded-full ${stat.color} transition-all duration-700`} style={`width: ${stat.percentage}%`} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
+	</div>
 </AdminLayout>
