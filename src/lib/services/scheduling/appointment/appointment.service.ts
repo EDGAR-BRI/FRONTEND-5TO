@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { AppointmentsOverview, Appointment, CreateAppointmentDto, UpdateAppointmentDto } from "./appointment.interface";
+import type { AppointmentsOverview, Appointment, CreateAppointmentDto, UpdateAppointmentDto, WeeklyFlowResponse } from "./appointment.interface";
 
 const BASE_PATH = "scheduling/appointment";
 
@@ -43,6 +43,20 @@ export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: 
 	}
     return readEnvelopeData<Appointment[]>(response);
 }
+
+export const getWeeklyFlowByDoctor = async (doctorId: number, range = "week"): Promise<WeeklyFlowResponse> => {
+    const params = new URLSearchParams();
+    if (range) params.set("range", range);
+    const endpoint = `scheduling/appointment/doctor/${doctorId}/weekly-flow?${params.toString()}`;
+
+    const response = await api(endpoint, {
+        method: "GET",
+    });
+    if (!response.ok) {
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    return readEnvelopeData<WeeklyFlowResponse>(response);
+};
 export const createAppointment = async (payload: CreateAppointmentDto): Promise<Appointment> => {
     const response = await api(BASE_PATH, { 
         method: "POST",

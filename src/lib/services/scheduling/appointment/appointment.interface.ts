@@ -79,3 +79,17 @@ export type CreateAppointmentDto =
         date_time: string | Date;
     }
 export type UpdateAppointmentDto = Partial<CreateAppointmentDto>;
+
+export type WeeklyFlowDay = {
+    day: string;
+    date: string;
+    count: number;
+};
+
+export type WeeklyFlowResponse = {
+    range: string;
+    start: string;
+    end: string;
+    total: number;
+    days: WeeklyFlowDay[];
+};

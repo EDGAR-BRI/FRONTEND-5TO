@@ -100,7 +100,7 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
 
       <!-- <div class="space-y-8"> -->
         <StaticCard className="p-8 flex-1">
-          <ActivityChart client:visible />
+          <ActivityChart client:visible doctorId={doctor?.id ?? 0} />
         </StaticCard>
 
       <!-- </div> -->
