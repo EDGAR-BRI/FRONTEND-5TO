@@ -1,0 +1,17 @@
+---
+import MainLayout from '@/layouts/AdminLayout.astro';
+import { PaidServicesHistoryDashboard } from '@/components/react/admin/procurement/PaidServicesHistoryDashboard';
+---
+
+<MainLayout title="Admin | Paid Services History">
+    <section class="p-8 space-y-6">
+        <header class="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4">
+            <div class="space-y-1">
+                <h1 class="text-2xl font-semibold text-primary-800">Historial de servicios pagados</h1>
+                <p class="text-sm text-cool-gray-70">Consulta pagos de servicios y facturas relacionadas.</p>
+            </div>
+        </header>
+
+        <PaidServicesHistoryDashboard client:only="react" />
+    </section>
+</MainLayout>

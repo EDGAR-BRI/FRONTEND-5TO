@@ -10,9 +10,21 @@ import {
 import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 import { Button } from "../primary/Button";
-import { StatsCard } from "../primary/StatsCard"; 
+import { StatsCard } from "../primary/StatsCard";
+import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
 
-const appointments = [
+type AppointmentRow = {
+  patient: string;
+  date: string;
+  time: string;
+  reason: string;
+  status: string;
+  statusColor: string;
+  notes: string;
+  doctor: string;
+};
+
+const defaultAppointments: AppointmentRow[] = [
   {
     patient: "Carlos Mendoza",
     date: "Hoy, 14 de Oct",
@@ -45,8 +57,49 @@ const appointments = [
   }
 ];
 
-export default function UpcomingAppointments() {
-  const [selectedAppt, setSelectedAppt] = useState<typeof appointments[0] | null>(null);
+function formatDateParts(value: string | null | undefined) {
+  const d = value ? new Date(value) : null;
+  if (!d || Number.isNaN(d.getTime())) return { date: "-", time: "-" };
+
+  const date = d.toLocaleDateString("es-VE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
+  const time = d.toLocaleTimeString("es-VE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return { date, time };
+}
+
+function mapConsultationToAppointment(c: ConsultationSummary): AppointmentRow {
+  const finished = Boolean(c.finished_at);
+  const status = finished ? "Completada" : "Pendiente";
+  const statusColor = finished ? "text-emerald-500 bg-emerald-50" : "text-amber-500 bg-amber-50";
+
+  const dateSource = c.started_at ?? c.date;
+  const { date, time } = formatDateParts(dateSource);
+
+  const patientName = c.invoice?.patient?.user?.name ?? c.invoice?.patient?.name ?? "Paciente";
+  const doctorName = c.doctor?.user?.name ?? "Doctor";
+
+  return {
+    patient: patientName,
+    date,
+    time,
+    reason: `Consulta #${c.id}`,
+    status,
+    statusColor,
+    notes: `Factura #${c.invoice?.id ?? "-"}`,
+    doctor: doctorName,
+  };
+}
+
+export default function UpcomingAppointments({ appointments: propAppointments }: { appointments?: ConsultationSummary[] }) {
+  const appointments = propAppointments ? propAppointments.map(mapConsultationToAppointment) : defaultAppointments;
+  const [selectedAppt, setSelectedAppt] = useState<AppointmentRow | null>(null);
 
   return (
     <div className="p-6 relative h-full flex flex-col">

@@ -1,4 +1,4 @@
-import { FaCalendarDays, FaCircleUser, FaFlask, FaUsers } from "react-icons/fa6";
+import { FaCalendarDays, FaCircleUser, FaUsers } from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 
 export default function DashboardActions() {
@@ -21,12 +21,6 @@ export default function DashboardActions() {
       href: "patients", 
       bg: "!bg-[#22c55e] hover:!bg-green-600 !border-none" 
     },
-    { 
-      label: "Resultados", 
-      icon: <FaFlask size={32} />, 
-      href: "results", 
-      bg: "!bg-[#f97316] hover:!bg-orange-600 !border-none" 
-    }
   ];
 
   return (

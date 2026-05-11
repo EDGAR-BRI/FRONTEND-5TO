@@ -17,9 +17,10 @@ export const getScheduleOverview = async (filters?: { range?: string }): Promise
 	}
     return readEnvelopeData<AppointmentsOverview[]>(response);
 }
-export const getAppointments = async (filters?: { range?: string }): Promise<AppointmentsOverview[]> => {
+export const getAppointments = async (filters?: { range?: string, statusId?: number }): Promise<AppointmentsOverview[]> => {
     const params = new URLSearchParams();
     if (filters?.range) params.set("range", filters.range);
+    if (filters?.statusId) params.set("statusId", String(filters.statusId));
     const endpoint = params.toString() ? `${BASE_PATH}?${params.toString()}` : BASE_PATH;
 
     const response = await api(endpoint, {
@@ -34,7 +35,7 @@ import type { AstroCookies } from "astro";
 
 export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: boolean = false, cookies?: AstroCookies): Promise<Appointment[]> => {
     const url = `${BASE_PATH}/${selectUpcomingOnly ? 'upcoming/' : ''}doctor/${doctorId}`
-    const response = await api(url, { //  CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
+    const response = await api(url, { 
         method: "GET"
     }, cookies);
     if(!response.ok){

@@ -1,144 +1,195 @@
 ---
+export const prerender = false;
+
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
 import { Badge } from "@/components/react/primary/Badge";
-import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import StaticCard from "@/components/react/primary/StaticCard";
+import { Button } from "@/components/react/primary/Button";
 import {
-	FaArrowRight,
-	FaCalendarCheck,
-	FaClock,
-	FaHospitalUser,
-	FaStethoscope,
-	FaUserDoctor,
+    FaArrowRight,
+    FaCalendarCheck,
+    FaClock,
+    FaHospitalUser,
+    FaStethoscope,
+    FaUserDoctor,
+    FaFilePdf,
+    FaPrint
 } from "react-icons/fa6";
 
 const concreteReports = [
-	{
-		title: "Carga y puntualidad de citas",
-		description: "Horas de mayor demanda, ausencias y cumplimiento por turno.",
-		href: "/modules/admin/reports/operativos-citas",
-		badge: "Agenda",
-	},
-	{
-		title: "Tiempos de atencion",
-		description: "Duracion por especialidad y tiempo promedio de espera por bloque.",
-		href: "/modules/admin/reports/operativos-tiempos",
-		badge: "Flujo",
-	},
-	{
-		title: "Productividad medica",
-		description: "Atenciones por medico, saturacion y capacidad disponible.",
-		href: "/modules/admin/reports/operativos-productividad",
-		badge: "Equipo",
-	},
+    {
+        title: "Carga y puntualidad de citas",
+        description: "Horas de mayor demanda, ausencias y cumplimiento por turno.",
+        href: "/modules/admin/reports/operativos-citas",
+        badge: "Agenda",
+    },
+    {
+        title: "Tiempos de atencion",
+        description: "Duracion por especialidad y tiempo promedio de espera por bloque.",
+        href: "/modules/admin/reports/operativos-tiempos",
+        badge: "Flujo",
+    },
+    {
+        title: "Productividad medica",
+        description: "Atenciones por medico, saturacion y capacidad disponible.",
+        href: "/modules/admin/reports/operativos-productividad",
+        badge: "Equipo",
+    },
 ];
 
 const slotsByTime = [
-	{ slot: "07:00 - 09:00", occupancy: "71%", status: "Normal" },
-	{ slot: "09:00 - 11:00", occupancy: "88%", status: "Alto" },
-	{ slot: "11:00 - 13:00", occupancy: "93%", status: "Critico" },
-	{ slot: "14:00 - 16:00", occupancy: "82%", status: "Alto" },
+    { slot: "07:00 - 09:00", occupancy: "71%", status: "Normal" },
+    { slot: "09:00 - 11:00", occupancy: "88%", status: "Alto" },
+    { slot: "11:00 - 13:00", occupancy: "93%", status: "Critico" },
+    { slot: "14:00 - 16:00", occupancy: "82%", status: "Alto" },
 ];
 ---
 
 <AdminLayout title="Reporte Operativo | Admin">
-	<div class="space-y-8">
-		<header class="space-y-2">
-			<h1 class="text-3xl font-bold text-gray-800">Reporte Operativo</h1>
-			<p class="text-gray-500">Seguimiento de capacidad, tiempos y productividad con acceso a reportes detallados.</p>
-		</header>
+    <div class="p-6 md:p-8 space-y-8">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte Operativo</h1>
+                <p class="text-gray-500 mt-1">Seguimiento de capacidad, tiempos y productividad asistencial.</p>
+            </div>
+            <div class="flex gap-3">
+                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
+                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+            </div>
+        </header>
 
-		<ReportTimeframeFilters client:visible title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
+        {/* TARJETAS DE ESTADÍSTICAS */}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">
+                <FaCalendarCheck slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Tiempo Promedio" value="23 min" trend="1.1%" trendUp={false} color="warning">
+                <FaClock slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Pacientes Atendidos" value="127" trend="6.4%" trendUp={true} color="success">
+                <FaHospitalUser slot="icon" size={20} />
+            </StatsCard>
+            <StatsCard title="Médicos Activos" value="18" trend="0.0%" trendUp={true} color="primary">
+                <FaUserDoctor slot="icon" size={20} />
+            </StatsCard>
+        </section>
 
-		<ReportBackendSnapshot client:visible scope="operativos" />
+        {/* FILTROS OPERATIVOS */}
+        <ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
 
-		<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">
-				<FaCalendarCheck slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Tiempo Promedio" value="23 min" trend="1.1%" trendUp={false} color="warning">
-				<FaClock slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Pacientes Atendidos" value="127" trend="6.4%" trendUp={true} color="success">
-				<FaHospitalUser slot="icon" size={20} />
-			</StatsCard>
-			<StatsCard title="Médicos Activos" value="18" trend="0.0%" trendUp={true} color="primary">
-				<FaUserDoctor slot="icon" size={20} />
-			</StatsCard>
-		</section>
-
-		<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-			<div class="xl:col-span-2 space-y-4">
-				<div class="flex items-center justify-between">
-					<h2 class="text-xl font-semibold text-gray-800">Reportes concretos operativos</h2>
-					<Badge>Turno actual</Badge>
-				</div>
-				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-					{
-						concreteReports.map((report) => (
-							<a href={report.href} class="block">
-								<ActionCard className="h-full items-start justify-between">
-									<div class="space-y-2">
-										<Badge>{report.badge}</Badge>
-										<h3 class="font-semibold text-cool-gray-90">{report.title}</h3>
-										<p class="text-sm text-cool-gray-50 leading-relaxed">{report.description}</p>
-									</div>
-									<div class="text-primary-700 mt-3">
-										<FaArrowRight size={14} />
-									</div>
-								</ActionCard>
-							</a>
-						))
-					}
-				</div>
-			</div>
-
-			<StaticCard>
-				<div class="space-y-3">
-					<h2 class="text-lg font-semibold text-gray-800">Estado del dia</h2>
-					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
-						<FaStethoscope />
-						<span>12 medicos en consulta activa</span>
+        <div class="space-y-8 mt-8">
+			<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+				<div class="xl:col-span-2 space-y-6">
+					<div class="flex items-center justify-between px-1">
+						<h2 class="text-2xl font-bold text-gray-800">Reportes concretos operativos</h2>
+						
+						<span class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary-100 text-primary-600 border border-primary-200 shadow-sm">
+							Turno actual
+						</span>
 					</div>
-					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
-						<FaHospitalUser />
-						<span>35 pacientes en espera distribuida</span>
-					</div>
-					<div class="flex items-center gap-2 text-sm text-cool-gray-60">
-						<FaClock />
-						<span>Demora promedio estimada: 18 minutos</span>
-					</div>
-				</div>
-			</StaticCard>
-		</section>
 
-		<section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
-			<h2 class="text-xl font-semibold text-gray-800">Ocupacion por franja horaria</h2>
-			<div class="overflow-x-auto">
-				<table class="min-w-full divide-y divide-primary-300">
-					<thead class="bg-primary-300">
-						<tr>
-							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Franja</th>
-							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ocupacion</th>
-							<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-primary-300">
+					<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 						{
-							slotsByTime.map((row) => (
-								<tr class="hover:bg-primary-500/20 transition-colors">
-									<td class="px-4 py-3 text-sm text-cool-gray-90">{row.slot}</td>
-									<td class="px-4 py-3 text-sm text-right text-cool-gray-90">{row.occupancy}</td>
-									<td class="px-4 py-3 text-sm text-right text-cool-gray-60">{row.status}</td>
-								</tr>
+							concreteReports.map((report) => (
+								<a href={report.href} class="block group">
+									<ActionCard className="h-full p-6 items-start justify-between border-primary-100 hover:border-primary-500 transition-all shadow-sm hover:shadow-md">
+										<div class="space-y-4">
+											<span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight bg-primary-50 text-primary-600 border border-primary-100 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+												{report.badge}
+											</span>
+											
+											{/* Título del reporte subido a text-xl */}
+											<h3 class="text-xl font-bold text-gray-800 group-hover:text-primary-600 transition-colors leading-tight">
+												{report.title}
+											</h3>
+											
+											{/* Descripción subida a text-sm */}
+											<p class="text-sm text-gray-500 leading-relaxed font-medium">
+												{report.description}
+											</p>
+										</div>
+										
+										<div class="text-primary-400 mt-4 group-hover:text-primary-600 group-hover:translate-x-1 transition-all">
+											<FaArrowRight size={18} />
+										</div>
+									</ActionCard>
+								</a>
 							))
 						}
-					</tbody>
-				</table>
-			</div>
-		</section>
-	</div>
+					</div>
+				</div>
+
+				
+				<div class="h-full">
+					<StaticCard className="h-full border-primary-200 flex flex-col justify-center p-6">
+						<div class="space-y-6">
+            				<h2 class="text-base font-black text-gray-400 uppercase tracking-[0.15em]">
+                				Estado del día
+							</h2>
+							<div class="space-y-5">
+								<div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
+									<div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
+										<FaStethoscope size={20} /> 
+                    				</div>
+									<span>12 médicos activos</span>
+                				</div>
+
+								<div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
+									<div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
+									<FaHospitalUser size={20} />
+									</div>
+									<span>35 pacientes en espera</span>
+								</div>
+								<div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
+									<div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-sm border border-amber-100">
+										<FaClock size={20} />
+									</div>
+									<span>Espera promedio: 18 min</span>
+								</div>
+							</div>
+						</div>
+					</StaticCard>
+				</div>
+			</section>
+		</div>
+
+            {/* TABLA DE OCUPACIÓN */}
+            <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800">Ocupacion por franja horaria</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-primary-300">
+                        <thead class="bg-primary-300">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Franja</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ocupacion</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary-300">
+                            {
+                                slotsByTime.map((row) => (
+                                    <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
+                                        <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{row.slot}</td>
+                                        <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{row.occupancy}</td>
+                                        <td class="px-4 py-3 text-sm text-right">
+                                            <span class={`font-semibold ${
+                                                row.status === 'Critico' ? 'text-red-600' : 
+                                                row.status === 'Alto' ? 'text-orange-600' : 
+                                                'text-green-600'
+                                            }`}>
+                                                {row.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
 </AdminLayout>

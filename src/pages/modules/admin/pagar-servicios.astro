@@ -1,0 +1,17 @@
+---
+import MainLayout from '@/layouts/AdminLayout.astro';
+import { CreateServiceExpenseForm } from '@/components/react/admin/finance/CreateServiceExpenseForm';
+---
+
+<MainLayout title="Admin | Pagar servicios">
+    <section class="p-8 space-y-6">
+        <header class="space-y-1">
+            <h1 class="text-2xl font-semibold text-primary-800">Pagar servicios</h1>
+            <p class="text-sm text-cool-gray-70">
+                Registra el gasto del servicio y distribuye el pago en uno o varios métodos de pago.
+            </p>
+        </header>
+
+        <CreateServiceExpenseForm client:visible />
+    </section>
+</MainLayout>
