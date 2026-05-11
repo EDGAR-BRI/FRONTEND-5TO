@@ -1,19 +1,13 @@
-import { FaCalendarDays, FaCircleUser, FaUsers } from "react-icons/fa6";
+import { FaCalendarDays, FaCircleUser, FaChartBar, FaUsers } from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
 
 export default function DashboardActions() {
   const actions = [
     { 
-      label: "Agendar Citas", 
+      label: "Agenda de Citas", 
       icon: <FaCalendarDays size={32} />, 
       href: "schedule", 
       bg: "!bg-[#2563eb] hover:!bg-blue-700 !border-none" 
-    },
-    { 
-      label: "Mi Perfil", 
-      icon: <FaCircleUser size={32} />, 
-      href: "profile", 
-      bg: "!bg-[#8b5cf6] hover:!bg-violet-700 !border-none" 
     },
     { 
       label: "Pacientes", 
@@ -21,6 +15,12 @@ export default function DashboardActions() {
       href: "patients", 
       bg: "!bg-[#22c55e] hover:!bg-green-600 !border-none" 
     },
+    {
+      label: "Reportes ",
+      icon: <FaChartBar size={32} />,
+      href: "finances",
+      bg: "!bg-[#f59e0b] hover:!bg-amber-600 !border-none"
+    }
   ];
 
   return (
