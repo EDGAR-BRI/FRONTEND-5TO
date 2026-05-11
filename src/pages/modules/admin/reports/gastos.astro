@@ -7,6 +7,7 @@ import { Button } from "@/components/react/primary/Button";
 import StaticCard from "@/components/react/primary/StaticCard";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
+import { getExpenseSummary } from "@/lib/services/report/expense.service";
 import {
     FaArrowRight,
     FaCartFlatbed,
@@ -20,32 +21,48 @@ import {
     FaMoneyBillTransfer
 } from "react-icons/fa6";
 
-const expenseBreakdown = [
-    { category: "Insumos Médicos", amount: "$4,980", weight: "40%" },
-    { category: "Nómina Operativa", amount: "$3,850", weight: "31%" },
-    { category: "Servicios Tercerizados", amount: "$2,410", weight: "19%" },
-    { category: "Mantenimiento y Otros", amount: "$1,210", weight: "10%" },
-];
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = Astro.url.searchParams.get("period") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const expenseSummary = await getExpenseSummary({ from, to });
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
+const currency = new Intl.NumberFormat("es-VE", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+});
+
+const expenseBreakdown = expenseSummary.data.breakdownByCategory.map((item) => ({
+    category: item.category,
+    amount: currency.format(item.amountUsd),
+    weight: `${item.percentage.toFixed(1)}%`,
+}));
 
 const coreExpenseModules = [
-    {
+        {
         title: "Compras e Insumos",
         description: "Control de inventario médico, reactivos y materiales descartables.",
-        href: "/modules/admin/reports/gastos-compras",
+        href: `/modules/admin/reports/gastos-compras${filterSuffix}`,
         badge: "Operativo",
         icon: FaCartFlatbed
     },
     {
         title: "Servicios y Terceros",
         description: "Gastos en servicios públicos, mantenimiento y proveedores externos.",
-        href: "/modules/admin/reports/gastos-servicios",
+        href: `/modules/admin/reports/gastos-servicios${filterSuffix}`,
         badge: "Contratos",
         icon: FaHandHoldingDollar
     },
     {
         title: "Gestión de Nómina",
         description: "Desglose de honorarios médicos, personal administrativo y cargas sociales.",
-        href: "/modules/admin/reports/gastos-nomina",
+        href: `/modules/admin/reports/gastos-nomina${filterSuffix}`,
         badge: "Recursos Humanos",
         icon: FaUsersGear
     },
@@ -68,21 +85,21 @@ const coreExpenseModules = [
 
         {/* TARJETAS DE ESTADÍSTICAS */}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatsCard title="Gastos de Insumo" value="$4,980" trend="2.5%" trendUp={true} color="warning">
+            <StatsCard title="Gasto Total" value={currency.format(expenseSummary.data.summary.totalExpenseUsd)} trend={`${Math.abs(expenseSummary.data.summary.expenseTrendPct).toFixed(1)}%`} trendUp={expenseSummary.data.summary.expenseTrendPct >= 0} color="warning">
                 <FaCartFlatbed slot="icon" size={20} />
             </StatsCard>
             
-            <StatsCard title="Facturación Procesada" value="124" trend="12%" trendUp={true} color="primary">
+            <StatsCard title="Facturas de Gasto" value={expenseSummary.data.summary.invoiceExpenseCount} trend={`${expenseSummary.data.summary.opexUsd.toFixed(1)} USD`} trendUp={true} color="primary">
                 <FaFileInvoiceDollar slot="icon" size={20} />
             </StatsCard>
 
-            <StatsCard title="Utilidad Periodo Anterior" value="$15,200" trend="4.1%" trendUp={true} color="success">
+            <StatsCard title="Nómina Total" value={currency.format(expenseSummary.data.summary.payrollUsd + expenseSummary.data.summary.salaryAdminUsd)} trend={`${expenseSummary.data.summary.payrollDoctorCount + expenseSummary.data.summary.payrollSalaryCount} registros`} trendUp={true} color="success">
                 <FaScaleBalanced slot="icon" size={20} />
             </StatsCard>
         </section>
 
         {/* FILTROS */}
-        <ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos." />
+        <ReportTimeframeFilters client:load title="Filtros de gastos" subtitle="Revisa egresos por días, semanas, mes o años y cambia rápidamente entre rangos." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
         <div class="space-y-8 mt-8">
             <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -132,14 +149,12 @@ const coreExpenseModules = [
                                 Alertas de costo
                             </h2>
                             <div class="space-y-4">
-                                <div class="p-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm flex gap-3 items-start shadow-sm">
+                                {expenseSummary.data.alerts.map((alert) => (
+                                <div class={`p-3 rounded-xl border text-sm flex gap-3 items-start shadow-sm ${alert.severity === 'danger' ? 'border-red-200 bg-red-50 text-red-700' : alert.severity === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-700' : alert.severity === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-blue-200 bg-blue-50 text-blue-700'}`}>
                                     <FaTriangleExclamation className="mt-1 shrink-0" size={16} />
-                                    <span class="font-medium leading-tight">Insumos subieron 8% en semana 2. Revisar proveedor.</span>
+                                    <span class="font-medium leading-tight">{alert.message}</span>
                                 </div>
-                                <div class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm flex gap-3 items-start shadow-sm">
-                                    <FaTriangleExclamation className="mt-1 shrink-0" size={16} />
-                                    <span class="font-medium leading-tight">Mantenimiento preventivo pendiente para 2 equipos.</span>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </StaticCard>

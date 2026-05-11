@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "@/layouts/AdminLayout.astro";
+import DailyBookPdfButton from "@/components/react/admin/reports/DailyBookPdfButton";
 import ReportBackendSnapshot from "@/components/react/admin/reports/ReportBackendSnapshot";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
@@ -7,7 +8,6 @@ import { Button } from "@/components/react/primary/Button";
 import {
     FaArrowTrendUp,
     FaBan,
-    FaFilePdf,
     FaPrint,
     FaStethoscope,
     FaUserPlus,
@@ -44,11 +44,18 @@ const specialtiesStats = [
                 <h1 class="text-3xl font-bold text-gray-800">Reportes Financieros y de Uso</h1>
                 <p class="text-gray-500 mt-1">Análisis de rendimiento, ingresos y distribución de pacientes.</p>
             </div>
-            <div class="flex gap-3">
-                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
-                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
-            </div>
+            <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
         </header>
+
+		<section class="space-y-3">
+			<div class="flex items-center justify-between gap-3 flex-wrap">
+				<div>
+					<h2 class="text-lg font-bold text-gray-800">Libro Diario Mensual</h2>
+					<p class="text-sm text-gray-500">Genera un PDF clásico por mes con ingresos, compras, nómina y servicios.</p>
+				</div>
+			</div>
+			<DailyBookPdfButton client:load />
+		</section>
 
 		<ReportTimeframeFilters client:visible title="Filtros del centro de reportes" subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos, demanda y ocupación." />
 

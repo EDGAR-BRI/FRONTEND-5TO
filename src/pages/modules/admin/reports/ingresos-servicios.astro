@@ -6,7 +6,17 @@ import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaMoneyBillTrendUp, FaArrowTrendUp, FaScaleBalanced } from "react-icons/fa6";
 import { getIncomeSummary } from "@/lib/services/report/income.service";
 
-const incomeSummary = await getIncomeSummary();
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = Astro.url.searchParams.get("period") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const incomeSummary = await getIncomeSummary({ from, to });
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
 const currency = new Intl.NumberFormat("es-VE", {
   style: "currency",
   currency: "USD",
@@ -24,7 +34,7 @@ const saldosIngresos = incomeSummary.data.breakdownBySpecialty.map((item, index)
 
 <AdminLayout title="Ingresos - Ventas por Servicio | Admin">
   <div class="p-6 md:p-8 space-y-8">
-    <a href="/modules/admin/reports/ingresos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+    <a href={`/modules/admin/reports/ingresos${filterSuffix}`} class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a ingresos
     </a>
@@ -46,7 +56,7 @@ const saldosIngresos = incomeSummary.data.breakdownBySpecialty.map((item, index)
       </StatsCard>
     </section>
 
-    <ReportTimeframeFilters client:load title="Libro Auxiliar de Ingresos" subtitle="Auditoría de asientos contables por concepto de prestación de servicios." />
+    <ReportTimeframeFilters client:load title="Libro Auxiliar de Ingresos" subtitle="Auditoría de asientos contables por concepto de prestación de servicios." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">

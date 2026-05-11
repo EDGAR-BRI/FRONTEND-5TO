@@ -18,7 +18,17 @@ import {
     FaMoneyCheckDollar
 } from "react-icons/fa6";
 
-const incomeSummary = await getIncomeSummary();
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = Astro.url.searchParams.get("period") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const incomeSummary = await getIncomeSummary({ from, to });
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
 
 const currency = new Intl.NumberFormat("es-VE", {
     style: "currency",
@@ -33,17 +43,17 @@ const revenueBreakdown = incomeSummary.data.breakdownBySpecialty.map((item) => (
 }));
 
 const coreRevenueModules = [
-    {
+        {
         title: "Ventas por Servicio",
         description: "Desglose de ingresos operativos por especialidad médica y consultas facturadas.",
-        href: "/modules/admin/reports/ingresos-servicios",
+        href: `/modules/admin/reports/ingresos-servicios${filterSuffix}`,
         badge: "Ingreso Bruto",
         icon: FaStethoscope
     },
     {
         title: "Recaudación y Caja",
         description: "Liquidación de pagos recibidos, medios de pago y saldo pendiente de facturas.",
-        href: "/modules/admin/reports/ingresos-recaudacion",
+        href: `/modules/admin/reports/ingresos-recaudacion${filterSuffix}`,
         badge: "Flujo Efectivo",
         icon: FaMoneyCheckDollar
     },
@@ -74,7 +84,7 @@ const coreRevenueModules = [
             </StatsCard>
         </section>
 
-        <ReportTimeframeFilters client:load title="Filtros de Ingresos" subtitle="Auditoría de ingresos por ciclo contable: diario, semanal, mensual o anual." />
+        <ReportTimeframeFilters client:load title="Filtros de Ingresos" subtitle="Auditoría de ingresos por ciclo contable: diario, semanal, mensual o anual." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
         <div class="space-y-8 mt-8">
             <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
