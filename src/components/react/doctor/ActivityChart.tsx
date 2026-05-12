@@ -58,6 +58,23 @@ export default function ActivityChart({ doctorId, range = "week" }: ActivityChar
     return dayLabels[new Date().getDay()] ?? "";
   }, []);
 
+  const renderStatusSegments = (statuses: WeeklyFlowDay["statuses"]) => {
+    if (!statuses || statuses.length === 0) return null;
+
+    return statuses.map((status) => (
+      <div key={status.name} className="flex items-center gap-2">
+        <span
+          className="w-2.5 h-2.5 rounded-full"
+          style={{ backgroundColor: status.color || "#94a3b8" }}
+        ></span>
+        <span className="text-[9px] font-black text-white uppercase tracking-widest">
+          {status.name}
+        </span>
+        <span className="text-[9px] font-black text-white">{status.count}</span>
+      </div>
+    ));
+  };
+
   return (
     <div className="bg-white p-2 h-full flex flex-col justify-between ">
 
@@ -95,6 +112,10 @@ export default function ActivityChart({ doctorId, range = "week" }: ActivityChar
               <div className="w-full relative flex justify-center">
                 <div className="absolute -top-8 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity font-bold whitespace-nowrap z-20">
                   {data.count} pacientes
+                </div>
+                <div className="absolute -top-20 bg-slate-900 text-white text-[9px] px-3 py-2 rounded opacity-0 group-hover:opacity-100 transition-opacity font-bold whitespace-nowrap z-20 flex flex-col gap-1">
+                  <span className="text-[9px] text-slate-200 uppercase tracking-widest">Estados</span>
+                  {renderStatusSegments(data.statuses)}
                 </div>
                 <div 
                   className={`w-full max-w-[14px] rounded-full transition-all duration-500 cursor-pointer ${barColor} group-hover:brightness-110`}
