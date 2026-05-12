@@ -47,6 +47,7 @@ export interface ConsultationSummary {
 	date: string;
 	started_at: string | null;
 	finished_at: string | null;
+	status: "PENDING" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 	invoice: ConsultationInvoiceRef;
 	doctor: ConsultationDoctorRef;
 }
@@ -75,6 +76,7 @@ export interface ConsultationDetail {
 	date: string;
 	started_at: string | null;
 	finished_at: string | null;
+	status: "PENDING" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 	invoice: Omit<ConsultationInvoiceRef, "patientId">;
 	doctor: Omit<ConsultationDoctorRef, "userId">;
 	symptomsConsultations: SymptomsConsultaDto[];
@@ -138,6 +140,7 @@ export interface PatientConsultationHistory {
 	date: string;
 	started_at: string | null;
 	finished_at: string | null;
+	status: "PENDING" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 	doctor: Omit<ConsultationDoctorRef, "userId">;
 	symptomsConsultations: PatientSymptomDto[];
 	consultationDiagnoses: PatientDiagnosisDto[];
@@ -156,10 +159,30 @@ export interface UpdateConsultationDto {
 	date?: string | Date;
 	started_at?: string | Date;
 	finished_at?: string | Date;
+	status?: "PENDING" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 	symptoms?: string;
 	diagnosis?: string;
 	physical_exam?: string;
 }
+
+export type WeeklyFlowDay = {
+	day: string;
+	date: string;
+	count: number;
+	statuses: {
+		name: string;
+		color: string;
+		count: number;
+	}[];
+};
+
+export type WeeklyFlowResponse = {
+	range: string;
+	start: string;
+	end: string;
+	total: number;
+	days: WeeklyFlowDay[];
+};
 
 export interface FinishConsultationSupplyDto {
 	supplyId: number;

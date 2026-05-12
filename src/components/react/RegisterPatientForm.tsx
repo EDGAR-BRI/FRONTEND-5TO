@@ -101,12 +101,48 @@ const hasLengthInRange = (value: string, min: number, max: number) => {
     return trimmed.length >= min && trimmed.length <= max
 }
 
-export default function RegisterPatientForm() {
+export default function RegisterPatientForm({
+    familyMode = false,
+    linkedUserId = null,
+    hideUserLinking = false,
+    createInfoPatientOnRegister = false,
+    title = 'Registro de paciente',
+    subtitle = 'Complete el formulario para registrar un nuevo paciente en el sistema.',
+    onSuccess,
+}: RegisterPatientFormProps) {
     const [form, setForm] = useState<PatientForm>(EMPTY_FORM)
     const [isSaving, setIsSaving] = useState(false)
     const [globalError, setGlobalError] = useState<string | null>(null)
     const [errors, setErrors] = useState<Partial<Record<keyof PatientForm, string>>>({})
     const { isOpen: isSuccessOpen, openModal: openSuccess, closeModal: closeSuccess } = useModal(false)
+
+    const [users, setUsers] = useState<UserDto[]>([])
+    const [isLoadingUsers, setIsLoadingUsers] = useState(false)
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoadingUsers(true)
+            try {
+                const data = await listUsers()
+                setUsers(data)
+            } catch (error) {
+                console.error("Error fetching users:", error)
+            } finally {
+                setIsLoadingUsers(false)
+            }
+        }
+        fetchUsers()
+    }, [])
+
+    useEffect(() => {
+        if (linkedUserId) {
+            setForm(prev => ({
+                ...prev,
+                linkExistingUser: true,
+                selectedUserId: linkedUserId,
+            }))
+        }
+    }, [linkedUserId])
 
     const set = (field: keyof PatientForm, value: string | boolean | number | null) =>
         setForm(prev => ({ ...prev, [field]: value }))
@@ -125,20 +161,38 @@ export default function RegisterPatientForm() {
         if (!form.ci.trim()) e.ci = 'Requerido'
         else if (!hasLengthInRange(form.ci, 3, 30)) e.ci = 'La cédula debe tener entre 3 y 30 caracteres'
 
-        if (!form.birthDate) e.birthDate = 'Requerido'
-        if (!form.gender) e.gender = 'Requerido'
+        // Si se va a crear usuario (no enlazar), backend exige CI numérica 6-9.
+        if (!linkedUserId && !hideUserLinking && !form.linkExistingUser) {
+            if (!/^[0-9]+$/.test(form.ci.trim())) {
+                e.ci = 'Para crear usuario, la cédula debe contener solo números'
+            } else if (!hasLengthInRange(form.ci, 6, 9)) {
+                e.ci = 'Para crear usuario, la cédula debe tener entre 6 y 9 números'
+            }
+        }
 
-        if (form.bloodType.trim() && !hasLengthInRange(form.bloodType, 1, 10)) e.bloodType = 'Debe tener entre 1 y 10 caracteres'
-        if (form.nationality.trim() && !hasLengthInRange(form.nationality, 2, 100)) e.nationality = 'Debe tener entre 2 y 100 caracteres'
-        if (form.phone.trim() && !hasLengthInRange(form.phone, 6, 20)) e.phone = 'Debe tener entre 6 y 20 caracteres'
-        if (form.email.trim() && !isValidEmail(form.email.trim())) e.email = 'El email no es válido'
-        if (form.address.trim() && !hasLengthInRange(form.address, 5, 500)) e.address = 'Debe tener entre 5 y 500 caracteres'
-        if (form.city.trim() && !hasLengthInRange(form.city, 2, 100)) e.city = 'Debe tener entre 2 y 100 caracteres'
+        if (createInfoPatientOnRegister && !form.birthDate) e.birthDate = 'Requerido'
+        if (createInfoPatientOnRegister && !form.gender) e.gender = 'Requerido'
 
-        if (form.allergies.trim() && !hasLengthInRange(form.allergies, 1, 5000)) e.allergies = 'Debe tener entre 1 y 5000 caracteres'
-        if (form.chronicDiseases.trim() && !hasLengthInRange(form.chronicDiseases, 1, 5000)) e.chronicDiseases = 'Debe tener entre 1 y 5000 caracteres'
-        if (form.currentMedications.trim() && !hasLengthInRange(form.currentMedications, 1, 5000)) e.currentMedications = 'Debe tener entre 1 y 5000 caracteres'
-        if (form.previousSurgeries.trim() && !hasLengthInRange(form.previousSurgeries, 1, 5000)) e.previousSurgeries = 'Debe tener entre 1 y 5000 caracteres'
+        if (createInfoPatientOnRegister && form.bloodType.trim() && !hasLengthInRange(form.bloodType, 1, 10)) e.bloodType = 'Debe tener entre 1 y 10 caracteres'
+        if (createInfoPatientOnRegister && form.nationality.trim() && !hasLengthInRange(form.nationality, 2, 100)) e.nationality = 'Debe tener entre 2 y 100 caracteres'
+        if (createInfoPatientOnRegister && form.phone.trim() && !hasLengthInRange(form.phone, 6, 20)) e.phone = 'Debe tener entre 6 y 20 caracteres'
+        if (createInfoPatientOnRegister && form.email.trim() && !isValidEmail(form.email.trim())) e.email = 'El email no es válido'
+        if (createInfoPatientOnRegister && form.address.trim() && !hasLengthInRange(form.address, 5, 500)) e.address = 'Debe tener entre 5 y 500 caracteres'
+        if (createInfoPatientOnRegister && form.city.trim() && !hasLengthInRange(form.city, 2, 100)) e.city = 'Debe tener entre 2 y 100 caracteres'
+
+        if (createInfoPatientOnRegister && form.allergies.trim() && !hasLengthInRange(form.allergies, 1, 5000)) e.allergies = 'Debe tener entre 1 y 5000 caracteres'
+        if (createInfoPatientOnRegister && form.chronicDiseases.trim() && !hasLengthInRange(form.chronicDiseases, 1, 5000)) e.chronicDiseases = 'Debe tener entre 1 y 5000 caracteres'
+        if (createInfoPatientOnRegister && form.currentMedications.trim() && !hasLengthInRange(form.currentMedications, 1, 5000)) e.currentMedications = 'Debe tener entre 1 y 5000 caracteres'
+        if (createInfoPatientOnRegister && form.previousSurgeries.trim() && !hasLengthInRange(form.previousSurgeries, 1, 5000)) e.previousSurgeries = 'Debe tener entre 1 y 5000 caracteres'
+
+        if (!hideUserLinking && !linkedUserId && form.linkExistingUser && !form.selectedUserId) {
+            e.selectedUserId = 'Debes seleccionar un usuario'
+        }
+        if (!hideUserLinking && !linkedUserId && !form.linkExistingUser && !form.tempPassword.trim()) {
+            e.tempPassword = 'La contraseña es requerida'
+        } else if (!hideUserLinking && !linkedUserId && !form.linkExistingUser && !hasLengthInRange(form.tempPassword, 6, 200)) {
+            e.tempPassword = 'La contraseña debe tener entre 6 y 200 caracteres'
+        }
 
         setErrors(e)
         return Object.keys(e).length === 0
@@ -150,32 +204,57 @@ export default function RegisterPatientForm() {
         setIsSaving(true)
 
         try {
-            const patient = await addPatientFromReception({
-                ci: form.ci,
-                name: `${form.firstName} ${form.lastName}`,
-            })
+            let patientUserId = form.selectedUserId;
 
-            const birthDate = new Date(form.birthDate)
-            const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE'
+            if (linkedUserId) {
+                patientUserId = linkedUserId;
+            } else if (!hideUserLinking && !form.linkExistingUser) {
+                // Flow 2: Create new user
+                const newUser = await createUser({
+                    ci: form.ci,
+                    name: `${form.firstName} ${form.lastName}`,
+                    password: form.tempPassword,
+                    roleId: 4 // PACIENTE
+                });
+                patientUserId = newUser.id;
+                setUsers(prev => [...prev, newUser]);
+            }
 
-            await addPatientInfo({
-                patientId: patient.id,
+            if (!patientUserId) {
+                throw new Error("No se pudo obtener el ID del usuario para vincular al paciente.");
+            }
+
+            // Create patient
+            const patient = await addPatient({
+                userId: patientUserId,
                 ci: form.ci,
-                name: form.firstName,
-                last_name: form.lastName,
-                sex,
-                birth_date: birthDate,
-                blood_type: form.bloodType || null,
-                nacionality: form.nationality || null,
-                main_phone: form.phone || null,
-                email: form.email || null,
-                address: form.address || null,
-                city: form.city || null,
-                allergies: form.allergies || null,
-                chronic_diseases: form.chronicDiseases || null,
-                current_medications: form.currentMedications || null,
-                previous_surgeries: form.previousSurgeries || null
-            })
+                name: `${form.firstName} ${form.lastName}`
+            });
+
+            if (createInfoPatientOnRegister) {
+                // Create patient info only when this flow explicitly requires it
+                const birthDate = new Date(form.birthDate);
+                const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
+
+                await addPatientInfo({
+                    patientId: patient.id,
+                    ci: form.ci,
+                    name: form.firstName,
+                    last_name: form.lastName,
+                    sex,
+                    birth_date: birthDate,
+                    blood_type: form.bloodType || null,
+                    nacionality: form.nationality || null,
+                    main_phone: form.phone || null,
+                    email: form.email || null,
+                    address: form.address || null,
+                    city: form.city || null,
+                    allergies: form.allergies || null,
+                    chronic_diseases: form.chronicDiseases || null,
+                    current_medications: form.currentMedications || null,
+                    previous_surgeries: form.previousSurgeries || null
+                });
+            }
 
             openSuccess()
             onSuccess?.()
@@ -363,6 +442,68 @@ export default function RegisterPatientForm() {
                 </div>
             </div>
 
+            <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
+                <SectionHeader
+                    icon={FaUserLock}
+                    title="Vincular a Usuario Preexistente"
+                    subtitle={familyMode ? 'Este miembro quedará enlazado al usuario principal del grupo familiar.' : 'Selecciona un usuario preexistente o crea uno nuevo'}
+                />
+                <div className="space-y-4">
+                    {hideUserLinking || linkedUserId ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
+                            <div className="flex flex-col gap-1 w-full">
+                                <Field
+                                    name="selectedUserId"
+                                    label="Usuario principal del grupo"
+                                    value={String(linkedUserId ?? form.selectedUserId ?? '')}
+                                    disabled
+                                />
+                                <p className="text-xs text-cool-gray-50 mt-1">El paciente se vinculará automáticamente al usuario principal del grupo.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <CheckBox
+                                name="linkExistingUser"
+                                label="Vincular a usuario preexistente"
+                                variant="switch"
+                                checked={form.linkExistingUser}
+                                onChange={e => set('linkExistingUser', e.target.checked)}
+                            />
+                            {form.linkExistingUser ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
+                                    <div className="flex flex-col gap-1 w-full">
+                                        <SearchableSelect
+                                            name="selectedUserId"
+                                            options={users.map(u => ({ value: u.id, label: `${u.name} - ${u.ci}` }))}
+                                            value={form.selectedUserId || ""}
+                                            onChange={v => set('selectedUserId', Number(v))}
+                                            placeholder={isLoadingUsers ? "Cargando usuarios..." : "Buscar usuario por nombre o CI"}
+                                            label="Seleccionar Usuario *"
+                                        />
+                                        {errors.selectedUserId && <p className="text-xs text-error mt-1">{errors.selectedUserId}</p>}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
+                                    <div className="flex flex-col gap-1 w-full">
+                                        <Field
+                                            name="tempPassword" label="Contraseña temporal para nuevo usuario *"
+                                            type="password"
+                                            showTogglePassword
+                                            placeholder="Mín. 8 caracteres"
+                                            value={form.tempPassword}
+                                            onChange={e => set('tempPassword', e.target.value)}
+                                        />
+                                        {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 pb-4">
                 {globalError && (
                     <p className="text-sm text-error font-medium mr-auto flex items-center gap-1">
@@ -386,7 +527,7 @@ export default function RegisterPatientForm() {
                             <p className="text-cool-gray-50">CI: {form.ci}</p>
                         </div>
                     </div>
-                    <p>El paciente ha sido registrado exitosamente en el sistema. Se creó un usuario asociado con la cédula como contraseña.</p>
+                    <p>{familyMode ? 'El miembro familiar ha sido registrado y quedó vinculado al usuario principal del grupo.' : 'El paciente ha sido registrado exitosamente en el sistema. Puede agendar una cita para esta visita desde la agenda.'}</p>
                     <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
                         <Button label="Registrar otro" variant={ButtonTheme.SECONDARY} size="sm" onClick={() => { closeSuccess(); handleReset() }} />
                         <Button label="Agendar cita" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => window.location.href = window.location.pathname.replace('/register-patient', '/appointments')}  />

@@ -7,6 +7,7 @@ import type {
 	FinishConsultationDto,
 	UpdateConsultationDto,
 	PatientConsultationHistory,
+	WeeklyFlowResponse,
 } from "./consultation.interface";
 
 const BASE_PATH = "medical/consultation";
@@ -80,6 +81,24 @@ export const finishConsultation = async (
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
 	return readEnvelopeData<ConsultationSummary>(response);
+};
+
+export const startConsultation = async (id: number): Promise<ConsultationSummary> => {
+	const response = await api(`${BASE_PATH}/${id}/start`, {
+		method: "PUT",
+	});
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<ConsultationSummary>(response);
+};
+
+export const getWeeklyFlowByDoctor = async (doctorId: number, range = "week"): Promise<WeeklyFlowResponse> => {
+	const response = await api(`${BASE_PATH}/doctor/${doctorId}/weekly-flow?range=${range}`, { method: "GET" });
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<WeeklyFlowResponse>(response);
 };
 
 export const deleteConsultation = async (id: number): Promise<ConsultationSummary> => {

@@ -84,7 +84,7 @@ export const persistLogin = (data: LoginResponseData) => {
 
 export const doctorLogin = async () => {
 	const credentials: LoginRequest = {
-		ci: "29778174",
+		ci: "31366298",
 		password: "123456",
 	};
 	const data = await loginWithCredentials(credentials);

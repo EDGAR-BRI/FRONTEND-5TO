@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 // Tipado estricto para las props
 interface StartConsultationModalProps {
     isOpen: boolean;
     appointment: any | null; // Lo ideal es tipar la cita correctamente
     onClose: () => void;
-    onStart: (invoiceCode: string) => void;
+    onStart: () => void;
 }
 
 export const StartConsultationModal: React.FC<StartConsultationModalProps> = ({ 
@@ -14,17 +14,11 @@ export const StartConsultationModal: React.FC<StartConsultationModalProps> = ({
     onClose, 
     onStart 
 }) => {
-    const [invoiceCode, setInvoiceCode] = useState('');
-
     if (!isOpen || !appointment) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!invoiceCode.trim()) {
-            alert("El código de factura es obligatorio para iniciar la consulta.");
-            return;
-        }
-        onStart(invoiceCode);
+        onStart();
     };
 
     return (
@@ -38,21 +32,6 @@ export const StartConsultationModal: React.FC<StartConsultationModalProps> = ({
                 </p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <div>
-                        <label htmlFor="invoice" className="block text-sm font-semibold text-slate-700 mb-1">
-                            Número de Factura / Código de Autorización
-                        </label>
-                        <input
-                            id="invoice"
-                            type="text"
-                            value={invoiceCode}
-                            onChange={(e) => setInvoiceCode(e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                            placeholder="Ej. FAC-2026-001"
-                            autoFocus
-                        />
-                    </div>
-
                     <div className="flex gap-3 justify-end mt-4">
                         <button
                             type="button"

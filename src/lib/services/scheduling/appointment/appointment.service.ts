@@ -1,6 +1,6 @@
 import {api} from "@/lib/api";
 import { readEnvelopeData, readEnvelopeErrorMessage } from "../../_shared/envelope";
-import type { AppointmentsOverview, Appointment, CreateAppointmentDto, UpdateAppointmentDto } from "./appointment.interface";
+import type { AppointmentsOverview, Appointment, CreateAppointmentDto, UpdateAppointmentDto, WeeklyFlowResponse, DoctorStatsResponse } from "./appointment.interface";
 
 const BASE_PATH = "scheduling/appointment";
 
@@ -31,18 +31,44 @@ export const getAppointments = async (filters?: { range?: string, statusId?: num
 	}
     return readEnvelopeData<AppointmentsOverview[]>(response);
 }
-import type { AstroCookies } from "astro";
-
-export const getAppointmentsByDr = async (doctorId: number, selectUpcomingOnly: boolean = false, cookies?: AstroCookies): Promise<Appointment[]> => {
-    const url = `${BASE_PATH}/${selectUpcomingOnly ? 'upcoming/' : ''}doctor/${doctorId}`
+export const getAppointmentsByDr = async (doctorId: number, filters?: { range?: string, statusId?: number }): Promise<Appointment[]> => {
+    const params = new URLSearchParams();
+    if (filters?.range) params.set("range", filters.range);
+    if (filters?.statusId) params.set("statusId", String(filters.statusId));
+    const qs = params.toString();
+    const url = `${BASE_PATH}/doctor/${doctorId}${qs ? `?${qs}` : ''}`;
     const response = await api(url, { 
         method: "GET"
-    }, cookies);
+    });
     if(!response.ok){
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
     return readEnvelopeData<Appointment[]>(response);
 }
+
+export const getDoctorStats = async (doctorId: number): Promise<DoctorStatsResponse> => {
+    const response = await api(`${BASE_PATH}/doctor/${doctorId}/stats`, {
+        method: "GET"
+    });
+    if(!response.ok){
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+    return readEnvelopeData<DoctorStatsResponse>(response);
+}
+
+export const getWeeklyFlowByDoctor = async (doctorId: number, range = "week"): Promise<WeeklyFlowResponse> => {
+    const params = new URLSearchParams();
+    if (range) params.set("range", range);
+    const endpoint = `scheduling/appointment/doctor/${doctorId}/weekly-flow?${params.toString()}`;
+
+    const response = await api(endpoint, {
+        method: "GET",
+    });
+    if (!response.ok) {
+        throw new Error(await readEnvelopeErrorMessage(response));
+    }
+    return readEnvelopeData<WeeklyFlowResponse>(response);
+};
 export const createAppointment = async (payload: CreateAppointmentDto): Promise<Appointment> => {
     const response = await api(BASE_PATH, { 
         method: "POST",

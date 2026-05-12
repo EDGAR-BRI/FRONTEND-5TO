@@ -183,6 +183,10 @@ export const api = async (endpoint: string, options: ApiOptions = {}, cookies?: 
             headers,
         };
 
+        if (!config.cache && (!config.method || config.method.toUpperCase() === "GET")) {
+            config.cache = "no-store";
+        }
+
         const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
         
         const targetUrl = `${API_URL}${cleanEndpoint}`;

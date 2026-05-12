@@ -76,6 +76,7 @@ export type AppointmentCalendarProps = {
   statusClassByEstado?: Record<string, string>
   heightPx?: number
   onSelectDate?: (date: string) => void
+  onRangeChange?: (params: { view: 'month' | 'week' | 'day'; date: Date }) => void
   availableDays?: number[]
   /** Citas del doctor seleccionado */
   doctorAppointments?: { date_time: string; reson_visit?: string; patient: { user: { name: string } }; doctor: { user: { name: string }; specialty: { name: string } }; status: { name: string } }[]
@@ -148,12 +149,13 @@ const badgeColors: Record<string, string> = {
 };
 
 export default function AppointmentCalendar({
-  citas, endpoint, role = 'pacient', context, actions, statusClassByEstado, heightPx = 600, onSelectDate, availableDays, doctorAppointments, doctorSchedulesData, doctorAvailabilities,
+  citas, endpoint, role = 'pacient', context, actions, statusClassByEstado, heightPx = 600, onSelectDate, onRangeChange, availableDays, doctorAppointments, doctorSchedulesData, doctorAvailabilities,
 }: AppointmentCalendarProps) {
   const { isOpen, openModal, closeModal } = useModal(false)
   const [citaSeleccionada, setCitaSeleccionada] = useState<Cita | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>('month')
   const [dayListDate, setDayListDate] = useState<string | null>(null)
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
 
@@ -163,7 +165,13 @@ export default function AppointmentCalendar({
   const handleNavigate = useCallback((newDate: Date, _view: any, action: NavigateAction) => {
     if (action === 'PREV' && isBefore(newDate, minDate)) return
     setCurrentDate(newDate)
-  }, [minDate])
+    onRangeChange?.({ view: currentView, date: newDate })
+  }, [currentView, minDate, onRangeChange])
+
+  const handleViewChange = useCallback((view: 'month' | 'week' | 'day') => {
+    setCurrentView(view)
+    onRangeChange?.({ view, date: currentDate })
+  }, [currentDate, onRangeChange])
 
   const handleSelectSlot = (slotInfo: { start: Date }) => {
     const today = new Date()
@@ -195,7 +203,6 @@ export default function AppointmentCalendar({
     if (!doctorAppointments || doctorAppointments.length === 0) return {}
     const counts: Record<string, number> = {}
     for (const apt of doctorAppointments) {
-      // Quitar la Z para que no haya desfase de zona horaria
       const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
       const dateKey = format(new Date(cleanDate), 'yyyy-MM-dd')
       counts[dateKey] = (counts[dateKey] || 0) + 1
@@ -293,6 +300,7 @@ export default function AppointmentCalendar({
 
   // Eventos de citas del doctor (para vistas week/day)
   const drEvents: EventoCalendario[] = useMemo(() => {
+    if (citas && citas.length > 0) return []
     if (!doctorAppointments || doctorAppointments.length === 0) return []
     return doctorAppointments.map((apt, i) => {
       const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
@@ -318,7 +326,7 @@ export default function AppointmentCalendar({
         },
       }
     })
-  }, [doctorAppointments])
+  }, [citas, doctorAppointments])
 
   const allEvents = useMemo(() => [...eventosAdaptados, ...drEvents], [eventosAdaptados, drEvents])
 
@@ -470,6 +478,7 @@ export default function AppointmentCalendar({
         culture="es"
         date={currentDate}
         onNavigate={handleNavigate}
+        onView={handleViewChange}
         messages={mensajesEspanol}
         formats={formatos12h}
         eventPropGetter={aplicarEstilosEvento}

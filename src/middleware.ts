@@ -74,6 +74,20 @@ const getRoleFromPath = (pathname: string): string | null => {
     return ROLE_ROUTES[match[1]] ?? null;
 };
 
+const getRoleSegment = (role: string): string | null => {
+    for (const [segment, roleCode] of Object.entries(ROLE_ROUTES)) {
+        if (roleCode === role) return segment;
+    }
+    return null;
+};
+
+const getUserIdFromPath = (pathname: string): number | null => {
+    const match = pathname.match(/^\/modules\/\w+\/(\d+)(?:\/|$)/);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isInteger(parsed) ? parsed : null;
+};
+
 const getDashboardPath = (role: string, userId: number): string => {
     const base = ROLE_DASHBOARD[role] ?? "/login";
     if (role === "DOCTOR" || role === "RECEPTION" || role === "PATIENT") {
@@ -100,7 +114,29 @@ const fetchUserRole = async (userId: number, token: string): Promise<string | nu
         if (isDev) console.log("[MIDDLEWARE fetchUserRole] data:", JSON.stringify(data));
         return normalizeRoleCode(data.data.role?.code ?? "");
     } catch (err) {
-        if (isDev) console.log("[MIDDLEWARE fetchUserRole] error:", err);
+        console.log("[MIDDLEWARE fetchUserRole] error:", err);
+        return null;
+    }
+};
+
+const fetchPatientOwnerUserId = async (patientId: number, token: string): Promise<number | null> => {
+    try {
+        const res = await fetch(`${API_URL}/medical/patient/${patientId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            cache: "no-store",
+        });
+
+        if (!res.ok) {
+            return null;
+        }
+
+        const data = await res.json();
+        const owner = data?.data?.userId ?? data?.data?.user?.id;
+        return typeof owner === "number" ? owner : null;
+    } catch {
         return null;
     }
 };
@@ -168,6 +204,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return redirect("/no-encontrado");
     }
 
-    if (isDev) console.log("[MIDDLEWARE] Access granted");
+    // Patient pages must only access their own patient IDs.
+    if (requiredRole === "PATIENT") {
+        const match = pathname.match(/^\/modules\/pacient\/(\d+)(?:\/|$)/);
+        if (match) {
+            const patientId = Number(match[1]);
+            const ownerUserId = await fetchPatientOwnerUserId(patientId, token);
+
+            if (!ownerUserId || ownerUserId !== userId) {
+                console.log("[MIDDLEWARE] PATIENT ownership mismatch. userId:", userId, "patient owner:", ownerUserId);
+                return redirect("/no-encontrado");
+            }
+        }
+    }
+
+    console.log("[MIDDLEWARE] Access granted");
     return next();
 });
