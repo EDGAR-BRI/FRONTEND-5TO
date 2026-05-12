@@ -7,7 +7,7 @@ import { FaCheck, FaMinus, FaPlus, FaXmark, FaRegCalendarXmark } from 'react-ico
 import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
-import { createDrAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
+import { createDrAvailability, getDoctorAvailabilitiesByScheduleId } from '@/lib/services/scheduling/doctor-availability/doctor_availability.service'
 import { createDoctorSchedule, getDoctorSchedules, updateDoctorSchedule } from '@/lib/services/scheduling/doctor-schedule/doctor_schedule.service'
 import { convertirAHHMM } from '@/utils/helper_functions'
 
@@ -235,7 +235,7 @@ export default function DoctorScheduleManager() {
             await updateDoctorSchedule(scheduleId, {
                 period_end: todayISO
             })
-
+            console.log("FINALIZADO EL SCHED ACTUAL")
             // Crear un schedule nuevo con fecha de inicio hoy y sin fecha de fin
             const newSchedule = await createDoctorSchedule({
                 doctorId: selectedDocId,
