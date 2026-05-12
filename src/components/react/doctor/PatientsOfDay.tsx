@@ -85,7 +85,7 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
 
   return (
     <aside id="patientsOfDay" className="flex flex-col gap-6">
-      <DailyAppointmentsAside citas={citas} doctorId={String(doctorId)} client:visible />
+      <DailyAppointmentsAside citas={citas} doctorId={String(doctorId)} />
     </aside>
   );
 }

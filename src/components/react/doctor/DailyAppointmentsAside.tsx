@@ -34,7 +34,7 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
         try {
             await startConsultation(selectedAppointment.id);
             const consultationUrl = `/modules/doctor/${doctorId}/consultation/${selectedAppointment.id}`;
-            window.location.href = consultationUrl;
+            window.location.assign(consultationUrl);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Error desconocido";
             Alert.error("No se pudo iniciar la consulta", message);
