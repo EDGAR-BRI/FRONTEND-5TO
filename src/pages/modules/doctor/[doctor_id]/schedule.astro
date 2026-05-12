@@ -3,9 +3,20 @@ import MainLayout from "@/layouts/DoctorLayout.astro";
 import DoctorStats from "@/components/react/doctor/DoctorStats";
 import DoctorSchedule from "@/components/react/doctor/DoctorSchedule";
 import PatientsOfDay from "@/components/react/doctor/PatientsOfDay";
+import { getDoctorByUserId } from "@/lib/services/medical/doctor/doctor.service";
 
 const { doctor_id } = Astro.params;
-const doctorId = Number(doctor_id);
+const userId = Number(doctor_id);
+let doctorId = 0;
+
+if (Number.isFinite(userId) && userId > 0) {
+  try {
+    const doctor = await getDoctorByUserId(userId);
+    doctorId = doctor?.id ?? 0;
+  } catch (error) {
+    console.error("Error al obtener doctor por userId:", error);
+  }
+}
 ---
 
 <MainLayout title="Agenda Médica">
