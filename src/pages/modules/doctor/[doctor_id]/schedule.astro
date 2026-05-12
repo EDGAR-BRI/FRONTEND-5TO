@@ -1,129 +1,26 @@
 ---
 import MainLayout from "@/layouts/DoctorLayout.astro";
-import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import { StatsCard } from "@/components/react/primary/StatsCard";
-import { DailyAppointmentsAside } from "@/components/react/doctor/DailyAppointmentsAside";
-import StaticCard from "@/components/react/primary/StaticCard";
-import { FaFileMedical, FaUsers } from "react-icons/fa6";
-import { getAppointmentsByDr } from "@/lib/services/scheduling/appointment/appointment.service";
-import { getDoctorAvailabilitiesByDoctorId } from "@/lib/services/scheduling/doctor-availability/doctor_availability.service";
+import DoctorStats from "@/components/react/doctor/DoctorStats";
+import DoctorSchedule from "@/components/react/doctor/DoctorSchedule";
+import PatientsOfDay from "@/components/react/doctor/PatientsOfDay";
 
 const { doctor_id } = Astro.params;
 const doctorId = Number(doctor_id);
-
-let citas = [];
-let availabilities = [];
-let stats = {
-  citasHoy: 0,
-  pacientesAtendidos: 0,
-  tiempoPromedio: "25 min",
-};
-
-try {
-  const appointments = await getAppointmentsByDr(doctorId, false, Astro.cookies);
-  
-  const today = new Date().toISOString().split("T")[0];
-  const appointmentsDeHoy = appointments.filter(apt => {
-    const aptDate = new Date(apt.date_time).toISOString().split("T")[0];
-    return aptDate === today;
-  });
-  
-  stats.citasHoy = appointmentsDeHoy.length;
-  
-  const completadas = appointments.filter(apt => 
-    apt.status?.name?.toLowerCase().includes('complet') || 
-    apt.status?.name?.toLowerCase().includes('finaliz')
-  );
-  stats.pacientesAtendidos = completadas.length;
-  
-  // Filtramos solo las citas de hoy para el aside
-  citas = appointmentsDeHoy.map(apt => {
-    const d = new Date(apt.date_time);
-    const statusName = apt.status?.name?.toLowerCase() || "pendiente";
-    let estado: 'programada' | 'completada' | 'cancelada' = 'programada';
-    
-    if (statusName.includes('complet') || statusName.includes('finaliz')) {
-      estado = 'completada';
-    } else if (statusName.includes('cancel')) {
-      estado = 'cancelada';
-    }
-    
-    return {
-      id: apt.id,
-      patientName: apt.patient?.user?.name || "Paciente Desconocido",
-      id_paciente: String(apt.patient?.id),
-      hora: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      motivo: apt.reson_visit || "Consulta",
-      doctor: apt.doctor?.user?.name || "Doctor",
-      especialidad: apt.doctor?.specialty?.name || "General",
-      fecha: d.toISOString().split("T")[0],
-      estado,
-      tipoConsulta: apt.type?.name || "Presencial",
-    };
-  });
-  
-  try {
-    availabilities = await getDoctorAvailabilitiesByDoctorId(doctorId);
-  } catch (e) {
-    console.error("Error fetching availabilities:", e);
-  }
-  
-} catch (error) {
-  console.error("Error al obtener las citas:", error);
-}
 ---
 
 <MainLayout title="Agenda Médica">
-  <main class="p-4 md:p-6 bg-[#f4f9ff] min-h-screen w-full flex flex-col gap-6">
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <StatsCard title="Citas Hoy" value={stats.citasHoy} color="primary" />
-      <StatsCard title="Pacientes Atendidos" value={stats.pacientesAtendidos} color="success" />
-      <StatsCard title="Tiempo Promedio" value={stats.tiempoPromedio} color="warning" />
+  <main class="p-4 md:p-6 min-h-screen w-full flex flex-col gap-6">
+    <div class="mb-8">
+      <h1 class="text-3xl font-black text-slate-800">Agendas y Consultas</h1>
+      <p class="text-sm text-slate-500 mt-2">Gestiona todas las citas programadas y el historial de consultas médicas.</p>
     </div>
 
+    <DoctorStats doctorId={doctorId} client:visible />
+
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 flex-1">
-      
-      <section class="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
-        <h2 class="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
-        <div class="flex-1">
-          <AppointmentCalendar
-            role="doctor"
-            citas={citas}
-            context={{ doctorId: doctor_id }}
-            actions={[
-              {
-                id: 'historial',
-                label: 'Ver Historial Clínico',
-                kind: 'link',
-                variant: 'primary',
-                hrefTemplate: '/modules/pacient/{id_paciente}/history'
-              }
-            ]}
-            client:load
-          />
-        </div>
-      </section>
+      <DoctorSchedule doctorId={doctorId} client:visible />
 
-
-            <aside class="flex flex-col gap-6">
-                <DailyAppointmentsAside citas={citas} client:visible />
-                <StaticCard className="">
-                    <h3 class="font-bold mb-4">Herramientas Rápidas</h3>
-                    <nav class="grid gap-2">
-                        <button
-                            class="flex items-center gap-3 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all text-sm font-medium w-full border border-primary-600"
-                        >
-                            <FaFileMedical /> Nueva Receta
-                        </button>
-                        <button
-                            class="flex items-center gap-3 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all text-sm font-medium w-full border border-primary-600"
-                        >
-                            <FaUsers /> Ver Lista Completa
-                        </button>
-                    </nav>
-                </StaticCard>
-            </aside>
-      
-    </main>
+      <PatientsOfDay doctorId={doctorId} client:visible />
+    </div>
+  </main>
 </MainLayout>

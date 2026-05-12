@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FaUserInjured, FaChevronRight } from "react-icons/fa6";
 import { StartConsultationModal } from './StartConsultationModal';
+import StaticCard from "@/components/react/primary/StaticCard";
 
 interface Appointment {
     id: number;
@@ -36,7 +37,7 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[], doctorId?:
     };
 
     return (
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex-1 flex flex-col p-5 relative overflow-hidden">
+        <StaticCard className="h-full">
             <div className="absolute top-0 left-0 w-32 h-32 bg-primary-50 rounded-full blur-2xl -z-10 transform -translate-x-1/2 -translate-y-1/2"></div>
             
             <h3 className="font-bold text-slate-800 text-lg mb-5 flex items-center gap-2">
@@ -102,6 +103,6 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[], doctorId?:
                 onClose={() => setSelectedAppointment(null)}
                 onStart={handleStartConsultation}
             />
-        </div>
+        </StaticCard>
     );
 };
