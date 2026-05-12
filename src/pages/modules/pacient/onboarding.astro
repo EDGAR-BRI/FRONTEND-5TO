@@ -1,9 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-// Ajusta la ruta a donde hayas guardado el RegisterPatientForm que armamos antes
 import RegisterPatientForm from "@/components/react/RegisterPatientForm";
 
-// Capturamos el userId que le mandamos por la URL desde el Login
+
 const userId = Astro.url.searchParams.get("userId");
 ---
 
