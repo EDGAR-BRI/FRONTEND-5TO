@@ -38,57 +38,26 @@ type ProfileTabsProps = {
 export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
   const [activeTab, setActiveTab] = useState('personal');
   
-  const { data: patientData } = useSWR(
-    `/medical/info-patient/patient/${patientId}`,
-    fetcher,
-    {
-      fallbackData: initialData,
-      revalidateOnMount: !initialData,
-    }
-  );
+  // 1. Traemos los datos actuales para rellenar el formulario inicial
+  const { data: patientData } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
 
-  const info = patientData ?? initialData ?? null;
-
-  const formatDateInput = (value: string | null | undefined) => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    return date.toISOString().slice(0, 10);
-  };
-
-  // Estados del formulario alineados con info-patient
-  const [sex, setSex] = useState('MALE');
-  const [birthDate, setBirthDate] = useState('');
+  // 2. Estados del formulario (Solo para los datos que acepta tu BD)
   const [bloodType, setBloodType] = useState('');
-  const [secondaryPhone, setSecondaryPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [nationality, setNationality] = useState('');
-  const [profession, setProfession] = useState('');
   const [chronicDiseases, setChronicDiseases] = useState('');
   const [allergies, setAllergies] = useState('');
+  const [email, setEmail] = useState('');
   const [mainPhone, setMainPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [currentMedications, setCurrentMedications] = useState('');
-  const [previousSurgeries, setPreviousSurgeries] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (info) {
-      setSex(info.sex || 'MALE');
-      setBirthDate(formatDateInput(info.birth_date));
-      setBloodType(info.blood_type || '');
-      setSecondaryPhone(info.secondary_phone || '');
-      setEmail(info.email || '');
-      setNationality(info.nacionality || '');
-      setProfession(info.profession || '');
-      setMainPhone(info.main_phone || '');
-      setAddress(info.address || '');
-      setCity(info.city || '');
-      setChronicDiseases(info.chronic_diseases || '');
-      setAllergies(info.allergies || '');
-      setCurrentMedications(info.current_medications || '');
-      setPreviousSurgeries(info.previous_surgeries || '');
+    if (patientData?.data) {
+      setBloodType(patientData.data.blood_type || '');
+      setChronicDiseases(patientData.data.chronic_diseases || '');
+      setAllergies(patientData.data.allergies || '');
+      setEmail(patientData.data.email || '');
+      setMainPhone(patientData.data.main_phone || '');
+      setAddress(patientData.data.address || '');
     }
   }, [info]);
 
@@ -108,24 +77,17 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
       const response = await api(`/medical/info-patient/patient/${patientId}`, {
         method: 'PUT',
         body: JSON.stringify({
-          sex,
-          birth_date: birthDate || undefined,
           blood_type: bloodType,
-          secondary_phone: secondaryPhone,
-          email: email,
-          nacionality: nationality,
-          profession: profession,
           chronic_diseases: chronicDiseases,
           allergies: allergies,
+          email: email,
           main_phone: mainPhone,
-          address: address,
-          city: city,
-          current_medications: currentMedications,
-          previous_surgeries: previousSurgeries,
+          address: address
         })
       });
 
       if (response.ok) {
+        // Magia de SWR: Le decimos que vuelva a cargar los datos en toda la pantalla
         mutate(`/medical/info-patient/patient/${patientId}`);
         alert("¡Perfil actualizado con éxito!");
         close();
@@ -288,7 +250,7 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
                               value={chronicDiseases}
                               onChange={(e) => setChronicDiseases(e.target.value)}
                               placeholder="Escriba aquí condiciones preexistentes..."
-                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
                             />
                           </div>
 
@@ -299,39 +261,18 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
                               value={allergies}
                               onChange={(e) => setAllergies(e.target.value)}
                               placeholder="Escriba aquí alergias relevantes..."
-                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Medicamentos Actuales</label>
-                            <textarea 
-                              rows={2}
-                              value={currentMedications}
-                              onChange={(e) => setCurrentMedications(e.target.value)}
-                              placeholder="Escriba aquí medicamentos activos..."
-                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Cirugías Previas</label>
-                            <textarea 
-                              rows={2}
-                              value={previousSurgeries}
-                              onChange={(e) => setPreviousSurgeries(e.target.value)}
-                              placeholder="Escriba aquí cirugías previas..."
-                              className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500 resize-none" 
                             />
                           </div>
                         </div>
                       </StaticCard>
 
-                      <StaticCard className="rounded-3xl border border-slate-200 bg-white p-6">
-                        <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+                      {/* DATOS DE CONTACTO */}
+                      <StaticCard className="p-6">
+                        <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
                           <div className="flex items-center gap-2">
-                            <FaPhone className="h-4 w-4 text-slate-500" />
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-600">Información de Contacto</h4>
+                            <FaPhone className="w-4 h-4 text-slate-500" />
+                            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest">Información de Contacto</h4>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -343,7 +284,7 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="correo@ejemplo.com"
-                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
                               />
                               <FaEnvelope className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
                             </div>
@@ -356,20 +297,7 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
                                 value={mainPhone}
                                 onChange={(e) => setMainPhone(e.target.value)}
                                 placeholder="+58 412-1234567"
-                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
-                              />
-                              <FaPhone className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
-                            </div>
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Teléfono Secundario</label>
-                            <div className="relative">
-                              <input 
-                                type="text" 
-                                value={secondaryPhone}
-                                onChange={(e) => setSecondaryPhone(e.target.value)}
-                                placeholder="+58 424-1234567"
-                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
                               />
                               <FaPhone className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
                             </div>
@@ -382,22 +310,9 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
                                 placeholder="Dirección completa"
-                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
+                                className="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-primary-500" 
                               />
                               <FaLocationDot className="w-4 h-4 absolute right-3 top-3.5 text-slate-400" />
-                            </div>
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase italic">Ciudad</label>
-                            <div className="relative">
-                              <input 
-                                type="text" 
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                placeholder="Ciudad"
-                                className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none ring-sky-500 focus:ring-2" 
-                              />
-                              <FaMapLocationDot className="absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
                             </div>
                           </div>
                         </div>

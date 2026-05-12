@@ -114,7 +114,29 @@ const fetchUserRole = async (userId: number, token: string): Promise<string | nu
         if (isDev) console.log("[MIDDLEWARE fetchUserRole] data:", JSON.stringify(data));
         return normalizeRoleCode(data.data.role?.code ?? "");
     } catch (err) {
-        if (isDev) console.log("[MIDDLEWARE fetchUserRole] error:", err);
+        console.log("[MIDDLEWARE fetchUserRole] error:", err);
+        return null;
+    }
+};
+
+const fetchPatientOwnerUserId = async (patientId: number, token: string): Promise<number | null> => {
+    try {
+        const res = await fetch(`${API_URL}/medical/patient/${patientId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            cache: "no-store",
+        });
+
+        if (!res.ok) {
+            return null;
+        }
+
+        const data = await res.json();
+        const owner = data?.data?.userId ?? data?.data?.user?.id;
+        return typeof owner === "number" ? owner : null;
+    } catch {
         return null;
     }
 };
@@ -182,25 +204,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return redirect("/no-encontrado");
     }
 
-    const roleSegment = getRoleSegment(userRole);
-    const roleBasePath = roleSegment ? `/modules/${roleSegment}` : null;
-    const dashboardPath = getDashboardPath(userRole, userId);
+    // Patient pages must only access their own patient IDs.
+    if (requiredRole === "PATIENT") {
+        const match = pathname.match(/^\/modules\/pacient\/(\d+)(?:\/|$)/);
+        if (match) {
+            const patientId = Number(match[1]);
+            const ownerUserId = await fetchPatientOwnerUserId(patientId, token);
 
-    // Redirect role root paths (e.g. /modules/doctor) to the proper dashboard with the authenticated user id.
-    if (roleBasePath && (pathname === roleBasePath || pathname === `${roleBasePath}/`)) {
-        if (isDev) console.log("[MIDDLEWARE] Redirecting role root to dashboard:", dashboardPath);
-        return redirect(dashboardPath);
-    }
-
-    // Prevent users from navigating to another user's scoped module path.
-    if (userRole === "DOCTOR" || userRole === "RECEPTION" || userRole === "PATIENT") {
-        const scopedUserId = getUserIdFromPath(pathname);
-        if (scopedUserId && scopedUserId !== userId) {
-            if (isDev) console.log("[MIDDLEWARE] Scoped userId mismatch, redirecting to own dashboard:", dashboardPath);
-            return redirect(dashboardPath);
+            if (!ownerUserId || ownerUserId !== userId) {
+                console.log("[MIDDLEWARE] PATIENT ownership mismatch. userId:", userId, "patient owner:", ownerUserId);
+                return redirect("/no-encontrado");
+            }
         }
     }
 
-    if (isDev) console.log("[MIDDLEWARE] Access granted");
+    console.log("[MIDDLEWARE] Access granted");
     return next();
 });

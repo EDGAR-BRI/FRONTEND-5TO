@@ -15,73 +15,37 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { Spinner } from "@/components/react/primary/Spinner";
 
-type BasicDataProps = {
-  patientId: string;
-  initialData?: any;
-};
-
-const formatDate = (value: string | null | undefined) => {
-  if (!value) return "Sin registros";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Sin registros";
-
-  return date.toLocaleDateString("es-VE", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-export const BasicData = ({ patientId, initialData }: BasicDataProps) => {
-  const { data: patientData, error, isLoading } = useSWR(
-    `/medical/info-patient/patient/${patientId}`,
-    fetcher,
-    {
-      fallbackData: initialData,
-      revalidateOnMount: !initialData,
-    }
-  );
-
-  const info = patientData ?? initialData ?? null;
-  const patient = info?.patient ?? null;
-  const fullName = patient?.name || "Desconocido";
-  const ci = patient?.ci || "-";
-  const initials = fullName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word: string) => word[0]?.toUpperCase())
-    .join("") || "P";
-  const birthDate = info?.birth_date ? new Date(info.birth_date) : null;
-  const age = birthDate
-    ? Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-    : "-";
-
-  if (isLoading && !info) return (
-    <StaticCard className="flex h-full min-h-[560px] flex-col items-center justify-center rounded-[28px] border border-slate-200 bg-white/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+export const BasicData = ({ patientId }: { patientId: string }) => {
+  const { data: patientData, error, isLoading } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
+  console.log("Datos del paciente obtenidos:", patientData, "Error:", error, "Cargando:", isLoading);
+  if (isLoading) return (
+    <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full items-center justify-center">
       <Spinner />
     </StaticCard>
   );
 
-  if (!info && error) return (
-    <StaticCard className="flex h-full min-h-[560px] flex-col items-center justify-center rounded-[28px] border border-slate-200 bg-white/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+  const hasNoProfile = !patientData?.data && (error?.status === 404 || !patientData);
+  
+  if (hasNoProfile) return (
+    <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full items-center justify-center">
       <div className="text-center space-y-3">
-        <FaUser className="mx-auto h-12 w-12 text-slate-300" />
-        <p className="text-sm font-medium text-slate-500">Perfil no disponible</p>
-        <p className="text-xs text-slate-400">El backend no devolvió información clínica para este paciente.</p>
+        <FaUser className="w-12 h-12 text-slate-300 mx-auto" />
+        <p className="text-slate-500 font-medium text-sm">Perfil no completado</p>
+        <p className="text-slate-400 text-xs">Complete su información médica para ver sus datos aquí.</p>
       </div>
     </StaticCard>
   );
 
-  const bloodType = info?.blood_type || "No registrado";
-  const chronicDiseases = info?.chronic_diseases || "Sin registros";
-  const allergies = info?.allergies || "Sin registros";
-  const currentMedications = info?.current_medications || "Sin registros";
-  const lastVisit = formatDate(patient?.last_visit_at || info?.last_visit_at);
-  const sex = info?.sex || "No registrado";
-  const city = info?.city || "Sin ciudad";
-  const phone = info?.main_phone || "Sin teléfono";
+  const fullName = patientData?.data?.patient?.name || 'Desconocido';
+  const ci = patientData?.data?.patient?.ci || '-';
+  const initials = fullName.substring(0, 2).toUpperCase();
+  const bloodType = patientData?.data?.blood_type || 'No registrado';
+  const chronicDiseases = patientData?.data?.chronic_diseases || 'Sin registros';
+  const allergies = patientData?.data?.allergies || '-';
+  const lastVisit = patientData?.data?.last_visit_at ? new Date(patientData.data.last_visit_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Sin registros';
+  const birthDate = patientData?.data?.birth_date ? new Date(patientData.data.birth_date) : null;
+  const age = birthDate ? Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : '-';
+  const sex = patientData?.data?.sex || '-';
   return (
     <StaticCard className="flex h-full flex-col gap-6 rounded-[28px] border border-slate-200 bg-white/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
 
@@ -160,14 +124,6 @@ export const BasicData = ({ patientId, initialData }: BasicDataProps) => {
           <div>
             <span className="block text-xs font-bold text-slate-700">Última Visita</span>
             <span className="text-xs text-slate-500 font-medium">{lastVisit}</span>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3">
-          <FaWeightScale className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
-          <div>
-            <span className="block text-xs font-bold text-slate-700">Medicación actual</span>
-            <span className="text-xs text-slate-500 font-medium line-clamp-2">{currentMedications}</span>
           </div>
         </div>
       </div>

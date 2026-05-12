@@ -7,26 +7,26 @@ const token = getToken(Astro.cookies);
 const userId = getUserIdFromToken(token);
 
 if (!userId) {
-  return Astro.redirect('/login');
+	return Astro.redirect('/login');
 }
 
 try {
-  const res = await api(`/medical/patient/user/${userId}`, { method: 'GET' }, Astro.cookies);
+	const response = await api(`/medical/patient/user/${userId}`, { method: 'GET' }, Astro.cookies);
+	if (!response.ok) {
+		return Astro.redirect('/no-encontrado');
+	}
 
-  if (!res.ok) {
-    return Astro.redirect('/no-encontrado');
-  }
+	const json = await response.json();
+	const patients = Array.isArray(json?.data) ? json.data : [];
 
-  const json = await res.json();
-  const patient = json?.data;
+	if (patients.length === 0) {
+		return Astro.redirect('/no-encontrado');
+	}
 
-  if (!patient?.id) {
-    return Astro.redirect('/no-encontrado');
-  }
-
-  return Astro.redirect(`/modules/pacient/${patient.id}/overview`);
+	const primaryPatient = patients.find((p: any) => p?.active !== false) || patients[0];
+	return Astro.redirect(`/modules/pacient/${primaryPatient.id}/overview`);
 } catch (error) {
-  console.error('[pacient/index] Error resolving patient for user:', error);
-  return Astro.redirect('/error-servidor');
+	console.error('[pacient/index] Error resolving patient by user:', error);
+	return Astro.redirect('/error-servidor');
 }
 ---
