@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DailyAppointmentsAside } from "@/components/react/doctor/DailyAppointmentsAside";
-import { getAppointmentsByDr } from "@/lib/services/scheduling/appointment/appointment.service";
-import type { Appointment } from "@/lib/services/scheduling/appointment/appointment.interface";
+import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
+import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
 
 interface PatientsOfDayProps {
   doctorId: number;
@@ -16,23 +16,22 @@ interface MappedCita {
   estado: "programada" | "completada" | "cancelada";
 }
 
-function mapToCita(apt: Appointment): MappedCita {
-  const d = new Date(apt.date_time);
-  const statusName = apt.status?.name?.toLowerCase() ?? "pendiente";
+function mapToCita(consultation: ConsultationSummary): MappedCita {
+  const d = new Date(consultation.date);
   let estado: "programada" | "completada" | "cancelada" = "programada";
 
-  if (statusName.includes("complet") || statusName.includes("finaliz")) {
+  if (consultation.status === "FINISHED") {
     estado = "completada";
-  } else if (statusName.includes("cancel")) {
+  } else if (consultation.status === "CANCELLED") {
     estado = "cancelada";
   }
 
   return {
-    id: apt.id,
-    patientName: apt.patient?.user?.name ?? "Paciente Desconocido",
-    id_paciente: String(apt.patient?.id),
+    id: consultation.id,
+    patientName: consultation.invoice?.patient?.name ?? "Paciente Desconocido",
+    id_paciente: String(consultation.invoice?.patientId ?? ""),
     hora: d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-    motivo: apt.reson_visit ?? "Consulta",
+    motivo: "Consulta",
     estado,
   };
 }
@@ -46,13 +45,13 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
     if (!doctorId) return;
 
     setLoading(true);
-    getAppointmentsByDr(doctorId)
-      .then((apts) => {
-        const todayKey = new Date().toLocaleDateString("en-CA");
-        const mapped = apts
-          .filter((apt) => {
-            const localDate = apt.date_time.replace("Z", "").replace(" ", "T");
-            const dateKey = new Date(localDate).toLocaleDateString("en-CA");
+    listConsultationsByDoctor(doctorId)
+      .then((consultations) => {
+        const now = new Date();
+        const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        const mapped = consultations
+          .filter((consultation) => {
+            const dateKey = consultation.date.slice(0, 10);
             return dateKey === todayKey;
           })
           .map(mapToCita);
@@ -61,7 +60,7 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
         setError(null);
       })
       .catch((err) => {
-        setError(err.message ?? "Error al cargar citas del día");
+        setError(err.message ?? "Error al cargar consultas del día");
       })
       .finally(() => setLoading(false));
   }, [doctorId]);

@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { FaUserInjured, FaChevronRight } from "react-icons/fa6";
 import { StartConsultationModal } from './StartConsultationModal';
 import StaticCard from "@/components/react/primary/StaticCard";
+import { startConsultation } from "@/lib/services/medical/consultation/consultation.service";
+import { Alert } from "@/utils/alerts";
 
 interface Appointment {
     id: number;
@@ -12,7 +14,7 @@ interface Appointment {
     estado: 'programada' | 'completada' | 'cancelada';
 }
 
-export const DailyAppointmentsAside: React.FC<{ citas: Appointment[], doctorId?: string }> = ({ citas, doctorId = 'default' }) => {
+export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?: string }> = ({ citas, doctorId = "default" }) => {
     // Estados para las pestañas y el modal
     const [activeTab, setActiveTab] = useState<'pendientes' | 'completadas'>('pendientes');
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -26,14 +28,17 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[], doctorId?:
     }, [citas, activeTab]);
 
     // Función principal para la redirección después de capturar la factura
-    const handleStartConsultation = (invoiceCode: string) => {
+    const handleStartConsultation = async () => {
         if (!selectedAppointment) return;
-        
-        // Redirección a la vista de finalizar consulta del doctor
-        const consultationUrl = `/modules/doctor/${doctorId}/consultation/${selectedAppointment.id}?invoice=${encodeURIComponent(invoiceCode)}`;
-        
-        // Redirección
-        window.location.href = consultationUrl;
+
+        try {
+            await startConsultation(selectedAppointment.id);
+            const consultationUrl = `/modules/doctor/${doctorId}/consultation/${selectedAppointment.id}`;
+            window.location.href = consultationUrl;
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Error desconocido";
+            Alert.error("No se pudo iniciar la consulta", message);
+        }
     };
 
     return (
@@ -70,7 +75,7 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[], doctorId?:
                         <div className="bg-slate-50 p-4 rounded-full mb-3">
                             <FaUserInjured className="text-2xl text-slate-300" />
                         </div>
-                        <p className="text-sm font-medium">No hay citas {activeTab}.</p>
+                        <p className="text-sm font-medium">No hay consultas {activeTab}.</p>
                     </div>
                 ) : (
                     citasFiltradas.map((cita) => (
