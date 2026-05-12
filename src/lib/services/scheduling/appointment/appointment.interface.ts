@@ -84,6 +84,11 @@ export type WeeklyFlowDay = {
     day: string;
     date: string;
     count: number;
+    statuses: {
+        name: string;
+        color: string;
+        count: number;
+    }[];
 };
 
 export type WeeklyFlowResponse = {
@@ -92,4 +97,9 @@ export type WeeklyFlowResponse = {
     end: string;
     total: number;
     days: WeeklyFlowDay[];
+};
+
+export type DoctorStatsResponse = {
+    citasHoy: number;
+    pacientesAtendidos: number;
 };
