@@ -71,7 +71,7 @@ function availabilityToCycle(doctorId: number, availability: DoctorAvailability[
 function emptyDefaultCycle(doctorId: number): ScheduleCycle {
     return { employee_id: doctorId, desc: 'Ciclo Regular', weeks: [{ week_number: 1, days: [] }] }
 }
-
+ 
 export default function DoctorScheduleManager() {
     const [doctors, setDoctors] = useState<DoctorSchedConfigOption[]>([])
     const [loadingDoctors, setLoadingDoctors] = useState(true)
