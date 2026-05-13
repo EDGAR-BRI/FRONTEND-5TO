@@ -11,6 +11,7 @@ import { Button, ButtonTheme, type variant } from '@/components/react/primary/Bu
 import { useModal } from '@/hooks/UseModal'
 import { fetcher } from '@/lib/fetcher'
 import { api } from '@/lib/api'
+import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface'
 
 export type AppointmentCalendarRole = 'pacient' | 'doctor' | 'receptionist' | 'admin'
 
@@ -79,7 +80,7 @@ export type AppointmentCalendarProps = {
   onRangeChange?: (params: { view: 'month' | 'week' | 'day'; date: Date }) => void
   availableDays?: number[]
   /** Citas del doctor seleccionado */
-  doctorAppointments?: { date_time: string; reson_visit?: string; patient: { user: { name: string } }; doctor: { user: { name: string }; specialty: { name: string } }; status: { name: string } }[]
+  doctorAppointments?: Appointment[]
   doctorSchedulesData?: { id: number, period_start: string, period_end: string | null }[]
   doctorAvailabilities?: { day_of_week: number, doctorScheduleId?: number }[]
 }
