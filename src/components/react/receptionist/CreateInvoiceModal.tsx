@@ -9,8 +9,8 @@ import { getPaymentMethods } from '@/lib/services/finance/payment-method/payment
 import { getExchangeRates } from '@/lib/services/finance/exchange-rate/exchange_rate.service';
 import { addInvoice } from '@/lib/services/finance/invoice/invoice.service';
 import { updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service';
-import { getPatientsFromUser } from '@/lib/services/medical/patient/patient.service';
-import type { AppointmentsOverview } from '@/lib/services/scheduling/appointment/appointment.interface';
+import { getPatients } from '@/lib/services/medical/patient/patient.service';
+import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface';
 import type { PaymentMethod } from '@/lib/services/finance/payment-method/payment_method.interface';
 import type { ExchangeRate } from '@/lib/services/finance/exchange-rate/exchange_rate.interface';
 import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
@@ -23,6 +23,7 @@ interface Props {
     onClose: () => void;
     receptionistId: number;
     onSuccess: (invoice: Invoice) => void;
+    initialAppointmentId?: number;
 }
 
 interface PaymentRow {
@@ -31,8 +32,8 @@ interface PaymentRow {
     igtf_amount: number;
 }
 
-export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess }: Props) {
-    const [appointments, setAppointments] = useState<AppointmentsOverview[]>([]);
+export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess, initialAppointmentId }: Props) {
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null);
     const [loading, setLoading] = useState(true);
@@ -72,7 +73,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
             setLoading(true);
             try {
                 const [apps, methods, rates] = await Promise.all([
-                    getAppointments({ range: 'today', statusId: 1}), 
+                    getAppointments({ statusId: 1 }), 
                     getPaymentMethods(),
                     getExchangeRates()
                 ]);
@@ -80,6 +81,13 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                 setPaymentMethods(methods.filter(m => m.is_active));
                 const activeRate = rates.find(r => r.is_active) || rates[0];
                 setExchangeRate(activeRate);
+
+                if (initialAppointmentId) {
+                    const match = apps.find(a => a.id === initialAppointmentId);
+                    if (match) {
+                        setSelectedAppointmentId(initialAppointmentId);
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching invoice data:', error);
             } finally {
@@ -113,7 +121,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
         const fetchPayers = async () => {
             setLoadingPayers(true);
             try {
-                const patients = await getPatientsFromUser(userId);
+                const patients = await getPatients();
                 setPayerPatients(patients);
                 // Auto-select the appointment's patient if present
                 const match = patients.find(p => p.id === selectedAppointment.patient.id);
@@ -213,6 +221,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                 receptionistId,
                 exchangeRateId: exchangeRate.id,
                 appointmentId: selectedAppointment.id,
+                statusId: 2,
                 payments: payments.map(p => ({
                     paymentMethodId: p.paymentMethodId,
                     amount_paid: p.amount_paid,
@@ -227,6 +236,12 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                 await updateAppointment(selectedAppointment.id, { statusId: 2 });
             }
 
+            await Alert.success(
+                '¡Factura Registrada!',
+                `La factura #${invoice.id} ha sido creada exitosamente.`,
+                2500
+            );
+
             onSuccess(invoice);
         } catch (error: any) {
             console.error('Error creating invoice:', error);
@@ -239,7 +254,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
 
     const appointmentOptions = appointments.map(a => ({
         value: a.id,
-        label: `${a.patient.name} - ${a.doctor.user.name} - ${new Date(a.date_time).toLocaleDateString()} ($${a.price})`
+        label: `${a.patient.user.name} - ${a.doctor.user.name} - ${new Date(a.date_time).toLocaleDateString()} ($${a.price})`
     }));
 
     const methodOptions = paymentMethods.map(m => ({
@@ -279,20 +294,21 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                                     <span>Cargando responsables...</span>
                                 </div>
                             ) : payerPatients.length > 0 ? (
-                                <Select
+                                <SearchableSelect
                                     label="Responsable de Pago"
                                     options={payerPatients.map(p => ({
                                         value: p.id,
-                                        label: `${p.name} (C.I. ${p.ci})`
+                                        label: `${p.name} — C.I. ${p.ci}`
                                     }))}
                                     value={selectedPayerId}
                                     onChange={(val) => setSelectedPayerId(val)}
                                     placeholder="Seleccionar responsable"
+                                    searchPlaceholder="Buscar por cédula o nombre..."
                                     name="payer"
                                 />
                             ) : (
                                 <p className="text-xs text-primary-500 italic py-1">
-                                    Responsable: {selectedAppointment.patient.name ?? selectedAppointment.patient.user?.name ?? 'Paciente de la cita'}
+                                    Responsable: {selectedAppointment.patient.user.name ?? selectedAppointment.patient.user?.name ?? 'Paciente de la cita'}
                                 </p>
                             )}
                         </div>

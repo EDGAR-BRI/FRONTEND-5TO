@@ -1,0 +1,14 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import SymptomsDashboard from "@/components/react/admin/settings/SymptomsDashboard";
+---
+
+<AdminLayout title="Admin | Síntomas">
+	<section class="p-8 space-y-6">
+		<div>
+			<h1 class="text-2xl font-semibold text-primary-800">Síntomas</h1>
+			<p class="text-sm text-cool-gray-70">Gestiona el catálogo de síntomas clínicos.</p>
+		</div>
+		<SymptomsDashboard client:only="react" />
+	</section>
+</AdminLayout>

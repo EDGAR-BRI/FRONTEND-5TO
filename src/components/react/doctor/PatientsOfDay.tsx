@@ -13,15 +13,17 @@ interface MappedCita {
   id_paciente: string;
   hora: string;
   motivo: string;
-  estado: "programada" | "completada" | "cancelada";
+  estado: "programada" | "en_progreso" | "completada" | "cancelada";
 }
 
 function mapToCita(consultation: ConsultationSummary): MappedCita {
   const d = new Date(consultation.date);
-  let estado: "programada" | "completada" | "cancelada" = "programada";
+  let estado: "programada" | "en_progreso" | "completada" | "cancelada" = "programada";
 
   if (consultation.status === "FINISHED") {
     estado = "completada";
+  } else if (consultation.status === "IN_PROGRESS") {
+    estado = "en_progreso";
   } else if (consultation.status === "CANCELLED") {
     estado = "cancelada";
   }
@@ -51,6 +53,7 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
         const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
         const mapped = consultations
           .filter((consultation) => {
+            if (consultation.status === "IN_PROGRESS") return true;
             const dateKey = consultation.date.slice(0, 10);
             return dateKey === todayKey;
           })

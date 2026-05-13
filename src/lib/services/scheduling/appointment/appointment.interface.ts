@@ -51,6 +51,7 @@ export type Appointment =
         },
         patient: {
             id: number,
+            name: string,
             user: {
                 id: number,
                 ci: string,

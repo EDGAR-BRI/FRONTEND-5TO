@@ -13,19 +13,14 @@ const invoice = Astro.url.searchParams.get('invoice') || '';
 ---
 
 <MainLayout title="Finalizar Consulta">
-    <main class="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-primary-50/30 min-h-screen w-full flex flex-col gap-6">
+    <main class="p-4 md:p-8 bg-linear-to-br from-slate-50 to-primary-50/30 min-h-screen w-full flex flex-col gap-6">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-                <a href={`/modules/doctor/${doctor_id}/schedule`} class="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-2 mb-2 transition-colors">
+                <a href={`/modules/doctor/${doctor_id}/schedule`} data-astro-reload class="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-2 mb-2 transition-colors">
                     &larr; Volver a la agenda
                 </a>
                 <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Registro de Consulta</h1>
                 <p class="text-sm text-slate-500 mt-1">Completa los datos clínicos y de facturación para finalizar la consulta.</p>
-            </div>
-            
-            <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm flex flex-col">
-                <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Factura / Código</span>
-                <span class="font-bold text-slate-800">{invoice || 'No especificado'}</span>
             </div>
         </div>
 

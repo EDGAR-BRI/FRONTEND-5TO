@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/react/primary/Button';
 import { Field } from '@/components/react/primary/Field';
 import { InvoicesDataTable } from './InvoicesDataTable';
@@ -14,6 +14,21 @@ export function InvoiceManagement({ receptionistId, initialInvoices }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices || []);
     const [searchTerm, setSearchTerm] = useState('');
+    const [initialAppointmentId, setInitialAppointmentId] = useState<number | undefined>();
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const appointmentId = urlParams.get('appointmentId');
+        if (appointmentId) {
+            setInitialAppointmentId(parseInt(appointmentId));
+            setIsModalOpen(true);
+            
+            // Clean up the URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('appointmentId');
+            window.history.replaceState({}, '', url.toString());
+        }
+    }, []);
 
     const filteredInvoices = invoices.filter(fac => {
         const search = searchTerm.toLowerCase();
@@ -53,8 +68,12 @@ export function InvoiceManagement({ receptionistId, initialInvoices }: Props) {
 
             <CreateInvoiceModal 
                 isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setInitialAppointmentId(undefined);
+                }}
                 receptionistId={parseInt(receptionistId)}
+                initialAppointmentId={initialAppointmentId}
                 onSuccess={(newInvoice) => {
                     setInvoices([newInvoice, ...invoices]);
                     setIsModalOpen(false);
