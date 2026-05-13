@@ -14,20 +14,11 @@ export default function StatCard({ label, value, iconType, trend }: Props) {
     beaker: { icon: <FaFlask size={20} />, bg: "bg-purple-50 text-purple-500" },
   };
 
-  // Validar que iconType exista, si no, usar calendar como fallback
-  const validIconType = iconType && icons[iconType] ? iconType : 'calendar';
-  const iconConfig = icons[validIconType];
-
-  // Debug: log para identificar problemas
-  if (process.env.NODE_ENV === 'development' && iconType && !icons[iconType]) {
-    console.warn(`StatCard: iconType "${iconType}" no es válido. Opciones válidas:`, Object.keys(icons));
-  }
-
   return (
     <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
       <div className="flex justify-between items-start">
-        <div className={`p-2 rounded-lg ${iconConfig.bg}`}>
-          {iconConfig.icon}
+        <div className={`p-2 rounded-lg ${icons[iconType].bg}`}>
+          {icons[iconType].icon}
         </div>
         {trend && (
           <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-full">

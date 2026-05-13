@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Tooltip } from './Tooltip';
 import { FaChevronDown } from 'react-icons/fa6';
-import '@/styles/components.css';
 
 export interface SelectOption {
     value: string | number;
@@ -75,7 +74,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
     useEffect(() => {
         if (isOpen && optionsListRef.current) {
             const list = optionsListRef.current;
-            const highlightedElement = list.children[highlightedIndex] as HTMLElement;
+            const highlightedElement = list.children[highlightedIndex + 1] as HTMLElement; // +1 because first li is placeholder
             if (highlightedElement) {
                 const listRect = list.getBoundingClientRect();
                 const itemRect = highlightedElement.getBoundingClientRect();
@@ -145,7 +144,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
                 setHighlightedIndex(prev => (prev + 1) % options.length);
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                setHighlightedIndex(prev => prev === 0 ? options.length - 1 : prev - 1);
+                setHighlightedIndex(prev => (prev - 1 + options.length) % options.length);
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (options[highlightedIndex]) {
@@ -222,13 +221,13 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(({
                         <div className="fixed inset-0 z-50" onClick={() => setIsOpen(false)}></div>
 
                         <div
-                            className={`select-dropdown ${coords.top !== undefined ? 'select-dropdown-bottom' : 'select-dropdown-top'}`}
-                        style={{
-                            top: coords.top !== undefined ? `${coords.top}px` : 'auto',
-                            bottom: coords.bottom !== undefined ? `${coords.bottom}px` : 'auto',
-                            left: `${coords.left}px`,
-                            width: `${coords.width}px`
-                        }}
+                            className="fixed z-50 bg-primary-100 border border-primary-300 rounded-md shadow-lg overflow-hidden animate-fade-in-down animate-duration-200"
+                            style={{
+                                top: coords.top !== undefined ? coords.top : 'auto',
+                                bottom: coords.bottom !== undefined ? coords.bottom : 'auto',
+                                left: coords.left,
+                                width: coords.width
+                            }}
                         >
                             <ul ref={optionsListRef} className="max-h-60 overflow-auto py-1 scroll-smooth custom-scrollbar">
                                 <li
