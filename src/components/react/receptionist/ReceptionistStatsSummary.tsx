@@ -29,7 +29,7 @@ interface ReceptionistStatsSummaryProps {
 
 const stats: StatItem[] = [
   {
-    label: 'Citas hoy',
+    label: 'Citas de hoy',
     value: '18',
     icon: FaCalendarCheck,
     color: 'primary',
@@ -37,7 +37,7 @@ const stats: StatItem[] = [
     subColor: 'text-warning',
   },
   {
-    label: 'Pacientes registrados',
+    label: 'Pacientes registrados hoy',
     value: '5',
     icon: FaUserPlus,
     color: 'success',
@@ -45,7 +45,7 @@ const stats: StatItem[] = [
     subColor: 'text-success',
   },
   {
-    label: 'Pagos cobrados',
+    label: 'Pagos cobrados hoy',
     value: '$1,240',
     icon: FaMoneyBillWave,
     color: 'success',
@@ -53,7 +53,7 @@ const stats: StatItem[] = [
     subColor: 'text-cool-gray-50',
   },
   {
-    label: 'Facturas pendientes',
+    label: 'Consultas realizadas hoy',
     value: '4',
     icon: FaFileInvoiceDollar,
     color: 'danger',
