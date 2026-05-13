@@ -4,3 +4,13 @@ export type ExchangeRate = {
     createdAt: string,
     is_active: boolean,
 }
+
+export type CreateExchangeRateDto = {
+    rate: number;
+    is_active?: boolean;
+};
+
+export type UpdateExchangeRateDto = {
+    rate?: number;
+    is_active?: boolean;
+};

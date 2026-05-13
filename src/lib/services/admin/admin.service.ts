@@ -67,6 +67,44 @@ export const listAdminRoles = async (): Promise<RoleDto[]> => {
 	return readEnvelopeData<RoleDto[]>(response);
 };
 
+export const createAdminRole = async (payload: {
+	name: string;
+	code: string;
+	base_salary?: number;
+}) => {
+	const response = await api("/auth/role", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<RoleDto>(response);
+};
+
+export const updateAdminRole = async (id: number, payload: {
+	name?: string;
+	code?: string;
+	base_salary?: number | null;
+}) => {
+	const response = await api(`/auth/role/${id}`, {
+		method: "PUT",
+		body: JSON.stringify(payload),
+	});
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<RoleDto>(response);
+};
+
+export const deleteAdminRole = async (id: number) => {
+	const response = await api(`/auth/role/${id}`, { method: "DELETE" });
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<RoleDto>(response);
+};
+
 export const createAdminUser = async (payload: {
 	ci: string;
 	name: string;

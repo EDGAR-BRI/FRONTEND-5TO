@@ -1,0 +1,14 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import DiagnosesDashboard from "@/components/react/admin/settings/DiagnosesDashboard";
+---
+
+<AdminLayout title="Admin | Diagnósticos">
+	<section class="p-8 space-y-6">
+		<div>
+			<h1 class="text-2xl font-semibold text-primary-800">Diagnósticos</h1>
+			<p class="text-sm text-cool-gray-70">Gestiona códigos, descripciones y categorías.</p>
+		</div>
+		<DiagnosesDashboard client:only="react" />
+	</section>
+</AdminLayout>

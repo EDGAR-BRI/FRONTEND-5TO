@@ -6,6 +6,7 @@ export type RoleDto = {
 	id: number;
 	name: string;
 	code: string;
+	base_salary?: number | string | null;
 };
 
 export type SupplyDto = {
