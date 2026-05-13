@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaHeartPulse, FaLungs, FaThermometer, FaWeightScale, FaRulerVertical, FaPlus, FaTrash, FaCheck, FaPills, FaBoxOpen, FaStethoscope, FaNotesMedical } from 'react-icons/fa6';
 import { finishConsultation } from '@/lib/services/medical/consultation/consultation.service';
 import type { FinishConsultationDto } from '@/lib/services/medical/consultation/consultation.interface';
@@ -9,6 +9,7 @@ import type { Diagnosis } from '@/lib/services/medical/diagnosis/diagnosis.inter
 import { getSupplies } from '@/lib/services/inventory/supply/supply.service';
 import type { Supply } from '@/lib/services/inventory/supply/supply.interface';
 import { Alert } from '@/utils/alerts';
+import StaticCard from '@/components/react/primary/StaticCard';
 
 interface ConsultationFormProps {
     doctorId: string;
@@ -80,6 +81,57 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
         weight: '', height: '', temperature: '', systolic_bp: '', diastolic_bp: '', heart_rate: '', respiratory_rate: '', oxygen_saturation: ''
     });
 
+    const vitalsRanges: Record<string, { min: number; max: number; unit: string }> = {
+        weight:            { min: 0.1,  max: 500,  unit: 'kg' },
+        height:            { min: 1,    max: 270,  unit: 'cm' },
+        temperature:       { min: 30,   max: 43,   unit: '°C' },
+        systolic_bp:       { min: 40,   max: 300,  unit: 'mmHg' },
+        diastolic_bp:      { min: 20,   max: 200,  unit: 'mmHg' },
+        heart_rate:        { min: 20,   max: 300,  unit: 'lpm' },
+        respiratory_rate:  { min: 5,    max: 60,   unit: 'rpm' },
+        oxygen_saturation: { min: 0,    max: 100,  unit: '%' },
+    };
+
+    const validateVital = (field: string, value: string): string | null => {
+        if (value === '') return 'Requerido';
+        const num = parseFloat(value);
+        if (isNaN(num)) return 'Valor inválido';
+        const range = vitalsRanges[field];
+        if (num < range.min || num > range.max) return `Rango: ${range.min} - ${range.max} ${range.unit}`;
+        return null;
+    };
+
+    const [vitalsErrors, setVitalsErrors] = useState<Record<string, string>>({});
+
+    const weightRef = useRef<HTMLInputElement>(null);
+    const heightRef = useRef<HTMLInputElement>(null);
+    const tempRef = useRef<HTMLInputElement>(null);
+    const satO2Ref = useRef<HTMLInputElement>(null);
+    const systolicRef = useRef<HTMLInputElement>(null);
+    const diastolicRef = useRef<HTMLInputElement>(null);
+    const heartRateRef = useRef<HTMLInputElement>(null);
+    const respRateRef = useRef<HTMLInputElement>(null);
+    const vitalRefs = [weightRef, heightRef, tempRef, satO2Ref, systolicRef, diastolicRef, heartRateRef, respRateRef];
+
+    const handleVitalChange = (field: string, value: string) => {
+        setVitals(prev => ({ ...prev, [field]: value }));
+        const error = validateVital(field, value);
+        setVitalsErrors(prev => {
+            const next = { ...prev };
+            if (error) next[field] = error;
+            else delete next[field];
+            return next;
+        });
+    };
+
+    const handleVitalKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const nextRef = vitalRefs[index + 1];
+            if (nextRef?.current) nextRef.current.focus();
+        }
+    };
+
     // Síntomas
     const [symptoms, setSymptoms] = useState<any[]>([]);
     
@@ -94,6 +146,11 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Validación de campos requeridos
+    const hasVitals = Object.values(vitals).every(v => v !== '') && Object.keys(vitalsErrors).length === 0;
+    const hasMissingSymptomDuration = symptoms.some((s) => !String(s?.duration ?? "").trim());
+    const isFormValid = hasVitals && symptoms.length > 0 && diagnoses.length > 0 && !hasMissingSymptomDuration;
+
     // Listas del Backend
     const [symptomsList, setSymptomsList] = useState<Symptom[]>([]);
     const [diagnosesList, setDiagnosesList] = useState<Diagnosis[]>([]);
@@ -107,17 +164,32 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const missing: string[] = [];
+        if (!hasVitals) missing.push('examen clínico (todos los signos vitales con valores válidos)');
+        if (symptoms.length === 0) missing.push('al menos un síntoma');
+        if (diagnoses.length === 0) missing.push('al menos un diagnóstico');
+        if (hasMissingSymptomDuration) missing.push('la duración de todos los síntomas');
+
+        if (missing.length > 0) {
+            await Alert.error('Faltan datos requeridos', `Completa: ${missing.join(', ')}`);
+            return;
+        }
+
+        const confirmed = await Alert.confirm(
+            '¿Finalizar consulta?',
+            'Se registrará la consulta con los datos ingresados. Esta acción no se puede deshacer.',
+            'Sí, finalizar',
+            'Cancelar'
+        );
+        if (!confirmed) return;
+
         setIsSubmitting(true);
 
         try {
             const consultationIdNum = Number(consultationId);
             if (!Number.isFinite(consultationIdNum) || consultationIdNum <= 0) {
                 throw new Error("ID de consulta inválido");
-            }
-
-            const hasMissingSymptomDuration = symptoms.some((s) => !String(s?.duration ?? "").trim());
-            if (hasMissingSymptomDuration) {
-                throw new Error("Completa la duración de todos los síntomas");
             }
 
             const hasInvalidSupplyQty = supplies.some((s) => {
@@ -199,53 +271,61 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-20">
             {/* Examen Clínico */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-2">
-                    <FaHeartPulse className="text-primary-500" />
-                    <h2 className="text-lg font-bold text-slate-800">Examen Clínico (Signos Vitales)</h2>
+            <StaticCard className="!p-0 overflow-hidden">
+                <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center gap-2">
+                    <FaHeartPulse className="text-primary-100" />
+                    <h2 className="text-lg font-bold text-primary-100">Examen Clínico (Signos Vitales)</h2>
                 </div>
                 <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-1"><FaWeightScale/> Peso (kg)</label>
-                        <input type="number" step="0.1" value={vitals.weight} onChange={e => setVitals({...vitals, weight: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                        <input ref={weightRef} type="number" step="0.1" value={vitals.weight} onChange={e => handleVitalChange('weight', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 0)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.weight ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} />
+                        {vitalsErrors.weight && <span className="text-xs text-red-500">{vitalsErrors.weight}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-1"><FaRulerVertical/> Altura (cm)</label>
-                        <input type="number" step="0.1" value={vitals.height} onChange={e => setVitals({...vitals, height: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                        <input ref={heightRef} type="number" step="0.1" value={vitals.height} onChange={e => handleVitalChange('height', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 1)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.height ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} />
+                        {vitalsErrors.height && <span className="text-xs text-red-500">{vitalsErrors.height}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-1"><FaThermometer/> Temp (°C)</label>
-                        <input type="number" step="0.1" value={vitals.temperature} onChange={e => setVitals({...vitals, temperature: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                        <input ref={tempRef} type="number" step="0.1" value={vitals.temperature} onChange={e => handleVitalChange('temperature', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 2)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.temperature ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} />
+                        {vitalsErrors.temperature && <span className="text-xs text-red-500">{vitalsErrors.temperature}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-1"><FaLungs/> Sat. O2 (%)</label>
-                        <input type="number" value={vitals.oxygen_saturation} onChange={e => setVitals({...vitals, oxygen_saturation: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                        <input ref={satO2Ref} type="number" value={vitals.oxygen_saturation} onChange={e => handleVitalChange('oxygen_saturation', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 3)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.oxygen_saturation ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} />
+                        {vitalsErrors.oxygen_saturation && <span className="text-xs text-red-500">{vitalsErrors.oxygen_saturation}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase">Presión Sistólica</label>
-                        <input type="number" value={vitals.systolic_bp} onChange={e => setVitals({...vitals, systolic_bp: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" placeholder="Ej: 120" />
+                        <input ref={systolicRef} type="number" value={vitals.systolic_bp} onChange={e => handleVitalChange('systolic_bp', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 4)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.systolic_bp ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} placeholder="Ej: 120" />
+                        {vitalsErrors.systolic_bp && <span className="text-xs text-red-500">{vitalsErrors.systolic_bp}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase">Presión Diastólica</label>
-                        <input type="number" value={vitals.diastolic_bp} onChange={e => setVitals({...vitals, diastolic_bp: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" placeholder="Ej: 80" />
+                        <input ref={diastolicRef} type="number" value={vitals.diastolic_bp} onChange={e => handleVitalChange('diastolic_bp', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 5)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.diastolic_bp ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} placeholder="Ej: 80" />
+                        {vitalsErrors.diastolic_bp && <span className="text-xs text-red-500">{vitalsErrors.diastolic_bp}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase">Frec. Cardíaca (lpm)</label>
-                        <input type="number" value={vitals.heart_rate} onChange={e => setVitals({...vitals, heart_rate: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                        <input ref={heartRateRef} type="number" value={vitals.heart_rate} onChange={e => handleVitalChange('heart_rate', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 6)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.heart_rate ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} />
+                        {vitalsErrors.heart_rate && <span className="text-xs text-red-500">{vitalsErrors.heart_rate}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-slate-500 uppercase">Frec. Respiratoria</label>
-                        <input type="number" value={vitals.respiratory_rate} onChange={e => setVitals({...vitals, respiratory_rate: e.target.value})} className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                        <input ref={respRateRef} type="number" value={vitals.respiratory_rate} onChange={e => handleVitalChange('respiratory_rate', e.target.value)} onKeyDown={e => handleVitalKeyDown(e, 7)} className={`px-3 py-2 border rounded-lg focus:ring-2 outline-none transition-colors ${vitalsErrors.respiratory_rate ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-primary-500'}`} />
+                        {vitalsErrors.respiratory_rate && <span className="text-xs text-red-500">{vitalsErrors.respiratory_rate}</span>}
                     </div>
                 </div>
-            </section>
+            </StaticCard>
 
             {/* Síntomas */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-orange-50 px-6 py-4 border-b border-orange-100 flex items-center justify-between">
+            <StaticCard className="!p-0 overflow-hidden">
+                <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <FaNotesMedical className="text-orange-500" />
-                        <h2 className="text-lg font-bold text-slate-800">Síntomas</h2>
+                        <FaNotesMedical className="text-primary-100" />
+                        <h2 className="text-lg font-bold text-primary-100">Síntomas</h2>
                     </div>
                     <div className="w-64">
                         <ItemSelector 
@@ -298,21 +378,21 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         ))
                     )}
                 </div>
-            </section>
+            </StaticCard>
 
             {/* Diagnósticos */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-purple-50 px-6 py-4 border-b border-purple-100 flex items-center justify-between">
+            <StaticCard className="!p-0 overflow-hidden">
+                <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <FaStethoscope className="text-purple-500" />
-                        <h2 className="text-lg font-bold text-slate-800">Diagnósticos</h2>
+                        <FaStethoscope className="text-primary-100" />
+                        <h2 className="text-lg font-bold text-primary-100">Diagnósticos</h2>
                     </div>
                     <div className="w-64">
                         <ItemSelector 
                             items={diagnosesList} 
                             placeholder="Buscar diagnóstico..." 
                             labelKey="description"
-                            renderExtra={(item: any) => <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">{item.code}</span>}
+                            renderExtra={(item: any) => <span className="text-xs bg-primary-600 text-primary-100 px-1 rounded z-50">{item.code}</span>}
                             onSelect={(item: any) => {
                                 if(!diagnoses.find(d => d.id === item.id)) {
                                     setDiagnoses([...diagnoses, { ...item, is_primary: diagnoses.length === 0, condition_status: 'Activo', onset_date: '' }]);
@@ -365,14 +445,14 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         ))
                     )}
                 </div>
-            </section>
+            </StaticCard>
 
             {/* Insumos */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex items-center justify-between">
+            <StaticCard className="!p-0 overflow-hidden">
+                <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <FaBoxOpen className="text-emerald-500" />
-                        <h2 className="text-lg font-bold text-slate-800">Insumos Consumidos</h2>
+                        <FaBoxOpen className="text-primary-100" />
+                        <h2 className="text-lg font-bold text-primary-100">Insumos Consumidos</h2>
                     </div>
                     <div className="w-64">
                         <ItemSelector 
@@ -412,14 +492,14 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         ))
                     )}
                 </div>
-            </section>
+            </StaticCard>
 
             {/* Recetas */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-blue-50 px-6 py-4 border-b border-blue-100 flex items-center justify-between">
+            <StaticCard className="!p-0 overflow-hidden">
+                <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <FaPills className="text-blue-500" />
-                        <h2 className="text-lg font-bold text-slate-800">Receta Médica</h2>
+                        <FaPills className="text-primary-100" />
+                        <h2 className="text-lg font-bold text-primary-100">Receta Médica</h2>
                     </div>
                     <div className="flex gap-2">
                         <div className="w-64">
@@ -446,7 +526,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         <button 
                             type="button"
                             onClick={() => setPrescriptions([...prescriptions, { supplyId: null, medication_name: '', dosage: '', frequency: '', duration: '', instructions: '' }])}
-                            className="px-3 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-semibold flex items-center gap-1"
+                            className="px-3 py-2 bg-white border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 text-sm font-semibold flex items-center gap-1"
                         >
                             <FaPlus /> Manual
                         </button>
@@ -506,24 +586,31 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         ))
                     )}
                 </div>
-            </section>
+            </StaticCard>
 
             {/* Actions */}
-            <div className="fixed bottom-0 left-0 right-0 lg:pl-64 bg-white border-t border-slate-200 p-4 flex justify-end gap-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
-                <a 
-                    href={`/modules/doctor/${doctorId}/schedule`}
-                    data-astro-reload
-                    className="px-6 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors"
-                >
-                    Cancelar
-                </a>
-                <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-8 py-2.5 text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary-500/30 transition-all hover:-translate-y-0.5"
-                >
-                    {isSubmitting ? 'Guardando...' : <><FaCheck /> Finalizar Consulta</>}
-                </button>
+            <div className="fixed bottom-0 left-0 right-0 lg:pl-64 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
+                {!isFormValid && (
+                    <p className="text-xs text-amber-600 mb-2 text-right">
+                        Faltan:{!hasVitals && ' signos vitales'}{symptoms.length === 0 && ' síntomas'}{diagnoses.length === 0 && ' diagnósticos'}{hasMissingSymptomDuration && ' duración de síntomas'}
+                    </p>
+                )}
+                <div className="flex justify-end gap-4">
+                    <a 
+                        href={`/modules/doctor/${doctorId}/schedule`}
+                        data-astro-reload
+                        className="px-6 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors"
+                    >
+                        Cancelar
+                    </a>
+                    <button 
+                        type="submit"
+                        disabled={isSubmitting || !isFormValid}
+                        className="px-8 py-2.5 text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-300 disabled:cursor-not-allowed rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary-500/30 transition-all hover:-translate-y-0.5"
+                    >
+                        {isSubmitting ? 'Guardando...' : <><FaCheck /> Finalizar Consulta</>}
+                    </button>
+                </div>
             </div>
         </form>
     );

@@ -1,11 +1,11 @@
 ---
 import MainLayout from "@/layouts/DoctorLayout.astro";
 
-import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
+// import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
 import DashboardActions from "@/components/react/doctor/DashboardActions";
 import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments";
 import ActivityChart from "@/components/react/doctor/ActivityChart";
-import PatientStats from "@/components/react/doctor/PatientStats";
+// import PatientStats from "@/components/react/doctor/PatientStats";
 
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/react/primary/Avatar";
@@ -82,12 +82,12 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
 
     <!-- <DoctorFinanceSummary client:visible summary={summary} /> -->
     
-    <div class="mb-10">
+    <!-- <div class="mb-10">
       <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
         Gestión de Consultorio
       </h3>
       <DashboardActions client:visible />
-    </div>
+    </div> -->
 
     <div class="flex flex-col @[900px]:flex-row gap-8">
       <!-- <div class="lg:col-span-2 space-y-8"> -->
