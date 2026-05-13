@@ -81,7 +81,7 @@ export default function ExchangeRatesDashboard() {
 
     const columns: Column<ExchangeRate>[] = [
         { header: "ID", accessorKey: "id" },
-        { header: "Tasa", align: "right", cell: (item) => money(item.rate) },
+        { header: "Tasa", align: "center", cell: (item) => money(item.rate) },
         { header: "Fecha", cell: (item) => formatDate(item.createdAt) },
         { header: "Activa", cell: (item) => (item.is_active ? "Sí" : "No") },
         {
@@ -89,9 +89,9 @@ export default function ExchangeRatesDashboard() {
             align: "center",
             cell: (item) => (
                 <div className="flex justify-center gap-3">
-                    <ModalTrigger modalTitle="Editar tasa de cambio" trigger={<button className="text-primary-700 hover:text-primary-900 text-sm font-medium">Editar</button>}>
+                    {/* <ModalTrigger modalTitle="Editar tasa de cambio" trigger={<button className="text-primary-700 hover:text-primary-900 text-sm font-medium">Editar</button>}>
                         {({ close }) => <ExchangeRateForm rateItem={item} onSaved={reload} close={close} />}
-                    </ModalTrigger>
+                    </ModalTrigger> */}
                     <button className="text-error hover:text-red-700 text-sm font-medium" onClick={async () => {
                         const confirmed = await Alert.confirm("Eliminar tasa", `¿Eliminar la tasa ${item.rate}?`);
                         if (!confirmed) return;

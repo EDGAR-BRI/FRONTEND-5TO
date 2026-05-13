@@ -111,11 +111,10 @@ export default function DiagnosesDashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <StatsCard title="Diagnósticos" value={stats.total} color="primary" icon={<FaFileMedical size={18} />} variant="compact" />
                 <StatsCard title="Filtrados" value={stats.filtered} color="success" icon={<FaClipboardList size={18} />} variant="compact" />
                 <StatsCard title="Búsqueda" value={search.trim() ? "Activa" : "Total"} color="primary" icon={<FaPlus size={18} />} variant="compact" />
-                <StatsCard title="Código" value={items[0]?.code ?? "N/A"} color="warning" icon={<FaClipboardList size={18} />} variant="compact" />
             </div>
 
             <section className="bg-primary-700 rounded-lg border border-primary-400 overflow-hidden shadow-xl">
