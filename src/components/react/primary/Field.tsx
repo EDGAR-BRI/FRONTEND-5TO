@@ -101,8 +101,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                     {tooltip && <Tooltip text={tooltip} />}
                 </div>
                 <div
-                    className="grid gap-4 p-4 bg-primary-100 rounded-lg border border-primary-300"
-                    style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+                    className={`grid gap-4 p-4 bg-primary-100 rounded-lg border border-primary-300 grid-cols-${options.length}`}
                 >
                     {options.map((opt) => (
 
@@ -222,7 +221,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                             id={name}
                             placeholder={placeholder}
                             title={title}
-                            value={displayValue as any}
+                            value={displayValue}
                             readOnly
                             required={required}
                             disabled={disabled}
@@ -298,7 +297,7 @@ export const Field = React.forwardRef<HTMLInputElement, FieldProps>(({
                         placeholder={placeholder}
                         pattern={pattern}
                         title={title}
-                        value={displayValue as string | number | readonly string[] | undefined}
+                        value={displayValue}
                         onChange={handleInternalChange}
                         required={required}
                         disabled={disabled}
