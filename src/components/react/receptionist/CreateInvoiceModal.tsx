@@ -10,7 +10,7 @@ import { getExchangeRates } from '@/lib/services/finance/exchange-rate/exchange_
 import { addInvoice } from '@/lib/services/finance/invoice/invoice.service';
 import { updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service';
 import { getPatientsFromUser } from '@/lib/services/medical/patient/patient.service';
-import type { AppointmentsOverview } from '@/lib/services/scheduling/appointment/appointment.interface';
+import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface';
 import type { PaymentMethod } from '@/lib/services/finance/payment-method/payment_method.interface';
 import type { ExchangeRate } from '@/lib/services/finance/exchange-rate/exchange_rate.interface';
 import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';

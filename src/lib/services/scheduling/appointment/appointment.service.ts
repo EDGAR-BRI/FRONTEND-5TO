@@ -17,7 +17,7 @@ export const getScheduleOverview = async (filters?: { range?: string }): Promise
 	}
     return readEnvelopeData<AppointmentsOverview[]>(response);
 }
-export const getAppointments = async (filters?: { range?: string, statusId?: number }): Promise<AppointmentsOverview[]> => {
+export const getAppointments = async (filters?: { range?: string, statusId?: number }): Promise<Appointment[]> => {
     const params = new URLSearchParams();
     if (filters?.range) params.set("range", filters.range);
     if (filters?.statusId) params.set("statusId", String(filters.statusId));
@@ -29,7 +29,7 @@ export const getAppointments = async (filters?: { range?: string, statusId?: num
     if(!response.ok){
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
-    return readEnvelopeData<AppointmentsOverview[]>(response);
+    return readEnvelopeData<Appointment[]>(response);
 }
 export const getAppointmentsByDr = async (doctorId: number, filters?: { range?: string, statusId?: number }): Promise<Appointment[]> => {
     const params = new URLSearchParams();
