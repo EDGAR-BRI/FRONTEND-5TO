@@ -1,7 +1,11 @@
 ---
-import { getPaymentsBreakdown } from "@/lib/services/finance/invoice-payment/invoice_payment.service";
+import type { PaymentAcumulators } from "@/lib/services/finance/invoice-payment/invoice_payment.interface";
 
-const paymentBreakdown = await getPaymentsBreakdown();
+interface Props {
+    paymentBreakdown: PaymentAcumulators[];
+}
+
+const { paymentBreakdown } = Astro.props as Props;
 
 const COLORS = [
     "bg-primary-500",

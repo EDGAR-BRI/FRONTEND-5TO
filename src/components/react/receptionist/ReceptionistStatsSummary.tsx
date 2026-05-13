@@ -1,23 +1,15 @@
 import { StatsCard } from '@/components/react/primary/StatsCard';
-import type { IconType } from 'react-icons';
 import {
   FaCalendarCheck,
   FaUserPlus,
   FaMoneyBillWave,
   FaFileInvoiceDollar,
-  FaIdCard,
-  FaUserTie,
-  FaRegClock,
-  FaCalendarDay,
-  FaCalendarPlus,
-  FaCreditCard,
-  FaClock,
 } from 'react-icons/fa6';
 
 export interface StatItem {
     label: string;
     value: string;
-    icon: IconType;
+    iconKey: 'calendar-check' | 'user-plus' | 'money-bill' | 'file-invoice';
     color: "primary" | "success" | "danger" | "warning";
     sub?: string;
     subColor?: string;
@@ -27,46 +19,16 @@ interface ReceptionistStatsSummaryProps {
     stats: StatItem[];
 }
 
-const stats: StatItem[] = [
-  {
-    label: 'Citas de hoy',
-    value: '18',
-    icon: FaCalendarCheck,
-    color: 'primary',
-    sub: '3 pendientes de confirmar',
-    subColor: 'text-warning',
-  },
-  {
-    label: 'Pacientes registrados hoy',
-    value: '5',
-    icon: FaUserPlus,
-    color: 'success',
-    sub: 'Nuevos hoy',
-    subColor: 'text-success',
-  },
-  {
-    label: 'Pagos cobrados hoy',
-    value: '$1,240',
-    icon: FaMoneyBillWave,
-    color: 'success',
-    sub: '9 transacciones',
-    subColor: 'text-cool-gray-50',
-  },
-  {
-    label: 'Consultas realizadas hoy',
-    value: '4',
-    icon: FaFileInvoiceDollar,
-    color: 'danger',
-    sub: 'Requieren gestión',
-    subColor: 'text-error',
-  },
-];
-
-export const ReceptionistStatsSummary = () => {
+export const ReceptionistStatsSummary = ({ stats }: ReceptionistStatsSummaryProps) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, i) => {
-                const Icon = stat.icon;
+                const Icon = {
+                  'calendar-check': FaCalendarCheck,
+                  'user-plus': FaUserPlus,
+                  'money-bill': FaMoneyBillWave,
+                  'file-invoice': FaFileInvoiceDollar,
+                }[stat.iconKey];
 
                 return (
                     <StatsCard

@@ -114,6 +114,33 @@ const menuItems = [
 			},
 		],
 	},
+	{
+		label: "Configuración",
+		href: "/modules/admin/settings",
+		icon: FaClipboardList,
+		subitems: [
+			{
+				label: "Roles y sueldos",
+				href: "/modules/admin/settings/roles-salaries",
+				icon: FaSquarePollVertical,
+			},
+			{
+				label: "Síntomas",
+				href: "/modules/admin/settings/symptoms",
+				icon: FaClipboardList,
+			},
+			{
+				label: "Diagnósticos",
+				href: "/modules/admin/settings/diagnoses",
+				icon: FaClipboardList,
+			},
+			{
+				label: "Tasas de cambio",
+				href: "/modules/admin/settings/exchange-rates",
+				icon: FaClipboardList,
+			},
+		],
+	}
 ];
 
 const currentPath = Astro.url.pathname;

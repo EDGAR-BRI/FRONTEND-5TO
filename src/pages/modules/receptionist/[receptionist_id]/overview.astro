@@ -2,7 +2,7 @@
 import ReceptionistLayout from '@/layouts/ReceptionistLayout.astro';
 import PaymentMethodsBox from '@/components/astro/PaymentMethodsBox.astro';
 import TodaysScheduleTable from '@/components/react/receptionist/TodaysScheduleTable';
-import { getUserName, getCI } from "@/lib/api";
+import { api, getUserName, getCI } from "@/lib/api";
 import { getInitials } from "@/utils/helper_functions"
 import {
 	ReceptionistStatsSummary,
@@ -10,18 +10,29 @@ import {
 } from '@/components/react/receptionist/ReceptionistStatsSummary';
 import StaticCard from '@/components/react/primary/StaticCard';
 import { // Eliminable?
-  FaCalendarCheck,
   FaUserPlus,
-  FaMoneyBillWave,
-  FaFileInvoiceDollar,
   FaIdCard,
   FaUserTie,
-  FaRegClock,
   FaCalendarDay,
   FaCalendarPlus,
   FaCreditCard,
   FaClock,
 } from 'react-icons/fa6';
+import type { PaymentAcumulators } from '@/lib/services/finance/invoice-payment/invoice_payment.interface';
+
+type ReceptionistOverviewResponse = {
+	message: string;
+	data: {
+		stats: {
+			todayAppointments: number;
+			todayPatients: number;
+			todayPayments: number;
+			todayPaymentTransactions: number;
+			todayConsultations: number;
+		};
+		paymentBreakdown: PaymentAcumulators[];
+	};
+};
 
 const { receptionist_id } = Astro.params;
 const receptionist = {
@@ -33,6 +44,45 @@ const receptionist = {
 };
 
 const todayStr = new Date().toISOString().split('T')[0];
+
+const overviewResponse = await api('/report/receptionist-overview');
+const overview = await overviewResponse.json() as ReceptionistOverviewResponse;
+const overviewData = overview.data;
+
+const stats: StatItem[] = [
+  {
+    label: 'Citas de hoy',
+    value: String(overviewData.stats.todayAppointments),
+    iconKey: 'calendar-check',
+    color: 'primary',
+    sub: 'Agenda del día',
+    subColor: 'text-cool-gray-50',
+  },
+  {
+    label: 'Pacientes registrados hoy',
+    value: String(overviewData.stats.todayPatients),
+    iconKey: 'user-plus',
+    color: 'success',
+    sub: 'Nuevos hoy',
+    subColor: 'text-success',
+  },
+  {
+    label: 'Pagos cobrados hoy',
+    value: `$${overviewData.stats.todayPayments.toFixed(2)}`,
+    iconKey: 'money-bill',
+    color: 'success',
+    sub: `${overviewData.stats.todayPaymentTransactions} transacciones`,
+    subColor: 'text-cool-gray-50',
+  },
+  {
+    label: 'Consultas realizadas hoy',
+    value: String(overviewData.stats.todayConsultations),
+    iconKey: 'file-invoice',
+    color: 'danger',
+    sub: 'Requieren gestión',
+    subColor: 'text-error',
+  },
+];
 
 const quickActions = [
   { label: 'Registrar paciente', icon: FaUserPlus, href: 'register-patient', color: 'from-primary-500 to-primary-700' },
@@ -70,7 +120,7 @@ const quickActions = [
       </div>
     </div>
 
-    <ReceptionistStatsSummary client:visible/>
+    <ReceptionistStatsSummary client:visible stats={stats} />
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       
@@ -94,8 +144,7 @@ const quickActions = [
           </div>
         </StaticCard>
 
-        <PaymentMethodsBox>
-        </PaymentMethodsBox>
+        <PaymentMethodsBox paymentBreakdown={overviewData.paymentBreakdown} />
       </div>
     </div>
   </div>
