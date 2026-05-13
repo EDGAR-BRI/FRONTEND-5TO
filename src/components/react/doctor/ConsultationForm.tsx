@@ -8,6 +8,7 @@ import { getDiagnoses } from '@/lib/services/medical/diagnosis/diagnosis.service
 import type { Diagnosis } from '@/lib/services/medical/diagnosis/diagnosis.interface';
 import { getSupplies } from '@/lib/services/inventory/supply/supply.service';
 import type { Supply } from '@/lib/services/inventory/supply/supply.interface';
+import { Alert } from '@/utils/alerts';
 
 interface ConsultationFormProps {
     doctorId: string;
@@ -18,7 +19,7 @@ interface ConsultationFormProps {
 // Se obtienen las listas desde el backend
 
 // Helper Component for Search/Select
-const ItemSelector = ({ items, onSelect, placeholder, labelKey = 'name', renderExtra = (item: any) => null }: any) => {
+const ItemSelector = ({ items, onSelect, placeholder, labelKey = 'name', renderExtra = (item: any) => null, isDisabled = (item: any) => false, disabledLabel = 'Agotado' }: any) => {
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
@@ -40,16 +41,31 @@ const ItemSelector = ({ items, onSelect, placeholder, labelKey = 'name', renderE
             </div>
             {isOpen && search && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {filtered.length > 0 ? filtered.map((item: any) => (
-                        <div 
-                            key={item.id}
-                            onClick={() => { onSelect(item); setSearch(''); setIsOpen(false); }}
-                            className="px-4 py-2 hover:bg-primary-50 cursor-pointer flex justify-between items-center transition-colors text-sm"
-                        >
-                            <span className="font-medium text-slate-700">{item[labelKey]}</span>
-                            {renderExtra(item)}
-                        </div>
-                    )) : (
+                    {filtered.length > 0 ? filtered.map((item: any) => {
+                        const disabled = isDisabled(item);
+                        return (
+                            <div 
+                                key={item.id}
+                                onClick={() => {
+                                    if (disabled) return;
+                                    onSelect(item);
+                                    setSearch('');
+                                    setIsOpen(false);
+                                }}
+                                className={`px-4 py-2 flex justify-between items-center transition-colors text-sm ${disabled ? 'cursor-not-allowed text-slate-400' : 'hover:bg-primary-50 cursor-pointer'}`}
+                            >
+                                <span className="font-medium">{item[labelKey]}</span>
+                                <div className="flex items-center gap-2">
+                                    {renderExtra(item)}
+                                    {disabled && (
+                                        <span className="text-[10px] uppercase tracking-wide bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
+                                            {disabledLabel}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    }) : (
                         <div className="px-4 py-3 text-sm text-slate-500 text-center">No se encontraron resultados</div>
                     )}
                 </div>
@@ -112,6 +128,15 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                 throw new Error("Cantidad de insumo inválida");
             }
 
+            const hasStockOverflow = supplies.some((s) => {
+                const qty = Number.parseInt(String(s?.quantity ?? ""), 10);
+                const available = Number(s?.stock ?? 0);
+                return Number.isFinite(qty) && qty > available;
+            });
+            if (hasStockOverflow) {
+                throw new Error("Stock insuficiente para uno de los insumos seleccionados");
+            }
+
             const payload: FinishConsultationDto = {
                 finished_at: new Date().toISOString(),
                 supplies: supplies.map((s) => ({
@@ -158,11 +183,14 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
 
             await finishConsultation(consultationIdNum, payload);
 
-            alert("Consulta finalizada correctamente.");
-            window.location.href = `/modules/doctor/${doctorId}/schedule`;
+            await Alert.success("Consulta finalizada correctamente.");
+            window.location.replace(`/modules/doctor/${doctorId}/schedule`);
         } catch (error) {
             console.error(error);
-            alert(error instanceof Error ? error.message : "Error finalizando la consulta");
+            await Alert.error(
+                "Error finalizando la consulta",
+                error instanceof Error ? error.message : undefined
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -348,8 +376,11 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     </div>
                     <div className="w-64">
                         <ItemSelector 
-                            items={suppliesList.filter(s => s.type === 'Material')} 
+                            items={suppliesList
+                                .filter(s => s.type === 'Material')
+                                .map((s) => ({ ...s, outOfStock: (s.stock ?? 0) <= 0 }))}
                             placeholder="Buscar insumo..." 
+                            isDisabled={(item: any) => item.outOfStock}
                             onSelect={(item: any) => {
                                 if(!supplies.find(s => s.id === item.id)) {
                                     setSupplies([...supplies, { ...item, quantity: 1 }]);
@@ -392,13 +423,25 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     </div>
                     <div className="flex gap-2">
                         <div className="w-64">
-                            <ItemSelector 
-                                items={suppliesList.filter(s => s.type === 'Medicamento')} 
-                                placeholder="Buscar medicamento..." 
-                                onSelect={(item: any) => {
-                                    setPrescriptions([...prescriptions, { supplyId: item.id, medication_name: item.name, dosage: '', frequency: '', duration: '', instructions: '' }]);
-                                }} 
-                            />
+                        <ItemSelector 
+                            items={suppliesList
+                                .filter(s => s.type === 'Medicamento')
+                                .map((s) => ({
+                                    ...s,
+                                    lowStock: (s.stock ?? 0) <= (s.min_stock ?? 0),
+                                }))}
+                            placeholder="Buscar medicamento..." 
+                            renderExtra={(item: any) => (
+                                item.lowStock ? (
+                                    <span className="text-[10px] uppercase tracking-wide bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                                        Stock bajo
+                                    </span>
+                                ) : null
+                            )}
+                            onSelect={(item: any) => {
+                                setPrescriptions([...prescriptions, { supplyId: item.id, medication_name: item.name, dosage: '', frequency: '', duration: '', instructions: '' }]);
+                            }} 
+                        />
                         </div>
                         <button 
                             type="button"

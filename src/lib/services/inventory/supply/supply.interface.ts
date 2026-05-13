@@ -9,6 +9,7 @@ export interface Supply {
     is_perishable: boolean;
     active: boolean;
     type?: string;
+    stock?: number;
     categoryId: number;
     unitId: number;
 }

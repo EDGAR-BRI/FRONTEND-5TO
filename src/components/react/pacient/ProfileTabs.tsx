@@ -10,6 +10,7 @@ import { Button } from '../primary/Button';
 import useSWR, { mutate } from 'swr'; // Importamos mutate para actualizar la UI en vivo
 import { fetcher } from '@/lib/fetcher';
 import { api } from '@/lib/api'; // Tu helper de peticiones
+import { Alert } from '@/utils/alerts';
 
 import {
   FaCircleUser,
@@ -89,10 +90,10 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
       if (response.ok) {
         // Magia de SWR: Le decimos que vuelva a cargar los datos en toda la pantalla
         mutate(`/medical/info-patient/patient/${patientId}`);
-        alert("¡Perfil actualizado con éxito!");
+        await Alert.success("¡Perfil actualizado con éxito!");
         close();
       } else {
-        alert("Hubo un error al actualizar el perfil.");
+        await Alert.error("Hubo un error al actualizar el perfil.");
       }
     } catch (error) {
       console.error("Error actualizando perfil:", error);
