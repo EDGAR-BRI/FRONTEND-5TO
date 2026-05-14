@@ -10,72 +10,20 @@ import { getSupplies } from '@/lib/services/inventory/supply/supply.service';
 import type { Supply } from '@/lib/services/inventory/supply/supply.interface';
 import { Alert } from '@/utils/alerts';
 import StaticCard from '@/components/react/primary/StaticCard';
+import { SearchableSelect } from '@/components/react/primary/SearchableSelect';
 
 interface ConsultationFormProps {
     doctorId: string;
     consultationId: string;
-    invoiceCode: string;
 }
 
-// Se obtienen las listas desde el backend
+export default function ConsultationForm({ doctorId, consultationId }: ConsultationFormProps) {
+    // Keys para forzar reset de SearchableSelect después de selección
+    const [symptomKey, setSymptomKey] = useState(0);
+    const [diagnosisKey, setDiagnosisKey] = useState(0);
+    const [supplyKey, setSupplyKey] = useState(0);
+    const [medicationKey, setMedicationKey] = useState(0);
 
-// Helper Component for Search/Select
-const ItemSelector = ({ items, onSelect, placeholder, labelKey = 'name', renderExtra = (item: any) => null, isDisabled = (item: any) => false, disabledLabel = 'Agotado' }: any) => {
-    const [search, setSearch] = useState('');
-    const [isOpen, setIsOpen] = useState(false);
-
-    const filtered = items.filter((item: any) => String(item?.[labelKey] ?? "").toLowerCase().includes(search.toLowerCase()));
-
-    return (
-        <div className="relative w-full">
-            <div className="relative">
-                <FaLungs className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                    type="text"
-                    value={search}
-                    onChange={(e) => { setSearch(e.target.value); setIsOpen(true); }}
-                    onFocus={() => setIsOpen(true)}
-                    onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-                    placeholder={placeholder}
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-shadow"
-                />
-            </div>
-            {isOpen && search && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {filtered.length > 0 ? filtered.map((item: any) => {
-                        const disabled = isDisabled(item);
-                        return (
-                            <div 
-                                key={item.id}
-                                onClick={() => {
-                                    if (disabled) return;
-                                    onSelect(item);
-                                    setSearch('');
-                                    setIsOpen(false);
-                                }}
-                                className={`px-4 py-2 flex justify-between items-center transition-colors text-sm ${disabled ? 'cursor-not-allowed text-slate-400' : 'hover:bg-primary-50 cursor-pointer'}`}
-                            >
-                                <span className="font-medium">{item[labelKey]}</span>
-                                <div className="flex items-center gap-2">
-                                    {renderExtra(item)}
-                                    {disabled && (
-                                        <span className="text-[10px] uppercase tracking-wide bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
-                                            {disabledLabel}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    }) : (
-                        <div className="px-4 py-3 text-sm text-slate-500 text-center">No se encontraron resultados</div>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-};
-
-export default function ConsultationForm({ doctorId, consultationId, invoiceCode }: ConsultationFormProps) {
     // Examen Clínico
     const [vitals, setVitals] = useState({
         weight: '', height: '', temperature: '', systolic_bp: '', diastolic_bp: '', heart_rate: '', respiratory_rate: '', oxygen_saturation: ''
@@ -328,14 +276,19 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         <h2 className="text-lg font-bold text-primary-100">Síntomas</h2>
                     </div>
                     <div className="w-64">
-                        <ItemSelector 
-                            items={symptomsList} 
-                            placeholder="Buscar síntoma..." 
-                            onSelect={(item: any) => {
-                                if(!symptoms.find(s => s.id === item.id)) {
+                        <SearchableSelect
+                            key={symptomKey}
+                            options={symptomsList.map(s => ({ value: s.id, label: s.name }))}
+                            placeholder="Buscar síntoma..."
+                            searchPlaceholder="Buscar síntoma..."
+                            onChange={(value) => {
+                                const item = symptomsList.find(s => s.id === Number(value));
+                                if (item && !symptoms.find(s => s.id === item.id)) {
                                     setSymptoms([...symptoms, { ...item, severity: 'Leve', duration: '', notes: '' }]);
                                 }
-                            }} 
+                                setSymptomKey(k => k + 1);
+                            }}
+                            value=""
                         />
                     </div>
                 </div>
@@ -388,16 +341,19 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         <h2 className="text-lg font-bold text-primary-100">Diagnósticos</h2>
                     </div>
                     <div className="w-64">
-                        <ItemSelector 
-                            items={diagnosesList} 
-                            placeholder="Buscar diagnóstico..." 
-                            labelKey="description"
-                            renderExtra={(item: any) => <span className="text-xs bg-primary-600 text-primary-100 px-1 rounded z-50">{item.code}</span>}
-                            onSelect={(item: any) => {
-                                if(!diagnoses.find(d => d.id === item.id)) {
-                                    setDiagnoses([...diagnoses, { ...item, is_primary: diagnoses.length === 0, condition_status: 'Activo', onset_date: '' }]);
+                        <SearchableSelect
+                            key={diagnosisKey}
+                            options={diagnosesList.map(d => ({ value: d.id, label: `${d.description} [${d.code}]` }))}
+                            placeholder="Buscar diagnóstico..."
+                            searchPlaceholder="Buscar diagnóstico..."
+                            onChange={(value) => {
+                                const item = diagnosesList.find(d => d.id === Number(value));
+                                if (item && !diagnoses.find(d => d.id === item.id)) {
+                                    setDiagnoses([...diagnoses, { ...item, name: item.description, is_primary: diagnoses.length === 0, condition_status: 'Activo', onset_date: '' }]);
                                 }
-                            }} 
+                                setDiagnosisKey(k => k + 1);
+                            }}
+                            value=""
                         />
                     </div>
                 </div>
@@ -455,17 +411,21 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         <h2 className="text-lg font-bold text-primary-100">Insumos Consumidos</h2>
                     </div>
                     <div className="w-64">
-                        <ItemSelector 
-                            items={suppliesList
+                        <SearchableSelect
+                            key={supplyKey}
+                            options={suppliesList
                                 .filter(s => s.type === 'Material')
-                                .map((s) => ({ ...s, outOfStock: (s.stock ?? 0) <= 0 }))}
-                            placeholder="Buscar insumo..." 
-                            isDisabled={(item: any) => item.outOfStock}
-                            onSelect={(item: any) => {
-                                if(!supplies.find(s => s.id === item.id)) {
+                                .map(s => ({ value: s.id, label: (s.stock ?? 0) <= 0 ? `${s.name} (Agotado)` : s.name, disabled: (s.stock ?? 0) <= 0 }))}
+                            placeholder="Buscar insumo..."
+                            searchPlaceholder="Buscar insumo..."
+                            onChange={(value) => {
+                                const item = suppliesList.find(s => s.id === Number(value));
+                                if (item && !supplies.find(s => s.id === item.id)) {
                                     setSupplies([...supplies, { ...item, quantity: 1 }]);
                                 }
-                            }} 
+                                setSupplyKey(k => k + 1);
+                            }}
+                            value=""
                         />
                     </div>
                 </div>
@@ -503,25 +463,22 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                     </div>
                     <div className="flex gap-2">
                         <div className="w-64">
-                        <ItemSelector 
-                            items={suppliesList
-                                .filter(s => s.type === 'Medicamento')
-                                .map((s) => ({
-                                    ...s,
-                                    lowStock: (s.stock ?? 0) <= (s.min_stock ?? 0),
-                                }))}
-                            placeholder="Buscar medicamento..." 
-                            renderExtra={(item: any) => (
-                                item.lowStock ? (
-                                    <span className="text-[10px] uppercase tracking-wide bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                                        Stock bajo
-                                    </span>
-                                ) : null
-                            )}
-                            onSelect={(item: any) => {
-                                setPrescriptions([...prescriptions, { supplyId: item.id, medication_name: item.name, dosage: '', frequency: '', duration: '', instructions: '' }]);
-                            }} 
-                        />
+                            <SearchableSelect
+                                key={medicationKey}
+                                options={suppliesList
+                                    .filter(s => s.type === 'Medicamento')
+                                    .map(s => ({ value: s.id, label: (s.stock ?? 0) <= (s.min_stock ?? 0) ? `${s.name} - Stock bajo` : s.name, disabled: (s.stock ?? 0) <= 0 }))}
+                                placeholder="Buscar medicamento..."
+                                searchPlaceholder="Buscar medicamento..."
+                                onChange={(value) => {
+                                    const item = suppliesList.find(s => s.id === Number(value));
+                                    if (item) {
+                                        setPrescriptions([...prescriptions, { supplyId: item.id, medication_name: item.name, dosage: '', frequency: '', duration: '', instructions: '' }]);
+                                    }
+                                    setMedicationKey(k => k + 1);
+                                }}
+                                value=""
+                            />
                         </div>
                         <button 
                             type="button"

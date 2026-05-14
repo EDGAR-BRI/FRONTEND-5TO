@@ -7,6 +7,7 @@ import { FaChevronDown } from 'react-icons/fa6';
 export interface SearchableSelectOption {
     value: string | number;
     label: string;
+    disabled?: boolean;
 }
 
 // ... imports
@@ -149,17 +150,27 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
         }
     };
 
+    const findNextEnabled = (from: number, direction: 1 | -1): number => {
+        let i = from;
+        for (let c = 0; c < filteredOptions.length; c++) {
+            i = (i + direction + filteredOptions.length) % filteredOptions.length;
+            if (!filteredOptions[i]?.disabled) return i;
+        }
+        return from;
+    };
+
     const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setHighlightedIndex(prev => (prev + 1) % filteredOptions.length);
+            setHighlightedIndex(prev => findNextEnabled(prev, 1));
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            setHighlightedIndex(prev => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+            setHighlightedIndex(prev => findNextEnabled(prev, -1));
         } else if (e.key === 'Enter') {
             e.preventDefault();
-            if (filteredOptions[highlightedIndex]) {
-                handleSelect(filteredOptions[highlightedIndex].value);
+            const opt = filteredOptions[highlightedIndex];
+            if (opt && !opt.disabled) {
+                handleSelect(opt.value);
             }
         } else if (e.key === 'Escape') {
             e.preventDefault();
@@ -262,9 +273,9 @@ export const SearchableSelect = React.forwardRef<HTMLDivElement, SearchableSelec
                                     filteredOptions.map((option, index) => (
                                         <li
                                             key={option.value}
-                                            className={`px-4 py-2 cursor-pointer transition-colors text-primary-700 hover:bg-primary-60/20 hover:text-primary-40 text-sm ${(highlightedIndex === index) ? 'bg-primary-60/20 text-primary-40' : (selectedValue === option.value ? 'bg-primary-60/10 text-primary-40' : '')}`}
-                                            onMouseEnter={() => setHighlightedIndex(index)}
-                                            onClick={() => handleSelect(option.value)}
+                                            className={`px-4 py-2 transition-colors text-sm ${option.disabled ? 'cursor-not-allowed opacity-50 text-primary-300' : 'cursor-pointer text-primary-700 hover:bg-primary-60/20 hover:text-primary-40'} ${(!option.disabled && highlightedIndex === index) ? 'bg-primary-60/20 text-primary-40' : (selectedValue === option.value ? 'bg-primary-60/10 text-primary-40' : '')}`}
+                                            onMouseEnter={() => { if (!option.disabled) setHighlightedIndex(index); }}
+                                            onClick={() => { if (!option.disabled) handleSelect(option.value); }}
                                         >
                                             {option.label}
                                         </li>

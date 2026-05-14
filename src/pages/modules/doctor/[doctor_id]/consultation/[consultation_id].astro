@@ -2,9 +2,29 @@
 import MainLayout from '@/layouts/DoctorLayout.astro';
 import ConsultationForm from '@/components/react/doctor/ConsultationForm';
 import ConsultationDetailView from '@/components/react/doctor/ConsultationDetailView';
+import { api } from '@/lib/api';
 
 const { doctor_id, consultation_id } = Astro.params;
-const invoice = Astro.url.searchParams.get('invoice') || '';
+
+const consultationIdNum = Number(consultation_id);
+let consultationStatus: string | null = null;
+let consultationError: string | null = null;
+
+if (Number.isFinite(consultationIdNum) && consultationIdNum > 0) {
+  try {
+    const response = await api(`medical/consultation/${consultationIdNum}`, { method: 'GET' }, Astro.cookies);
+    if (response.ok) {
+      const envelope = await response.json();
+      consultationStatus = envelope.data?.status ?? null;
+    } else {
+      consultationError = "No se pudo cargar la consulta";
+    }
+  } catch (e) {
+    consultationError = "Error cargando la consulta";
+  }
+}
+
+const isActive = consultationStatus === 'PENDING' || consultationStatus === 'IN_PROGRESS';
 ---
 
 <MainLayout title="Consulta">
@@ -14,17 +34,33 @@ const invoice = Astro.url.searchParams.get('invoice') || '';
                 <a href={`/modules/doctor/${doctor_id}/patients`} data-astro-reload class="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-2 mb-2 transition-colors">
                     &larr; Volver a pacientes
                 </a>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Detalle de Consulta</h1>
-                <p class="text-sm text-slate-500 mt-1">Resumen clínico y de billing de la consulta.</p>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+                    {isActive ? 'Consulta en Curso' : 'Detalle de Consulta'}
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">
+                    {isActive ? 'Registra los signos vitales, síntomas y diagnósticos del paciente.' : 'Resumen clínico de la consulta.'}
+                </p>
             </div>
         </div>
 
         <div class="flex-1 w-full max-w-5xl mx-auto">
-            <ConsultationDetailView
-                client:load
-                doctorId={doctor_id as string}
-                consultationId={consultation_id as string}
-            />
+            {consultationError ? (
+                <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-red-600 text-center">
+                    {consultationError}
+                </div>
+            ) : isActive ? (
+                <ConsultationForm
+                    client:load
+                    doctorId={doctor_id as string}
+                    consultationId={consultation_id as string}
+                />
+            ) : (
+                <ConsultationDetailView
+                    client:load
+                    doctorId={doctor_id as string}
+                    consultationId={consultation_id as string}
+                />
+            )}
         </div>
     </main>
 </MainLayout>

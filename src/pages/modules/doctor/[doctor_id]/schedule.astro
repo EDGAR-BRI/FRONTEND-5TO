@@ -26,23 +26,6 @@ if (Number.isFinite(userId) && userId > 0) {
       <p class="text-sm text-slate-500 mt-2">Gestiona todas las citas programadas y el historial de consultas médicas.</p>
     </div>
 
-     <!-- <section class="flex flex-col @[900px]:flex-row gap-8"> -->
-      <!-- <div class="lg:col-span-2 space-y-8"> -->
-
-        <!-- <StaticCard className="overflow-hidden flex-2">
-          <UpcomingAppointments client:visible doctorId={doctor?.userId ?? 0} />
-        </StaticCard> -->
-
-      <!-- </div> -->
-
-      <!-- <div class="space-y-8"> -->
-        <!-- <StaticCard className="p-8 flex-1">
-          <ActivityChart client:visible doctorId={doctor?.id ?? 0} />
-        </StaticCard> -->
-
-      <!-- </div> -->
-    <!-- </section> -->
-
     <DoctorStats doctorId={doctorId} client:visible />
 
     <div class="flex flex-col @[900px]:flex-row gap-6">
