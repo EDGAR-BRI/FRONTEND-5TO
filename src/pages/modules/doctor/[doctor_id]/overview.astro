@@ -89,11 +89,11 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
       <DashboardActions client:visible />
     </div> -->
 
-    <div class="flex flex-col @[900px]:flex-row gap-8">
+    <section class="flex flex-col @[900px]:flex-row gap-8">
       <!-- <div class="lg:col-span-2 space-y-8"> -->
 
         <StaticCard className="overflow-hidden flex-2">
-          <UpcomingAppointments client:visible doctorId={doctor?.id ?? 0} />
+          <UpcomingAppointments client:visible doctorId={doctor?.userId ?? 0} />
         </StaticCard>
 
       <!-- </div> -->
@@ -104,6 +104,6 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
         </StaticCard>
 
       <!-- </div> -->
-    </div>
+    </section>
   </main>
 </MainLayout>

@@ -57,8 +57,8 @@ try {
 }
 ---
 
-<PacientLayout title="Historial Clínico">
-  <div class="p-6 md:p-8 space-y-6 w-full animate-fade-in">
+<PacientLayout>
+  <main class="bg-slate-50 min-h-screen p-8 font-sans @container">
     <PatientHistory client:load patientId={Number(patientId)} />
-  </div>
+  </main>
 </PacientLayout>
