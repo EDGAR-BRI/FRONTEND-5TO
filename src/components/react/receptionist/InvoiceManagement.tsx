@@ -62,7 +62,7 @@ export function InvoiceManagement({ receptionistId, initialInvoices }: Props) {
                     />
                 </div>
             </div>
-
+ 
             <InvoicesDataTable facturas={filteredInvoices} />
 
             <CreateInvoiceModal 
