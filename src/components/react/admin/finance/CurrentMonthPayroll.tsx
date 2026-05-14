@@ -225,7 +225,13 @@ export const CurrentMonthPayroll = () => {
 				</div>
 
 				<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-					<p className="text-sm text-cool-gray-60">Revisa el detalle antes de pagar de forma secuencial.</p>
+					{canPayPayroll() ?
+						<p className="text-sm text-cool-gray-60">Revisa el detalle antes de pagar de forma secuencial.</p>
+					: (
+						<div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+							Solo se puede pagar el último día del mes.
+						</div>
+					)}
 					<Button
 						variant="primary"
 						label="Pagar todas"

@@ -97,7 +97,7 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
 
   if (loading) {
     return (
-      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
         <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
           Cargando calendario...
@@ -108,7 +108,7 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
 
   if (error) {
     return (
-      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
         <div className="flex-1 flex items-center justify-center text-red-500 text-sm">
           {error}
@@ -118,7 +118,7 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
   }
 
   return (
-    <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+    <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150">
       <h2 className="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
       <div className="flex-1">
         <AppointmentCalendar
