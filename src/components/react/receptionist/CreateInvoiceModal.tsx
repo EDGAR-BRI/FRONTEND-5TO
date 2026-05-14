@@ -32,7 +32,7 @@ interface PaymentRow {
 }
 
 export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess }: Props) {
-    const [appointments, setAppointments] = useState<AppointmentsOverview[]>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null);
     const [loading, setLoading] = useState(true);
@@ -239,7 +239,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
 
     const appointmentOptions = appointments.map(a => ({
         value: a.id,
-        label: `${a.patient.name} - ${a.doctor.user.name} - ${new Date(a.date_time).toLocaleDateString()} ($${a.price})`
+        label: `${a.patient.user.name} - ${a.doctor.user.name} - ${new Date(a.date_time).toLocaleDateString()} ($${a.price})`
     }));
 
     const methodOptions = paymentMethods.map(m => ({
@@ -292,7 +292,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                                 />
                             ) : (
                                 <p className="text-xs text-primary-500 italic py-1">
-                                    Responsable: {selectedAppointment.patient.name ?? selectedAppointment.patient.user?.name ?? 'Paciente de la cita'}
+                                    Responsable: {selectedAppointment.patient.user.name ?? selectedAppointment.patient.user?.name ?? 'Paciente de la cita'}
                                 </p>
                             )}
                         </div>
