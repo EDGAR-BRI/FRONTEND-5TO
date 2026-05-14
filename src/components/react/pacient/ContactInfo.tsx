@@ -4,26 +4,35 @@ import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
 import { Spinner } from '@/components/react/primary/Spinner';
 
-export const ContactInfo = ({ patientId }: { patientId: string }) => {
-  const { data: patientData, isLoading } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
+type ContactInfoProps = {
+  patientId: string;
+  initialData?: any;
+};
 
-  if (isLoading) return (
+export const ContactInfo = ({ patientId, initialData }: ContactInfoProps) => {
+  const { data: patientData, isLoading } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher, {
+    fallbackData: initialData ? { data: initialData } : undefined
+  });
+
+  const currentData = patientData?.data || initialData;
+
+  if (isLoading && !currentData) return (
     <StaticCard className="w-full flex flex-col h-[380px] p-8 items-center justify-center">
       <Spinner />
     </StaticCard>
   );
 
-  if (!patientData?.data) return (
+  if (!currentData) return (
     <StaticCard className="w-full flex flex-col h-[380px] p-8 items-center justify-center">
       <FaPhone className="w-12 h-12 text-slate-300 mb-3" />
       <p className="text-slate-500 font-medium">Información de contacto no disponible</p>
     </StaticCard>
   );
 
-  const email = patientData?.data?.email || '-';
-  const telefono = patientData?.data?.main_phone || '-';
-  const direccion = patientData?.data?.address || '-';
-  const city = patientData?.data?.city || '';
+  const email = currentData?.email || '-';
+  const telefono = currentData?.main_phone || '-';
+  const direccion = currentData?.address || '-';
+  const city = currentData?.city || '';
 
   return (
     <StaticCard className="flex h-[380px] w-full flex-col rounded-[24px] border border-slate-200 bg-white/90 p-8">
