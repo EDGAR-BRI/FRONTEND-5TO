@@ -19,7 +19,7 @@ const { receptionist_id } = Astro.params;
 const menuItems = [
 	{
 		label: "Dashboard",
-		href: `overview`,
+		href: `/modules/receptionist/${receptionist_id}/overview`,
 		icon: FaHouse,
 	},
 	{
@@ -28,19 +28,19 @@ const menuItems = [
 		subItems: [
 			{
 				label: "Registro de citas",
-				href: `appointments`,
+				href: `/modules/receptionist/${receptionist_id}/appointments`,
 				icon: FaListCheck,
 			},
 			{
 				label: "Registrar paciente",
-				href: `register-patient`,
+				href: `/modules/receptionist/${receptionist_id}/register-patient`,
 				icon: FaUserPlus,
 			},
 		],
 	},
 	{
 		label: "Facturas",
-		href: `invoice`,
+		href: `/modules/receptionist/${receptionist_id}/invoice`,
 		icon: FaFileInvoiceDollar,
 	},
 	{

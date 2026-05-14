@@ -9,9 +9,22 @@ interface Props {
 
 const { menuItems, currentPath } = Astro.props;
 
+const normalizePath = (path?: string) => {
+    if (!path) return "";
+    if (path === "#") return "";
+    return path.startsWith("/") ? path : `${currentPath.replace(/\/$/, "")}/${path}`;
+};
+
+const stripTrailingSlash = (path: string) => path.replace(/\/$/, "") || "/";
+
 const isPathActive = (targetPath?: string) => {
-    if (!targetPath) return false;
-    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+    const normalizedTarget = normalizePath(targetPath);
+    if (!normalizedTarget) return false;
+
+    const normalizedCurrent = stripTrailingSlash(currentPath);
+    const normalizedTargetPath = stripTrailingSlash(normalizedTarget);
+
+    return normalizedCurrent === normalizedTargetPath;
 };
 ---
 
@@ -22,6 +35,8 @@ const isPathActive = (targetPath?: string) => {
                 item.subItems?.some((subItem) => {
                     return isPathActive(subItem.href);
                 }) ?? false;
+            const normalizedItemHref = normalizePath(item.href);
+            const hasActiveItem = isPathActive(item.href);
             const accordionId = `sidebar-accordion-${index}`;
 
             return (
@@ -36,7 +51,7 @@ const isPathActive = (targetPath?: string) => {
                             data-sidebar-accordion-trigger={accordionId}
                             class:list={[
                                 "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-md transition-colors cursor-pointer list-none min-w-0 border-l-2 border-transparent",
-                                hasActiveSubItem
+                                hasActiveSubItem || hasActiveItem
                                     ? "bg-primary-800/60 text-white border-primary-300"
                                     : "text-primary-100 hover:bg-primary-800/60 hover:text-white group-hover:text-white",
                             ]}
@@ -66,16 +81,16 @@ const isPathActive = (targetPath?: string) => {
                             />
                         </summary>
                         <div class="sidebar-dropdown-content mt-1 ml-3 space-y-1 border-l-2 border-primary-200/70 pl-2 pr-1">
-                            {item.subItems.map((subItem) => (
-                                <a
-                                    href={subItem.href}
-                                    data-astro-prefetch="hover"
-                                    class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors min-w-0 ${
+            {item.subItems.map((subItem) => (
+                <a
+                    href={normalizePath(subItem.href)}
+                    data-astro-prefetch="hover"
+                    class={`flex items-center gap-3 px-4 py-2 text-xs rounded-md transition-colors min-w-0 ${
                                         isPathActive(subItem.href)
                                             ? "text-white bg-primary-800/60"
                                             : "text-primary-100 hover:text-white hover:bg-primary-800/60"
                                     }`}
-                                >
+                >
 								{(() => {
 									const Icon = subItem.icon;
 									if (!Icon || typeof Icon === "string") return null;
@@ -89,11 +104,11 @@ const isPathActive = (targetPath?: string) => {
                 ) : (
                     <div>
                         <a
-                            href={item.href}
+                            href={normalizedItemHref}
                             data-astro-prefetch="hover"
                             class={`flex items-center gap-6 px-4 py-3 rounded-md transition-colors group ${
-                                isPathActive(item.href)
-                                    ? "bg-primary-800/60 text-white"
+                                hasActiveItem
+                                    ? "bg-primary-800/60 text-white border-l-2 border-primary-300"
                                     : "text-primary-100 hover:bg-primary-800/60 hover:text-white border-l-2 border-transparent"
                             }`}
                         >
@@ -103,7 +118,7 @@ const isPathActive = (targetPath?: string) => {
                             return (
                                 <Icon
                                     className={`text-lg transition-colors ${
-                                        isPathActive(item.href)
+                                        hasActiveItem
                                             ? "text-primary-300"
                                             : "text-primary-100 group-hover:text-primary-300"
                                     }`}
@@ -142,17 +157,21 @@ const isPathActive = (targetPath?: string) => {
 
     const syncSidebarAccordions = () => {
         const savedState = readState();
-        document.querySelectorAll('[data-sidebar-accordion]').forEach((details) => {
+        const accordions = Array.from(document.querySelectorAll('[data-sidebar-accordion]'));
+        const routeAccordionId = accordions.find((details) => details.hasAttribute('open'))?.getAttribute('data-sidebar-accordion');
+        const persistedAccordionId =
+            routeAccordionId ??
+            accordions.find((details) => {
+                const accordionId = details.getAttribute('data-sidebar-accordion');
+                return accordionId ? Boolean(savedState[accordionId]) : false;
+            })?.getAttribute('data-sidebar-accordion');
+
+        accordions.forEach((details) => {
             const accordionId = details.getAttribute('data-sidebar-accordion');
             if (!accordionId) return;
 
-            const activeRouteSection = details.hasAttribute('open');
-
-            if (savedState[accordionId] !== undefined) {
-                details.open = Boolean(savedState[accordionId]);
-            } else {
-                details.open = activeRouteSection;
-            }
+            const shouldOpen = accordionId === persistedAccordionId;
+            details.open = shouldOpen;
 
             const updateState = () => {
                 const currentState = readState();
@@ -161,7 +180,22 @@ const isPathActive = (targetPath?: string) => {
             };
 
             if (!details.dataset.sidebarAccordionBound) {
-                details.addEventListener('toggle', updateState);
+                details.addEventListener('toggle', () => {
+                    updateState();
+                    if (!details.open) return;
+
+                    accordions.forEach((otherDetails) => {
+                        if (otherDetails === details) return;
+                        otherDetails.open = false;
+
+                        const otherId = otherDetails.getAttribute('data-sidebar-accordion');
+                        if (!otherId) return;
+
+                        const currentState = readState();
+                        currentState[otherId] = false;
+                        writeState(currentState);
+                    });
+                });
                 details.dataset.sidebarAccordionBound = 'true';
             }
 
