@@ -6,6 +6,7 @@ export type DoctorSchedConfigOption =
         name: string
     },
     specialty: {
+        id: number,
         name: string
         consultation_price: number,
     }

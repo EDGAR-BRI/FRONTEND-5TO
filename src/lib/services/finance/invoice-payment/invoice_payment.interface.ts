@@ -10,6 +10,7 @@ export type CreateInvoicePaymentDto = {
     paymentMethodId: number;
     amount_paid: string | number;
     exchangeRateId?: number;
+    reference?: string;
 }
 export type InvoicePayment =
     {
@@ -21,6 +22,7 @@ export type InvoicePayment =
         igtf_amount: number,
         exchangeRateId: number,
         date_at?: string | null,
+        reference?: string;
         paymentMethod: {
             id: number, name: string, type: string, currency: string, is_active: boolean
         },
