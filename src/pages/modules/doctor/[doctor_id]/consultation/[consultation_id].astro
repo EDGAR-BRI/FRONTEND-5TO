@@ -28,7 +28,7 @@ const isActive = consultationStatus === 'PENDING' || consultationStatus === 'IN_
 ---
 
 <MainLayout title="Consulta">
-    <main class="p-4 md:p-8 bg-linear-to-br from-slate-50 to-primary-50/30 min-h-screen w-full flex flex-col gap-6">
+    <main class="pt-4 md:p-0 md:py-6 bg-linear-to-br from-slate-50 to-primary-50/30 min-h-screen w-full flex flex-col gap-6">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
                 <a href={`/modules/doctor/${doctor_id}/patients`} data-astro-reload class="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-2 mb-2 transition-colors">
@@ -43,7 +43,7 @@ const isActive = consultationStatus === 'PENDING' || consultationStatus === 'IN_
             </div>
         </div>
 
-        <div class="flex-1 w-full max-w-5xl mx-auto">
+        <div class="flex-1 w-full">
             {consultationError ? (
                 <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-red-600 text-center">
                     {consultationError}

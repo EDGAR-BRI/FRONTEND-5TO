@@ -217,9 +217,9 @@ export default function ConsultationForm({ doctorId, consultationId }: Consultat
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-20">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
             {/* Examen Clínico */}
-            <StaticCard className="!p-0 overflow-hidden">
+            <StaticCard className="!p-0 overflow-hidden col-span-2">
                 <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center gap-2">
                     <FaHeartPulse className="text-primary-100" />
                     <h2 className="text-lg font-bold text-primary-100">Examen Clínico (Signos Vitales)</h2>
@@ -334,7 +334,7 @@ export default function ConsultationForm({ doctorId, consultationId }: Consultat
             </StaticCard>
 
             {/* Diagnósticos */}
-            <StaticCard className="!p-0 overflow-hidden">
+            <StaticCard className="!p-0 overflow-hidden ">
                 <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <FaStethoscope className="text-primary-100" />
@@ -404,7 +404,7 @@ export default function ConsultationForm({ doctorId, consultationId }: Consultat
             </StaticCard>
 
             {/* Insumos */}
-            <StaticCard className="!p-0 overflow-hidden">
+            <StaticCard className="!p-0 overflow-hidden mb-28">
                 <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <FaBoxOpen className="text-primary-100" />
@@ -455,7 +455,7 @@ export default function ConsultationForm({ doctorId, consultationId }: Consultat
             </StaticCard>
 
             {/* Recetas */}
-            <StaticCard className="!p-0 overflow-hidden">
+            <StaticCard className="!p-0 overflow-hidden mb-28">
                 <div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <FaPills className="text-primary-100" />
@@ -489,7 +489,7 @@ export default function ConsultationForm({ doctorId, consultationId }: Consultat
                         </button>
                     </div>
                 </div>
-                <div className="p-4 flex flex-col gap-4">
+                <div className="p-4 flex flex-col gap-4 ">
                     {prescriptions.length === 0 ? (
                         <p className="text-sm text-slate-400 text-center py-4">No se emitieron recetas en esta consulta.</p>
                     ) : (

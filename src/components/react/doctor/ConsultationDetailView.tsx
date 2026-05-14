@@ -129,9 +129,9 @@ export default function ConsultationDetailView({ consultationId, doctorId }: Pro
 	const exam = consultation.clinicalExaminations[0];
 
 	return (
-		<div className="flex flex-col gap-6 pb-20">
+		<div className="grid grid-cols-2 gap-6">
 			{/* Header */}
-			<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+			<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 col-span-2">
 				<div className="flex items-center gap-4 mb-4">
 					<div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 shrink-0">
 						<FaUser size={28} />
@@ -171,7 +171,7 @@ export default function ConsultationDetailView({ consultationId, doctorId }: Pro
 			</div>
 
 			{/* Examen clínico */}
-			<StaticCard className="!p-0 overflow-hidden">
+			<StaticCard className="!p-0 overflow-hidden col-span-2">
 				<div className="bg-primary-600 px-6 py-4 border-b border-primary-200 flex items-center gap-2">
 					<FaHeartPulse className="text-primary-100" />
 					<h2 className="text-lg font-bold text-primary-100">Examen Clínico</h2>
