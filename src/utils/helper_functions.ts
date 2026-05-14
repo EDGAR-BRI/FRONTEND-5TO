@@ -90,6 +90,8 @@ export function formatAppointmentsByDoctorId(
             patientName: a.patient?.user?.name,
             reason: a.reson_visit,
             status,
+            statusId: a.status.id,
+            doctorId: a.doctorId,
             type: a.type.name,
             price: `$${a.price}`,
         })
