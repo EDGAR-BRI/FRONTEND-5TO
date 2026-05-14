@@ -9,7 +9,7 @@ import { getPaymentMethods } from '@/lib/services/finance/payment-method/payment
 import { getExchangeRates } from '@/lib/services/finance/exchange-rate/exchange_rate.service';
 import { addInvoice } from '@/lib/services/finance/invoice/invoice.service';
 import { updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service';
-import { getPatientsFromUser } from '@/lib/services/medical/patient/patient.service';
+import { getPatients } from '@/lib/services/medical/patient/patient.service';
 import type { Appointment } from '@/lib/services/scheduling/appointment/appointment.interface';
 import type { PaymentMethod } from '@/lib/services/finance/payment-method/payment_method.interface';
 import type { ExchangeRate } from '@/lib/services/finance/exchange-rate/exchange_rate.interface';
@@ -113,7 +113,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
         const fetchPayers = async () => {
             setLoadingPayers(true);
             try {
-                const patients = await getPatientsFromUser(userId);
+                const patients = await getPatients();
                 setPayerPatients(patients);
                 // Auto-select the appointment's patient if present
                 const match = patients.find(p => p.id === selectedAppointment.patient.id);
@@ -227,6 +227,12 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                 await updateAppointment(selectedAppointment.id, { statusId: 2 });
             }
 
+            await Alert.success(
+                '¡Factura Registrada!',
+                `La factura #${invoice.id} ha sido creada exitosamente.`,
+                2500
+            );
+
             onSuccess(invoice);
         } catch (error: any) {
             console.error('Error creating invoice:', error);
@@ -279,15 +285,16 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                                     <span>Cargando responsables...</span>
                                 </div>
                             ) : payerPatients.length > 0 ? (
-                                <Select
+                                <SearchableSelect
                                     label="Responsable de Pago"
                                     options={payerPatients.map(p => ({
                                         value: p.id,
-                                        label: `${p.name} (C.I. ${p.ci})`
+                                        label: `${p.name} — C.I. ${p.ci}`
                                     }))}
                                     value={selectedPayerId}
                                     onChange={(val) => setSelectedPayerId(val)}
                                     placeholder="Seleccionar responsable"
+                                    searchPlaceholder="Buscar por cédula o nombre..."
                                     name="payer"
                                 />
                             ) : (
