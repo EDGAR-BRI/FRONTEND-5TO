@@ -20,7 +20,7 @@ if (Number.isFinite(userId) && userId > 0) {
 ---
 
 <MainLayout title="Agenda Médica">
-  <main class="p-4 md:p-6 min-h-screen w-full flex flex-col gap-6 @container">
+  <main class="pt-4 md:p-0 md:py-6 min-h-screen w-full flex flex-col gap-6 @container">
     <div class="mb-8">
       <h1 class="text-3xl font-black text-slate-800">Agendas y Consultas</h1>
       <p class="text-sm text-slate-500 mt-2">Gestiona todas las citas programadas y el historial de consultas médicas.</p>
@@ -47,7 +47,7 @@ if (Number.isFinite(userId) && userId > 0) {
 
     <div class="flex flex-col @[900px]:flex-row gap-6">
       <div class="overflow-hidden flex-2">
-        <DoctorSchedule doctorId={doctorId} client:visible />
+        <DoctorSchedule doctorId={doctorId} userId={userId} client:visible />
       </div>
       
         <PatientsOfDay ClassName=" flex-1" doctorId={userId} client:visible />

@@ -51,7 +51,7 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
 ---
 
 <MainLayout>
-  <main class="bg-slate-50 min-h-screen p-8 font-sans @container">
+  <main class="bg-slate-50 min-h-screen p-4 md:px-0 md:py-8  font-sans @container">
 
       <StaticCard className="p-6 mb-10">
         <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
@@ -79,15 +79,6 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
           </div>
         </div>
       </StaticCard>
-
-    <!-- <DoctorFinanceSummary client:visible summary={summary} /> -->
-    
-    <!-- <div class="mb-10">
-      <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
-        Gestión de Consultorio
-      </h3>
-      <DashboardActions client:visible />
-    </div> -->
 
     <section class="flex flex-col @[900px]:flex-row gap-8">
       <!-- <div class="lg:col-span-2 space-y-8"> -->
