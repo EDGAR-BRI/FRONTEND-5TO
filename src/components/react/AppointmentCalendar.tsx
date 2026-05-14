@@ -450,11 +450,15 @@ export default function AppointmentCalendar({
   const modalActions = useMemo(() => {
     if (!citaSeleccionada) return []
 
+    const isPendiente = citaSeleccionada.estado === 'Pendiente'
+
     const ctx: Record<string, string | number | undefined> = {
       role, ...citaSeleccionada, citaId: citaSeleccionada.id, ...context,
     }
 
-    return resolvedActions.map((a) => {
+    return resolvedActions
+      .filter((a) => !(isPendiente && a.kind === 'event' && a.eventName === 'request-start-consultation'))
+      .map((a) => {
       const variant = a.variant ?? ButtonTheme.SECONDARY
 
       // 1. Evaluación para enlaces
@@ -715,31 +719,7 @@ export default function AppointmentCalendar({
               </div>
             )}
 
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-              {modalActions.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 w-full">
-                  {modalActions.map((a) => (
-                    <div key={a.id} className={a.variant === ButtonTheme.PRIMARY ? "col-span-2" : "col-span-1"}>
-                        <Button
-                          label={a.label}
-                          variant={a.variant}
-                          disabled={!a.enabled || (actionLoadingId !== null && actionLoadingId !== a.id)}
-                          loading={actionLoadingId === a.id}
-                          onClick={() => a.onClick()}
-                          className="w-full"
-                        />
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-              
-              <Button 
-                label="Cerrar Detalles" 
-                variant={ButtonTheme.GHOST} 
-                onClick={closeAndClear} 
-                className="w-full text-slate-500 hover:text-slate-700 mt-2"
-              />
-            </div>
+
 
           </div>
         )}

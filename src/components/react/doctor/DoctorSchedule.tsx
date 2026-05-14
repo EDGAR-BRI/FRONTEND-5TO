@@ -1,11 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import type { Cita, CalendarAction } from "@/components/react/AppointmentCalendar";
+import type { Cita } from "@/components/react/AppointmentCalendar";
 import { getAppointmentsByDr } from "@/lib/services/scheduling/appointment/appointment.service";
 import { getDoctorSchedules } from "@/lib/services/scheduling/doctor-schedule/doctor_schedule.service";
-import { listConsultationsByDoctor, startConsultation } from "@/lib/services/medical/consultation/consultation.service";
-import { Alert } from "@/utils/alerts";
 import type { Appointment } from "@/lib/services/scheduling/appointment/appointment.interface";
 
 interface DoctorScheduleProps {
@@ -40,7 +38,7 @@ function mapAppointmentToCita(apt: Appointment): Cita {
   };
 }
 
-export default function DoctorSchedule({ doctorId, userId }: DoctorScheduleProps) {
+export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [schedules, setSchedules] = useState<{ id: number; period_start: string; period_end: string | null }[]>([]);
   const [availabilities, setAvailabilities] = useState<{ day_of_week: number; doctorScheduleId?: number }[]>([]);
@@ -79,63 +77,7 @@ export default function DoctorSchedule({ doctorId, userId }: DoctorScheduleProps
       .finally(() => setLoading(false));
   }, [doctorId]);
 
-  // Escuchar el evento "Iniciar Consulta" desde el modal del calendario
-  useEffect(() => {
-    const handler = async (e: Event) => {
-      const customEvent = e as CustomEvent<{ appointment: Cita }>;
-      const cita = customEvent.detail?.appointment;
-      if (!cita || !doctorId) return;
-
-      try {
-        const consultations = await listConsultationsByDoctor(doctorId, { date: cita.fecha });
-        const match = consultations.find((c) => {
-          const patientName = c.invoice?.patient?.user?.name ?? c.invoice?.patient?.name ?? "";
-          return patientName.toLowerCase().trim() === cita.pacienteNombre.toLowerCase().trim();
-        });
-
-        if (!match) {
-          await Alert.error("Consulta no encontrada", "No existe una consulta médica asociada a esta cita para la fecha indicada.");
-          return;
-        }
-
-        if (match.status !== "PENDING" && match.status !== "IN_PROGRESS") {
-          await Alert.error("Consulta no disponible", `La consulta ya se encuentra en estado: ${match.status}.`);
-          return;
-        }
-
-        if (match.status === "PENDING") {
-          await startConsultation(match.id);
-        }
-
-        const navDoctorId = userId ?? doctorId;
-        window.location.assign(`/modules/doctor/${navDoctorId}/consultation/${match.id}`);
-      } catch (err: any) {
-        await Alert.error("Error al iniciar consulta", err?.message || "Ocurrió un error inesperado.");
-      }
-    };
-
-    window.addEventListener("request-start-consultation", handler);
-    return () => window.removeEventListener("request-start-consultation", handler);
-  }, [doctorId, userId]);
-
   const citas = useMemo(() => appointments.map(mapAppointmentToCita), [appointments]);
-
-  const actions: CalendarAction[] = [
-    {
-      id: "historial",
-      label: "Ver Historial Clínico",
-      kind: "link",
-      variant: "primary",
-      hrefTemplate: "/modules/pacient/{id_paciente}/history",
-    },
-    {
-      id: "iniciar-consulta-evento",
-      label: "Iniciar Consulta",
-      kind: "event",
-      variant: "primary",
-      eventName: "request-start-consultation",
-    },
-  ];
 
   const statusClassByEstado = useMemo(() => ({
     Pendiente: '!bg-amber-400 !text-amber-950',
@@ -174,7 +116,6 @@ export default function DoctorSchedule({ doctorId, userId }: DoctorScheduleProps
           role="doctor"
           citas={citas}
           context={{ doctorId: String(doctorId) }}
-          actions={actions}
           statusClassByEstado={statusClassByEstado}
           doctorAppointments={appointments}
           doctorSchedulesData={schedules}
