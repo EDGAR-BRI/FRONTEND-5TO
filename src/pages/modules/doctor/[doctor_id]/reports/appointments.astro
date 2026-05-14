@@ -1,10 +1,10 @@
 ---
 import DoctorLayout from "@/layouts/DoctorLayout.astro";
+import ClinicalReport from "@/components/react/doctor/ClinicalReport.tsx";
 ---
 
-<DoctorLayout title="Reportes de Citas | Doctor" currentPath="/modules/doctor/[doctor_id]/reports/appointments">
+<DoctorLayout title="Reportes Clínicos | Doctor" currentPath="/modules/doctor/[doctor_id]/reports/clinical">
   <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen">
-    <h1 class="text-2xl font-bold">Reportes de Citas</h1>
-    <p>Próximamente...</p>
+    <ClinicalReport client:load />
   </main>
 </DoctorLayout>
