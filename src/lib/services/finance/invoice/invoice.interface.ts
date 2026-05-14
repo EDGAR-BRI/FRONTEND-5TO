@@ -53,5 +53,6 @@ export type createInvoiceDto = {
         paymentMethodId: number;
         amount_paid: number;
         igtf_amount: number;
+        reference?: string;
     }[];
 }

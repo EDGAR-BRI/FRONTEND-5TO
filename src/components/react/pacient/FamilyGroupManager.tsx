@@ -204,7 +204,6 @@ export const FamilyGroupManager = ({ patientId }: Props) => {
               <RegisterPatientForm
                 familyMode
                 linkedUserId={ownerUserId}
-                hideUserLinking
                 createInfoPatientOnRegister={false}
                 title="Nuevo miembro familiar"
                 subtitle="Registra un paciente adicional y lo enlaza al mismo usuario base."

@@ -20,8 +20,16 @@ export const listConsultations = async (): Promise<ConsultationSummary[]> => {
 	return readEnvelopeData<ConsultationSummary[]>(response);
 };
 
-export const listConsultationsByDoctor = async (doctorId: number): Promise<ConsultationSummary[]> => {
-	const response = await api(`${BASE_PATH}/doctor/${doctorId}`, { method: "GET" });
+export const listConsultationsByDoctor = async (
+	doctorId: number,
+	options?: { date?: string; limit?: number; status?: string }
+): Promise<ConsultationSummary[]> => {
+	const params = new URLSearchParams();
+	if (options?.date) params.set("date", options.date);
+	if (options?.limit) params.set("limit", String(options.limit));
+	if (options?.status) params.set("status", options.status);
+	const query = params.toString() ? `?${params.toString()}` : "";
+	const response = await api(`${BASE_PATH}/doctor/${doctorId}${query}`, { method: "GET" });
 	if (!response.ok) {
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}

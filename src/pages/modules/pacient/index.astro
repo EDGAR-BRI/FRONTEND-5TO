@@ -17,14 +17,13 @@ try {
 	}
 
 	const json = await response.json();
-	const patients = Array.isArray(json?.data) ? json.data : [];
+	const patient = json?.data;
 
-	if (patients.length === 0) {
+	if (!patient || patient.active === false) {
 		return Astro.redirect('/no-encontrado');
 	}
 
-	const primaryPatient = patients.find((p: any) => p?.active !== false) || patients[0];
-	return Astro.redirect(`/modules/pacient/${primaryPatient.id}/overview`);
+	return Astro.redirect(`/modules/pacient/${patient.id}/overview`);
 } catch (error) {
 	console.error('[pacient/index] Error resolving patient by user:', error);
 	return Astro.redirect('/error-servidor');
