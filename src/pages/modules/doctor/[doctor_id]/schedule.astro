@@ -31,7 +31,7 @@ if (Number.isFinite(userId) && userId > 0) {
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 flex-1">
       <DoctorSchedule doctorId={doctorId} client:visible />
 
-      <PatientsOfDay doctorId={doctorId} client:visible />
+    <PatientsOfDay doctorId={userId} client:visible />
     </div>
   </main>
 </MainLayout>
