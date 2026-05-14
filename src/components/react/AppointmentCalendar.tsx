@@ -399,15 +399,26 @@ export default function AppointmentCalendar({
     openModal()
   }
 
+  const statusStyles: Record<string, React.CSSProperties> = {
+    Pendiente: { backgroundColor: '#f59e0b', color: '#ffffff' },
+    Confirmada: { backgroundColor: '#10b981', color: '#ffffff' },
+    Cancelada: { backgroundColor: '#f43f5e', color: '#ffffff' },
+    Finalizada: { backgroundColor: '#3b82f6', color: '#ffffff' },
+  }
+
   const aplicarEstilosEvento = (evento: EventoCalendario) => {
     const defaultClasses: Record<string, string> = {
-      Pendiente: 'bg-amber-500', Confirmada: 'bg-emerald-500', Cancelada: 'bg-rose-500', Finalizada: 'bg-blue-500',
+      Pendiente: '!bg-amber-500 !text-white',
+      Confirmada: '!bg-emerald-500 !text-white',
+      Cancelada: '!bg-rose-500 !text-white',
+      Finalizada: '!bg-blue-500 !text-white',
     }
     const map = statusClassByEstado ?? defaultClasses
-    const bgClass = map[evento.estado] ?? 'bg-slate-500'
+    const cls = map[evento.estado] ?? '!bg-slate-500 !text-white'
 
     return {
-      className: `${bgClass} text-white border-none rounded-md px-2 py-1 text-xs font-semibold shadow-sm`,
+      className: `${cls} border-none rounded-md px-2 py-1 text-xs font-semibold shadow-sm`,
+      style: statusStyles[evento.estado] ?? { backgroundColor: '#64748b', color: '#ffffff' },
     }
   }
 

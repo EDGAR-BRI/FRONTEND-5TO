@@ -95,14 +95,6 @@ export function PatientList({
 							className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 focus:border-[#1e3a8a] transition-all"
 						/>
 					</div>
-					<div className="flex gap-3 w-full sm:w-auto">
-						<button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-							Filtros
-						</button>
-						<button className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-white bg-[#1e3a8a] rounded-lg hover:bg-blue-800 transition-colors shadow-sm">
-							+ Nueva Cita
-						</button>
-					</div>
 				</div>
 
 				<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
