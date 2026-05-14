@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  FaCalendarDays,
-  FaClock,
-  FaFileLines,
-  FaCircleCheck,
-  FaCircleInfo,
-} from 'react-icons/fa6';
+import { FaCalendarDays, FaClock, FaLocationDot, FaFileLines, FaCircleCheck, FaCircleInfo } from 'react-icons/fa6';
 import { ModalTrigger } from '../primary/ModalTrigger';
 import { Button } from '../primary/Button';
 import StaticCard from '../primary/StaticCard';
@@ -17,54 +11,27 @@ export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       try {
-        // 1. Buscamos al paciente actual para saber cuál es su userId
-        const currentPatientRes = await api(`/medical/patient/${patientId}`);
-        if (!currentPatientRes.ok) throw new Error('Patient not found');
-        const currentPatientJson = await currentPatientRes.json();
-        const currentPatient = currentPatientJson.data;
-        const linkedUserId = currentPatient.user?.id || currentPatient.userId;
-
-        if (!linkedUserId) {
+        const res = await api(`/scheduling/appointment/patient/${patientId}`);
+        if (res.ok) {
+          const json = await res.json();
+          const arr = Array.isArray(json.data) ? json.data : [];
+          // Hacemos una copia del array [...arr] antes de usar .sort() para evitar crasheos de React
+          const sorted = [...arr].sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+          setAppointments(sorted);
+        } else {
           setAppointments([]);
-          return;
         }
-
-        // 2. Buscamos TODOS los pacientes vinculados a ese userId (Grupo Familiar)
-        const linkedPatientsRes = await api(`/medical/patient/user/${linkedUserId}`);
-        const linkedPatientsJson = linkedPatientsRes.ok ? await linkedPatientsRes.json() : null;
-        const linkedRaw = linkedPatientsJson?.data;
-        const linkedPatients = Array.isArray(linkedRaw) ? linkedRaw : linkedRaw ? [linkedRaw] : [currentPatient];
-
-        // 3. Traemos las citas de todos ellos
-        const appointmentResponses = await Promise.all(
-          linkedPatients.map((patient: any) => api(`/scheduling/appointment/patient/${patient.id}`))
-        );
-
-        const appointmentJsonList = await Promise.all(
-          appointmentResponses
-            .filter((res) => res.ok)
-            .map((res) => res.json())
-        );
-
-        const allAppointments = appointmentJsonList.flatMap((item) =>
-          Array.isArray(item?.data) ? item.data : []
-        );
-
-        // Opcional: Podrías ordenar las citas por fecha más reciente
-        allAppointments.sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
-
-        setAppointments(allAppointments);
       } catch (error) {
-        console.error("Error fetching grouped appointments:", error);
+        console.error('Error al traer citas:', error);
+        setAppointments([]);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchAppointments();
+    loadData();
   }, [patientId]);
 
   if (isLoading) return (
@@ -96,7 +63,7 @@ export const MedicalAppointments = ({ patientId }: { patientId: string }) => {
 };
 
 const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
-  const specialty = appointment.doctor?.specialty?.name || 'Medicina General';
+  const specialty = appointment.doctor?.specialty?.name || 'General';
   const doctorName = appointment.doctor?.user?.name || 'No asignado';
   const statusName = appointment.status?.name || 'Programada';
   const isCompleted = statusName === 'Atendido' || statusName === 'Completada' || statusName === 'Finalizada';
@@ -104,9 +71,6 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
   const appointmentDate = new Date(appointment.date_time);
   const fecha = appointmentDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   const hora = appointmentDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-
-  // Agregué el nombre del paciente para que se sepa de quién es la cita
-  const patientName = appointment.patient?.name || appointment.patient?.user?.name || 'Paciente';
 
   return (
     <StaticCard className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white hover:border-blue-200 transition-colors">
@@ -127,10 +91,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1 flex items-center gap-1 font-medium">
-            Dr(a). {doctorName}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">
-            Paciente: <span className="font-semibold text-slate-600">{patientName}</span>
+            Dr(a): {doctorName}
           </p>
         </div>
       </div>
@@ -173,20 +134,14 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
                   <p className="text-sm font-semibold text-slate-700">{doctorName}</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Paciente</label>
-                  <p className="text-sm font-semibold text-slate-700">{patientName}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Fecha Programada</label>
                   <p className="text-sm font-semibold text-slate-700">{fecha}</p>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Hora</label>
-                  <p className="text-sm font-semibold text-slate-700">{hora}</p>
-                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Hora</label>
+                <p className="text-sm font-semibold text-slate-700">{hora}</p>
               </div>
 
               <div className={`p-4 rounded-2xl border flex gap-3 ${isCompleted ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>
@@ -196,7 +151,7 @@ const AppointmentDetailModal = ({ appointment }: { appointment: any }) => {
                   <FaCircleInfo className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
                 )}
                 <p className={`text-[11px] leading-relaxed font-medium ${isCompleted ? 'text-emerald-700' : 'text-amber-700'}`}>
-                  {isCompleted ? 'Esta consulta ya fue procesada y se encuentra en el historial.' : 'Recuerde llegar 15 minutos antes con su identificación vigente y comprobante si aplica.'}
+                  {isCompleted ? 'Esta consulta ya fue procesada y se encuentra en su historial.' : 'Recuerde llegar 15 minutos antes con su identificación vigente.'}
                 </p>
               </div>
             </div>
