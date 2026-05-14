@@ -2,9 +2,6 @@ export type PatientInfo =
 {
     patientId?: number;
 
-    ci: string;
-    name: string;
-    last_name: string;
     sex: 'MALE' | 'FEMALE';
     birth_date: Date;
 

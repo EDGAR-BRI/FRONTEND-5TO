@@ -29,7 +29,7 @@ import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import { getPatients } from '@/lib/services/medical/patient/patient.service'
 import { getAppointmentTypes } from '@/lib/services/scheduling/appointment-type/appointment_type.service'
 import { createAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
-import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
+import type { DoctorDetail } from '@/lib/services/medical/doctor/doctor.interface'
 import type { Patient } from '@/lib/services/medical/patient/patient.interface'
 import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
@@ -39,7 +39,7 @@ import type { SelectOption } from '@/components/react/primary/Select'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DatePreset = 'this_week' | 'this_month' | 'weekday' | 'specific'
-export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'any' | 'specific'
+export type TimeSlot = 'morning' | 'afternoon' | 'evening'
 
 const WEEKDAYS: SelectOption[] = [
     { value: '1', label: 'Lunes' },
@@ -149,7 +149,7 @@ export default function AppointmentForm({
 }: AppointmentFormProps) {
 
     // ── Remote data ──────────────────────────────────────────────────────────
-    const [doctors, setDoctors] = useState<DoctorSchedConfigOption[]>([])
+    const [doctors, setDoctors] = useState<DoctorDetail[]>([])
     const [patients, setPatients] = useState<Patient[]>([])
     const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([])
     const [dataLoading, setDataLoading] = useState(true)
@@ -179,16 +179,16 @@ export default function AppointmentForm({
     }, [])
 
     const specialtyOptions: SelectOption[] = useMemo(() => {
-        const seen = new Set<string>()
+        const seen = new Set<number>()
         const opts: SelectOption[] = [{ value: '', label: 'Cualquiera' }]
         doctors
             .filter(d => {
-                if (seen.has(d.specialty.name)) return false
-                seen.add(d.specialty.name)
+                if (seen.has(d.specialty.id)) return false
+                seen.add(d.specialty.id)
                 return true
             })
             .sort((a, b) => a.specialty.name.localeCompare(b.specialty.name))
-            .forEach(d => opts.push({ value: d.specialty.name, label: d.specialty.name }))
+            .forEach(d => opts.push({ value: d.specialty.id, label: d.specialty.name }))
         return opts
     }, [doctors])
 
@@ -267,9 +267,8 @@ export default function AppointmentForm({
     }, [datePreset, specificDate, selectedWeekday, selectedDateFromList])
 
     // ── Hora ─────────────────────────────────────────────────────────────────
-    const [timeSlot, setTimeSlot] = useState<TimeSlot>('specific')
+    const [timeSlot, setTimeSlot] = useState<TimeSlot>('morning')
     const [selectedHourFromList, setSelectedHourFromList] = useState('')
-    const [specificHour, setSpecificHour] = useState('')
 
     const doctorTimeRange = useMemo(() => {
         if (!doctorSchedule || doctorSchedule.length === 0 || !resolvedDate) return null
@@ -331,16 +330,14 @@ export default function AppointmentForm({
     }, [timeSlot, resolvedDate, doctorTimeRange, doctorAppointments])
 
     const resolvedHour = useMemo(() => {
-        if (timeSlot === 'any') return 'Cualquiera'
-        if (timeSlot === 'specific') return specificHour
         return selectedHourFromList
-    }, [timeSlot, specificHour, selectedHourFromList])
+    }, [selectedHourFromList])
 
     // ── Doctor ↔ Especialidad ────────────────────────────────────────────────
     const filteredDoctorOptions: SelectOption[] = useMemo(() => {
         if (!especialidad) return doctorOptionsAll
         return doctors
-            .filter(d => d.specialty.name === String(especialidad))
+            .filter(d => d.specialty.id === Number(especialidad))
             .map(d => ({ value: d.id, label: `${d.user.name} - ${d.user.ci}` }))
     }, [doctors, doctorOptionsAll, especialidad])
 
@@ -348,7 +345,7 @@ export default function AppointmentForm({
         setEspecialidad(val)
         if (val && doctorId) {
             const doc = doctors.find(d => d.id === Number(doctorId))
-            if (doc && doc.specialty.name !== String(val)) {
+            if (doc && doc.specialty.id !== Number(val)) {
                 setDoctorId('')
             }
         }
@@ -358,7 +355,7 @@ export default function AppointmentForm({
         setDoctorId(val)
         if (val) {
             const doc = doctors.find(d => d.id === Number(val))
-            if (doc) setEspecialidad(doc.specialty.name)
+            if (doc) setEspecialidad(doc.specialty.id)
         }
         onDoctorChange?.(val)
     }, [doctors, onDoctorChange])
@@ -374,7 +371,6 @@ export default function AppointmentForm({
     const handleTimeSlotChange = (slot: TimeSlot) => {
         setTimeSlot(slot)
         setSelectedHourFromList('')
-        setSpecificHour('')
     }
 
     // ── Validation ───────────────────────────────────────────────────────────
@@ -397,7 +393,6 @@ export default function AppointmentForm({
         const dateObj = new Date(dateTimeString);
         const now = new Date();
 
-        // Validaciones de fecha pasada 
         if (resolvedHour === 'Cualquiera') {
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
@@ -422,7 +417,8 @@ export default function AppointmentForm({
             // Enviamos a la BD
             await createAppointment({
                 patientId: Number(patientId),
-                doctorId: Number(doctorId),
+                doctorId: selectedDoctor ? Number(selectedDoctor.id) : undefined,
+                specialtyId: especialidad ? Number(especialidad) : undefined,
                 date_time: dateTimeUTC,
                 reson_visit: motivo || undefined,
                 statusId: 1,
@@ -607,8 +603,7 @@ export default function AppointmentForm({
                             <Chip active={timeSlot === 'morning'} sub="7 – 12" onClick={() => handleTimeSlotChange('morning')}>🌅 Mañana</Chip>
                             <Chip active={timeSlot === 'afternoon'} sub="12 – 18" onClick={() => handleTimeSlotChange('afternoon')}>☀️ Tarde</Chip>
                             <Chip active={timeSlot === 'evening'} sub="18 – 21" onClick={() => handleTimeSlotChange('evening')}>🌆 Noche</Chip>
-                            <Chip active={timeSlot === 'any'} onClick={() => handleTimeSlotChange('any')}>🔄 Cualquiera</Chip>
-                            <Chip active={timeSlot === 'specific'} onClick={() => handleTimeSlotChange('specific')}>🕐 Específica</Chip>
+
                         </div>
 
                         {/* Indicador de horario del doctor */}
@@ -646,16 +641,6 @@ export default function AppointmentForm({
                             </div>
                         )}
 
-                        {/* Input hora específica */}
-                        {timeSlot === 'specific' && (
-                            <Field
-                                name="specificHour"
-                                type="time"
-                                placeholder="Ej: 10:30"
-                                value={specificHour}
-                                onChange={(e) => setSpecificHour(e.target.value)}
-                            />
-                        )}
                     </div>
 
                     {/* ── Motivo ── */}
