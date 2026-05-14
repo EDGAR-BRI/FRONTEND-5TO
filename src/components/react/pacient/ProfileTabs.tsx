@@ -105,7 +105,6 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
           email: email,
           main_phone: mainPhone,
           address: address,
-          // Añadidos al payload para que se guarden en Prisma
           sex: sex,
           nacionality: nationality,
           profession: profession,

@@ -1,11 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Field } from '@/components/react/primary/Field'
 import { Select } from '@/components/react/primary/Select'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { Modal } from '@/components/react/primary/Modal'
+import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
+import { CheckBox } from '@/components/react/primary/CheckBox' 
+
 import { useModal } from '@/hooks/UseModal'
 import { addPatientFromReception } from '@/lib/services/medical/patient/patient.service'
 import { addPatientInfo } from '@/lib/services/medical/info-patient/info_patient.service'
+
+import { createUser, listUsers } from '@/lib/services/User/user.service' 
+
 import type { IconType } from 'react-icons'
 import {
     FaCircleExclamation,
@@ -14,6 +20,7 @@ import {
     FaNotesMedical,
     FaPhone,
     FaUserCheck,
+    FaUserLock, 
 } from 'react-icons/fa6'
 
 // ─── Section Header ──────────────────────────────────────────────────────────
@@ -38,6 +45,12 @@ interface EmergencyContact {
     phone: string
 }
 
+export interface UserDto {
+    id: number;
+    name: string;
+    ci: string;
+}
+
 interface PatientForm {
     firstName: string
     lastName: string
@@ -60,6 +73,10 @@ interface PatientForm {
     alcoholUse: string
 
     emergencyContact: EmergencyContact
+
+    linkExistingUser: boolean;
+    selectedUserId: number | null;
+    tempPassword: string;
 }
 
 interface RegisterPatientFormProps {
@@ -69,6 +86,9 @@ interface RegisterPatientFormProps {
     createInfoPatientOnRegister?: boolean
     title?: string
     subtitle?: string
+    role?: string
+    currentUserId?: number
+    onSuccessCallback?: (newPatientId: number | string) => void
     onSuccess?: () => void
 }
 
@@ -79,6 +99,9 @@ const EMPTY_FORM: PatientForm = {
     allergies: '', chronicDiseases: '', currentMedications: '',
     previousSurgeries: '', smokingStatus: '', alcoholUse: '',
     emergencyContact: { name: '', relation: '', phone: '' },
+    linkExistingUser: false,
+    selectedUserId: null,
+    tempPassword: ''
 }
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(v => ({ value: v, label: v }))
@@ -109,12 +132,15 @@ export default function RegisterPatientForm({
     title = 'Registro de paciente',
     subtitle = 'Complete el formulario para registrar un nuevo paciente en el sistema.',
     onSuccess,
+    onSuccessCallback 
 }: RegisterPatientFormProps) {
     const [form, setForm] = useState<PatientForm>(EMPTY_FORM)
     const [isSaving, setIsSaving] = useState(false)
     const [globalError, setGlobalError] = useState<string | null>(null)
     const [errors, setErrors] = useState<Partial<Record<keyof PatientForm, string>>>({})
     const { isOpen: isSuccessOpen, openModal: openSuccess, closeModal: closeSuccess } = useModal(false)
+    
+    const [newlyCreatedPatientId, setNewlyCreatedPatientId] = useState<number | null>(null)
 
     const [users, setUsers] = useState<UserDto[]>([])
     const [isLoadingUsers, setIsLoadingUsers] = useState(false)
@@ -161,7 +187,6 @@ export default function RegisterPatientForm({
         if (!form.ci.trim()) e.ci = 'Requerido'
         else if (!hasLengthInRange(form.ci, 3, 30)) e.ci = 'La cédula debe tener entre 3 y 30 caracteres'
 
-        // Si se va a crear usuario (no enlazar), backend exige CI numérica 6-9.
         if (!linkedUserId && !hideUserLinking && !form.linkExistingUser) {
             if (!/^[0-9]+$/.test(form.ci.trim())) {
                 e.ci = 'Para crear usuario, la cédula debe contener solo números'
@@ -209,12 +234,11 @@ export default function RegisterPatientForm({
             if (linkedUserId) {
                 patientUserId = linkedUserId;
             } else if (!hideUserLinking && !form.linkExistingUser) {
-                // Flow 2: Create new user
                 const newUser = await createUser({
                     ci: form.ci,
                     name: `${form.firstName} ${form.lastName}`,
                     password: form.tempPassword,
-                    roleId: 4 // PACIENTE
+                    roleId: 4 
                 });
                 patientUserId = newUser.id;
                 setUsers(prev => [...prev, newUser]);
@@ -224,15 +248,13 @@ export default function RegisterPatientForm({
                 throw new Error("No se pudo obtener el ID del usuario para vincular al paciente.");
             }
 
-            // Create patient
-            const patient = await addPatient({
+            const patient = await addPatientFromReception({
                 userId: patientUserId,
                 ci: form.ci,
                 name: `${form.firstName} ${form.lastName}`
             });
 
             if (createInfoPatientOnRegister) {
-                // Create patient info only when this flow explicitly requires it
                 const birthDate = new Date(form.birthDate);
                 const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
 
@@ -256,8 +278,10 @@ export default function RegisterPatientForm({
                 });
             }
 
+            setNewlyCreatedPatientId(patient.id);
             openSuccess()
             onSuccess?.()
+            
         } catch (error: any) {
             console.error("Error during registration flow:", error)
             setGlobalError(error.message || "Ocurrió un error al registrar el paciente.")
@@ -270,6 +294,14 @@ export default function RegisterPatientForm({
         setForm(EMPTY_FORM)
         setErrors({})
         setGlobalError(null)
+    }
+
+    const handleProceedToOverview = () => {
+        if (onSuccessCallback && newlyCreatedPatientId) {
+            onSuccessCallback(newlyCreatedPatientId);
+        } else {
+            window.location.href = `/modules/pacient/${newlyCreatedPatientId}/overview`;
+        }
     }
 
     return (
@@ -527,10 +559,10 @@ export default function RegisterPatientForm({
                             <p className="text-cool-gray-50">CI: {form.ci}</p>
                         </div>
                     </div>
-                    <p>{familyMode ? 'El miembro familiar ha sido registrado y quedó vinculado al usuario principal del grupo.' : 'El paciente ha sido registrado exitosamente en el sistema. Puede agendar una cita para esta visita desde la agenda.'}</p>
+                    <p>{familyMode ? 'El miembro familiar ha sido registrado y quedó vinculado al usuario principal del grupo.' : 'El paciente ha sido registrado exitosamente en el sistema. Puede ver su perfil o agendar una cita.'}</p>
                     <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
                         <Button label="Registrar otro" variant={ButtonTheme.SECONDARY} size="sm" onClick={() => { closeSuccess(); handleReset() }} />
-                        <Button label="Agendar cita" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => window.location.href = window.location.pathname.replace('/register-patient', '/appointments')}  />
+                        <Button label="Ir al Perfil" variant={ButtonTheme.PRIMARY} size="sm" onClick={handleProceedToOverview}  />
                     </div>
                 </div>
             </Modal>
