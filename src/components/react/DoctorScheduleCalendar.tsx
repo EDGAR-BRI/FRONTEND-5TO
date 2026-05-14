@@ -382,7 +382,17 @@ export default function DoctorScheduleCalendar({
 
             <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
               <Button label="Cerrar" variant={ButtonTheme.GHOST} size="sm" onClick={closeAndClear} />
-              <Button label="Gestionar pago" variant={ButtonTheme.PRIMARY} size="sm" onClick={closeAndClear} />
+              <Button label="Gestionar pago" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => {
+                closeAndClear();
+                const url = new URL(window.location.href);
+                const pathParts = url.pathname.split('/').filter(Boolean);
+                if (pathParts.includes('receptionist')) {
+                    pathParts[pathParts.length - 1] = 'invoice';
+                    url.pathname = '/' + pathParts.join('/');
+                    url.searchParams.set('appointmentId', selectedApt.id.toString());
+                    window.location.href = url.toString();
+                }
+              }} />
             </div>
           </div>
         )}

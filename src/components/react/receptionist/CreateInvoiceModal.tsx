@@ -23,6 +23,7 @@ interface Props {
     onClose: () => void;
     receptionistId: number;
     onSuccess: (invoice: Invoice) => void;
+    initialAppointmentId?: number;
 }
 
 interface PaymentRow {
@@ -31,7 +32,7 @@ interface PaymentRow {
     igtf_amount: number;
 }
 
-export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess }: Props) {
+export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess, initialAppointmentId }: Props) {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null);
@@ -72,7 +73,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
             setLoading(true);
             try {
                 const [apps, methods, rates] = await Promise.all([
-                    getAppointments({ range: 'today', statusId: 1}), 
+                    getAppointments({ statusId: 1 }), 
                     getPaymentMethods(),
                     getExchangeRates()
                 ]);
@@ -80,6 +81,13 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                 setPaymentMethods(methods.filter(m => m.is_active));
                 const activeRate = rates.find(r => r.is_active) || rates[0];
                 setExchangeRate(activeRate);
+
+                if (initialAppointmentId) {
+                    const match = apps.find(a => a.id === initialAppointmentId);
+                    if (match) {
+                        setSelectedAppointmentId(initialAppointmentId);
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching invoice data:', error);
             } finally {
@@ -213,6 +221,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess 
                 receptionistId,
                 exchangeRateId: exchangeRate.id,
                 appointmentId: selectedAppointment.id,
+                statusId: 2,
                 payments: payments.map(p => ({
                     paymentMethodId: p.paymentMethodId,
                     amount_paid: p.amount_paid,

@@ -5,6 +5,7 @@ import { convertirAFechaISO } from '@/utils/helper_functions';
 import { printInvoice } from '@/utils/printInvoice';
 
 const statusBadgeStyles = (status: string) => {
+    if (status === 'Pagada') return { bg: 'bg-primary-800/20', text: 'text-primary-900', border: 'border-primary-700/30' };
     if (status === 'Emitida') return { bg: 'bg-primary-200/30', text: 'text-primary-700', border: 'border-primary-300' };
     if (status === 'Pendiente') return { bg: 'bg-primary-300/25', text: 'text-primary-800', border: 'border-primary-400' };
     return { bg: 'bg-error/15', text: 'text-error', border: 'border-error/20' };
@@ -48,9 +49,6 @@ export function InvoicesDataTable({ facturas }: { facturas?: Invoice[] }) {
                         onClick={() => printInvoice(fac)}
                     >
                         Imprimir
-                    </button>
-                    <button className="text-error hover:text-red-700 font-medium transition-colors">
-                        Anular
                     </button>
                 </div>
             ),
