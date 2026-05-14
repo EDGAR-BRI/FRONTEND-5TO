@@ -55,7 +55,6 @@ export function InvoiceManagement({ receptionistId, initialInvoices }: Props) {
                     />
                 </div>
                 <div className="flex gap-3">
-                    <Button label="Exportar PDF" variant="secondary" />
                     <Button 
                         label="+ Nueva Factura" 
                         variant="primary"
@@ -63,7 +62,7 @@ export function InvoiceManagement({ receptionistId, initialInvoices }: Props) {
                     />
                 </div>
             </div>
-
+ 
             <InvoicesDataTable facturas={filteredInvoices} />
 
             <CreateInvoiceModal 
