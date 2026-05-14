@@ -6,7 +6,7 @@ import { DataTable, type Column } from "@/components/react/primary/DataTable";
 import { ModalTrigger } from "@/components/react/primary/ModalTrigger";
 import { Button, ButtonTheme } from "@/components/react/primary/Button";
 import { Alert } from "@/utils/alerts";
-import { createExchangeRate, deleteExchangeRate, getExchangeRates, updateExchangeRate, type ExchangeRate } from "@/lib/services/finance/exchange-rate/exchange_rate.service";
+import { createExchangeRate, getExchangeRates, updateExchangeRate, type ExchangeRate } from "@/lib/services/finance/exchange-rate/exchange_rate.service";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 const formatDate = (value: string) => new Date(value).toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" });
@@ -93,11 +93,11 @@ export default function ExchangeRatesDashboard() {
                         {({ close }) => <ExchangeRateForm rateItem={item} onSaved={reload} close={close} />}
                     </ModalTrigger> */}
                     <button className="text-error hover:text-red-700 text-sm font-medium" onClick={async () => {
-                        const confirmed = await Alert.confirm("Eliminar tasa", `¿Eliminar la tasa ${item.rate}?`);
+                        const confirmed = await Alert.confirm(`${item.is_active ? "Eliminar tasa" : 'Reactivar tasa'}`, (item.is_active ? `¿Eliminar la tasa ${item.rate}?` : `Reactivar la tasa ${item.rate}?`));
                         if (!confirmed) return;
-                        await deleteExchangeRate(item.id);
+                        await updateExchangeRate(item.id, {is_active: !item.is_active});
                         await reload();
-                    }}>Eliminar</button>
+                    }}>{item.is_active ? 'Eliminar' : 'Reactivar'}</button>
                 </div>
             ),
         },

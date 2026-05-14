@@ -39,7 +39,7 @@ export const updateExchangeRate = async (id: number, payload: UpdateExchangeRate
 
 export const deleteExchangeRate = async (id: number): Promise<ExchangeRate> => {
     const response = await api(`${BASE_PATH}/${id}`, {
-        method: "DELETE",
+        method: "PUT",
     });
     if (!response.ok) {
         throw new Error(await readEnvelopeErrorMessage(response));
