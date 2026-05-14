@@ -13,13 +13,13 @@ export const EmergencyContact = ({ initialData }: EmergencyContactProps) => {
   const surgeries = info?.previous_surgeries || 'Sin registros';
 
   return (
-    <StaticCard className="w-full rounded-[24px] border border-slate-200 bg-white/90 p-6 @container">
+    <StaticCard className="w-full rounded-3xl h-full border border-slate-200 bg-white/90 p-6 @container">
       <h2 className="mb-4 flex items-center gap-2 text-sm font-black text-slate-900">
         <FaShieldHalved className="h-4 w-4 text-amber-500" />
         Datos complementarios
       </h2>
 
-      <div className="grid grid-cols-2 gap-4 @[250px]:grid-cols-1">
+      <div className="flex flex-wrap flex-col gap-6 @sm:flex-row">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 shadow-sm">
           <div className="rounded-lg border border-slate-100 bg-white p-2 shadow-sm">
             <FaPhone className="h-4 w-4 text-slate-400" />
