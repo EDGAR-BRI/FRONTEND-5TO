@@ -11,7 +11,7 @@ interface Appointment {
     id_paciente: string;
     hora: string;
     motivo: string;
-    estado: 'programada' | 'completada' | 'cancelada';
+    estado: 'programada' | 'en_progreso' | 'completada' | 'cancelada';
 }
 
 export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?: string }> = ({ citas, doctorId = "default" }) => {
@@ -22,19 +22,28 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
     // Memorizamos el filtrado para no recalcular en cada renderizado
     const citasFiltradas = useMemo(() => {
         if (activeTab === 'pendientes') {
-            return citas.filter(c => c.estado === 'programada');
+            return citas.filter(c => c.estado === 'programada' || c.estado === 'en_progreso');
         }
         return citas.filter(c => c.estado === 'completada');
     }, [citas, activeTab]);
 
     // Función principal para la redirección después de capturar la factura
+    const goToConsultation = (consultationId: number) => {
+        const consultationUrl = `/modules/doctor/${doctorId}/consultation/${consultationId}`;
+        window.location.replace(consultationUrl);
+    };
+
     const handleStartConsultation = async () => {
         if (!selectedAppointment) return;
 
+        if (selectedAppointment.estado === 'en_progreso') {
+            goToConsultation(selectedAppointment.id);
+            return;
+        }
+
         try {
             await startConsultation(selectedAppointment.id);
-            const consultationUrl = `/modules/doctor/${doctorId}/consultation/${selectedAppointment.id}`;
-            window.location.assign(consultationUrl);
+            goToConsultation(selectedAppointment.id);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Error desconocido";
             Alert.error("No se pudo iniciar la consulta", message);
@@ -93,9 +102,13 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
                                     <span className="text-slate-500 truncate max-w-[140px]">{cita.motivo}</span>
                                 </div>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary-50 transition-colors">
-                                <FaChevronRight className="text-slate-400 w-3 h-3 group-hover:text-primary-600 transition-colors" />
-                            </div>
+                            {cita.estado === 'en_progreso' ? (
+                                <span className="text-xs font-semibold text-primary-700 bg-primary-50 border border-primary-100/60 px-3 py-1.5 rounded-full">Continuar consulta</span>
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary-50 transition-colors">
+                                    <FaChevronRight className="text-slate-400 w-3 h-3 group-hover:text-primary-600 transition-colors" />
+                                </div>
+                            )}
                         </button>
                     ))
                 )}

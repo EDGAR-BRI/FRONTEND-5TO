@@ -22,7 +22,7 @@ const ItemSelector = ({ items, onSelect, placeholder, labelKey = 'name', renderE
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
-    const filtered = items.filter((item: any) => item[labelKey].toLowerCase().includes(search.toLowerCase()));
+    const filtered = items.filter((item: any) => String(item?.[labelKey] ?? "").toLowerCase().includes(search.toLowerCase()));
 
     return (
         <div className="relative w-full">
@@ -283,6 +283,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
                         <ItemSelector 
                             items={diagnosesList} 
                             placeholder="Buscar diagnóstico..." 
+                            labelKey="description"
                             renderExtra={(item: any) => <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">{item.code}</span>}
                             onSelect={(item: any) => {
                                 if(!diagnoses.find(d => d.id === item.id)) {
@@ -468,6 +469,7 @@ export default function ConsultationForm({ doctorId, consultationId, invoiceCode
             <div className="fixed bottom-0 left-0 right-0 lg:pl-64 bg-white border-t border-slate-200 p-4 flex justify-end gap-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
                 <a 
                     href={`/modules/doctor/${doctorId}/schedule`}
+                    data-astro-reload
                     className="px-6 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors"
                 >
                     Cancelar
