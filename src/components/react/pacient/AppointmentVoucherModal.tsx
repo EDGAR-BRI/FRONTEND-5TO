@@ -11,7 +11,7 @@ interface AppointmentVoucherModalProps {
         specialty: string;
         date: string;
         time: string;
-        price: number;
+        price: number | string;
     } | null;
 }
 
@@ -23,27 +23,38 @@ export default function AppointmentVoucherModal({ isOpen, onClose, appointmentDa
         window.print();
     };
 
+    const safePrice = Number(appointmentData.price || 0).toFixed(2);
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in print:bg-transparent print:backdrop-blur-none">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in print:bg-transparent print:backdrop-blur-none print:p-0">
             
-            {/* ESTILOS PARA IMPRESIÓN: Oculta el fondo y centra el comprobante */}
+            {/* ESTILOS PARA IMPRESIÓN REPARADOS */}
             <style>{`
                 @media print {
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background: white;
+                    }
                     body * {
                         visibility: hidden;
                     }
-                    #printable-voucher, #printable-voucher * {
-                        visibility: visible;
-                    }
+                    /* Forzamos a la tarjeta a irse a la esquina superior izquierda sin trucos de transform que rompen el papel */
                     #printable-voucher {
-                        position: absolute;
-                        left: 50%;
-                        top: 0;
-                        transform: translate(-50%, 0);
-                        width: 100%;
-                        max-width: 500px;
+                        visibility: visible;
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        margin: 0 !important;
+                        transform: none !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        border: none !important;
                         box-shadow: none !important;
-                        border: 1px solid #e2e8f0;
+                        padding: 2cm !important; /* Espacio para que no quede pegado al borde del papel */
+                    }
+                    #printable-voucher * {
+                        visibility: visible;
                     }
                     .no-print {
                         display: none !important;
@@ -67,7 +78,7 @@ export default function AppointmentVoucherModal({ isOpen, onClose, appointmentDa
                     <div className="border-b border-dashed border-slate-200 pb-4">
                         <span className="block text-slate-500 text-xs mb-1 uppercase tracking-wider font-semibold">Datos del Paciente</span>
                         <p className="font-bold text-slate-800 flex items-center gap-2">
-                            <FaUser className="text-slate-400" /> {appointmentData.patientName}
+                            <FaUser className="text-slate-400" /> {appointmentData.patientName || 'Paciente No Especificado'}
                         </p>
                     </div>
 
@@ -75,26 +86,26 @@ export default function AppointmentVoucherModal({ isOpen, onClose, appointmentDa
                     <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
                         <div>
                             <span className="block text-slate-500 text-xs mb-1">Especialidad</span>
-                            <p className="font-medium text-slate-900 flex items-center gap-1.5"><FaUserDoctor className="text-slate-400"/> {appointmentData.specialty}</p>
+                            <p className="font-medium text-slate-900 flex items-center gap-1.5"><FaUserDoctor className="text-slate-400"/> {appointmentData.specialty || '-'}</p>
                         </div>
                         <div>
                             <span className="block text-slate-500 text-xs mb-1">Doctor</span>
-                            <p className="font-medium text-slate-900">{appointmentData.doctorName}</p>
+                            <p className="font-medium text-slate-900">{appointmentData.doctorName || 'No asignado'}</p>
                         </div>
                         <div>
                             <span className="block text-slate-500 text-xs mb-1">Fecha</span>
-                            <p className="font-medium text-slate-900 flex items-center gap-1.5"><FaCalendarDay className="text-slate-400"/> {appointmentData.date}</p>
+                            <p className="font-medium text-slate-900 flex items-center gap-1.5"><FaCalendarDay className="text-slate-400"/> {appointmentData.date || '-'}</p>
                         </div>
                         <div>
                             <span className="block text-slate-500 text-xs mb-1">Hora</span>
-                            <p className="font-medium text-slate-900 flex items-center gap-1.5"><FaRegClock className="text-slate-400"/> {appointmentData.time}</p>
+                            <p className="font-medium text-slate-900 flex items-center gap-1.5"><FaRegClock className="text-slate-400"/> {appointmentData.time || '-'}</p>
                         </div>
                     </div>
 
                     {/* Total a pagar */}
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex justify-between items-center mt-2">
                         <span className="font-bold text-slate-700">Monto a cancelar en caja:</span>
-                        <span className="text-2xl font-black text-emerald-600">${appointmentData.price.toFixed(2)}</span>
+                        <span className="text-2xl font-black text-emerald-600">${safePrice}</span>
                     </div>
                 </div>
 

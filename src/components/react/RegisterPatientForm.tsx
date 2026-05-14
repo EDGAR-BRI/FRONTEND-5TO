@@ -25,7 +25,7 @@ import {
 function SectionHeader({ icon: Icon, title, subtitle }: { icon: IconType; title: string; subtitle?: string }) {
     return (
         <div className="flex items-center gap-3 border-b border-primary-100 pb-3 mb-5">
-            <div className="w-9 h-9 rounded-lg bg-primary-200 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-primary-200 flex items-center justify-center shrink-0">
                 <Icon className="text-primary-600 text-sm" />
             </div>
             <div>
@@ -96,8 +96,8 @@ const RELATION_OPTIONS = [
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface RegisterPatientProps {
     role?: 'receptionist' | 'pacient'
-    currentUserId?: number // Si es paciente, le pasamos su ID de usuario logueado
-    onSuccessCallback?: (patientId: number) => void // Para redirigir al Overview después
+    currentUserId?: number 
+    onSuccessCallback?: (patientId: number) => void 
 }
 
 const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
@@ -115,7 +115,6 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
     const [users, setUsers] = useState<UserDto[]>([])
     const [isLoadingUsers, setIsLoadingUsers] = useState(false)
 
-    // Solo buscamos usuarios si es recepcionista
     useEffect(() => {
         if (role === 'receptionist') {
             const fetchUsers = async () => {
@@ -141,14 +140,19 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
 
     const validate = () => {
         const e: Partial<Record<keyof PatientForm, string>> = {}
+        const hasLengthInRange = (val: string, min: number, max: number) => val.trim().length >= min && val.trim().length <= max
+        const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
+
         if (!form.firstName.trim()) e.firstName = 'Requerido'
         if (!form.lastName.trim()) e.lastName = 'Requerido'
         if (!form.ci.trim()) e.ci = 'Requerido'
+        else if (!hasLengthInRange(form.ci, 3, 30)) e.ci = 'La cédula debe tener entre 3 y 30 caracteres'
+        
         if (!form.birthDate) e.birthDate = 'Requerido'
         if (!form.gender) e.gender = 'Requerido'
         if (!form.phone.trim()) e.phone = 'Requerido'
+        else if (!hasLengthInRange(form.phone, 6, 20)) e.phone = 'Debe tener entre 6 y 20 caracteres'
 
-        // Validaciones EXCLUSIVAS de recepcionista
         if (role === 'receptionist') {
             if (form.linkExistingUser && !form.selectedUserId) {
                 e.selectedUserId = 'Debes seleccionar un usuario'
@@ -157,18 +161,12 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                 e.tempPassword = 'La contraseña es requerida'
             }
         }
-        else if (!hasLengthInRange(form.ci, 3, 30)) e.ci = 'La cédula debe tener entre 3 y 30 caracteres'
-
-        if (!form.birthDate) e.birthDate = 'Requerido'
-        if (!form.gender) e.gender = 'Requerido'
 
         if (form.bloodType.trim() && !hasLengthInRange(form.bloodType, 1, 10)) e.bloodType = 'Debe tener entre 1 y 10 caracteres'
         if (form.nationality.trim() && !hasLengthInRange(form.nationality, 2, 100)) e.nationality = 'Debe tener entre 2 y 100 caracteres'
-        if (form.phone.trim() && !hasLengthInRange(form.phone, 6, 20)) e.phone = 'Debe tener entre 6 y 20 caracteres'
         if (form.email.trim() && !isValidEmail(form.email.trim())) e.email = 'El email no es válido'
         if (form.address.trim() && !hasLengthInRange(form.address, 5, 500)) e.address = 'Debe tener entre 5 y 500 caracteres'
         if (form.city.trim() && !hasLengthInRange(form.city, 2, 100)) e.city = 'Debe tener entre 2 y 100 caracteres'
-
         if (form.allergies.trim() && !hasLengthInRange(form.allergies, 1, 5000)) e.allergies = 'Debe tener entre 1 y 5000 caracteres'
         if (form.chronicDiseases.trim() && !hasLengthInRange(form.chronicDiseases, 1, 5000)) e.chronicDiseases = 'Debe tener entre 1 y 5000 caracteres'
         if (form.currentMedications.trim() && !hasLengthInRange(form.currentMedications, 1, 5000)) e.currentMedications = 'Debe tener entre 1 y 5000 caracteres'
@@ -186,18 +184,16 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
         try {
             let patientUserId = form.selectedUserId;
 
-            // Lógica de usuario según el ROL
             if (role === 'pacient') {
                 if (!currentUserId) throw new Error("ID de usuario no proporcionado. Debes iniciar sesión.");
-                patientUserId = currentUserId; // El usuario es él mismo
+                patientUserId = currentUserId; 
             } else {
-                // Lógica de Recepcionista
                 if (!form.linkExistingUser) {
                     const newUser = await createUser({
                         ci: form.ci,
                         name: `${form.firstName} ${form.lastName}`,
                         password: form.tempPassword,
-                        roleId: 4 // PACIENTE
+                        roleId: 4 
                     });
                     patientUserId = newUser.id;
                     setUsers(prev => [...prev, newUser]);
@@ -208,25 +204,21 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                 throw new Error("No se pudo obtener el ID del usuario para vincular al paciente.");
             }
 
-            // 1. Crear Paciente en BD (O buscarlo si ya existe)
+            // 1. Crear Paciente en BD
             const patient = await addPatient({
                 userId: patientUserId,
-            const patient = await addPatientFromReception({
                 ci: form.ci,
                 name: `${form.firstName} ${form.lastName}`,
-            })
-            setCreatedPatientId(patient.id); //
+            });
 
-            if (createInfoPatientOnRegister) {
-                // Create patient info only when this flow explicitly requires it
-                const birthDate = new Date(form.birthDate);
-                const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
+            setCreatedPatientId(patient.id);
+
+            // 2. Guardar el resto de la Info Médica
+            const birthDate = new Date(form.birthDate);
+            const sex: 'MALE' | 'FEMALE' = form.gender === 'M' ? 'MALE' : 'FEMALE';
 
             await addPatientInfo({
                 patientId: patient.id,
-                ci: form.ci,
-                name: form.firstName,
-                last_name: form.lastName,
                 sex,
                 birth_date: birthDate,
                 blood_type: form.bloodType || null,
@@ -241,7 +233,8 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                 previous_surgeries: form.previousSurgeries || null
             });
 
-            openSuccess()
+            openSuccess();
+
         } catch (error: any) {
             console.error("Error during registration flow:", error);
             setGlobalError(error.message || "Ocurrió un error al registrar los datos.");
@@ -256,15 +249,13 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
         setGlobalError(null)
     }
 
-
     return (
         <div className="flex flex-col gap-6">
 
-            {/* Si es paciente, le mostramos un banner de bienvenida / onboarding */}
             {role === 'pacient' && (
-                <div className="bg-primary-50 border border-primary-200 text-primary-800 p-4 rounded-xl mb-2">
-                    <h2 className="text-lg font-bold mb-1">¡Bienvenido a la Clínica! 👋</h2>
-                    <p className="text-sm opacity-90">Para poder agendar citas y brindarte la mejor atención, necesitamos que completes tu ficha médica por única vez. Esto tomará solo unos minutos.</p>
+                <div className="bg-sky-50 border border-sky-200 text-sky-900 p-5 rounded-2xl mb-2 shadow-sm">
+                    <h2 className="text-xl font-bold mb-1">¡Bienvenido a la Clínica! 👋</h2>
+                    <p className="text-sm opacity-90 font-medium">Para poder agendar citas y brindarte la mejor atención, necesitamos que completes tu ficha médica por única vez. Esto tomará solo unos minutos.</p>
                 </div>
             )}
 
@@ -280,7 +271,7 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                     <Field name="nationality" label="Nacionalidad" placeholder="Venezolano/a" value={form.nationality} onChange={e => set('nationality', e.target.value)} />
                 </div>
                 {Object.values(errors).some(Boolean) && (
-                    <p className="mt-3 text-xs text-error flex items-center gap-1">
+                    <p className="mt-4 text-xs font-bold text-error flex items-center gap-1 bg-red-50 p-2 rounded-lg w-fit border border-red-100">
                         <FaCircleExclamation /> Por favor completa los campos requeridos marcados con *.
                     </p>
                 )}
@@ -329,7 +320,6 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                 </div>
             </div>
 
-            {/* SOLO SE MUESTRA SI ES LA RECEPCIONISTA QUIEN LO USA */}
             {role === 'receptionist' && (
                 <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
                     <SectionHeader icon={FaUserLock} title="Vincular a Usuario Preexistente" subtitle="Selecciona un usuario preexistente o crea uno nuevo" />
@@ -369,7 +359,6 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                     </p>
                 )}
 
-                {/* Botones dinámicos según el rol */}
                 {role === 'receptionist' && <Button variant={ButtonTheme.GHOST} label="Limpiar formulario" onClick={handleReset} />}
 
                 <Button
@@ -400,14 +389,17 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
                     <p>
                         {role === 'pacient'
                             ? "Tus datos médicos se han guardado exitosamente. Ya puedes utilizar todas las funciones del portal."
-                            : "El paciente ha sido registrado exitosamente en el sistema. Puede agendar una cita para esta visita desde la agenda."}
+                            : "El paciente ha sido registrado exitosamente en el sistema. Puedes proceder a ver su perfil o agendar una cita."}
                     </p>
 
                     <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
                         {role === 'receptionist' ? (
                             <>
                                 <Button label="Registrar otro" variant={ButtonTheme.SECONDARY} size="sm" onClick={() => { closeSuccess(); handleReset() }} />
-                                <Button label="Agendar cita" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => window.location.href = window.location.pathname.replace('/register-patient', '/appointments')} />
+                                <Button label="Ir al Perfil" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => {
+                                    closeSuccess();
+                                    if (onSuccessCallback && createdPatientId !== null) onSuccessCallback(createdPatientId);
+                                }} />
                             </>
                         ) : (
                             <Button label="Ir a mi inicio" variant={ButtonTheme.PRIMARY} size="sm" onClick={() => {

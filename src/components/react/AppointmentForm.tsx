@@ -22,14 +22,14 @@ import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import { Field } from '@/components/react/primary/Field'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import StaticCard from '@/components/react/primary/StaticCard'
-import { FaCalendarPlus } from 'react-icons/fa6'
+import { Modal } from '@/components/react/primary/Modal' // <-- NUEVO IMPORT
+import { FaCalendarPlus, FaCircleQuestion, FaStethoscope } from 'react-icons/fa6'
 import AppointmentVoucherModal from '@/components/react/pacient/AppointmentVoucherModal'
 
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import { getPatients } from '@/lib/services/medical/patient/patient.service'
 import { getAppointmentTypes } from '@/lib/services/scheduling/appointment-type/appointment_type.service'
 import { createAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
-import type { DoctorDetail } from '@/lib/services/medical/doctor/doctor.interface'
 import type { Patient } from '@/lib/services/medical/patient/patient.interface'
 import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
@@ -149,7 +149,7 @@ export default function AppointmentForm({
 }: AppointmentFormProps) {
 
     // ── Remote data ──────────────────────────────────────────────────────────
-    const [doctors, setDoctors] = useState<DoctorDetail[]>([])
+    const [doctors, setDoctors] = useState<any[]>([])
     const [patients, setPatients] = useState<Patient[]>([])
     const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([])
     const [dataLoading, setDataLoading] = useState(true)
@@ -220,7 +220,9 @@ export default function AppointmentForm({
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
     
-    // 👇 Estados para el Voucher 
+    // 👇 Estados para Modales (Confirmación y Voucher)
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [pendingAppointmentData, setPendingAppointmentData] = useState<any>(null);
     const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
     const [voucherData, setVoucherData] = useState<any>(null);
 
@@ -258,13 +260,13 @@ export default function AppointmentForm({
     }, [externalDate])
 
     const resolvedDate = useMemo(() => {
-        if (datePreset === 'specific') return specificDate
+        if (datePreset === 'specific') return specificDate;
         if (datePreset === 'weekday') {
-            const day = WEEKDAYS.find(w => w.value === selectedWeekday)
-            return day ? day.label : ''
+            if (dateOptions.length > 0) return format(dateOptions[0], 'yyyy-MM-dd');
+            return '';
         }
-        return selectedDateFromList
-    }, [datePreset, specificDate, selectedWeekday, selectedDateFromList])
+        return selectedDateFromList;
+    }, [datePreset, specificDate, selectedDateFromList, dateOptions])
 
     // ── Hora ─────────────────────────────────────────────────────────────────
     const [timeSlot, setTimeSlot] = useState<TimeSlot>('morning')
@@ -306,7 +308,7 @@ export default function AppointmentForm({
             const occupiedStarts = doctorAppointments
                 .filter(apt => {
                     const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
-                    return cleanDate.startsWith(dateStr) && apt.status.name !== 'Cancelada'
+                    return cleanDate.startsWith(dateStr) && apt.status?.name !== 'Cancelada'
                 })
                 .map(apt => {
                     const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
@@ -382,10 +384,9 @@ export default function AppointmentForm({
         resolvedHour
     )
 
-    // ── Submit ───────────────────────────────────────────────────────────────
-    const handleSubmit = async () => {
+    // ── 1. PRE-SUBMIT (ABRE EL MODAL DE CONFIRMACIÓN) ────────────────────────
+    const handlePreSubmit = () => {
         if (!isValid) return
-        setLoading(true)
         setFeedback(null)
 
         const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
@@ -393,32 +394,57 @@ export default function AppointmentForm({
         const dateObj = new Date(dateTimeString);
         const now = new Date();
 
+        if (isNaN(dateObj.getTime())) {
+            setFeedback({ type: 'error', msg: 'La fecha seleccionada no es válida.' });
+            return;
+        }
+
         if (resolvedHour === 'Cualquiera') {
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
             if (selectedDay < today) {
                 setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
-                setLoading(false);
                 return;
             }
         } else {
             if (dateObj < now) {
                 setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
-                setLoading(false);
                 return;
             }
         }
 
-        try {
-            const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
-            const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
-            const dateTimeUTC = `${resolvedDate}T${horaFinal}:00.000Z`;
+        const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
+        const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
+        const patientName = filteredPatientOptions.find(p => String(p.value) === String(patientId))?.label || 'Paciente';
 
-            // Enviamos a la BD
+        // Guardamos todos los datos en un estado temporal y abrimos la confirmación
+        setPendingAppointmentData({
+            dateObj,
+            horaFinal,
+            consultationPrice,
+            selectedDoctor,
+            patientName: patientName.split(' - ')[0],
+            formattedDate: format(dateObj, 'dd/MM/yyyy')
+        });
+
+        setIsConfirmModalOpen(true);
+    }
+
+    // ── 2. CONFIRM SUBMIT (LLAMA A LA BD) ────────────────────────────────────
+    const handleConfirmSubmit = async () => {
+        if (!pendingAppointmentData) return;
+        
+        setLoading(true)
+        setIsConfirmModalOpen(false); // Cerramos confirmación mientras carga
+
+        try {
+            const { dateObj, horaFinal, consultationPrice, selectedDoctor, patientName, formattedDate } = pendingAppointmentData;
+            const dateTimeUTC = dateObj.toISOString();
+
             await createAppointment({
                 patientId: Number(patientId),
                 doctorId: selectedDoctor ? Number(selectedDoctor.id) : undefined,
-                specialtyId: especialidad ? Number(especialidad) : undefined,
+                specialtyId: !selectedDoctor && especialidad ? Number(especialidad) : undefined,
                 date_time: dateTimeUTC,
                 reson_visit: motivo || undefined,
                 statusId: 1,
@@ -426,22 +452,18 @@ export default function AppointmentForm({
                 price: consultationPrice
             });
 
-            // Buscamos el nombre del paciente para el voucher
-            const patientName = filteredPatientOptions.find(p => String(p.value) === String(patientId))?.label || 'Paciente';
-
-            // Preparamos datos del comprobante y lo abrimos
+            // Llenamos los datos para el Comprobante Final
             setVoucherData({
-                patientName: patientName.split(' - ')[0],
+                patientName: patientName,
                 doctorName: selectedDoctor?.user.name || 'Doctor',
                 specialty: selectedDoctor?.specialty.name || 'Consulta General',
-                date: resolvedDate,
+                date: formattedDate,
                 time: horaFinal,
                 price: consultationPrice
             });
 
-            setFeedback({ type: 'success', msg: 'Cita pautada correctamente. Pendiente de confirmación en caja.' })
-            setIsVoucherModalOpen(true);
-            // El onSuccess y el reset del motivo lo hacemos cuando el usuario cierre el Voucher
+            setIsVoucherModalOpen(true); // Abrimos la factura
+            setPendingAppointmentData(null); // Limpiamos temporal
 
         } catch (err: any) {
             console.error('Error creando cita:', err)
@@ -455,7 +477,6 @@ export default function AppointmentForm({
     // ── Render ───────────────────────────────────────────────────────────────
     return (
         <StaticCard className="lg:col-span-1 flex flex-col gap-1">
-            {/* Header */}
             <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 rounded-lg bg-primary/10">
                     <FaCalendarPlus className="w-4 h-4 text-primary" />
@@ -471,7 +492,6 @@ export default function AppointmentForm({
             ) : (
                 <div className="space-y-4">
                     
-                    {/* ── Paciente ── */}
                     {role !== 'pacient' && (
                         <SearchableSelect
                             label="Paciente *"
@@ -484,7 +504,6 @@ export default function AppointmentForm({
                         />
                     )}
 
-                    {/* ── Tipo de Cita ── */}
                     <Select
                         label="Tipo de Cita *"
                         placeholder="— Seleccionar tipo —"
@@ -494,7 +513,6 @@ export default function AppointmentForm({
                         name="appointmentType"
                     />
 
-                    {/* ── Especialidad ── */}
                     <Select
                         label="Especialidad"
                         placeholder="Cualquiera"
@@ -504,7 +522,6 @@ export default function AppointmentForm({
                         name="especialidad"
                     />
 
-                    {/* ── Doctor ── */}
                     <SearchableSelect
                         label="Doctor"
                         placeholder={filteredDoctorOptions.length === 0 ? 'Sin doctores disponibles' : '— Seleccionar doctor —'}
@@ -515,7 +532,6 @@ export default function AppointmentForm({
                         searchPlaceholder="Buscar doctor…"
                     />
 
-                    {/* ── Fecha ── */}
                     <div className="rounded-lg border border-primary-300 bg-primary-50/50 p-3 space-y-3">
                         <label className="block text-sm font-medium text-primary-700">
                             Fecha <span className="text-red-500 ml-0.5">*</span>
@@ -528,7 +544,6 @@ export default function AppointmentForm({
                             <Chip active={datePreset === 'specific'} onClick={() => handleDatePresetChange('specific')}>Fecha específica</Chip>
                         </div>
 
-                        {/* Selector de día específico */}
                         {datePreset === 'weekday' && (
                             <Select
                                 label="Día"
@@ -539,7 +554,6 @@ export default function AppointmentForm({
                             />
                         )}
 
-                        {/* Grid de días (this_week / this_month) */}
                         {datePreset !== 'weekday' && datePreset !== 'specific' && dateOptions.length > 0 && (
                             <div>
                                 <p className="text-xs text-primary-500 mb-1.5">Selecciona el día</p>
@@ -570,7 +584,6 @@ export default function AppointmentForm({
                             </div>
                         )}
 
-                        {/* Input fecha específica */}
                         {datePreset === 'specific' && (
                             <div className={dateFlash ? 'date-field-flash' : ''} key={dateFlash ? 'flash' : 'idle'}>
                                 <Field
@@ -593,7 +606,6 @@ export default function AppointmentForm({
                         )}
                     </div>
 
-                    {/* ── Hora ── */}
                     <div className="rounded-lg border border-primary-300 bg-primary-50/50 p-3 space-y-3">
                         <label className="block text-sm font-medium text-primary-700">
                             Hora <span className="text-red-500 ml-0.5">*</span>
@@ -603,10 +615,8 @@ export default function AppointmentForm({
                             <Chip active={timeSlot === 'morning'} sub="7 – 12" onClick={() => handleTimeSlotChange('morning')}>🌅 Mañana</Chip>
                             <Chip active={timeSlot === 'afternoon'} sub="12 – 18" onClick={() => handleTimeSlotChange('afternoon')}>☀️ Tarde</Chip>
                             <Chip active={timeSlot === 'evening'} sub="18 – 21" onClick={() => handleTimeSlotChange('evening')}>🌆 Noche</Chip>
-
                         </div>
 
-                        {/* Indicador de horario del doctor */}
                         {doctorTimeRange && (
                             <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5">
                                 <span>🩺</span>
@@ -614,7 +624,6 @@ export default function AppointmentForm({
                             </div>
                         )}
 
-                        {/* Grid de horas por franja */}
                         {hourOptions.length > 0 && (
                             <div className="grid grid-cols-4 gap-1">
                                 {hourOptions.map(h => (
@@ -632,18 +641,8 @@ export default function AppointmentForm({
                                 ))}
                             </div>
                         )}
-
-                        
-                        {timeSlot === 'any' && (
-                            <div className="flex items-center gap-2 text-sm text-primary-700 font-medium bg-primary-100 border border-primary-200 rounded-lg px-3 py-2">
-                                <span>🔄</span>
-                                <span>Se asignará la hora según disponibilidad del doctor.</span>
-                            </div>
-                        )}
-
                     </div>
 
-                    {/* ── Motivo ── */}
                     <div className="flex flex-col gap-1">
                         <label className="font-medium text-sm text-primary-700 px-1">
                             Motivo <span className="text-primary-400 text-xs font-normal">(Opcional)</span>
@@ -657,10 +656,9 @@ export default function AppointmentForm({
                         />
                     </div>
 
-                    {/* ── Feedback ── */}
                     {feedback && (
                         <div
-                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-60"
+                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[150]"
                             style={{ animation: 'toastSlideUpCenter 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
                         >
                             <div className={`px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border ${feedback.type === 'success'
@@ -685,19 +683,66 @@ export default function AppointmentForm({
                         </div>
                     )}
 
-                    {/* ── Submit ── */}
+                    {/* BOTÓN PRINCIPAL (LLAMA A LA CONFIRMACIÓN) */}
                     <Button
-                        label={loading ? 'Pautando…' : 'Pautar Cita'}
+                        label={loading ? 'Procesando…' : 'Pautar Cita'}
                         variant={ButtonTheme.PRIMARY}
                         size="lg"
                         adaptive
                         disabled={!isValid || loading}
                         loading={loading}
-                        onClick={handleSubmit}
+                        onClick={handlePreSubmit}
                         className="mt-1"
                     />
 
-                    
+                    {/* ── MODAL DE CONFIRMACIÓN ── */}
+                    <Modal 
+                        isOpen={isConfirmModalOpen} 
+                        onClose={() => setIsConfirmModalOpen(false)} 
+                        title="Confirmar Agendamiento"
+                    >
+                        {pendingAppointmentData && (
+                            <div className="space-y-4 text-sm text-primary-800">
+                                <div className="flex items-center gap-3 border-b border-primary-100 pb-4">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                        <FaCircleQuestion className="text-primary-600 text-xl" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-base">¿Estás seguro de agendar esta cita?</p>
+                                        <p className="text-cool-gray-50">Por favor verifica los datos antes de continuar.</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-primary-50 p-4 rounded-xl space-y-2">
+                                    <p><span className="font-semibold">Paciente:</span> {pendingAppointmentData.patientName}</p>
+                                    <p><span className="font-semibold">Médico:</span> {pendingAppointmentData.doctorName}</p>
+                                    <p className="flex justify-between border-t border-primary-200 pt-2 mt-2">
+                                        <span className="font-semibold">Fecha y Hora:</span> 
+                                        <span className="font-bold text-primary-700">{pendingAppointmentData.formattedDate} a las {pendingAppointmentData.horaFinal}</span>
+                                    </p>
+                                    <p className="flex justify-between">
+                                        <span className="font-semibold">Monto Estimado:</span> 
+                                        <span className="font-bold text-emerald-600">${Number(pendingAppointmentData.consultationPrice).toFixed(2)}</span>
+                                    </p>
+                                </div>
+
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <Button 
+                                        label="Cancelar" 
+                                        variant={ButtonTheme.SECONDARY} 
+                                        onClick={() => setIsConfirmModalOpen(false)} 
+                                    />
+                                    <Button 
+                                        label="Confirmar y Pautar" 
+                                        variant={ButtonTheme.PRIMARY} 
+                                        onClick={handleConfirmSubmit} 
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </Modal>
+
+                    {/* ── MODAL DEL VOUCHER ── */}
                     <AppointmentVoucherModal 
                         isOpen={isVoucherModalOpen}
                         onClose={() => {
