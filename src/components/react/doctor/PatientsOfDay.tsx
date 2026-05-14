@@ -5,6 +5,7 @@ import type { ConsultationSummary } from "@/lib/services/medical/consultation/co
 
 interface PatientsOfDayProps {
   doctorId: number;
+  ClassName?: string;
 }
 
 interface MappedCita {
@@ -19,6 +20,8 @@ interface MappedCita {
   doctor: string;
   notes: string;
   rawStatus: string;
+  finishedAt: string | null;
+  finishedTime: string | null;
 }
 
 function mapToCita(consultation: ConsultationSummary): MappedCita {
@@ -49,6 +52,12 @@ function mapToCita(consultation: ConsultationSummary): MappedCita {
     doctor: consultation.doctor?.user?.name ?? "Doctor",
     notes: `Factura #${consultation.invoice?.id ?? "-"}`,
     rawStatus: consultation.status,
+    finishedAt: consultation.finished_at
+      ? new Date(consultation.finished_at).toLocaleDateString("es-VE", { weekday: "short", day: "2-digit", month: "short" })
+      : null,
+    finishedTime: consultation.finished_at
+      ? new Date(consultation.finished_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+      : null,
   };
 }
 
@@ -60,7 +69,7 @@ function isSameLocalDay(left: Date, right: Date) {
   );
 }
 
-export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
+export default function PatientsOfDay({ doctorId, ClassName = "" }: PatientsOfDayProps) {
   const [citas, setCitas] = useState<MappedCita[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +105,7 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
 
   if (loading) {
     return (
-      <aside id="patientsOfDay" className="flex flex-col gap-6">
+      <aside id="patientsOfDay" className={`flex flex-col gap-6 ${ClassName}`}>
         <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex-1 flex flex-col p-5 animate-pulse min-h-[300px]" />
       </aside>
     );
@@ -104,7 +113,7 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
 
   if (error) {
     return (
-      <aside id="patientsOfDay" className="flex flex-col gap-6">
+      <aside id="patientsOfDay" className={`flex flex-col gap-6 ${ClassName}`}>
         <div className="bg-red-50 rounded-2xl border border-red-200 p-5 text-red-600 text-sm">
           {error}
         </div>
@@ -113,7 +122,7 @@ export default function PatientsOfDay({ doctorId }: PatientsOfDayProps) {
   }
 
   return (
-    <aside id="patientsOfDay" className="flex flex-col gap-6">
+    <aside id="patientsOfDay" className={`flex flex-col gap-6 ${ClassName}`}>
       <DailyAppointmentsAside citas={citas} doctorId={String(doctorId)} />
     </aside>
   );

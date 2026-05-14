@@ -19,6 +19,8 @@ interface Appointment {
     doctor: string;
     notes: string;
     rawStatus: string;
+    finishedAt: string | null;
+    finishedTime: string | null;
 }
 
 export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?: string }> = ({ citas, doctorId = "default" }) => {
@@ -36,6 +38,12 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
 
     const handleStartConsultation = async () => {
         if (!selectedAppointment || isStarting) return;
+
+        if (selectedAppointment.estado === 'completada') {
+            window.location.replace(`/modules/doctor/${doctorIdNum}/consultation/${selectedAppointment.id}`);
+            return;
+        }
+
         setIsStarting(true);
         try {
             if (selectedAppointment.estado !== 'en_progreso') {
@@ -99,7 +107,13 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
                                     <span className="bg-primary-50 text-primary-700 px-2 py-1 rounded-md border border-primary-100/50">
                                         {cita.hora}
                                     </span>
-                                    <span className="text-slate-500 truncate max-w-[140px]">{cita.motivo}</span>
+                                    {cita.estado === 'completada' && cita.finishedTime ? (
+                                        <span className="text-emerald-600 font-semibold">
+                                            → {cita.finishedTime}
+                                        </span>
+                                    ) : (
+                                        <span className="text-slate-500 truncate max-w-[140px]">{cita.motivo}</span>
+                                    )}
                                 </div>
                             </div>
                             {cita.estado === 'en_progreso' ? (
@@ -130,9 +144,15 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
                                 <h4 className="text-xl font-black text-slate-800 leading-tight mb-1 truncate">{selectedAppointment.patientName}</h4>
                                 <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                                    selectedAppointment.estado === 'en_progreso' ? 'text-blue-600 bg-blue-50' : 'text-amber-500 bg-amber-50'
+                                    selectedAppointment.estado === 'completada' ? 'text-emerald-600 bg-emerald-50' :
+                                    selectedAppointment.estado === 'en_progreso' ? 'text-blue-600 bg-blue-50' :
+                                    selectedAppointment.estado === 'cancelada' ? 'text-red-600 bg-red-50' :
+                                    'text-amber-500 bg-amber-50'
                                 }`}>
-                                    {selectedAppointment.estado === 'en_progreso' ? 'En progreso' : 'Pendiente'}
+                                    {selectedAppointment.estado === 'completada' ? 'Completada' :
+                                     selectedAppointment.estado === 'en_progreso' ? 'En progreso' :
+                                     selectedAppointment.estado === 'cancelada' ? 'Cancelada' :
+                                     'Pendiente'}
                                 </span>
                             </div>
                         </div>
@@ -147,13 +167,25 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
                                 icon={<FaCalendarDays size={20} />}
                                 color="primary"
                             />
-                            <StatsCard
-                                variant="compact"
-                                title="MÉDICO"
-                                value={selectedAppointment.doctor}
-                                icon={<FaStethoscope size={20} />}
-                                color="primary"
-                            />
+                            {selectedAppointment.estado === 'completada' && selectedAppointment.finishedTime ? (
+                                <StatsCard
+                                    variant="compact"
+                                    title="TERMINÓ A LAS"
+                                    value={selectedAppointment.finishedAt ?? ''}
+                                    subText={selectedAppointment.finishedTime}
+                                    subTextClass="text-emerald-600 font-medium"
+                                    icon={<FaCalendarDays size={20} />}
+                                    color="primary"
+                                />
+                            ) : (
+                                <StatsCard
+                                    variant="compact"
+                                    title="MÉDICO"
+                                    value={selectedAppointment.doctor}
+                                    icon={<FaStethoscope size={20} />}
+                                    color="primary"
+                                />
+                            )}
                         </div>
 
                         <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
@@ -170,10 +202,10 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
 
                         <div className="pt-2 flex justify-end gap-2">
                             <Button
-                                label={selectedAppointment.estado === 'completada' ? 'Consulta finalizada' : selectedAppointment.estado === 'en_progreso' ? 'Continuar consulta' : 'Iniciar consulta'}
+                                label={selectedAppointment.estado === 'completada' ? 'Ver detalle' : selectedAppointment.estado === 'en_progreso' ? 'Continuar consulta' : 'Iniciar consulta'}
                                 variant="primary"
                                 loading={isStarting}
-                                disabled={selectedAppointment.estado === 'completada'}
+                                disabled={false}
                                 onClick={handleStartConsultation}
                             />
                             <Button
