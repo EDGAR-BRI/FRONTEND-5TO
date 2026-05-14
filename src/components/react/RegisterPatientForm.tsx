@@ -76,7 +76,7 @@ const EMPTY_FORM: PatientForm = {
     allergies: '', chronicDiseases: '', currentMedications: '',
     previousSurgeries: '', smokingStatus: '', alcoholUse: '',
     hasInsurance: false, insuranceCompany: '', insurancePolicyNumber: '',
-    linkExistingUser: true, selectedUserId: null, tempPassword: '',
+    linkExistingUser: false, selectedUserId: null, tempPassword: '',
     emergencyContact: { name: '', relation: '', phone: '' },
 }
 
@@ -322,31 +322,14 @@ const RegisterPatientForm: React.FC<RegisterPatientProps> = ({
 
             {role === 'receptionist' && (
                 <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
-                    <SectionHeader icon={FaUserLock} title="Vincular a Usuario Preexistente" subtitle="Selecciona un usuario preexistente o crea uno nuevo" />
+                    <SectionHeader icon={FaUserLock} title="Credenciales de Acceso" subtitle="Crea una contraseña temporal para el portal del paciente" />
                     <div className="space-y-4">
-                        <CheckBox name="linkExistingUser" label="Vincular a usuario preexistente" variant="switch" checked={form.linkExistingUser} onChange={e => set('linkExistingUser', e.target.checked)} />
-                        {form.linkExistingUser ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                                <div className="flex flex-col gap-1 w-full">
-                                    <SearchableSelect
-                                        name="selectedUserId"
-                                        options={users.map(u => ({ value: u.id, label: `${u.name} - ${u.ci}` }))}
-                                        value={form.selectedUserId || ""}
-                                        onChange={v => set('selectedUserId', Number(v))}
-                                        placeholder={isLoadingUsers ? "Cargando usuarios..." : "Buscar usuario por nombre o CI"}
-                                        label="Seleccionar Usuario *"
-                                    />
-                                    {errors.selectedUserId && <p className="text-xs text-error mt-1">{errors.selectedUserId}</p>}
-                                </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 animate-fade-in">
+                            <div className="flex flex-col gap-1 w-full">
+                                <Field name="tempPassword" label="Contraseña temporal para nuevo usuario *" type="password" showTogglePassword placeholder="Mín. 8 caracteres" value={form.tempPassword} onChange={e => set('tempPassword', e.target.value)} />
+                                {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
                             </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                                <div className="flex flex-col gap-1 w-full">
-                                    <Field name="tempPassword" label="Contraseña temporal para nuevo usuario *" type="password" showTogglePassword placeholder="Mín. 8 caracteres" value={form.tempPassword} onChange={e => set('tempPassword', e.target.value)} />
-                                    {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
-                                </div>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             )}
