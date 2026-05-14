@@ -156,14 +156,38 @@ export default function DoctorScheduleCalendar({
     }
   }, [isOpen])
 
-  const saveStatus = async (appointmentId: number) => {
-    if (!selectedEditStatusId) return
+  /** Clear cached appointments for the current doctor and re-fetch */
+  const refetchAppointments = async () => {
+    if (selectedDoctorId === null || selectedDoctorId === 0) return
+    setLoadingApts(true)
+    try {
+      const raw = await getAppointmentsByDr(selectedDoctorId)
+      const formatted = formatAppointmentsByDoctorId(raw)
+      setAppointmentsByDoctorId(prev => ({
+        ...prev,
+        [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
+      }))
+    } catch (err) {
+      console.error('Error re-fetching appointments:', err)
+    } finally {
+      setLoadingApts(false)
+    }
+  }
+
+  /** Called immediately when the user picks a new status from the dropdown */
+  const handleStatusChange = async (appointmentId: number, newStatusId: number | string) => {
+    if (!newStatusId) return
     setUpdatingApt(true)
     try {
-      await updateAppointment(appointmentId, { statusId: Number(selectedEditStatusId) })
+      await updateAppointment(appointmentId, { statusId: Number(newStatusId) })
       setIsEditingStatus(false)
+      // Update the selectedApt in-place so the modal reflects the change
+      const newStatus = statuses.find(s => s.id === Number(newStatusId))
+      if (selectedApt && newStatus) {
+        setSelectedApt({ ...selectedApt, status: newStatus.name, statusId: newStatus.id })
+      }
+      await refetchAppointments()
       await Alert.success('Estado actualizado', 'El estado de la cita fue actualizado exitosamente.')
-      window.location.reload()
     } catch (e: any) {
       console.error(e)
       await Alert.error('Error al actualizar estado', e?.message || 'Ocurrió un error inesperado.')
@@ -174,12 +198,19 @@ export default function DoctorScheduleCalendar({
 
   const saveDoctor = async (appointmentId: number) => {
     if (!selectedEditDoctorId) return
+    const targetDoctorId = Number(selectedEditDoctorId)
     setUpdatingApt(true)
     try {
-      await updateAppointment(appointmentId, { doctorId: Number(selectedEditDoctorId) })
+      await updateAppointment(appointmentId, { doctorId: targetDoctorId })
       setIsEditingDoctor(false)
+      // Invalidate cached appointments for the target doctor so they refresh on selection
+      setAppointmentsByDoctorId(prev => {
+        const next = { ...prev }
+        delete next[targetDoctorId]
+        return next
+      })
+      await refetchAppointments()
       await Alert.success('Médico actualizado', 'El médico de la cita fue actualizado exitosamente.')
-      window.location.reload()
     } catch (e: any) {
       console.error(e)
       await Alert.error('Error al actualizar médico', e?.message || 'Ocurrió un error inesperado.')
@@ -409,12 +440,12 @@ export default function DoctorScheduleCalendar({
                     <Select
                       options={statuses.filter(s => s.id !== 2 && s.id !== 4).map(s => ({ value: s.id, label: s.name }))}
                       value={selectedEditStatusId}
-                      onChange={(val) => setSelectedEditStatusId(val)}
+                      onChange={(val) => handleStatusChange(selectedApt.id, val)}
                       name="status"
                     />
                   </div>
-                  <button onClick={() => saveStatus(selectedApt.id)} disabled={updatingApt} className="text-xs font-bold text-emerald-600 hover:text-emerald-700 px-2">✓ Guardar</button>
-                  <button onClick={() => setIsEditingStatus(false)} disabled={updatingApt} className="text-xs font-bold text-cool-gray-50 hover:text-cool-gray-70 px-2">✕ Cancelar</button>
+                  {updatingApt && <span className="text-xs text-primary-500 animate-pulse">Guardando...</span>}
+                  <button onClick={() => setIsEditingStatus(false)} disabled={updatingApt} className="text-xs font-bold text-cool-gray-50 hover:text-cool-gray-70 px-2">✕</button>
                 </div>
               ) : (
                 <>
