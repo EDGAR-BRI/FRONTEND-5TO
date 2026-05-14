@@ -5,26 +5,29 @@ import Sidebar from "@/components/astro/Sidebar.astro";
 import MobileSidebarDrawer from "@/components/astro/MobileSidebarDrawer.astro";
 import { FaCalendarDays, FaFileMedical, FaHouse, FaUserDoctor, FaUsers } from "react-icons/fa6";
 const { title } = Astro.props;
+const { pacient_id: patientId = "" } = Astro.params;
+
+const patientBasePath = patientId ? `/modules/pacient/${patientId}` : "/modules/pacient";
 
 const menuItems = [
 	{
 		label: "Dashboard General",
-		href: "/modules/pacient/overview",
+		href: `${patientBasePath}/overview`,
 		icon: FaHouse,
 	},
 	{
 		label: "Agendar cita",
-		href: "/modules/pacient/schedule-appointment",
+		href: `${patientBasePath}/schedule-appointment`,
 		icon: FaCalendarDays,
 	},
 	{
 		label: "Historial clínico",
-		href: "/modules/pacient/history",
+		href: `${patientBasePath}/history`,
 		icon: FaFileMedical,
 	},
 	{
 		label: "Perfil",
-		href: "/modules/pacient/profile",
+		href: `${patientBasePath}/profile`,
 		icon: FaUserDoctor,
 	}
 ];
