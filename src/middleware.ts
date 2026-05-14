@@ -23,9 +23,9 @@ const API_URL = (() => {
     const raw = process.env.PUBLIC_BACKEND_URL?.trim();
     if (isDev) console.log("[MIDDLEWARE] PUBLIC_BACKEND_URL:", raw);
     if (!raw && process.env.DEV) {
-        return "http://localhost:3000/api/v1";
+        return "http://localhost:3800/api/v1";
     }
-    return raw || "http://localhost:3000/api/v1";
+    return raw || "http://localhost:3800/api/v1";
 })();
 
 const getCookie = (cookies: any, name: string): string | null => {
