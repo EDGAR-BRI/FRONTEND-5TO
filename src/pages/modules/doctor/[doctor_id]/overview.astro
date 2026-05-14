@@ -57,7 +57,7 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
         <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
           
           <Avatar className="w-20 h-20 sm:w-28 sm:h-28 shadow-md border-2 border-slate-100 shrink-0">
-            <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt={doctorName} />
+            <!-- <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt={doctorName} /> -->
             <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">{doctorName.split(' ').map(n => n[0]).join('').slice(0,2)}</AvatarFallback>
           </Avatar>
 
@@ -83,17 +83,13 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
     <section class="flex flex-col @[900px]:flex-row gap-8">
       <!-- <div class="lg:col-span-2 space-y-8"> -->
 
-        <StaticCard className="overflow-hidden flex-2">
           <UpcomingAppointments client:visible doctorId={doctor?.userId ?? 0} />
-        </StaticCard>
 
       <!-- </div> -->
 
       <!-- <div class="space-y-8"> -->
-        <StaticCard className="p-8 flex-1">
-          <ActivityChart client:visible doctorId={doctor?.id ?? 0} />
-        </StaticCard>
 
+          <ActivityChart className="p-8 flex-1" client:visible doctorId={doctor?.id ?? 0} />
       <!-- </div> -->
     </section>
   </main>

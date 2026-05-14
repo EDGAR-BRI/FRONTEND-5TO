@@ -17,6 +17,7 @@ import {
 } from "@/lib/services/medical/consultation/consultation.service";
 import { Alert } from "@/utils/alerts";
 import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
+import StaticCard from "../primary/StaticCard";
 
 type AppointmentRow = {
   id: number;
@@ -165,7 +166,7 @@ export default function UpcomingAppointments({
   };
 
   return (
-    <div className="p-6 relative h-full flex flex-col">
+    <StaticCard className="p-6 relative h-108.75 flex flex-col flex-2">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
 			<FaCalendarDays size={18} className="text-[#1e3a8a]" /> Próximas Consultas a realizar
@@ -289,6 +290,6 @@ export default function UpcomingAppointments({
           </div>
         )}
       </Modal>
-    </div>
+    </StaticCard>
   );
 }

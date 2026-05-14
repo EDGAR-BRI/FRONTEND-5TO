@@ -3,13 +3,15 @@ import { FaChartColumn } from "react-icons/fa6";
 import { getWeeklyFlowByDoctor } from "@/lib/services/scheduling/appointment/appointment.service";
 import type { WeeklyFlowDay } from "@/lib/services/scheduling/appointment/appointment.interface";
 import { Alert } from "@/utils/alerts";
+import StaticCard from "../primary/StaticCard";
 
 type ActivityChartProps = {
   doctorId: number;
   range?: "today" | "week" | "month" | "hoy" | "semana" | "mes";
+  className?: string;
 };
 
-export default function ActivityChart({ doctorId, range = "week" }: ActivityChartProps) {
+export default function ActivityChart({ doctorId, range = "week", className = "" }: ActivityChartProps) {
   const [activityData, setActivityData] = useState<WeeklyFlowDay[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +78,7 @@ export default function ActivityChart({ doctorId, range = "week" }: ActivityChar
   };
 
   return (
-    <div className="bg-white p-2 h-full flex flex-col justify-between ">
+    <StaticCard className={`bg-white gap-5 p-2 h-108.75 flex flex-col justify-between rounded-lg shadow-sm ${className}`}>
 
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-primary-800 text-sm flex items-center gap-2 uppercase tracking-wide">
@@ -132,6 +134,6 @@ export default function ActivityChart({ doctorId, range = "week" }: ActivityChar
         <p className="text-[9px] text-slate-400 font-medium italic">* Datos de consulta semanal</p>
         <button className="text-[9px] font-black text-blue-600 uppercase hover:text-blue-800 transition-colors">Ver Detalles</button>
       </div> */}
-    </div>
+    </StaticCard>
   );
 }
