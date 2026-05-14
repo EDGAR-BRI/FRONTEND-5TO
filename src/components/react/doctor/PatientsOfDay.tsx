@@ -15,6 +15,10 @@ interface MappedCita {
   timestamp: number;
   motivo: string;
   estado: "programada" | "en_progreso" | "completada" | "cancelada";
+  fecha: string;
+  doctor: string;
+  notes: string;
+  rawStatus: string;
 }
 
 function mapToCita(consultation: ConsultationSummary): MappedCita {
@@ -41,6 +45,10 @@ function mapToCita(consultation: ConsultationSummary): MappedCita {
     timestamp: d.getTime(),
     motivo: "Consulta",
     estado,
+    fecha: d.toLocaleDateString("es-VE", { weekday: "short", day: "2-digit", month: "short" }),
+    doctor: consultation.doctor?.user?.name ?? "Doctor",
+    notes: `Factura #${consultation.invoice?.id ?? "-"}`,
+    rawStatus: consultation.status,
   };
 }
 

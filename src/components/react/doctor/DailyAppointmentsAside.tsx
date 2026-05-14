@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { FaUserInjured, FaChevronRight } from "react-icons/fa6";
-import { StartConsultationModal } from './StartConsultationModal';
+import { FaUserInjured, FaChevronRight, FaCalendarDays, FaStethoscope, FaFileLines } from "react-icons/fa6";
 import StaticCard from "@/components/react/primary/StaticCard";
+import { Modal } from "../primary/Modal";
+import { Button } from "../primary/Button";
+import { StatsCard } from "../primary/StatsCard";
 import { startConsultation } from "@/lib/services/medical/consultation/consultation.service";
 import { Alert } from "@/utils/alerts";
 
@@ -10,16 +12,21 @@ interface Appointment {
     patientName: string;
     id_paciente: string;
     hora: string;
+    timestamp: number;
     motivo: string;
     estado: 'programada' | 'en_progreso' | 'completada' | 'cancelada';
+    fecha: string;
+    doctor: string;
+    notes: string;
+    rawStatus: string;
 }
 
 export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?: string }> = ({ citas, doctorId = "default" }) => {
-    // Estados para las pestañas y el modal
+    const doctorIdNum = Number(doctorId);
     const [activeTab, setActiveTab] = useState<'pendientes' | 'completadas'>('pendientes');
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+    const [isStarting, setIsStarting] = useState(false);
 
-    // Memorizamos el filtrado para no recalcular en cada renderizado
     const citasFiltradas = useMemo(() => {
         if (activeTab === 'pendientes') {
             return citas.filter(c => c.estado === 'programada' || c.estado === 'en_progreso');
@@ -27,26 +34,19 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
         return citas.filter(c => c.estado === 'completada');
     }, [citas, activeTab]);
 
-    // Función principal para la redirección después de capturar la factura
-    const goToConsultation = (consultationId: number) => {
-        const consultationUrl = `/modules/doctor/${doctorId}/consultation/${consultationId}`;
-        window.location.replace(consultationUrl);
-    };
-
     const handleStartConsultation = async () => {
-        if (!selectedAppointment) return;
-
-        if (selectedAppointment.estado === 'en_progreso') {
-            goToConsultation(selectedAppointment.id);
-            return;
-        }
-
+        if (!selectedAppointment || isStarting) return;
+        setIsStarting(true);
         try {
-            await startConsultation(selectedAppointment.id);
-            goToConsultation(selectedAppointment.id);
+            if (selectedAppointment.estado !== 'en_progreso') {
+                await startConsultation(selectedAppointment.id);
+            }
+            window.location.replace(`/modules/doctor/${doctorIdNum}/consultation/${selectedAppointment.id}`);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Error desconocido";
             Alert.error("No se pudo iniciar la consulta", message);
+        } finally {
+            setIsStarting(false);
         }
     };
 
@@ -58,7 +58,7 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
                 <div className="bg-primary-100 p-2 rounded-lg text-primary-600">
                     <FaUserInjured />
                 </div>
-                Pacientes del Día
+                Consultas del Día
             </h3>
 
             {/* Sistema de Pestañas */}
@@ -115,12 +115,76 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
             </div>
 
             {/* Renderizado del Modal */}
-            <StartConsultationModal 
+            <Modal
                 isOpen={!!selectedAppointment}
-                appointment={selectedAppointment}
                 onClose={() => setSelectedAppointment(null)}
-                onStart={handleStartConsultation}
-            />
+                title="Detalle de la Consulta"
+            >
+                {selectedAppointment && (
+                    <div className="space-y-6 animate-in fade-in duration-300">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center text-primary-700 shrink-0 flex items-center justify-center">
+                                <FaUserInjured size={24} />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Paciente</p>
+                                <h4 className="text-xl font-black text-slate-800 leading-tight mb-1 truncate">{selectedAppointment.patientName}</h4>
+                                <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                                    selectedAppointment.estado === 'en_progreso' ? 'text-blue-600 bg-blue-50' : 'text-amber-500 bg-amber-50'
+                                }`}>
+                                    {selectedAppointment.estado === 'en_progreso' ? 'En progreso' : 'Pendiente'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <StatsCard
+                                variant="compact"
+                                title="FECHA Y HORA"
+                                value={selectedAppointment.fecha}
+                                subText={selectedAppointment.hora}
+                                subTextClass="text-slate-500 font-medium"
+                                icon={<FaCalendarDays size={20} />}
+                                color="primary"
+                            />
+                            <StatsCard
+                                variant="compact"
+                                title="MÉDICO"
+                                value={selectedAppointment.doctor}
+                                icon={<FaStethoscope size={20} />}
+                                color="primary"
+                            />
+                        </div>
+
+                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                <FaFileLines size={12}/> Motivo de Consulta
+                            </p>
+                            <p className="text-sm font-bold text-slate-800 mb-4">{selectedAppointment.motivo}</p>
+
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Notas Previas</p>
+                            <p className="text-xs text-slate-600 leading-relaxed italic">
+                                "{selectedAppointment.notes}"
+                            </p>
+                        </div>
+
+                        <div className="pt-2 flex justify-end gap-2">
+                            <Button
+                                label={selectedAppointment.estado === 'completada' ? 'Consulta finalizada' : selectedAppointment.estado === 'en_progreso' ? 'Continuar consulta' : 'Iniciar consulta'}
+                                variant="primary"
+                                loading={isStarting}
+                                disabled={selectedAppointment.estado === 'completada'}
+                                onClick={handleStartConsultation}
+                            />
+                            <Button
+                                label="Cerrar"
+                                variant="secondary"
+                                onClick={() => setSelectedAppointment(null)}
+                            />
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </StaticCard>
     );
 };

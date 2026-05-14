@@ -11,10 +11,15 @@ import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 import { Button } from "../primary/Button";
 import { StatsCard } from "../primary/StatsCard";
-import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
+import {
+  listConsultationsByDoctor,
+  startConsultation,
+} from "@/lib/services/medical/consultation/consultation.service";
+import { Alert } from "@/utils/alerts";
 import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
 
 type AppointmentRow = {
+  id: number;
   patient: string;
   date: string;
   time: string;
@@ -43,9 +48,15 @@ function formatDateParts(value: string | null | undefined) {
 }
 
 function mapConsultationToAppointment(c: ConsultationSummary): AppointmentRow {
-  const finished = Boolean(c.finished_at);
-  const status = finished ? "Completada" : "Pendiente";
-  const statusColor = finished ? "text-emerald-500 bg-emerald-50" : "text-amber-500 bg-amber-50";
+  let status = "Pendiente";
+  let statusColor = "text-amber-500 bg-amber-50";
+  if (c.status === "IN_PROGRESS") {
+    status = "En progreso";
+    statusColor = "text-blue-600 bg-blue-50";
+  } else if (c.status === "FINISHED") {
+    status = "Completada";
+    statusColor = "text-emerald-500 bg-emerald-50";
+  }
 
   const dateSource = c.started_at ?? c.date;
   const { date, time } = formatDateParts(dateSource);
@@ -54,6 +65,7 @@ function mapConsultationToAppointment(c: ConsultationSummary): AppointmentRow {
   const doctorName = c.doctor?.user?.name ?? "Doctor";
 
   return {
+    id: c.id,
     patient: patientName,
     date,
     time,
@@ -69,14 +81,14 @@ function getLocalDateKey(dateValue: Date) {
   return `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(2, "0")}-${String(dateValue.getDate()).padStart(2, "0")}`;
 }
 
-function isUpcomingPending(consultation: ConsultationSummary, now: Date) {
-  if (consultation.status !== "PENDING") return false;
+function isTodayActive(consultation: ConsultationSummary, now: Date) {
+  if (consultation.status !== "PENDING" && consultation.status !== "IN_PROGRESS") return false;
   const dateSource = consultation.started_at ?? consultation.date;
   const d = new Date(dateSource);
   if (Number.isNaN(d.getTime())) return false;
   const todayKey = getLocalDateKey(now);
   const dateKey = getLocalDateKey(d);
-  return dateKey >= todayKey;
+  return dateKey === todayKey;
 }
 
 function sortByDateAsc(a: ConsultationSummary, b: ConsultationSummary) {
@@ -92,21 +104,22 @@ export default function UpcomingAppointments({
   appointments?: ConsultationSummary[];
   doctorId?: number | string;
 }) {
+  const doctorIdNum = Number(doctorId);
   const [data, setData] = useState<ConsultationSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedAppt, setSelectedAppt] = useState<AppointmentRow | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     if (propAppointments) return;
-    const doctorIdNum = Number(doctorId);
     if (!Number.isFinite(doctorIdNum) || doctorIdNum <= 0) return;
 
     let cancelled = false;
     setIsLoading(true);
     setLoadError(null);
 
-    listConsultationsByDoctor(doctorIdNum, { status: "PENDING" })
+    listConsultationsByDoctor(doctorIdNum)
       .then((items) => {
         if (cancelled) return;
         setData(items);
@@ -129,11 +142,27 @@ export default function UpcomingAppointments({
     const source = propAppointments ?? data;
     const now = new Date();
     return source
-      .filter((consultation) => isUpcomingPending(consultation, now))
+      .filter((consultation) => isTodayActive(consultation, now))
       .sort(sortByDateAsc)
       .slice(0, 3)
       .map(mapConsultationToAppointment);
   }, [data, propAppointments]);
+
+  const handleStartConsultation = async () => {
+    if (!selectedAppt || isStarting) return;
+    setIsStarting(true);
+    try {
+      if (selectedAppt.status !== "En progreso") {
+        await startConsultation(selectedAppt.id);
+      }
+      window.location.replace(`/modules/doctor/${doctorIdNum}/consultation/${selectedAppt.id}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
+      Alert.error("No se pudo iniciar la consulta", message);
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <div className="p-6 relative h-full flex flex-col">
@@ -141,9 +170,9 @@ export default function UpcomingAppointments({
         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 uppercase tracking-wide">
 			<FaCalendarDays size={18} className="text-[#1e3a8a]" /> Próximas Consultas a realizar
         </h3>
-        <button className="text-[10px] font-black text-blue-600 uppercase tracking-tighter hover:underline">
+        <a href={`/modules/doctor/${doctorIdNum}/schedule`} className="text-[10px] font-black text-blue-600 uppercase tracking-tighter hover:underline">
           Ver Agenda Completa
-        </button>
+        </a>
       </div>
 
       <div className="space-y-4">
@@ -152,7 +181,7 @@ export default function UpcomingAppointments({
         ) : loadError ? (
           <div className="text-sm text-rose-600">{loadError}</div>
         ) : appointments.length === 0 ? (
-          <div className="text-sm text-slate-500">No hay consultas pendientes próximas.</div>
+          <div className="text-sm text-slate-500">No hay consultas pendientes para hoy.</div>
         ) : appointments.map((a, i) => (
           <ActionCard 
             key={i} 
@@ -242,7 +271,14 @@ export default function UpcomingAppointments({
               </p>
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="pt-2 flex justify-end gap-2">
+              <Button
+                label={selectedAppt.status === "Completada" ? "Consulta finalizada" : selectedAppt.status === "En progreso" ? "Continuar consulta" : "Iniciar consulta"}
+                variant="primary"
+                loading={isStarting}
+                disabled={selectedAppt.status === "Completada"}
+                onClick={handleStartConsultation}
+              />
               <Button 
                 label="Cerrar" 
                 variant="secondary" 
