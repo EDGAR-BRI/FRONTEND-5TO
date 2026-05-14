@@ -15,16 +15,26 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { Spinner } from "@/components/react/primary/Spinner";
 
-export const BasicData = ({ patientId }: { patientId: string }) => {
-  const { data: patientData, error, isLoading } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
-  console.log("Datos del paciente obtenidos:", patientData, "Error:", error, "Cargando:", isLoading);
-  if (isLoading) return (
+type BasicDataProps = {
+  patientId: string;
+  initialData?: any;
+};
+
+export const BasicData = ({ patientId, initialData }: BasicDataProps) => {
+  // Pasamos initialData como fallback para evitar parpadeos de carga
+  const { data: patientData, error, isLoading } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher, {
+    fallbackData: initialData ? { data: initialData } : undefined
+  });
+  
+  const currentData = patientData?.data || initialData;
+
+  if (isLoading && !currentData) return (
     <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full items-center justify-center">
       <Spinner />
     </StaticCard>
   );
 
-  const hasNoProfile = !patientData?.data && (error?.status === 404 || !patientData);
+  const hasNoProfile = !currentData && (error?.status === 404 || !patientData);
   
   if (hasNoProfile) return (
     <StaticCard className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-6 h-full items-center justify-center">
@@ -36,20 +46,25 @@ export const BasicData = ({ patientId }: { patientId: string }) => {
     </StaticCard>
   );
 
-  const fullName = patientData?.data?.patient?.name || 'Desconocido';
-  const ci = patientData?.data?.patient?.ci || '-';
+  const fullName = currentData?.patient?.name || 'Desconocido';
+  const ci = currentData?.patient?.ci || '-';
   const initials = fullName.substring(0, 2).toUpperCase();
-  const bloodType = patientData?.data?.blood_type || 'No registrado';
-  const chronicDiseases = patientData?.data?.chronic_diseases || 'Sin registros';
-  const allergies = patientData?.data?.allergies || '-';
-  const lastVisit = patientData?.data?.last_visit_at ? new Date(patientData.data.last_visit_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Sin registros';
-  const birthDate = patientData?.data?.birth_date ? new Date(patientData.data.birth_date) : null;
+  const bloodType = currentData?.blood_type || 'No registrado';
+  const chronicDiseases = currentData?.chronic_diseases || 'Sin registros';
+  const allergies = currentData?.allergies || '-';
+  const lastVisit = currentData?.patient?.last_visit_at ? new Date(currentData.patient.last_visit_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Sin registros';
+  const birthDate = currentData?.birth_date ? new Date(currentData.birth_date) : null;
   const age = birthDate ? Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : '-';
-  const sex = patientData?.data?.sex || '-';
+  const sex = currentData?.sex === 'FEMALE' ? 'Femenino' : currentData?.sex === 'MALE' ? 'Masculino' : '-';
+  
+  // Variables que faltaban:
+  const city = currentData?.city || 'Sin ciudad';
+  const phone = currentData?.main_phone || '-';
+
   return (
     <StaticCard className="flex h-full flex-col gap-6 rounded-[28px] border border-slate-200 bg-white/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
 
-      <div className="flex flex-col items-center gap-4 rounded-[24px] bg-gradient-to-br from-sky-50 via-white to-indigo-50 px-5 py-6 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-[24px] bg-linear-to-br from-sky-50 via-white to-indigo-50 px-5 py-6 text-center">
         <Avatar className="h-24 w-24 ring-4 ring-white shadow-lg shadow-sky-100">
           <AvatarImage
             src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(fullName)}`}
