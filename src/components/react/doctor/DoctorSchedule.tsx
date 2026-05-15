@@ -25,8 +25,8 @@ function mapAppointmentToCita(apt: Appointment): Cita {
 
   return {
     id: apt.id,
-    patientName: apt.patient?.user?.name ?? "Paciente",
-    id_paciente: String(apt.patient?.id),
+    pacienteNombre: apt.patient?.name ?? "Paciente",
+    pacienteId: String(apt.patient?.id),
     hora: format(d, "HH:mm"),
     motivo: apt.reson_visit ?? "Consulta",
     doctor: apt.doctor?.user?.name ?? "Doctor",
@@ -130,7 +130,6 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
           doctorAppointments={appointments}
           doctorSchedulesData={schedules}
           doctorAvailabilities={availabilities}
-          client:visible
         />
       </div>
     </section>
