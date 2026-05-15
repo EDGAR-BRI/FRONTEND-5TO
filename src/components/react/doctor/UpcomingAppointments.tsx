@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FaCalendarDays,
   FaChevronRight,
@@ -11,6 +11,7 @@ import ActionCard from "../primary/ActionCard";
 import { Modal } from "../primary/Modal";
 import { Button } from "../primary/Button";
 import { StatsCard } from "../primary/StatsCard";
+import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
 import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
 
 type AppointmentRow = {
@@ -23,39 +24,6 @@ type AppointmentRow = {
   notes: string;
   doctor: string;
 };
-
-const defaultAppointments: AppointmentRow[] = [
-  {
-    patient: "Carlos Mendoza",
-    date: "Hoy, 14 de Oct",
-    time: "09:00 AM",
-    reason: "Chequeo Post-Operatorio",
-    status: "Confirmada",
-    statusColor: "text-emerald-500 bg-emerald-50",
-    notes: "Paciente requiere revisión de suturas y evaluación general de movilidad.",
-    doctor: "Dr. Ramírez"
-  },
-  {
-    patient: "Lucía Fernández",
-    date: "Hoy, 14 de Oct",
-    time: "11:30 AM",
-    reason: "Evaluación Arritmia",
-    status: "En Espera",
-    statusColor: "text-amber-500 bg-amber-50",
-    notes: "Traer últimos resultados de Holter 24h.",
-    doctor: "Dra. Silva"
-  },
-  {
-    patient: "Roberto Gómez",
-    date: "Mañana, 15 de Oct",
-    time: "08:15 AM",
-    reason: "Control de Hipertensión",
-    status: "Confirmada",
-    statusColor: "text-emerald-500 bg-emerald-50",
-    notes: "Revisar bitácora de presión arterial de los últimos 15 días.",
-    doctor: "Dr. Ramírez"
-  }
-];
 
 function formatDateParts(value: string | null | undefined) {
   const d = value ? new Date(value) : null;
@@ -97,9 +65,75 @@ function mapConsultationToAppointment(c: ConsultationSummary): AppointmentRow {
   };
 }
 
-export default function UpcomingAppointments({ appointments: propAppointments }: { appointments?: ConsultationSummary[] }) {
-  const appointments = propAppointments ? propAppointments.map(mapConsultationToAppointment) : defaultAppointments;
+function getLocalDateKey(dateValue: Date) {
+  return `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(2, "0")}-${String(dateValue.getDate()).padStart(2, "0")}`;
+}
+
+function isUpcomingPending(consultation: ConsultationSummary, now: Date) {
+  if (consultation.status !== "PENDING") return false;
+  const dateSource = consultation.started_at ?? consultation.date;
+  const d = new Date(dateSource);
+  if (Number.isNaN(d.getTime())) return false;
+  const todayKey = getLocalDateKey(now);
+  const dateKey = getLocalDateKey(d);
+  return dateKey >= todayKey;
+}
+
+function sortByDateAsc(a: ConsultationSummary, b: ConsultationSummary) {
+  const dateA = new Date(a.started_at ?? a.date).getTime();
+  const dateB = new Date(b.started_at ?? b.date).getTime();
+  return dateA - dateB;
+}
+
+export default function UpcomingAppointments({
+  appointments: propAppointments,
+  doctorId,
+}: {
+  appointments?: ConsultationSummary[];
+  doctorId?: number | string;
+}) {
+  const [data, setData] = useState<ConsultationSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedAppt, setSelectedAppt] = useState<AppointmentRow | null>(null);
+
+  useEffect(() => {
+    if (propAppointments) return;
+    const doctorIdNum = Number(doctorId);
+    if (!Number.isFinite(doctorIdNum) || doctorIdNum <= 0) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+
+    listConsultationsByDoctor(doctorIdNum, { status: "PENDING" })
+      .then((items) => {
+        if (cancelled) return;
+        setData(items);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setLoadError(error instanceof Error ? error.message : "Error cargando consultas");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [doctorId, propAppointments]);
+
+  const appointments = useMemo(() => {
+    const source = propAppointments ?? data;
+    const now = new Date();
+    return source
+      .filter((consultation) => isUpcomingPending(consultation, now))
+      .sort(sortByDateAsc)
+      .slice(0, 3)
+      .map(mapConsultationToAppointment);
+  }, [data, propAppointments]);
 
   return (
     <div className="p-6 relative h-full flex flex-col">
@@ -113,7 +147,13 @@ export default function UpcomingAppointments({ appointments: propAppointments }:
       </div>
 
       <div className="space-y-4">
-        {appointments.map((a, i) => (
+        {isLoading ? (
+          <div className="text-sm text-slate-500">Cargando consultas...</div>
+        ) : loadError ? (
+          <div className="text-sm text-rose-600">{loadError}</div>
+        ) : appointments.length === 0 ? (
+          <div className="text-sm text-slate-500">No hay consultas pendientes próximas.</div>
+        ) : appointments.map((a, i) => (
           <ActionCard 
             key={i} 
             className="!flex-wrap gap-y-3 cursor-pointer hover:border-blue-200"

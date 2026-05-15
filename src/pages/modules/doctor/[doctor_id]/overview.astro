@@ -93,7 +93,7 @@ const specialtyName = doctor?.specialty?.name || "Especialidad";
       <!-- <div class="lg:col-span-2 space-y-8"> -->
 
         <StaticCard className="overflow-hidden flex-2">
-          <UpcomingAppointments client:visible />
+          <UpcomingAppointments client:visible doctorId={doctor?.id ?? 0} />
         </StaticCard>
 
       <!-- </div> -->
