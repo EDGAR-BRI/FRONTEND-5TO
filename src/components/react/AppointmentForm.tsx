@@ -390,8 +390,9 @@ export default function AppointmentForm({
         setFeedback(null)
 
         const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
-        const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
-        const dateObj = new Date(dateTimeString);
+        const [year, month, day] = resolvedDate.split('-').map(Number);
+        const [hour, minute] = horaFinal.split(':').map(Number);
+        const dateObj = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
         const now = new Date();
 
         if (isNaN(dateObj.getTime())) {

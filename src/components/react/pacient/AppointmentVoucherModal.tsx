@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { FaXmark, FaUserDoctor, FaCalendarDay, FaRegClock, FaPrint, FaCircleCheck, FaUser } from 'react-icons/fa6';
 import { Button, ButtonTheme } from '@/components/react/primary/Button';
+import { printAppointmentThermal } from '@/utils/printInvoice';
 
 interface AppointmentVoucherModalProps {
     isOpen: boolean;
@@ -20,7 +21,14 @@ export default function AppointmentVoucherModal({ isOpen, onClose, appointmentDa
     if (!isOpen || !appointmentData) return null;
 
     const handlePrint = () => {
-        window.print();
+        printAppointmentThermal({
+            patientName: appointmentData.patientName,
+            doctorName: appointmentData.doctorName,
+            specialty: appointmentData.specialty,
+            date: appointmentData.date,
+            time: appointmentData.time,
+            price: Number(appointmentData.price || 0),
+        });
     };
 
     const safePrice = Number(appointmentData.price || 0).toFixed(2);
