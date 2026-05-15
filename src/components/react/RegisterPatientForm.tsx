@@ -4,7 +4,7 @@ import { Select } from '@/components/react/primary/Select'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { Modal } from '@/components/react/primary/Modal'
 import { useModal } from '@/hooks/UseModal'
-import { addPatientFromReception } from '@/lib/services/medical/patient/patient.service'
+import { addPatient, addPatientFromReception } from '@/lib/services/medical/patient/patient.service'
 import { addPatientInfo } from '@/lib/services/medical/info-patient/info_patient.service'
 import type { IconType } from 'react-icons'
 import {
@@ -14,7 +14,9 @@ import {
     FaNotesMedical,
     FaPhone,
     FaUserCheck,
+    FaUserLock,
 } from 'react-icons/fa6'
+import { createUser } from '@/lib/services/User/user.service'
 
 // ─── Section Header ──────────────────────────────────────────────────────────
 function SectionHeader({ icon: Icon, title, subtitle }: { icon: IconType; title: string; subtitle?: string }) {
@@ -60,12 +62,12 @@ interface PatientForm {
     alcoholUse: string
 
     emergencyContact: EmergencyContact
+    tempPassword: string
 }
 
 interface RegisterPatientFormProps {
     familyMode?: boolean
     linkedUserId?: number | null
-    hideUserLinking?: boolean
     createInfoPatientOnRegister?: boolean
     title?: string
     subtitle?: string
@@ -79,6 +81,7 @@ const EMPTY_FORM: PatientForm = {
     allergies: '', chronicDiseases: '', currentMedications: '',
     previousSurgeries: '', smokingStatus: '', alcoholUse: '',
     emergencyContact: { name: '', relation: '', phone: '' },
+    tempPassword: ''
 }
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(v => ({ value: v, label: v }))
@@ -104,7 +107,6 @@ const hasLengthInRange = (value: string, min: number, max: number) => {
 export default function RegisterPatientForm({
     familyMode = false,
     linkedUserId = null,
-    hideUserLinking = false,
     createInfoPatientOnRegister = false,
     title = 'Registro de paciente',
     subtitle = 'Complete el formulario para registrar un nuevo paciente en el sistema.',
@@ -116,33 +118,7 @@ export default function RegisterPatientForm({
     const [errors, setErrors] = useState<Partial<Record<keyof PatientForm, string>>>({})
     const { isOpen: isSuccessOpen, openModal: openSuccess, closeModal: closeSuccess } = useModal(false)
 
-    const [users, setUsers] = useState<UserDto[]>([])
-    const [isLoadingUsers, setIsLoadingUsers] = useState(false)
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            setIsLoadingUsers(true)
-            try {
-                const data = await listUsers()
-                setUsers(data)
-            } catch (error) {
-                console.error("Error fetching users:", error)
-            } finally {
-                setIsLoadingUsers(false)
-            }
-        }
-        fetchUsers()
-    }, [])
-
-    useEffect(() => {
-        if (linkedUserId) {
-            setForm(prev => ({
-                ...prev,
-                linkExistingUser: true,
-                selectedUserId: linkedUserId,
-            }))
-        }
-    }, [linkedUserId])
 
     const set = (field: keyof PatientForm, value: string | boolean | number | null) =>
         setForm(prev => ({ ...prev, [field]: value }))
@@ -161,8 +137,8 @@ export default function RegisterPatientForm({
         if (!form.ci.trim()) e.ci = 'Requerido'
         else if (!hasLengthInRange(form.ci, 3, 30)) e.ci = 'La cédula debe tener entre 3 y 30 caracteres'
 
-        // Si se va a crear usuario (no enlazar), backend exige CI numérica 6-9.
-        if (!linkedUserId && !hideUserLinking && !form.linkExistingUser) {
+        // Backend exige CI numérica 6-9 para crear usuario.
+        if (!linkedUserId) {
             if (!/^[0-9]+$/.test(form.ci.trim())) {
                 e.ci = 'Para crear usuario, la cédula debe contener solo números'
             } else if (!hasLengthInRange(form.ci, 6, 9)) {
@@ -185,12 +161,9 @@ export default function RegisterPatientForm({
         if (createInfoPatientOnRegister && form.currentMedications.trim() && !hasLengthInRange(form.currentMedications, 1, 5000)) e.currentMedications = 'Debe tener entre 1 y 5000 caracteres'
         if (createInfoPatientOnRegister && form.previousSurgeries.trim() && !hasLengthInRange(form.previousSurgeries, 1, 5000)) e.previousSurgeries = 'Debe tener entre 1 y 5000 caracteres'
 
-        if (!hideUserLinking && !linkedUserId && form.linkExistingUser && !form.selectedUserId) {
-            e.selectedUserId = 'Debes seleccionar un usuario'
-        }
-        if (!hideUserLinking && !linkedUserId && !form.linkExistingUser && !form.tempPassword.trim()) {
+        if (!linkedUserId && !form.tempPassword.trim()) {
             e.tempPassword = 'La contraseña es requerida'
-        } else if (!hideUserLinking && !linkedUserId && !form.linkExistingUser && !hasLengthInRange(form.tempPassword, 6, 200)) {
+        } else if (!linkedUserId && !hasLengthInRange(form.tempPassword, 6, 200)) {
             e.tempPassword = 'La contraseña debe tener entre 6 y 200 caracteres'
         }
 
@@ -204,12 +177,12 @@ export default function RegisterPatientForm({
         setIsSaving(true)
 
         try {
-            let patientUserId = form.selectedUserId;
+            let patientUserId: number | null = null;
 
             if (linkedUserId) {
                 patientUserId = linkedUserId;
-            } else if (!hideUserLinking && !form.linkExistingUser) {
-                // Flow 2: Create new user
+            } else {
+                // Create new user
                 const newUser = await createUser({
                     ci: form.ci,
                     name: `${form.firstName} ${form.lastName}`,
@@ -217,7 +190,6 @@ export default function RegisterPatientForm({
                     roleId: 4 // PACIENTE
                 });
                 patientUserId = newUser.id;
-                setUsers(prev => [...prev, newUser]);
             }
 
             if (!patientUserId) {
@@ -238,9 +210,6 @@ export default function RegisterPatientForm({
 
                 await addPatientInfo({
                     patientId: patient.id,
-                    ci: form.ci,
-                    name: form.firstName,
-                    last_name: form.lastName,
                     sex,
                     birth_date: birthDate,
                     blood_type: form.bloodType || null,
@@ -445,61 +414,36 @@ export default function RegisterPatientForm({
             <div className="bg-white rounded-xl border border-primary-200 shadow-sm p-6">
                 <SectionHeader
                     icon={FaUserLock}
-                    title="Vincular a Usuario Preexistente"
-                    subtitle={familyMode ? 'Este miembro quedará enlazado al usuario principal del grupo familiar.' : 'Selecciona un usuario preexistente o crea uno nuevo'}
+                    title="Credenciales del paciente"
+                    subtitle={familyMode ? 'Este miembro quedará enlazado al usuario principal del grupo familiar.' : 'Se creará un usuario nuevo para el paciente'}
                 />
                 <div className="space-y-4">
-                    {hideUserLinking || linkedUserId ? (
+                    {linkedUserId ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
                             <div className="flex flex-col gap-1 w-full">
                                 <Field
-                                    name="selectedUserId"
+                                    name="linkedUserId"
                                     label="Usuario principal del grupo"
-                                    value={String(linkedUserId ?? form.selectedUserId ?? '')}
+                                    value={String(linkedUserId)}
                                     disabled
                                 />
                                 <p className="text-xs text-cool-gray-50 mt-1">El paciente se vinculará automáticamente al usuario principal del grupo.</p>
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <CheckBox
-                                name="linkExistingUser"
-                                label="Vincular a usuario preexistente"
-                                variant="switch"
-                                checked={form.linkExistingUser}
-                                onChange={e => set('linkExistingUser', e.target.checked)}
-                            />
-                            {form.linkExistingUser ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                                    <div className="flex flex-col gap-1 w-full">
-                                        <SearchableSelect
-                                            name="selectedUserId"
-                                            options={users.map(u => ({ value: u.id, label: `${u.name} - ${u.ci}` }))}
-                                            value={form.selectedUserId || ""}
-                                            onChange={v => set('selectedUserId', Number(v))}
-                                            placeholder={isLoadingUsers ? "Cargando usuarios..." : "Buscar usuario por nombre o CI"}
-                                            label="Seleccionar Usuario *"
-                                        />
-                                        {errors.selectedUserId && <p className="text-xs text-error mt-1">{errors.selectedUserId}</p>}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
-                                    <div className="flex flex-col gap-1 w-full">
-                                        <Field
-                                            name="tempPassword" label="Contraseña temporal para nuevo usuario *"
-                                            type="password"
-                                            showTogglePassword
-                                            placeholder="Mín. 8 caracteres"
-                                            value={form.tempPassword}
-                                            onChange={e => set('tempPassword', e.target.value)}
-                                        />
-                                        {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
-                                    </div>
-                                </div>
-                            )}
-                        </>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-primary-100 mt-2 animate-fade-in">
+                            <div className="flex flex-col gap-1 w-full">
+                                <Field
+                                    name="tempPassword" label="Contraseña temporal para nuevo usuario *"
+                                    type="password"
+                                    showTogglePassword
+                                    placeholder="Mín. 8 caracteres"
+                                    value={form.tempPassword}
+                                    onChange={e => set('tempPassword', e.target.value)}
+                                />
+                                {errors.tempPassword && <p className="text-xs text-error mt-1">{errors.tempPassword}</p>}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
