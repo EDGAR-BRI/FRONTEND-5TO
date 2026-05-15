@@ -38,7 +38,7 @@ import type { SelectOption } from '@/components/react/primary/Select'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DatePreset = 'this_week' | 'this_month' | 'weekday' | 'specific'
-export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'any' | 'specific'
+export type TimeSlot = 'morning' | 'afternoon' | 'evening'
 
 const WEEKDAYS: SelectOption[] = [
     { value: '1', label: 'Lunes' },
@@ -284,9 +284,8 @@ export default function AppointmentForm({
     }, [datePreset, specificDate, selectedWeekday, selectedDateFromList])
 
     // ── Hora ─────────────────────────────────────────────────────────────────
-    const [timeSlot, setTimeSlot] = useState<TimeSlot>('specific')
+    const [timeSlot, setTimeSlot] = useState<TimeSlot>('morning')
     const [selectedHourFromList, setSelectedHourFromList] = useState('')
-    const [specificHour, setSpecificHour] = useState('')
 
     // Rango de horas del doctor para el día seleccionado
     const doctorTimeRange = useMemo(() => {
@@ -358,10 +357,8 @@ export default function AppointmentForm({
     }, [timeSlot, resolvedDate, doctorTimeRange, doctorAppointments])
 
     const resolvedHour = useMemo(() => {
-        if (timeSlot === 'any') return 'Cualquiera'
-        if (timeSlot === 'specific') return specificHour
         return selectedHourFromList
-    }, [timeSlot, specificHour, selectedHourFromList])
+    }, [selectedHourFromList])
 
     // ── Doctor ↔ Especialidad ────────────────────────────────────────────────
     const filteredDoctorOptions: SelectOption[] = useMemo(() => {
@@ -403,7 +400,6 @@ export default function AppointmentForm({
     const handleTimeSlotChange = (slot: TimeSlot) => {
         setTimeSlot(slot)
         setSelectedHourFromList('')
-        setSpecificHour('')
     }
 
     // ── Validation ───────────────────────────────────────────────────────────
@@ -421,26 +417,16 @@ export default function AppointmentForm({
         setLoading(true)
         setFeedback(null)
         try {
-            const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
+            const horaFinal = resolvedHour;
             const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
             const dateObj = new Date(dateTimeString);
 
             // Validation against past dates
             const now = new Date();
-            if (resolvedHour === 'Cualquiera') {
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-                if (selectedDay < today) {
-                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
-                    setLoading(false);
-                    return;
-                }
-            } else {
-                if (dateObj < now) {
-                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
-                    setLoading(false);
-                    return;
-                }
+            if (dateObj < now) {
+                setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
+                setLoading(false);
+                return;
             }
 
 
@@ -633,8 +619,7 @@ export default function AppointmentForm({
                             <Chip active={timeSlot === 'morning'} sub="7 – 12" onClick={() => handleTimeSlotChange('morning')}>🌅 Mañana</Chip>
                             <Chip active={timeSlot === 'afternoon'} sub="12 – 18" onClick={() => handleTimeSlotChange('afternoon')}>☀️ Tarde</Chip>
                             <Chip active={timeSlot === 'evening'} sub="18 – 21" onClick={() => handleTimeSlotChange('evening')}>🌆 Noche</Chip>
-                            <Chip active={timeSlot === 'any'} onClick={() => handleTimeSlotChange('any')}>🔄 Cualquiera</Chip>
-                            <Chip active={timeSlot === 'specific'} onClick={() => handleTimeSlotChange('specific')}>🕐 Específica</Chip>
+
                         </div>
 
                         {/* Indicador de horario del doctor */}
@@ -664,24 +649,7 @@ export default function AppointmentForm({
                             </div>
                         )}
 
-                        {/* Cualquiera info */}
-                        {timeSlot === 'any' && (
-                            <div className="flex items-center gap-2 text-sm text-primary-700 font-medium bg-primary-100 border border-primary-200 rounded-lg px-3 py-2">
-                                <span>🔄</span>
-                                <span>Se asignará la hora según disponibilidad del doctor.</span>
-                            </div>
-                        )}
 
-                        {/* Input hora específica */}
-                        {timeSlot === 'specific' && (
-                            <Field
-                                name="specificHour"
-                                type="time"
-                                placeholder="Ej: 10:30"
-                                value={specificHour}
-                                onChange={(e) => setSpecificHour(e.target.value)}
-                            />
-                        )}
                     </div>
 
                     {/* ── Motivo ── */}
