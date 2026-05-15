@@ -30,6 +30,7 @@ interface PaymentRow {
     paymentMethodId: number;
     amount_paid: number;
     igtf_amount: number;
+    reference?: string;
 }
 
 export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess, initialAppointmentId }: Props) {
@@ -52,6 +53,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
     // New payment form
     const [newPaymentMethodId, setNewPaymentMethodId] = useState<string | number>('');
     const [newAmount, setNewAmount] = useState<string>('');
+    const [newReference, setNewReference] = useState<string>('');
 
     const resetForm = () => {
         setSelectedAppointmentId('');
@@ -60,6 +62,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
         setSelectedPayerId('');
         setNewPaymentMethodId('');
         setNewAmount('');
+        setNewReference('');
         setErrorMsg(null);
     };
 
@@ -156,6 +159,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
 
     const handleMethodChange = (val: string | number) => {
         setNewPaymentMethodId(val);
+        setNewReference('');
         const method = paymentMethods.find(m => m.id === Number(val));
         if (method && remaining > 0) {
             if (isVES(method) && exchangeRate) {
@@ -171,6 +175,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
     const handleAddPayment = () => {
         const method = paymentMethods.find(m => m.id === Number(newPaymentMethodId));
         if (!method || !newAmount || isNaN(Number(newAmount))) return;
+        if ((method.id === 2 || method.id === 4) && !newReference.trim()) return;
 
         const enteredAmount = Number(newAmount);
         let amountInUSD = enteredAmount;
@@ -190,9 +195,10 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
             igtf = amountInUSD * 0.03;
         }
 
-        setPayments([...payments, { paymentMethodId: method.id, amount_paid: amountInUSD, igtf_amount: igtf }]);
+        setPayments([...payments, { paymentMethodId: method.id, amount_paid: amountInUSD, igtf_amount: igtf, reference: newReference.trim() || undefined }]);
         setNewPaymentMethodId('');
         setNewAmount('');
+        setNewReference('');
     };
 
     const handleRemovePayment = (index: number) => {
@@ -225,7 +231,8 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
                 payments: payments.map(p => ({
                     paymentMethodId: p.paymentMethodId,
                     amount_paid: p.amount_paid,
-                    igtf_amount: p.igtf_amount
+                    igtf_amount: p.igtf_amount,
+                    ...(p.reference ? { reference: p.reference } : {})
                 }))
             };
 
@@ -337,7 +344,7 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
                                 const method = paymentMethods.find(m => m.id === p.paymentMethodId);
                                 return (
                                     <div key={i} className="flex justify-between items-center bg-white p-2 rounded border border-primary-100 text-sm">
-                                        <span>{method?.name} - <span className="font-semibold">${p.amount_paid.toString()}</span> {isVES(method) && exchangeRate && <span className="text-xs text-primary-400">(Bs {(p.amount_paid * Number(exchangeRate.rate)).toString()})</span>} {p.igtf_amount > 0 && <span className="text-xs text-primary-500">(IGTF: ${p.igtf_amount.toString()})</span>}</span>
+                                        <span>{method?.name} - <span className="font-semibold">${p.amount_paid.toString()}</span> {isVES(method) && exchangeRate && <span className="text-xs text-primary-400">(Bs {(p.amount_paid * Number(exchangeRate.rate)).toString()})</span>} {p.igtf_amount > 0 && <span className="text-xs text-primary-500">(IGTF: ${p.igtf_amount.toString()})</span>}{p.reference && <span className="text-xs text-primary-500 ml-1">Ref: {p.reference}</span>}</span>
                                         <button onClick={() => handleRemovePayment(i)} className="text-error hover:underline text-xs">Eliminar</button>
                                     </div>
                                 );
@@ -373,10 +380,20 @@ export function CreateInvoiceModal({ isOpen, onClose, receptionistId, onSuccess,
                                         onClick={handleAddPayment} 
                                         variant="secondary" 
                                         className="w-full"
-                                        disabled={!newAmount || !newPaymentMethodId}
+                                        disabled={!newAmount || !newPaymentMethodId || ((Number(newPaymentMethodId) === 2 || Number(newPaymentMethodId) === 4) && !newReference.trim())}
                                     />
                                 </div>
                             </div>
+                            {selectedMethod && (selectedMethod.id === 2 || selectedMethod.id === 4) && (
+                                <Field
+                                    label="Número de Referencia"
+                                    type="text"
+                                    name="reference"
+                                    value={newReference}
+                                    onChange={(e) => setNewReference(e.target.value)}
+                                    placeholder="Ej: 0012345678"
+                                />
+                            )}
                             {selectedMethod && isVES(selectedMethod) && exchangeRate && (
                                 <div className="flex justify-between items-center text-[11px] text-primary-600 px-1 border-t border-primary-200/60 pt-2">
                                     <span>Tasa BCV: <b>1$ = {Number(exchangeRate.rate).toString()} Bs</b></span>
