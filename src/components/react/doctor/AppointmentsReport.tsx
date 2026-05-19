@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import StatCard from './StatCard';
 import { getAppointmentsReport, exportAppointmentsReportPDF, type AppointmentsReportResponse } from '@/lib/services/report/appointmentsReport.service';
 import { getToken, getDoctorId } from '@/lib/api';
+import { Modal } from '@/components/react/primary/Modal';
 
 export default function AppointmentsReport() {
   const doctorId = getDoctorId();
@@ -12,6 +13,7 @@ export default function AppointmentsReport() {
   const [data, setData] = useState<AppointmentsReportResponse | null>(null);
   const [exporting, setExporting] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -52,6 +54,7 @@ export default function AppointmentsReport() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      setIsExportModalOpen(false);
     } catch (error) {
       console.error('Error exporting PDF:', error);
     } finally {
@@ -103,7 +106,7 @@ export default function AppointmentsReport() {
             <option value="scheduled">Programadas</option>
           </select>
           <button 
-            onClick={handleExportPDF}
+            onClick={() => setIsExportModalOpen(true)}
             disabled={exporting}
             className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -268,6 +271,41 @@ export default function AppointmentsReport() {
         </div>
       </div>
 
+      <Modal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)}
+        title="Exportar Reporte de Citas"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-700">
+            ¿Desea exportar el reporte de citas en formato PDF?
+          </p>
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <p className="text-sm text-slate-600 mb-2">El reporte incluirá:</p>
+            <ul className="text-sm text-slate-600 space-y-1">
+              <li>• Estadísticas de citas (total, completadas, canceladas, programadas)</li>
+              <li>• Gráfica de evolución diaria</li>
+              <li>• Distribución por estado</li>
+              <li>• Lista de pacientes más frecuentes</li>
+            </ul>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setIsExportModalOpen(false)}
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleExportPDF}
+              disabled={exporting}
+              className="flex-1 flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? <><FaSpinner className="animate-spin" /> Exportando...</> : <><FaPrint /> Exportar</>}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

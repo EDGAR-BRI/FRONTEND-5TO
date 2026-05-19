@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import StatCard from './StatCard';
 import { getFinanceReport, exportFinanceReportPDF, type FinanceReportResponse } from '@/lib/services/report/financeReport.service';
 import { getToken, getDoctorId } from '@/lib/api';
+import { Modal } from '@/components/react/primary/Modal';
 
 export default function FinanceReport() {
   const doctorId = getDoctorId();
@@ -11,6 +12,7 @@ export default function FinanceReport() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FinanceReportResponse | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -49,6 +51,7 @@ export default function FinanceReport() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      setIsExportModalOpen(false);
     } catch (error) {
       console.error('Error exporting PDF:', error);
     } finally {
@@ -93,7 +96,7 @@ export default function FinanceReport() {
           <p className="text-slate-500 font-medium">Análisis detallado de los ingresos y gastos.</p>
         </div>
         <button 
-          onClick={handleExportPDF}
+          onClick={() => setIsExportModalOpen(true)}
           disabled={exporting}
           className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -295,6 +298,42 @@ export default function FinanceReport() {
 
       </div>
 
+      <Modal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)}
+        title="Exportar Reporte Financiero"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-700">
+            ¿Desea exportar el reporte financiero en formato PDF?
+          </p>
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <p className="text-sm text-slate-600 mb-2">El reporte incluirá:</p>
+            <ul className="text-sm text-slate-600 space-y-1">
+              <li>• Estadísticas financieras (ingresos, gastos, ganancia neta)</li>
+              <li>• Gráfica de evolución mensual</li>
+              <li>• Tendencia de ganancias</li>
+              <li>• Fuentes de ingresos</li>
+              <li>• Transacciones recientes</li>
+            </ul>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setIsExportModalOpen(false)}
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleExportPDF}
+              disabled={exporting}
+              className="flex-1 flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? <><FaSpinner className="animate-spin" /> Exportando...</> : <><FaPrint /> Exportar</>}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
