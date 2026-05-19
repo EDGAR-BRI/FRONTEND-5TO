@@ -1,79 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FaPrint, FaArrowDownWideShort, FaSpinner } from "react-icons/fa6";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import StatCard from './StatCard';
-import { getClinicalReport, exportClinicalReportPDF, type ClinicalReportResponse } from '@/lib/services/report/clinicalReport.service';
-import { getToken, getDoctorId } from '@/lib/api';
 import { Modal } from '@/components/react/primary/Modal';
 
 export default function ClinicalReport() {
-  const doctorId = getDoctorId();
-  const token = getToken();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<ClinicalReportResponse | null>(null);
-  const [exporting, setExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        const reportData = await getClinicalReport({ 
-          doctorId: doctorId ? parseInt(doctorId) : undefined 
-        });
-        setData(reportData);
-      } catch (error) {
-        console.error('Error fetching clinical report:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (doctorId && token) {
-      fetchReport();
-    }
-  }, [doctorId, token]);
-  
-  // Función para exportar PDF
-  const handleExportPDF = async () => {
-    try {
-      setExporting(true);
-      const blob = await exportClinicalReportPDF({ 
-        doctorId: doctorId ? parseInt(doctorId) : undefined 
-      });
-      
-      // Crear URL y descargar el archivo
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reporte-clinico-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      setIsExportModalOpen(false);
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-    } finally {
-      setExporting(false);
-    }
+  // Datos estáticos mockeados
+  const mockData = {
+    stats: {
+      totalConsultations: 245,
+      consultationsGrowth: 12,
+      newPatients: 38,
+      patientsGrowth: 8,
+      examsPerformed: 156,
+      examsGrowth: 15
+    },
+    pathologies: [
+      { name: 'Hipertensión', total: 45, color: '#3b82f6' },
+      { name: 'Diabetes Tipo 2', total: 38, color: '#10b981' },
+      { name: 'Asma', total: 28, color: '#f59e0b' },
+      { name: 'Artritis', total: 22, color: '#ef4444' },
+      { name: 'Migraña', total: 18, color: '#8b5cf6' },
+    ],
+    recentDiagnoses: [
+      { id: 1, diagnosis: 'Hipertensión Essencial', status: 'Confirmado' },
+      { id: 2, diagnosis: 'Diabetes Mellitus Tipo 2', status: 'En Estudio' },
+      { id: 3, diagnosis: 'Asma Bronquial', status: 'Confirmado' },
+      { id: 4, diagnosis: 'Gastritis Crónica', status: 'Confirmado' },
+      { id: 5, diagnosis: 'Ansiedad Generalizada', status: 'En Estudio' },
+    ]
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <FaSpinner className="animate-spin text-4xl text-blue-600" />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <p className="text-slate-500">No hay datos disponibles para el reporte clínico.</p>
-      </div>
-    );
-  }
+  const handleExportPDF = () => {
+    setIsExporting(true);
+    // Simular proceso de exportación
+    setTimeout(() => {
+      setIsExporting(false);
+      setIsExportModalOpen(false);
+    }, 2000);
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -86,11 +54,10 @@ export default function ClinicalReport() {
         </div>
         <button 
           onClick={() => setIsExportModalOpen(true)}
-          disabled={exporting}
-          className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200"
         >
-          {exporting ? <FaSpinner className="animate-spin" /> : <FaPrint />}
-          {exporting ? 'Exportando...' : 'Exportar PDF'}
+          <FaPrint />
+          Exportar PDF
         </button>
       </div>
 
@@ -98,21 +65,21 @@ export default function ClinicalReport() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           label="Consultas Totales" 
-          value={data.data.stats.totalConsultations.toString()} 
+          value={mockData.stats.totalConsultations.toString()} 
           iconType="calendar" 
-          trend={`+${data.data.stats.consultationsGrowth}%`} 
+          trend={`+${mockData.stats.consultationsGrowth}%`} 
         />
         <StatCard 
           label="Pacientes Nuevos" 
-          value={data.data.stats.newPatients.toString()} 
+          value={mockData.stats.newPatients.toString()} 
           iconType="users" 
-          trend={`+${data.data.stats.patientsGrowth}%`} 
+          trend={`+${mockData.stats.patientsGrowth}%`} 
         />
         <StatCard 
           label="Exámenes Realizados" 
-          value={data.data.stats.examsPerformed.toString()} 
+          value={mockData.stats.examsPerformed.toString()} 
           iconType="beaker" 
-          trend={`+${data.data.stats.examsGrowth}%`} 
+          trend={`+${mockData.stats.examsGrowth}%`} 
         />
       </div>
 
@@ -127,13 +94,13 @@ export default function ClinicalReport() {
           </div>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.data.pathologies}>
+              <BarChart data={mockData.pathologies}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
                 <YAxis hide />
                 <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
                 <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={50}>
-                  {data.data.pathologies.map((entry: any, index: number) => (
+                  {mockData.pathologies.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.color || '#3b82f6'} />
                   ))}
                 </Bar>
@@ -147,7 +114,7 @@ export default function ClinicalReport() {
           <div>
             <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Últimos Diagnósticos</h3>
             <div className="space-y-6">
-              {data.data.recentDiagnoses.map((diagnosis, i) => (
+              {mockData.recentDiagnoses.map((diagnosis, i) => (
                 <div key={diagnosis.id} className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-100">
                     {String(i + 1).padStart(2, '0')}
@@ -194,14 +161,15 @@ export default function ClinicalReport() {
             </button>
             <button
               onClick={handleExportPDF}
-              disabled={exporting}
+              disabled={isExporting}
               className="flex-1 flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {exporting ? <><FaSpinner className="animate-spin" /> Exportando...</> : <><FaPrint /> Exportar</>}
+              {isExporting ? <><FaSpinner className="animate-spin" /> Exportando...</> : <><FaPrint /> Exportar</>}
             </button>
           </div>
         </div>
       </Modal>
+
     </div>
   );
 }

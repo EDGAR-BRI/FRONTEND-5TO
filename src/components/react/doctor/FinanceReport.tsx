@@ -1,62 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { FaPrint, FaSpinner, FaDollarSign, FaArrowTrendUp, FaArrowTrendDown, FaMoneyBillWave } from "react-icons/fa6";
+import React, { useState } from 'react';
+import { FaPrint, FaDollarSign, FaArrowTrendUp, FaArrowTrendDown, FaMoneyBillWave, FaSpinner } from "react-icons/fa6";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import StatCard from './StatCard';
-import { getFinanceReport, exportFinanceReportPDF, type FinanceReportResponse } from '@/lib/services/report/financeReport.service';
-import { getToken, getDoctorId } from '@/lib/api';
 import { Modal } from '@/components/react/primary/Modal';
 
 export default function FinanceReport() {
-  const doctorId = getDoctorId();
-  const token = getToken();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<FinanceReportResponse | null>(null);
-  const [exporting, setExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        const reportData = await getFinanceReport({ 
-          doctorId: doctorId ? parseInt(doctorId) : undefined 
-        });
-        setData(reportData);
-      } catch (error) {
-        console.error('Error fetching finance report:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Datos estáticos mockeados
+  const mockData = {
+    stats: {
+      totalRevenue: 125000,
+      totalExpenses: 45000,
+      netProfit: 80000,
+      profitMargin: 64,
+      growthRate: 12
+    },
+    monthlyData: [
+      { month: 'Ene', revenue: 95000, expenses: 35000, profit: 60000 },
+      { month: 'Feb', revenue: 102000, expenses: 38000, profit: 64000 },
+      { month: 'Mar', revenue: 108000, expenses: 40000, profit: 68000 },
+      { month: 'Abr', revenue: 115000, expenses: 42000, profit: 73000 },
+      { month: 'May', revenue: 125000, expenses: 45000, profit: 80000 },
+    ],
+    revenueSources: [
+      { source: 'Consultas', amount: 75000 },
+      { source: 'Procedimientos', amount: 30000 },
+      { source: 'Laboratorio', amount: 15000 },
+      { source: 'Otros', amount: 5000 },
+    ],
+    recentTransactions: [
+      { id: 1, description: 'Consulta - María González', category: 'Consultas', type: 'income', amount: 2500, date: '2026-05-15' },
+      { id: 2, description: 'Pago de suministros', category: 'Gastos', type: 'expense', amount: 3500, date: '2026-05-14' },
+      { id: 3, description: 'Procedimiento - Carlos R.', category: 'Procedimientos', type: 'income', amount: 4500, date: '2026-05-14' },
+      { id: 4, description: 'Laboratorio - Ana M.', category: 'Laboratorio', type: 'income', amount: 1800, date: '2026-05-13' },
+      { id: 5, description: 'Mantenimiento equipo', category: 'Gastos', type: 'expense', amount: 2200, date: '2026-05-12' },
+    ]
+  };
 
-    if (doctorId && token) {
-      fetchReport();
-    }
-  }, [doctorId, token]);
-
-  // Función para exportar PDF
-  const handleExportPDF = async () => {
-    try {
-      setExporting(true);
-      const blob = await exportFinanceReportPDF({ 
-        doctorId: doctorId ? parseInt(doctorId) : undefined 
-      });
-      
-      // Crear URL y descargar el archivo
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reporte-financiero-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+  const handleExportPDF = () => {
+    setIsExporting(true);
+    // Simular proceso de exportación
+    setTimeout(() => {
+      setIsExporting(false);
       setIsExportModalOpen(false);
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-    } finally {
-      setExporting(false);
-    }
+    }, 2000);
   };
 
   // Formatear valores monetarios
@@ -66,22 +55,6 @@ export default function FinanceReport() {
       currency: 'VES'
     }).format(amount);
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <FaSpinner className="animate-spin text-4xl text-blue-600" />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <p className="text-slate-500">No hay datos disponibles para el reporte financiero.</p>
-      </div>
-    );
-  }
 
   // Datos para el gráfico de fuentes de ingresos
   const revenueSourcesColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
@@ -97,11 +70,10 @@ export default function FinanceReport() {
         </div>
         <button 
           onClick={() => setIsExportModalOpen(true)}
-          disabled={exporting}
-          className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200"
         >
-          {exporting ? <FaSpinner className="animate-spin" /> : <FaPrint />}
-          {exporting ? 'Exportando...' : 'Exportar PDF'}
+          <FaPrint />
+          Exportar PDF
         </button>
       </div>
 
@@ -112,13 +84,13 @@ export default function FinanceReport() {
             <div className="p-2 rounded-lg bg-green-50 text-green-500">
               <FaDollarSign size={20} />
             </div>
-            <div className={`flex items-center gap-1 text-[10px] font-bold ${data.data.stats.growthRate >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'} px-2 py-0.5 rounded-full`}>
-              {data.data.stats.growthRate >= 0 ? <FaArrowTrendUp size={10} /> : <FaArrowTrendDown size={10} />}
-              {Math.abs(data.data.stats.growthRate)}%
+            <div className={`flex items-center gap-1 text-[10px] font-bold ${mockData.stats.growthRate >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'} px-2 py-0.5 rounded-full`}>
+              {mockData.stats.growthRate >= 0 ? <FaArrowTrendUp size={10} /> : <FaArrowTrendDown size={10} />}
+              {Math.abs(mockData.stats.growthRate)}%
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(data.data.stats.totalRevenue)}</h3>
+            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(mockData.stats.totalRevenue)}</h3>
             <p className="text-xs text-slate-400 font-medium">Ingresos Totales</p>
           </div>
         </div>
@@ -130,7 +102,7 @@ export default function FinanceReport() {
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(data.data.stats.totalExpenses)}</h3>
+            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(mockData.stats.totalExpenses)}</h3>
             <p className="text-xs text-slate-400 font-medium">Gastos Totales</p>
           </div>
         </div>
@@ -142,7 +114,7 @@ export default function FinanceReport() {
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(data.data.stats.netProfit)}</h3>
+            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(mockData.stats.netProfit)}</h3>
             <p className="text-xs text-slate-400 font-medium">Ganancia Neta</p>
           </div>
         </div>
@@ -154,7 +126,7 @@ export default function FinanceReport() {
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">{data.data.stats.profitMargin}%</h3>
+            <h3 className="text-2xl font-bold text-slate-800">{mockData.stats.profitMargin}%</h3>
             <p className="text-xs text-slate-400 font-medium">Margen de Ganancia</p>
           </div>
         </div>
@@ -168,7 +140,7 @@ export default function FinanceReport() {
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Evolución Mensual</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.data.monthlyData}>
+              <BarChart data={mockData.monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="month" 
@@ -193,7 +165,7 @@ export default function FinanceReport() {
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Tendencia de Ganancias</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.data.monthlyData}>
+              <LineChart data={mockData.monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="month" 
@@ -231,13 +203,13 @@ export default function FinanceReport() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={data.data.revenueSources}
+                  data={mockData.revenueSources}
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
                   dataKey="amount"
                 >
-                  {data.data.revenueSources.map((entry: any, index: number) => (
+                  {mockData.revenueSources.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={revenueSourcesColors[index % revenueSourcesColors.length]} />
                   ))}
                 </Pie>
@@ -249,7 +221,7 @@ export default function FinanceReport() {
             </ResponsiveContainer>
           </div>
           <div className="mt-4 space-y-2">
-            {data.data.revenueSources.map((source, index) => (
+            {mockData.revenueSources.map((source, index) => (
               <div key={source.source} className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <div 
@@ -268,7 +240,7 @@ export default function FinanceReport() {
         <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Transacciones Recientes</h3>
           <div className="space-y-4 max-h-80 overflow-y-auto">
-            {data.data.recentTransactions.map((transaction) => (
+            {mockData.recentTransactions.map((transaction) => (
               <div key={transaction.id} className="flex items-center justify-between p-3 border-b border-slate-100 last:border-0">
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -326,14 +298,15 @@ export default function FinanceReport() {
             </button>
             <button
               onClick={handleExportPDF}
-              disabled={exporting}
+              disabled={isExporting}
               className="flex-1 flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {exporting ? <><FaSpinner className="animate-spin" /> Exportando...</> : <><FaPrint /> Exportar</>}
+              {isExporting ? <><FaSpinner className="animate-spin" /> Exportando...</> : <><FaPrint /> Exportar</>}
             </button>
           </div>
         </div>
       </Modal>
+
     </div>
   );
 }
