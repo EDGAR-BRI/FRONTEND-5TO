@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { FaPrint, FaCalendarCheck, FaXmark, FaCalendar, FaSpinner } from "react-icons/fa6";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import StatCard from './StatCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
+import  StaticCard  from '@/components/react/primary/StaticCard';
 import { Modal } from '@/components/react/primary/Modal';
 
 export default function AppointmentsReport() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-
-  // Datos estáticos mockeados
   const mockData = {
     stats: {
       total: 156,
@@ -45,7 +44,6 @@ export default function AppointmentsReport() {
 
   const handleExportPDF = () => {
     setIsExporting(true);
-    // Simular proceso de exportación
     setTimeout(() => {
       setIsExporting(false);
       setIsExportModalOpen(false);
@@ -54,8 +52,6 @@ export default function AppointmentsReport() {
 
   return (
     <div className="flex flex-col gap-8">
-      
-      {/* 1. Encabezado de la pantalla */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Reporte de Citas</h1>
@@ -71,54 +67,14 @@ export default function AppointmentsReport() {
           </button>
         </div>
       </div>
-
-      {/* 2. Fila de Tarjetas de Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard 
-          label="Total Citas" 
-          value={mockData.stats.total.toString()} 
-          iconType="calendar" 
-        />
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-green-50 text-green-500">
-              <FaCalendarCheck size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{mockData.stats.completed}</h3>
-            <p className="text-xs text-slate-400 font-medium">Completadas</p>
-          </div>
-        </div>
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-red-50 text-red-500">
-              <FaXmark size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{mockData.stats.cancelled}</h3>
-            <p className="text-xs text-slate-400 font-medium">Canceladas</p>
-          </div>
-        </div>
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
-              <FaCalendar size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{mockData.stats.scheduled}</h3>
-            <p className="text-xs text-slate-400 font-medium">Programadas</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard title="Total Citas" value={mockData.stats.total} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
+        <StatsCard title="Completadas" value={mockData.stats.completed} color="success" icon={<FaCalendarCheck size={18} />} variant="compact" />
+        <StatsCard title="Canceladas" value={mockData.stats.cancelled} color="danger" icon={<FaXmark size={18} />} variant="compact" />
+        <StatsCard title="Programadas" value={mockData.stats.scheduled} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
       </div>
-
-      {/* 3. Panel de Gráficas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Gráfica de Líneas - Evolución Diaria */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Evolución Diaria</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -153,10 +109,8 @@ export default function AppointmentsReport() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        {/* Gráfica de Pastel - Estados */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        </StaticCard>
+        <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Distribución por Estado</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -188,12 +142,10 @@ export default function AppointmentsReport() {
               </div>
             ))}
           </div>
-        </div>
+        </StaticCard>
 
       </div>
-
-      {/* 4. Pacientes Más Frecuentes */}
-      <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+      <StaticCard className="p-8">
         <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Pacientes Más Frecuentes</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -226,7 +178,7 @@ export default function AppointmentsReport() {
             </tbody>
           </table>
         </div>
-      </div>
+      </StaticCard>
 
       <Modal 
         isOpen={isExportModalOpen} 
