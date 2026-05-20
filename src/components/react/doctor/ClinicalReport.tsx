@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { FaPrint, FaArrowDownWideShort, FaSpinner } from "react-icons/fa6";
+import { FaPrint, FaArrowDownWideShort, FaSpinner, FaCalendar, FaUsers, FaFlask } from "react-icons/fa6";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import StatCard from './StatCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
+import StaticCard from '@/components/react/primary/StaticCard';
 import { Modal } from '@/components/react/primary/Modal';
 
 export default function ClinicalReport() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Datos estáticos mockeados
   const mockData = {
     stats: {
       totalConsultations: 245,
@@ -36,7 +36,6 @@ export default function ClinicalReport() {
 
   const handleExportPDF = () => {
     setIsExporting(true);
-    // Simular proceso de exportación
     setTimeout(() => {
       setIsExporting(false);
       setIsExportModalOpen(false);
@@ -46,7 +45,6 @@ export default function ClinicalReport() {
   return (
     <div className="flex flex-col gap-8">
       
-      {/* 1. Encabezado de la pantalla */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Reporte Clínico</h1>
@@ -61,33 +59,39 @@ export default function ClinicalReport() {
         </button>
       </div>
 
-      {/* 2. Fila de Tarjetas (Usando tu StatCard) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-          label="Consultas Totales" 
-          value={mockData.stats.totalConsultations.toString()} 
-          iconType="calendar" 
-          trend={`+${mockData.stats.consultationsGrowth}%`} 
+        <StatsCard 
+          title="Consultas Totales" 
+          value={mockData.stats.totalConsultations} 
+          color="primary" 
+          icon={<FaCalendar size={18} />} 
+          trend={`+${mockData.stats.consultationsGrowth}%`}
+          trendUp={true}
+          variant="compact" 
         />
-        <StatCard 
-          label="Pacientes Nuevos" 
-          value={mockData.stats.newPatients.toString()} 
-          iconType="users" 
-          trend={`+${mockData.stats.patientsGrowth}%`} 
+        <StatsCard 
+          title="Pacientes Nuevos" 
+          value={mockData.stats.newPatients} 
+          color="primary" 
+          icon={<FaUsers size={18} />} 
+          trend={`+${mockData.stats.patientsGrowth}%`}
+          trendUp={true}
+          variant="compact" 
         />
-        <StatCard 
-          label="Exámenes Realizados" 
-          value={mockData.stats.examsPerformed.toString()} 
-          iconType="beaker" 
-          trend={`+${mockData.stats.examsGrowth}%`} 
+        <StatsCard 
+          title="Exámenes Realizados" 
+          value={mockData.stats.examsPerformed} 
+          color="primary" 
+          icon={<FaFlask size={18} />} 
+          trend={`+${mockData.stats.examsGrowth}%`}
+          trendUp={true}
+          variant="compact" 
         />
       </div>
 
-      {/* 3. Panel de Gráfica y Detalles */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Gráfica de Barras */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        <StaticCard className="lg:col-span-2 p-8">
           <div className="flex justify-between items-center mb-8">
             <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest">Patologías Recurrentes</h3>
             <FaArrowDownWideShort className="text-slate-400" />
@@ -107,10 +111,9 @@ export default function ClinicalReport() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </StaticCard>
 
-        {/* Listado lateral */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+        <StaticCard className="p-8 flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Últimos Diagnósticos</h3>
             <div className="space-y-6">
@@ -127,10 +130,10 @@ export default function ClinicalReport() {
               ))}
             </div>
           </div>
-          <button className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition">
+          <button className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition mt-6">
             Ver historial completo
           </button>
-        </div>
+        </StaticCard>
 
       </div>
 
@@ -146,7 +149,7 @@ export default function ClinicalReport() {
           <div className="bg-slate-50 p-4 rounded-lg">
             <p className="text-sm text-slate-600 mb-2">El reporte incluirá:</p>
             <ul className="text-sm text-slate-600 space-y-1">
-              <li>• Estadísticas de consultas totales y pacientes nuevos</li>
+              <li>• Estadísticas de consultas totales and pacientes nuevos</li>
               <li>• Exámenes realizados</li>
               <li>• Gráfica de patologías recurrentes</li>
               <li>• Lista de últimos diagnósticos</li>
