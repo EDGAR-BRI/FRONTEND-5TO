@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { FaPrint, FaDollarSign, FaArrowTrendUp, FaArrowTrendDown, FaMoneyBillWave, FaSpinner } from "react-icons/fa6";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import StatCard from './StatCard';
+import { StatsCard } from '@/components/react/primary/StatsCard';
+import StaticCard from '@/components/react/primary/StaticCard';
 import { Modal } from '@/components/react/primary/Modal';
 
 export default function FinanceReport() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Datos estáticos mockeados
   const mockData = {
     stats: {
       totalRevenue: 125000,
@@ -41,14 +41,12 @@ export default function FinanceReport() {
 
   const handleExportPDF = () => {
     setIsExporting(true);
-    // Simular proceso de exportación
     setTimeout(() => {
       setIsExporting(false);
       setIsExportModalOpen(false);
     }, 2000);
   };
 
-  // Formatear valores monetarios
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-VE', {
       style: 'currency',
@@ -56,13 +54,11 @@ export default function FinanceReport() {
     }).format(amount);
   };
 
-  // Datos para el gráfico de fuentes de ingresos
   const revenueSourcesColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
   return (
     <div className="flex flex-col gap-8">
       
-      {/* 1. Encabezado de la pantalla */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Reporte Financiero</h1>
@@ -77,66 +73,42 @@ export default function FinanceReport() {
         </button>
       </div>
 
-      {/* 2. Fila de Tarjetas de Estadísticas Financieras */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-green-50 text-green-500">
-              <FaDollarSign size={20} />
-            </div>
-            <div className={`flex items-center gap-1 text-[10px] font-bold ${mockData.stats.growthRate >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'} px-2 py-0.5 rounded-full`}>
-              {mockData.stats.growthRate >= 0 ? <FaArrowTrendUp size={10} /> : <FaArrowTrendDown size={10} />}
-              {Math.abs(mockData.stats.growthRate)}%
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(mockData.stats.totalRevenue)}</h3>
-            <p className="text-xs text-slate-400 font-medium">Ingresos Totales</p>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-red-50 text-red-500">
-              <FaMoneyBillWave size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(mockData.stats.totalExpenses)}</h3>
-            <p className="text-xs text-slate-400 font-medium">Gastos Totales</p>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
-              <FaDollarSign size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(mockData.stats.netProfit)}</h3>
-            <p className="text-xs text-slate-400 font-medium">Ganancia Neta</p>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-purple-50 text-purple-500">
-              <FaArrowTrendUp size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{mockData.stats.profitMargin}%</h3>
-            <p className="text-xs text-slate-400 font-medium">Margen de Ganancia</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 data-nums-compact">
+        <StatsCard 
+          title="Ingresos Totales" 
+          value={formatCurrency(mockData.stats.totalRevenue)} 
+          color="primary" 
+          icon={<FaDollarSign size={18} />} 
+          trend={`+${Math.abs(mockData.stats.growthRate)}%`}
+          trendUp={mockData.stats.growthRate >= 0}
+          variant="compact" 
+        />
+        <StatsCard 
+          title="Gastos Totales" 
+          value={formatCurrency(mockData.stats.totalExpenses)} 
+          color="danger" 
+          icon={<FaMoneyBillWave size={18} />} 
+          variant="compact" 
+        />
+        <StatsCard 
+          title="Ganancia Neta" 
+          value={formatCurrency(mockData.stats.netProfit)} 
+          color="success" 
+          icon={<FaDollarSign size={18} />} 
+          variant="compact" 
+        />
+        <StatsCard 
+          title="Margen de Ganancia" 
+          value={`${mockData.stats.profitMargin}%`} 
+          color="primary" 
+          icon={<FaArrowTrendUp size={18} />} 
+          variant="compact" 
+        />
       </div>
 
-      {/* 3. Panel de Gráficas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Gráfica de Barras - Ingresos Mensuales */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Evolución Mensual</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -158,10 +130,9 @@ export default function FinanceReport() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </StaticCard>
 
-        {/* Gráfica de Líneas - Tendencia */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Tendencia de Ganancias</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -189,15 +160,13 @@ export default function FinanceReport() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </StaticCard>
 
       </div>
 
-      {/* 4. Fuentes de Ingresos y Transacciones Recientes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Gráfica de Pastel - Fuentes de Ingresos */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Fuentes de Ingresos</h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -234,10 +203,9 @@ export default function FinanceReport() {
               </div>
             ))}
           </div>
-        </div>
+        </StaticCard>
 
-        {/* Transacciones Recientes */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+        <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Transacciones Recientes</h3>
           <div className="space-y-4 max-h-80 overflow-y-auto">
             {mockData.recentTransactions.map((transaction) => (
@@ -266,7 +234,7 @@ export default function FinanceReport() {
               </div>
             ))}
           </div>
-        </div>
+        </StaticCard>
 
       </div>
 
@@ -282,11 +250,10 @@ export default function FinanceReport() {
           <div className="bg-slate-50 p-4 rounded-lg">
             <p className="text-sm text-slate-600 mb-2">El reporte incluirá:</p>
             <ul className="text-sm text-slate-600 space-y-1">
-              <li>• Estadísticas financieras (ingresos, gastos, ganancia neta)</li>
-              <li>• Gráfica de evolución mensual</li>
-              <li>• Tendencia de ganancias</li>
-              <li>• Fuentes de ingresos</li>
-              <li>• Transacciones recientes</li>
+              <li>• Estadísticas de citas (total, completadas, canceladas, programadas)</li>
+              <li>• Gráfica de evolución diaria</li>
+              <li>• Distribución por estado</li>
+              <li>• Lista de pacientes más frecuentes</li>
             </ul>
           </div>
           <div className="flex gap-3 pt-2">
@@ -306,6 +273,22 @@ export default function FinanceReport() {
           </div>
         </div>
       </Modal>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .data-nums-compact h3, 
+        .data-nums-compact [class*="text-2xl"], 
+        .data-nums-compact span {
+          font-size: 1.125rem !important;
+          line-height: 1.75rem !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          max-width: 100% !important;
+        }
+        .data-nums-compact div[class*="relative"] {
+          overflow: hidden !important;
+        }
+      `}} />
 
     </div>
   );
