@@ -7,8 +7,8 @@ import { Badge } from "@/components/react/primary/Badge";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import StaticCard from "@/components/react/primary/StaticCard";
-import { Button } from "@/components/react/primary/Button";
 import { getOperativosOverview } from "@/lib/services/report/operativos.service";
+import OperativosPdfExport from "@/components/react/admin/reports/OperativosPdfExport";
 import {
     FaArrowRight,
     FaCalendarCheck,
@@ -16,7 +16,6 @@ import {
     FaHospitalUser,
     FaStethoscope,
     FaUserDoctor,
-    FaFilePdf,
     FaPrint
 } from "react-icons/fa6";
 
@@ -62,9 +61,8 @@ const concreteReports = [
                 <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte Operativo</h1>
                 <p class="text-gray-500 mt-1">Seguimiento de capacidad, tiempos y productividad asistencial.</p>
             </div>
-            <div class="flex gap-3">
-                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
-                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+		    <div class="flex gap-3">
+				<OperativosPdfExport client:load from={from} to={to} period={period} preset={preset} />
             </div>
         </header>
 
