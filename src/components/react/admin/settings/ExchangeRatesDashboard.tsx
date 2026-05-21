@@ -6,7 +6,7 @@ import { DataTable, type Column } from "@/components/react/primary/DataTable";
 import { ModalTrigger } from "@/components/react/primary/ModalTrigger";
 import { Button, ButtonTheme } from "@/components/react/primary/Button";
 import { Alert } from "@/utils/alerts";
-import { createExchangeRate, getExchangeRates, updateExchangeRate, type ExchangeRate } from "@/lib/services/finance/exchange-rate/exchange_rate.service";
+import { createExchangeRate, getExchangeRates, syncBcvRate, updateExchangeRate, type ExchangeRate } from "@/lib/services/finance/exchange-rate/exchange_rate.service";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 const formatDate = (value: string) => new Date(value).toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" });
@@ -62,6 +62,7 @@ function ExchangeRateForm({ rateItem, onSaved, close }: { rateItem?: ExchangeRat
 export default function ExchangeRatesDashboard() {
     const [items, setItems] = useState<ExchangeRate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const reload = async () => {
         setIsLoading(true);
@@ -123,9 +124,33 @@ export default function ExchangeRatesDashboard() {
                             <p className="text-xs text-primary-200 mt-0.5">Registro histórico y activación de la tasa vigente.</p>
                         </div>
                     </div>
-                    <ModalTrigger modalTitle="Crear tasa de cambio" buttonLabel="Nueva tasa">
-                        {({ close }) => <ExchangeRateForm onSaved={reload} close={close} />}
-                    </ModalTrigger>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                            label={isSyncing ? "Actualizando..." : "Refrescar BCV"}
+                            variant={ButtonTheme.SECONDARY}
+                            loading={isSyncing}
+                            onClick={async () => {
+                                if (isSyncing) return;
+                                setIsSyncing(true);
+                                try {
+                                    const result = await syncBcvRate();
+                                    await reload();
+                                    if (result.changed) {
+                                        await Alert.success("Tasa actualizada", `Nueva tasa BCV: ${Number(result.rate?.rate ?? 0).toFixed(4)} Bs`);
+                                    } else {
+                                        await Alert.info("Sin cambios", "La tasa BCV sigue igual.");
+                                    }
+                                } catch (err) {
+                                    await Alert.error("No se pudo actualizar", err instanceof Error ? err.message : "Error desconocido");
+                                } finally {
+                                    setIsSyncing(false);
+                                }
+                            }}
+                        />
+                        <ModalTrigger modalTitle="Crear tasa de cambio" buttonLabel="Nueva tasa">
+                            {({ close }) => <ExchangeRateForm onSaved={reload} close={close} />}
+                        </ModalTrigger>
+                    </div>
                 </div>
 
                 <DataTable<ExchangeRate> className="rounded-none! border-none!" endpoint="" data={items} columns={columns} isLoading={isLoading} />
