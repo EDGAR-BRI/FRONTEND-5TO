@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FaPrint, FaCalendarCheck, FaXmark, FaCalendar, FaSpinner } from "react-icons/fa6";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { StatsCard } from '@/components/react/primary/StatsCard';
@@ -8,6 +8,10 @@ import { Modal } from '@/components/react/primary/Modal';
 export default function AppointmentsReport() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [filters, setFilters] = useState({
+    from: '',
+    to: ''
+  });
   const mockData = {
     stats: {
       total: 156,
@@ -36,11 +40,78 @@ export default function AppointmentsReport() {
     ]
   };
 
-  const statusData = [
-    { name: 'Completadas', value: mockData.stats.completed, color: '#10b981' },
-    { name: 'Canceladas', value: mockData.stats.cancelled, color: '#ef4444' },
-    { name: 'Programadas', value: mockData.stats.scheduled, color: '#3b82f6' },
-  ];
+  const currentYear = new Date().getFullYear();
+  const parseDayMonth = (value: string) => {
+    const [day, month] = value.split('/').map(Number);
+    return new Date(currentYear, (month || 1) - 1, day || 1);
+  };
+
+  const isWithinRange = (date: Date, from?: Date, to?: Date) => {
+    if (from && date < from) return false;
+    if (to) {
+      const end = new Date(to);
+      end.setHours(23, 59, 59, 999);
+      if (date > end) return false;
+    }
+    return true;
+  };
+
+  const fromDate = filters.from ? new Date(filters.from) : undefined;
+  const toDate = filters.to ? new Date(filters.to) : undefined;
+
+  const filteredDailyData = useMemo(() => {
+    return mockData.dailyData.filter((item) => isWithinRange(parseDayMonth(item.date), fromDate, toDate));
+  }, [mockData.dailyData, fromDate, toDate]);
+
+  const computedStats = useMemo(() => {
+    return filteredDailyData.reduce((acc, item) => {
+      acc.total += item.total;
+      acc.completed += item.completed;
+      acc.cancelled += item.cancelled;
+      return acc;
+    }, { total: 0, completed: 0, cancelled: 0, scheduled: 0 });
+  }, [filteredDailyData]);
+
+  const statsWithScheduled = useMemo(() => {
+    const scheduled = Math.max(computedStats.total - computedStats.completed - computedStats.cancelled, 0);
+    return { ...computedStats, scheduled };
+  }, [computedStats]);
+
+  const statusData = useMemo(() => {
+    return [
+      { name: 'Completadas', value: statsWithScheduled.completed, color: '#10b981' },
+      { name: 'Canceladas', value: statsWithScheduled.cancelled, color: '#ef4444' },
+      { name: 'Programadas', value: statsWithScheduled.scheduled, color: '#3b82f6' },
+    ];
+  }, [statsWithScheduled]);
+
+  const filteredTopPatients = useMemo(() => {
+    return mockData.topPatients.filter((patient) => {
+      const lastDate = new Date(patient.lastAppointmentDate);
+      return isWithinRange(lastDate, fromDate, toDate);
+    });
+  }, [mockData.topPatients, fromDate, toDate]);
+
+  const applyQuickRange = (range: 'day' | 'week' | 'month') => {
+    const today = new Date();
+    const end = today.toISOString().slice(0, 10);
+    let startDate = new Date(today);
+
+    if (range === 'week') {
+      startDate.setDate(startDate.getDate() - 6);
+    }
+
+    if (range === 'month') {
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    }
+
+    if (range === 'day') {
+      startDate = today;
+    }
+
+    const start = startDate.toISOString().slice(0, 10);
+    setFilters({ from: start, to: end });
+  };
 
   const handleExportPDF = () => {
     setIsExporting(true);
@@ -67,18 +138,79 @@ export default function AppointmentsReport() {
           </button>
         </div>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard title="Total Citas" value={mockData.stats.total} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
-        <StatsCard title="Completadas" value={mockData.stats.completed} color="success" icon={<FaCalendarCheck size={18} />} variant="compact" />
-        <StatsCard title="Canceladas" value={mockData.stats.cancelled} color="danger" icon={<FaXmark size={18} />} variant="compact" />
-        <StatsCard title="Programadas" value={mockData.stats.scheduled} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
+        <StatsCard title="Total Citas" value={statsWithScheduled.total} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
+        <StatsCard title="Completadas" value={statsWithScheduled.completed} color="success" icon={<FaCalendarCheck size={18} />} variant="compact" />
+        <StatsCard title="Canceladas" value={statsWithScheduled.cancelled} color="danger" icon={<FaXmark size={18} />} variant="compact" />
+        <StatsCard title="Programadas" value={statsWithScheduled.scheduled} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
       </div>
+
+            <StaticCard className="p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest">Filtros</h3>
+            <button
+              type="button"
+              onClick={() => setFilters({ from: '', to: '' })}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="text-xs font-semibold text-slate-600 flex flex-col gap-2">
+              Desde
+              <input
+                type="date"
+                value={filters.from}
+                onChange={(event) => setFilters((prev) => ({ ...prev, from: event.target.value }))}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              />
+            </label>
+            <label className="text-xs font-semibold text-slate-600 flex flex-col gap-2">
+              Hasta
+              <input
+                type="date"
+                value={filters.to}
+                onChange={(event) => setFilters((prev) => ({ ...prev, to: event.target.value }))}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => applyQuickRange('day')}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Hoy
+            </button>
+            <button
+              type="button"
+              onClick={() => applyQuickRange('week')}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              onClick={() => applyQuickRange('month')}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Mes
+            </button>
+          </div>
+        </div>
+      </StaticCard>
+
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Evolución Diaria</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockData.dailyData}>
+              <LineChart data={filteredDailyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="date" 
@@ -159,13 +291,13 @@ export default function AppointmentsReport() {
               </tr>
             </thead>
             <tbody>
-              {mockData.topPatients.map((patient, index) => (
-                <tr key={patient.patientId} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
-                        {index + 1}
-                      </div>
+            {filteredTopPatients.map((patient, index) => (
+              <tr key={patient.patientId} className="border-b border-slate-100 hover:bg-slate-50">
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                      {index + 1}
+                    </div>
                       <span className="font-medium text-slate-800">{patient.patientName}</span>
                     </div>
                   </td>

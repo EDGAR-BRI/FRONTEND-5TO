@@ -3,8 +3,11 @@ import DoctorLayout from "@/layouts/DoctorLayout.astro";
 import FinanceReport from "@/components/react/doctor/FinanceReport.tsx";
 ---
 
-<DoctorLayout title="Reportes Financieros | Doctor" currentPath="/modules/doctor/[doctor_id]/reports/finance">
-  <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen">
+<DoctorLayout
+  title="Reportes Financieros | Doctor"
+  currentPath="/modules/doctor/[doctor_id]/reports/finance"
+>
+  <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen gap-5 flex flex-col">
     <FinanceReport client:load />
   </main>
 </DoctorLayout>
