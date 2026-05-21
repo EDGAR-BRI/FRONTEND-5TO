@@ -6,14 +6,38 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
+  Legend,
   ResponsiveContainer
 } from 'recharts';
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const duration = payload.find((entry) => entry.dataKey === 'durationMinutes')?.value ?? 0;
+  const consultations = payload.find((entry) => entry.dataKey === 'consultationCount')?.value ?? 0;
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+      <div className="mb-2 text-sm font-bold text-slate-800">{label}</div>
+      <div className="space-y-1 text-sm text-slate-600">
+        <div className="flex items-center justify-between gap-4">
+          <span>Duración promedio</span>
+          <span className="font-semibold text-blue-600">{Number(duration).toFixed(1)} min</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Consultas realizadas</span>
+          <span className="font-semibold text-red-500">{Number(consultations)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function TiemposAreaChart({ data }) {
   const cleanData = data ? data.map(item => ({
     name: item.area,
-    Consulta: parseFloat(String(item.consult)) || 0,
-    Consultas: parseInt(String(item.wait), 10) || 0
+    durationMinutes: parseFloat(String(item.consult)) || 0,
+    consultationCount: Number(item.consultations) || 0
   })) : [];
 
   return (
@@ -42,24 +66,36 @@ export default function TiemposAreaChart({ data }) {
           />
           
           <YAxis 
+            yAxisId="left"
             axisLine={false} 
             tickLine={false} 
             tick={{ fill: '#94a3b8', fontSize: 11 }} 
-            unit="m" 
+            unit=" min" 
+          />
+
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            allowDecimals={false}
           />
           
           <Tooltip 
-            contentStyle={{ 
-              borderRadius: '12px', 
-              border: 'none', 
-              boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-              fontSize: '13px'
-            }}
+            content={<CustomTooltip />}
+          />
+
+          <Legend 
+            wrapperStyle={{ paddingTop: '12px' }}
+            formatter={(value) => <span style={{ color: '#475569', fontWeight: 600, fontSize: '12px', marginLeft: '6px' }}>{value}</span>}
           />
           
           <Area 
             type="monotone" 
-            dataKey="Consulta" 
+            yAxisId="left"
+            dataKey="durationMinutes" 
+            name="Duración promedio" 
             stroke="#3b82f6" 
             strokeWidth={3}
             fillOpacity={1} 
@@ -69,7 +105,9 @@ export default function TiemposAreaChart({ data }) {
           
           <Area 
             type="monotone" 
-            dataKey="Consultas" 
+            yAxisId="right"
+            dataKey="consultationCount" 
+            name="Consultas realizadas" 
             stroke="#f87171" 
             strokeWidth={3}
             fillOpacity={1} 

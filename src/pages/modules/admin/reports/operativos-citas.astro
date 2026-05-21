@@ -22,9 +22,15 @@ if (preset) filterQuery.set("preset", preset);
 const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
 
 const agenda = report.data.dailyData.map((item) => ({
-  day: new Date(`${item.date}T00:00:00Z`).toLocaleDateString("es-VE", { weekday: "long", timeZone: "UTC" }),
+  date: item.date,
+  label: new Date(`${item.date}T00:00:00Z`).toLocaleDateString("es-VE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "UTC",
+  }),
   attended: item.attended,
-  noShow: item.cancelled,
+  cancelled: item.cancelled,
 }));
 ---
 
@@ -42,13 +48,13 @@ const agenda = report.data.dailyData.map((item) => ({
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Citas semanales" value={report.data.stats.totalAppointments} trend="4.3%" trendUp={true} color="primary">
+      <StatsCard title="Citas en periodo" value={report.data.stats.totalAppointments} trend="4.3%" trendUp={true} color="primary">
         <FaCalendarCheck slot="icon" size={20} />
       </StatsCard>
       <StatsCard title="Canceladas" value={`${report.data.stats.cancellationRate.toFixed(1)}%`} trend="1.1%" trendUp={false} color="warning">
         <FaUserClock slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Cumplimiento" value={`${report.data.stats.completionRate.toFixed(1)}%`} trend="2.0%" trendUp={true} color="success">
+      <StatsCard title="Tasa de atención" value={`${report.data.stats.completionRate.toFixed(1)}%`} trend="2.0%" trendUp={true} color="success">
         <FaClock slot="icon" size={20} />
       </StatsCard>
     </section>
@@ -80,9 +86,9 @@ const agenda = report.data.dailyData.map((item) => ({
           <tbody class="divide-y divide-primary-300">
             {agenda.map((row) => (
               <tr class="hover:bg-primary-500/20 transition-colors">
-                <td class="px-4 py-3 text-sm font-medium">{row.day}</td>
+                <td class="px-4 py-3 text-sm font-medium">{row.label}</td>
                 <td class="px-4 py-3 text-sm text-right font-bold">{row.attended}</td>
-                <td class="px-4 py-3 text-sm text-right font-bold text-red-600">{row.noShow}</td>
+                <td class="px-4 py-3 text-sm text-right font-bold text-red-600">{row.cancelled}</td>
               </tr>
             ))}
           </tbody>

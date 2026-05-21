@@ -24,8 +24,8 @@ const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
 const doctors = report.data.byDoctor.map((item) => ({
   name: item.name,
   attended: item.attended,
-  avgTime: `${item.avgTime.toFixed(1)} min`,
-  revenue: `$${item.revenue.toFixed(2)}`,
+  avgTime: item.avgTime,
+  revenue: item.revenue,
 }));
 ---
 
@@ -61,8 +61,8 @@ const doctors = report.data.byDoctor.map((item) => ({
       <div class="mt-8">
       <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">
         <div class="mb-8 border-b border-gray-100 pb-5">
-            <h2 class="text-xl font-bold text-gray-800">Carga de Trabajo vs. Ingresos</h2>
-            <p class="text-sm text-gray-500 font-medium">Relación entre atenciones realizadas e ingresos generados por médico.</p>
+        <h2 class="text-xl font-bold text-gray-800">Productividad por médico</h2>
+        <p class="text-sm text-gray-500 font-medium">Atenciones realizadas, tiempo promedio por consulta e ingresos generados por cada médico.</p>
         </div>
          <ProductividadComposedChart client:only="react" data={doctors} />
        </section>
@@ -83,7 +83,7 @@ const doctors = report.data.byDoctor.map((item) => ({
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Médico</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Atenciones</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Tiempo prom.</th>
-               <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ingresos</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ingresos</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-primary-300">
@@ -92,8 +92,8 @@ const doctors = report.data.byDoctor.map((item) => ({
                 <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
                   <td class="px-4 py-3 text-sm text-gray-700 font-medium">{item.name}</td>
                   <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.attended}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.avgTime}</td>
-                   <td class="px-4 py-3 text-sm text-right font-bold text-emerald-600">{item.revenue}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.avgTime.toFixed(1)} min</td>
+                  <td class="px-4 py-3 text-sm text-right font-bold text-emerald-600">${item.revenue.toFixed(2)}</td>
                 </tr>
               ))
             }
