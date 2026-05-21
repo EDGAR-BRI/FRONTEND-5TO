@@ -22,7 +22,7 @@ const menuItems = [
 	},
 	{
 		label: "Pacientes",
-		href: `${baseUrl}/patients`,
+		href: `${baseUrl}/patient`,
 		icon: FaUsers,
 	},
 	{
@@ -58,7 +58,7 @@ const currentPath = Astro.url.pathname;
 			class="min-h-[calc(100vh-4rem)] flex flex-col lg:pl-75 lg:pr-8  transition-[padding] duration-300 pt-16 lg:pt-0"
 		>
 			<Sidebar menuItems={menuItems} currentPath={currentPath} />
-			<div class="flex-1 pb-8 lg:pb-0">
+			<div class="flex-1 pb-8 lg:pb-0 @container">
 				<!-- Bottom padding for mobile navbar -->
 				<slot />
 			</div>
