@@ -6,19 +6,32 @@ import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFi
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaArrowLeft, FaCalendarCheck, FaClock, FaUserClock } from "react-icons/fa6";
 import CitasBarChart from "@/components/react/admin/CitasBarChart";
+import { getOperativosCitas } from "@/lib/services/report/operativos.service";
 
-const agenda = [
-  { day: "Lunes", attended: 31, noShow: 5 },
-  { day: "Martes", attended: 39, noShow: 3 },
-  { day: "Miércoles", attended: 34, noShow: 4 },
-  { day: "Jueves", attended: 40, noShow: 4 },
-];
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = (Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const report = await getOperativosCitas({ from, to, period });
+
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
+
+const agenda = report.data.dailyData.map((item) => ({
+  day: new Date(`${item.date}T00:00:00Z`).toLocaleDateString("es-VE", { weekday: "long", timeZone: "UTC" }),
+  attended: item.attended,
+  noShow: item.cancelled,
+}));
 ---
 
 <AdminLayout title="Operativos - Citas | Admin">
   <div class="p-6 md:p-8 space-y-8">
     
-    <a href="/modules/admin/reports/operativos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+    <a href={`/modules/admin/reports/operativos${filterSuffix}`} class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a operativos
     </a>
@@ -29,18 +42,18 @@ const agenda = [
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Citas semanales" value="160" trend="4.3%" trendUp={true} color="primary">
+      <StatsCard title="Citas semanales" value={report.data.stats.totalAppointments} trend="4.3%" trendUp={true} color="primary">
         <FaCalendarCheck slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="No show" value="10%" trend="1.1%" trendUp={false} color="warning">
+      <StatsCard title="Canceladas" value={`${report.data.stats.cancellationRate.toFixed(1)}%`} trend="1.1%" trendUp={false} color="warning">
         <FaUserClock slot="icon" size={20} />
       </StatsCard>
-      <StatsCard title="Puntualidad" value="88%" trend="2.0%" trendUp={true} color="success">
+      <StatsCard title="Cumplimiento" value={`${report.data.stats.completionRate.toFixed(1)}%`} trend="2.0%" trendUp={true} color="success">
         <FaClock slot="icon" size={20} />
       </StatsCard>
     </section>
 
-    <ReportTimeframeFilters client:load title="Filtro de citas" />
+    <ReportTimeframeFilters client:load title="Filtro de citas" initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
     <div class="mt-8">
       <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">
@@ -61,7 +74,7 @@ const agenda = [
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-primary-900">Día</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Atendidas</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Ausencias</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-primary-900">Canceladas</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-primary-300">

@@ -12,8 +12,8 @@ import {
 export default function TiemposAreaChart({ data }) {
   const cleanData = data ? data.map(item => ({
     name: item.area,
-    Consulta: parseInt(item.consult) || 0,
-    Espera: parseInt(item.wait) || 0
+    Consulta: parseFloat(String(item.consult)) || 0,
+    Consultas: parseInt(String(item.wait), 10) || 0
   })) : [];
 
   return (
@@ -69,7 +69,7 @@ export default function TiemposAreaChart({ data }) {
           
           <Area 
             type="monotone" 
-            dataKey="Espera" 
+            dataKey="Consultas" 
             stroke="#f87171" 
             strokeWidth={3}
             fillOpacity={1} 

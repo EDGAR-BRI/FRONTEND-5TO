@@ -57,7 +57,7 @@ const CitasBarChart = ({ data }) => {
           />
           <Bar 
             dataKey="noShow" 
-            name="Ausencias" 
+            name="Canceladas" 
             stackId="a" 
             fill="#e2e8f0" 
             radius={[6, 6, 0, 0]} 

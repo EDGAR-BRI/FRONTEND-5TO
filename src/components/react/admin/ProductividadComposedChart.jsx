@@ -14,7 +14,7 @@ export default function ProductividadComposedChart({ data }) {
   const cleanData = data.map(item => ({
     name: item.name,
     Atenciones: item.attended,
-    Saturacion: parseInt(item.saturation)
+    Ingresos: parseFloat(String(item.revenue).replace(/[^0-9.-]/g, '')) || 0,
   }));
 
   return (
@@ -38,13 +38,13 @@ export default function ProductividadComposedChart({ data }) {
             tickLine={false} 
             tick={{ fill: '#94a3b8', fontSize: 11 }} 
           />
-          {/* Eje Derecho para Saturación % */}
+          {/* Eje Derecho para Ingresos */}
           <YAxis 
             yAxisId="right" 
             orientation="right" 
             axisLine={false} 
             tickLine={false} 
-            unit="%"
+            unit="$"
             tick={{ fill: '#94a3b8', fontSize: 11 }} 
           />
           
@@ -66,7 +66,7 @@ export default function ProductividadComposedChart({ data }) {
           <Line 
             yAxisId="right" 
             type="monotone" 
-            dataKey="Saturacion" 
+            dataKey="Ingresos" 
             stroke="#ef4444" 
             strokeWidth={3} 
             dot={{ r: 6, fill: '#ef4444', strokeWidth: 2, stroke: '#fff' }} 
