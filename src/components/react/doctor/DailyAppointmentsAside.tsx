@@ -75,7 +75,7 @@ export const DailyAppointmentsAside: React.FC<{ citas: Appointment[]; doctorId?:
                     onClick={() => setActiveTab('pendientes')}
                     className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${activeTab === 'pendientes' ? 'bg-white shadow-sm text-primary-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
                 >
-                    Pendientes
+                    Confirmadas y En Progreso
                 </button>
                 <button 
                     onClick={() => setActiveTab('completadas')}
