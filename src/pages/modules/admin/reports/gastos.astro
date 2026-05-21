@@ -3,11 +3,11 @@ export const prerender = false;
 
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ActionCard from "@/components/react/primary/ActionCard";
-import { Button } from "@/components/react/primary/Button";
 import StaticCard from "@/components/react/primary/StaticCard";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { getExpenseSummary } from "@/lib/services/report/expense.service";
+import GastosPdfExport from "@/components/react/admin/reports/GastosPdfExport";
 import {
     FaArrowRight,
     FaCartFlatbed,
@@ -15,7 +15,6 @@ import {
     FaUsersGear,
     FaHandHoldingDollar,
     FaTriangleExclamation,
-    FaFilePdf,
     FaPrint,
     FaScaleBalanced,
     FaMoneyBillTransfer
@@ -77,9 +76,8 @@ const coreExpenseModules = [
                 <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte de Gastos</h1>
                 <p class="text-gray-500 mt-1">Vista general de egresos y reportes financieros concretos.</p>
             </div>
-            <div class="flex gap-3">
-                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
-                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+		    <div class="flex gap-3">
+				<GastosPdfExport client:load from={from} to={to} period={period} preset={preset} />
             </div>
         </header>
 
