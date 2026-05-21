@@ -6,7 +6,6 @@ import {
 	FaUser,
 } from "react-icons/fa6";
 import ActionCard from "../primary/ActionCard";
-import { PatientHistoryModal } from "./PatientHistoryModal";
 import type { PatientWithConsultations } from "@/hooks/react/doctor/usePatientConsultations";
 
 interface Props {
@@ -68,7 +67,6 @@ export function PatientList({
 	emptyMessage = "No hay pacientes para mostrar.",
 }: Props) {
 	const [search, setSearch] = useState("");
-	const [selectedPatient, setSelectedPatient] = useState<PatientWithConsultations | null>(null);
 
 	const filteredPatients = useMemo(() => {
 		const q = search.trim().toLowerCase();
@@ -114,20 +112,17 @@ export function PatientList({
 								<PatientCard
 									key={p.id}
 									patient={p}
-									onClick={() => setSelectedPatient(p)}
+									onClick={() => {
+										window.location.replace(
+											`/modules/doctor/${doctorId}/patient/${p.id}/history`
+										);
+									}}
 								/>
 							))
 						)}
 					</div>
 				</div>
 			</div>
-
-			<PatientHistoryModal
-				isOpen={!!selectedPatient}
-				onClose={() => setSelectedPatient(null)}
-				patient={selectedPatient}
-				doctorId={doctorId}
-			/>
 		</>
 	);
 }
