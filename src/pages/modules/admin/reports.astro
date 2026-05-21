@@ -28,7 +28,7 @@ const preset = Astro.url.searchParams.get("preset") ?? undefined;
 		</header>
 
 		<ReportTimeframeFilters
-			client:visible
+			client:load
 			title="Filtros del centro de reportes"
 			subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos y demanda."
 			initialPeriod={period}

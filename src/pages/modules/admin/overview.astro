@@ -15,7 +15,7 @@ import { FaBox, FaUser } from "react-icons/fa6";
 			</p>
 		</header>
 
-		<OverviewStats client:visible />
+		<OverviewStats client:load />
 
 		<div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<div
@@ -26,7 +26,7 @@ import { FaBox, FaUser } from "react-icons/fa6";
 						Usuarios Recientes
 					</h2>
 				</div>
-				<RecentUsersTable client:visible />
+				<RecentUsersTable client:load />
 			</div>
 
 			<div
