@@ -3,7 +3,7 @@ import "@/styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Sidebar from "@/components/astro/Sidebar.astro";
 import MobileSidebarDrawer from "@/components/astro/MobileSidebarDrawer.astro";
-import { FaCalendarDays, FaHouse, FaUserDoctor, FaChartLine, FaUsers, FaFileMedical, FaStethoscope, FaDollarSign } from "react-icons/fa6";
+import { FaCalendarDays, FaHouse, FaUserDoctor, FaChartLine, FaUsers, FaFileMedical, FaDollarSign } from "react-icons/fa6";
 const { title } = Astro.props;
 const { doctor_id = "1" } = Astro.params;
 
@@ -29,7 +29,6 @@ const menuItems = [
 		label: "Reportes",
 		icon: FaChartLine,
 		subItems: [
-			// { label: "Clínicos", href: `${baseUrl}/reports/clinical`, icon: FaStethoscope },
 			{ label: "Financieros", href: `${baseUrl}/reports/finance`, icon: FaDollarSign },
 			{ label: "Citas", href: `${baseUrl}/reports/appointments`, icon: FaCalendarDays },
 		]
