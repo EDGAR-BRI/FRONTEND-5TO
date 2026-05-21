@@ -4,6 +4,7 @@ import { readEnvelopeErrorMessage } from '@/lib/services/_shared/envelope';
 export type ExpenseSummaryQuery = {
   from?: string;
   to?: string;
+  period?: 'day' | 'week' | 'month' | 'year';
 };
 
 export type ExpenseSummaryResponse = {
@@ -15,6 +16,7 @@ export type ExpenseSummaryResponse = {
       previousFrom: string;
       previousTo: string;
       periodDays: number;
+      period?: 'day' | 'week' | 'month' | 'year';
     };
     summary: {
       totalExpenseUsd: number;
@@ -47,6 +49,10 @@ export type ExpenseSummaryResponse = {
       category: string;
       amountUsd: number;
       percentage: number;
+      breakdown: Array<{
+        label: string;
+        amountUsd: number;
+      }>;
     }>;
     payrollBySpecialty: Array<{
       specialtyId: number | null;
@@ -72,6 +78,7 @@ export const getExpenseSummary = async (params: ExpenseSummaryQuery = {}): Promi
   const searchParams = new URLSearchParams();
   if (params.from) searchParams.set('from', params.from);
   if (params.to) searchParams.set('to', params.to);
+  if (params.period) searchParams.set('period', params.period);
 
   const endpoint = searchParams.toString() ? `/report/expense-summary?${searchParams.toString()}` : '/report/expense-summary';
   const response = await api(endpoint, { method: 'GET' });

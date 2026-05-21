@@ -9,9 +9,9 @@ import { getExpenseSummary } from "@/lib/services/report/expense.service";
 
 const from = Astro.url.searchParams.get("from") ?? undefined;
 const to = Astro.url.searchParams.get("to") ?? undefined;
-const period = Astro.url.searchParams.get("period") ?? undefined;
+const period = (Astro.url.searchParams.get("period") ?? "week") as "day" | "week" | "month" | "year";
 const preset = Astro.url.searchParams.get("preset") ?? undefined;
-const expenseSummary = await getExpenseSummary({ from, to });
+const expenseSummary = await getExpenseSummary({ from, to, period });
 const filterQuery = new URLSearchParams();
 if (from) filterQuery.set("from", from);
 if (to) filterQuery.set("to", to);
@@ -24,13 +24,24 @@ const currency = new Intl.NumberFormat("es-VE", {
   maximumFractionDigits: 2,
 });
 
+const percentFormatter = new Intl.NumberFormat("es-VE", {
+  maximumFractionDigits: 1,
+});
+
 const purchasesByCategory = expenseSummary.data.purchasesByCategory ?? [];
+const periodLabels: Record<"day" | "week" | "month" | "year", string> = {
+  day: "Días",
+  week: "Semanas",
+  month: "Meses",
+  year: "Años",
+};
+
+const breakdownLabels = purchasesByCategory[0]?.breakdown.map((item) => item.label) ?? [];
+const hasBreakdown = breakdownLabels.length > 0;
+
 const rows = purchasesByCategory.map((item, index) => ({
   category: item.category,
-  week1: currency.format(item.amountUsd),
-  week2: currency.format(item.amountUsd * 0.95),
-  week3: currency.format(item.amountUsd * 1.02),
-  week4: currency.format(item.amountUsd * 1.08),
+  breakdown: item.breakdown,
   code: `CMP-${String(index + 1).padStart(3, "0")}`,
 }));
 ---
@@ -61,9 +72,9 @@ const rows = purchasesByCategory.map((item, index) => ({
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-xl font-semibold text-gray-800">Detalle semanal</h2>
+        <h2 class="text-xl font-semibold text-gray-800">Detalle por {periodLabels[period].toLowerCase()}</h2>
         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
-            Ultimas 4 semanas
+            {period === "week" ? "Últimas semanas" : period === "month" ? "Mes actual" : period === "day" ? "Rango diario" : "Año seleccionado"}
         </span>
       </div>
       
@@ -72,10 +83,10 @@ const rows = purchasesByCategory.map((item, index) => ({
           <thead class="bg-primary-300">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Categoría</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 1</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 2</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 3</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Semana 4</th>
+              {hasBreakdown && breakdownLabels.map((label) => (
+                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">{label}</th>
+              ))}
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Variación</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-primary-300">
@@ -83,10 +94,25 @@ const rows = purchasesByCategory.map((item, index) => ({
               rows.map((row) => (
                 <tr class="hover:bg-primary-500/20 transition-colors cursor-default group">
                   <td class="px-4 py-3 text-sm text-gray-700 font-medium group-hover:text-primary-900">{row.category}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{row.week1}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{row.week2}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{row.week3}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">{row.week4}</td>
+                  {hasBreakdown && row.breakdown.map((bucket, index) => {
+                    const prev = row.breakdown[index - 1]?.amountUsd ?? 0;
+                    const variation = index === 0 || !prev ? 0 : ((bucket.amountUsd - prev) / prev) * 100;
+                    return (
+                      <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">
+                        <div class="flex flex-col items-end gap-1">
+                          <span>{currency.format(bucket.amountUsd)}</span>
+                          {index > 0 && (
+                            <span class={variation >= 0 ? "text-emerald-600 text-[11px] font-semibold" : "text-rose-600 text-[11px] font-semibold"}>
+                              {variation >= 0 ? "+" : ""}{percentFormatter.format(variation)}%
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    );
+                  })}
+                  <td class="px-4 py-3 text-sm text-right text-gray-800 font-bold">
+                    {row.breakdown.length > 1 ? `${row.breakdown[row.breakdown.length - 1].amountUsd >= row.breakdown[0].amountUsd ? "+" : ""}${percentFormatter.format(((row.breakdown[row.breakdown.length - 1].amountUsd - row.breakdown[0].amountUsd) / (row.breakdown[0].amountUsd || 1)) * 100)}%` : "—"}
+                  </td>
                 </tr>
               ))
             }
