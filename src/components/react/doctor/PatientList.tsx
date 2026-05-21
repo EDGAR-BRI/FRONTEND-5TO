@@ -114,7 +114,7 @@ export function PatientList({
 									patient={p}
 									onClick={() => {
 										window.location.replace(
-											`/modules/doctor/${doctorId}/patients/${p.id}/history`
+											`/modules/doctor/${doctorId}/patient/${p.id}/history`
 										);
 									}}
 								/>
