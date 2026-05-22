@@ -94,11 +94,9 @@ const formatos: Formats = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  Realizada: '#22c55e',
   Confirmada: '#f59e0b',
   Pendiente: '#9ca3af',
   Cancelada: '#ef4444',
-  Finalizada: '#22c55e',
 }
 
 function parseDateTime(str: string): Date {

@@ -180,15 +180,17 @@ export default function AppointmentCalendar({
   const [selectedEditStatusId, setSelectedEditStatusId] = useState<number | string>('')
   const [selectedEditDoctorId, setSelectedEditDoctorId] = useState<number | string>('')
 
+  const canEditAppointment = role !== 'pacient'
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && canEditAppointment) {
       getAppointmentStatuses().then(setStatuses).catch(console.error)
       getDrsSelect().then(setDoctors).catch(console.error)
     } else {
       setIsEditingDoctor(false)
       setIsEditingStatus(false)
     }
-  }, [isOpen])
+  }, [isOpen, canEditAppointment])
 
   const saveStatus = async (appointmentId: number) => {
     if (!selectedEditStatusId) return
@@ -676,7 +678,7 @@ export default function AppointmentCalendar({
                 ) : (
                   <span className={`px-2.5 py-1 text-xs font-bold rounded-full border flex items-center gap-1.5 ${badgeColors[citaSeleccionada.estado] || 'bg-slate-100 text-slate-700'}`}>
                     {citaSeleccionada.estado}
-                    {citaSeleccionada.statusId && citaSeleccionada.statusId !== 2 && (
+                    {canEditAppointment && citaSeleccionada.statusId && citaSeleccionada.statusId !== 2 && (
                       <button onClick={() => { setIsEditingStatus(true); setSelectedEditStatusId(citaSeleccionada.statusId!) }} className="hover:opacity-70" title="Cambiar estado">
                         <FaPencil className="w-2.5 h-2.5" />
                       </button>
@@ -722,7 +724,7 @@ export default function AppointmentCalendar({
                   <>
                     <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                       {citaSeleccionada.doctor || 'No asignado'}
-                      {citaSeleccionada.doctorId && citaSeleccionada.statusId !== 2 && (
+                      {canEditAppointment && citaSeleccionada.doctorId && citaSeleccionada.statusId !== 2 && (
                         <button onClick={() => { setIsEditingDoctor(true); setSelectedEditDoctorId(citaSeleccionada.doctorId!) }} className="inline-flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-md px-1.5 py-0.5 transition-colors" title="Cambiar médico">
                           <FaPencil className="w-2.5 h-2.5" /> Cambiar
                         </button>
