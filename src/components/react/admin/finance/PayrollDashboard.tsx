@@ -9,6 +9,9 @@ import { Button } from "@/components/react/primary/Button";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { listPayrolls, updatePayroll } from "@/lib/services/finance/payroll/payroll.service";
 import type { PayrollRecord, PayrollStatus } from "@/lib/services/finance/payroll/payroll.interface";
+import { getBcvRate, getExchangeRates } from "@/lib/services/finance/exchange-rate/exchange_rate.service";
+import type { BcvRateResponse, ExchangeRate } from "@/lib/services/finance/exchange-rate/exchange_rate.interface";
+import { dualAmount, money } from "@/utils/currency";
 import {
 	FaArrowRight,
 	FaCalendarDays,
@@ -22,13 +25,6 @@ import {
 	FaXmark,
 } from "react-icons/fa6";
 
-const money = (value: number, currency = "USD") =>
-	new Intl.NumberFormat("es-VE", {
-		style: "currency",
-		currency,
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	}).format(Number(value || 0));
 
 const normalizeStatus = (status?: string | null): PayrollStatus => (status || "Pending").trim().toUpperCase();
 
@@ -58,6 +54,8 @@ const statusConfig: Record<string, { label: string; bg: string; text: string; ic
 
 export const PayrollDashboard = () => {
 	const { data, error, isLoading, mutate } = useSWR<PayrollRecord[]>("payroll-history", listPayrolls);
+	const { data: exchangeRates = [] } = useSWR<ExchangeRate[]>("payroll-exchange-rates", getExchangeRates);
+	const { data: bcvRate } = useSWR<BcvRateResponse>("payroll-bcv-rate", getBcvRate);
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "PAID" | "DRAFT" | "CANCELLED">("ALL");
 	const [selectedPayrollId, setSelectedPayrollId] = useState<number | null>(null);
@@ -65,6 +63,10 @@ export const PayrollDashboard = () => {
 	const [payingPayrollId, setPayingPayrollId] = useState<number | null>(null);
 
 	const payrolls = data ?? [];
+	const usdToBsRate = useMemo(
+		() => exchangeRates.find((rate) => rate.is_active)?.rate ?? exchangeRates[0]?.rate ?? bcvRate?.valor.valor_num ?? 0,
+		[exchangeRates, bcvRate]
+	);
 
 	const filteredPayrolls = useMemo(() => {
 		const term = search.trim().toLowerCase();
@@ -129,6 +131,7 @@ export const PayrollDashboard = () => {
 			(sum, payroll) => sum + payroll.payrollLines.reduce((lineSum, line) => lineSum + payrollLineAmount(line), 0),
 			0
 		);
+		const totalPayableBs = usdToBsRate ? totalPayable * usdToBsRate : 0;
 		const uniqueDoctors = new Set(
 			payrolls.flatMap((payroll) => payroll.payrollLines.map((line) => line.consultation.doctorId))
 		).size;
@@ -138,10 +141,11 @@ export const PayrollDashboard = () => {
 			totalPayrolls: payrolls.length,
 			totalConsultations,
 			totalPayable,
+			totalPayableBs,
 			uniqueDoctors,
 			pendingPayrolls,
 		};
-	}, [payrolls]);
+	}, [payrolls, usdToBsRate]);
 
 	const columns: Column<PayrollRecord>[] = useMemo(
 		() => [
@@ -184,9 +188,11 @@ export const PayrollDashboard = () => {
 				accessorKey: "id",
 				cell: (payroll) => {
 					const amount = payroll.payrollLines.reduce((sum, line) => sum + payrollLineAmount(line), 0);
+					const amounts = dualAmount(amount, "USD", usdToBsRate);
 					return (
 						<div className="flex flex-col gap-1">
-							<span className="font-semibold text-cool-gray-90">{money(amount)}</span>
+							<span className="font-semibold text-cool-gray-90">{money(amounts.usd)}</span>
+							{/* <span className="text-xs text-cool-gray-50 break-words whitespace-normal">Bs. {money(amounts.ves, "VES")}</span> */}
 							<span className="text-xs text-cool-gray-50">Base x comisión</span>
 						</div>
 					);
@@ -278,10 +284,11 @@ export const PayrollDashboard = () => {
 			<div className="space-y-6">
 				<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 					<StatsCard title="Nóminas" value={stats.totalPayrolls} color="primary" icon={<FaMoneyBillTrendUp size={18} />} variant="compact" />
-					<StatsCard title="Consultas acumuladas" value={stats.totalConsultations} color="success" icon={<FaUsers size={18} />} variant="compact" />
-					<StatsCard title="Monto estimado" value={money(stats.totalPayable)} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
-					<StatsCard title="Pendientes" value={stats.pendingPayrolls} color="warning" icon={<FaClock size={18} />} variant="compact" />
-				</div>
+			<StatsCard title="Consultas acumuladas" value={stats.totalConsultations} color="success" icon={<FaUsers size={18} />} variant="compact" />
+			<StatsCard title="Monto USD" value={money(stats.totalPayable)} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
+				<StatsCard title="Monto Bs" value={money(stats.totalPayableBs, "VES")} valueClassName="text-lg xl:text-xl leading-tight break-words whitespace-normal" color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
+			<StatsCard title="Pendientes" value={stats.pendingPayrolls} color="warning" icon={<FaClock size={18} />} variant="compact" />
+		</div>
 
 				<section className="space-y-4">
 					<div className="rounded-2xl border border-primary-200 bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden">
@@ -386,8 +393,9 @@ export const PayrollDashboard = () => {
 							<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 								<StatsCard title="Consultas" value={selectedPayroll.payrollLines.length} color="primary" icon={<FaUsers size={18} />} variant="compact" />
 								<StatsCard title="Doctores" value={new Set(selectedPayroll.payrollLines.map((line) => line.consultation.doctorId)).size} color="success" icon={<FaUserDoctor size={18} />} variant="compact" />
-								<StatsCard title="Monto" value={money(selectedPayroll.payrollLines.reduce((sum, line) => sum + payrollLineAmount(line), 0))} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
-							</div>
+				<StatsCard title="Monto USD" value={money(selectedPayroll.payrollLines.reduce((sum, line) => sum + payrollLineAmount(line), 0))} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
+								<StatsCard title="Monto Bs" value={money(dualAmount(selectedPayroll.payrollLines.reduce((sum, line) => sum + payrollLineAmount(line), 0), "USD", usdToBsRate).ves, "VES")} valueClassName="text-lg xl:text-xl leading-tight break-words whitespace-normal" color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
+				</div>
 
 							<div className="rounded-2xl border border-primary-200 bg-primary-50/50 p-4 flex flex-wrap items-center justify-between gap-3">
 								<div>
@@ -431,12 +439,13 @@ export const PayrollDashboard = () => {
 															Consulta #{line.consultation.id} · Factura #{line.consultation.invoiceId} · {format(new Date(line.consultation.date), "dd MMM yyyy", { locale: es })}
 														</p>
 													</div>
-													<div className="text-right space-y-1">
-														<p className="text-lg font-semibold text-primary-900">{money(amount)}</p>
-														<p className="text-xs text-cool-gray-50">
-															Base {money(Number(line.base_amount))} · Comisión {Number(line.commission_percentage)}%
-														</p>
-													</div>
+								<div className="text-right space-y-1">
+									<p className="text-lg font-semibold text-primary-900">{money(amount)}</p>
+									<p className="text-xs text-cool-gray-50 break-words whitespace-normal">Bs. {money(dualAmount(amount, "USD", usdToBsRate).ves, "VES")}</p>
+									<p className="text-xs text-cool-gray-50">
+										Base {money(Number(line.base_amount))} · Comisión {Number(line.commission_percentage)}%
+									</p>
+								</div>
 												</div>
 											</div>
 										);

@@ -3,6 +3,7 @@ import React from 'react';
 interface StatsCardProps {
     title: string;
     value: string | number;
+    valueClassName?: string;
     trend?: string;
     trendUp?: boolean;
     trendLabel?: string;
@@ -14,7 +15,7 @@ interface StatsCardProps {
     className?: string;
 }
 
-export const StatsCard = ({ title, value, trend, trendUp, trendLabel = "vs mes anterior", subText, subTextClass, icon, color = "primary", variant = "default", className }: StatsCardProps) => {
+export const StatsCard = ({ title, value, valueClassName, trend, trendUp, trendLabel = "vs mes anterior", subText, subTextClass, icon, color = "primary", variant = "default", className }: StatsCardProps) => {
     const colorClasses = {
         primary: "bg-primary-200 text-primary-700",
         success: "bg-green-50 text-green-700",
@@ -34,7 +35,7 @@ export const StatsCard = ({ title, value, trend, trendUp, trendLabel = "vs mes a
                 )}
                 <div className="min-w-0">
                     <p className="text-sm font-medium text-cool-gray-60 leading-tight truncate">{title}</p>
-                    <h3 className="text-2xl font-bold text-cool-gray-90 leading-tight">{value}</h3>
+                    <h3 className={`text-2xl font-bold text-cool-gray-90 leading-tight ${valueClassName || ""}`}>{value}</h3>
                     {trend && !subText && (
                         <span className={`text-xs font-medium ${trendUp ? "text-green-600" : "text-red-600"}`}>
                             {trendUp ? "↑" : "↓"} {trend}
@@ -55,7 +56,7 @@ export const StatsCard = ({ title, value, trend, trendUp, trendLabel = "vs mes a
             <div className="flex items-start justify-between">
                 <div>
                     <p className="text-sm font-medium text-cool-gray-60 mb-1">{title}</p>
-                    <h3 className="text-2xl font-bold text-cool-gray-90">{value}</h3>
+                    <h3 className={`text-2xl font-bold text-cool-gray-90 ${valueClassName || ""}`}>{value}</h3>
                 </div>
                 {icon && (
                     <div className={`p-3 rounded-xl ${colorClasses[color]}`}>
