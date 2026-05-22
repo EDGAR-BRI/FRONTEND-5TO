@@ -285,7 +285,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
       <div className="flex flex-col sm:flex-row gap-4 data-nums-compact w-full">
         <StatsCard 
         className="flex-1"
-          title="Ganancia Doctor"
+          title="Ganancias"
           value={formatCurrency(reportData.stats.doctorEarnings)}
           color="success"
           icon={<FaDollarSign size={18} />}
@@ -293,7 +293,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
         />
         <StatsCard
           className="flex-1"
-          title="Comisión Doctor"
+          title="Comisión por consulta"
           value={`${reportData.stats.doctorCommission}%`}
           color="success"
           icon={<FaArrowTrendUp size={18} />}
