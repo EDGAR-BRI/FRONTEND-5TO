@@ -283,6 +283,7 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
               <input
                 type="date"
                 value={filters.from}
+                max={filters.to}
                 onChange={(event) => {
                   setFilters((prev) => ({ ...prev, from: event.target.value }));
                   setQuickRange(null);
@@ -295,6 +296,7 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
               <input
                 type="date"
                 value={filters.to}
+                min={filters.from}
                 onChange={(event) => {
                   setFilters((prev) => ({ ...prev, to: event.target.value }));
                   setQuickRange(null);
