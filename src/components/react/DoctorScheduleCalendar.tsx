@@ -13,7 +13,7 @@ import { Select } from '@/components/react/primary/Select'
 import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import type { DoctorSchedConfigOption } from "@/lib/services/medical/doctor/doctor.interface";
 import { getAppointmentsByDr, updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
-import { listConsultationsByDoctor } from '@/lib/services/medical/consultation/consultation.service'
+import { listConsultationsByDoctor, updateConsultation } from '@/lib/services/medical/consultation/consultation.service'
 import type { ConsultationSummary } from '@/lib/services/medical/consultation/consultation.interface'
 import { getAppointmentStatuses } from '@/lib/services/scheduling/appointment-status/appointment_status.service'
 import { formatAppointmentsByDoctorId, convertirAHHMM } from '@/utils/helper_functions'
@@ -46,6 +46,7 @@ export interface BookedAppointment {
   price: string
   /** True when this event represents a medical consultation, not a regular appointment */
   isConsultation?: boolean
+  consultationStatus?: string
 }
 
 type CalendarEvent = {
@@ -62,6 +63,9 @@ export interface DoctorScheduleCalendarProps {
   allAvailabilities: { doctorScheduleId?: number, day_of_week: number, start_time: string, end_time: string }[]
   heightPx?: number
   initialView?: 'month' | 'week' | 'day' | 'agenda'
+  selectedDoctorId?: number | null
+  onDoctorSelect?: (docId: number) => void
+  loadingSchedules?: boolean
 }
 
 const locales = { es }
@@ -99,9 +103,11 @@ const formatos: Formats = {
 
 const STATUS_COLORS: Record<string, string> = {
   Realizada: '#22c55e',
+  Finalizada: '#22c55e',
   Confirmada: '#f59e0b',
   Pendiente: '#9ca3af',
   Cancelada: '#ef4444',
+  'En Progreso': '#3b82f6',
 }
 
 function parseDateTime(str: string): Date {
@@ -190,15 +196,26 @@ export default function DoctorScheduleCalendar({
     if (!newStatusId) return
     setUpdatingApt(true)
     try {
-      await updateAppointment(appointmentId, { statusId: Number(newStatusId) })
-      setIsEditingStatus(false)
-      // Update the selectedApt in-place so the modal reflects the change
-      const newStatus = statuses.find(s => s.id === Number(newStatusId))
-      if (selectedApt && newStatus) {
-        setSelectedApt({ ...selectedApt, status: newStatus.name, statusId: newStatus.id })
+      if (selectedApt?.isConsultation) {
+        await updateConsultation(appointmentId, { status: newStatusId as any })
+        setIsEditingStatus(false)
+        const mappedStatus = newStatusId === 'PENDING' ? 'Pendiente' :
+                             newStatusId === 'IN_PROGRESS' ? 'En Progreso' :
+                             newStatusId === 'FINISHED' ? 'Finalizada' :
+                             newStatusId === 'CANCELLED' ? 'Cancelada' : 'Realizada'
+        if (selectedApt) {
+          setSelectedApt({ ...selectedApt, status: mappedStatus, consultationStatus: newStatusId as string })
+        }
+      } else {
+        await updateAppointment(appointmentId, { statusId: Number(newStatusId) })
+        setIsEditingStatus(false)
+        const newStatus = statuses.find(s => s.id === Number(newStatusId))
+        if (selectedApt && newStatus) {
+          setSelectedApt({ ...selectedApt, status: newStatus.name, statusId: newStatus.id })
+        }
       }
       await refetchAppointments()
-      await Alert.success('Estado actualizado', 'El estado de la cita fue actualizado exitosamente.')
+      await Alert.success('Estado actualizado', 'El estado fue actualizado exitosamente.')
     } catch (e: any) {
       console.error(e)
       await Alert.error('Error al actualizar estado', e?.message || 'Ocurrió un error inesperado.')
@@ -212,7 +229,11 @@ export default function DoctorScheduleCalendar({
     const targetDoctorId = Number(selectedEditDoctorId)
     setUpdatingApt(true)
     try {
-      await updateAppointment(appointmentId, { doctorId: targetDoctorId })
+      if (selectedApt?.isConsultation) {
+        await updateConsultation(appointmentId, { doctorId: targetDoctorId })
+      } else {
+        await updateAppointment(appointmentId, { doctorId: targetDoctorId })
+      }
       setIsEditingDoctor(false)
       // Invalidate cached appointments/consultations for the target doctor so they refresh on selection
       setAppointmentsByDoctorId(prev => {
@@ -288,17 +309,17 @@ export default function DoctorScheduleCalendar({
       consultationKeys.add(`${patientId}|${dateKey}`)
     }
 
-    // Filter out appointments that are covered by a consultation (same patient + same date/time)
+    // Filter out appointments that are covered by a consultation (same patient + almost same date/time)
     const filteredApts = apts.filter(apt => {
-      const cleanStart = apt.scheduledStart.replace('Z', '').replace(' ', 'T').slice(0, 16)
-      // We need the patient ID — extract from patientName won't work, let's use a broader match on date only
-      // Since BookedAppointment doesn't carry patientId, we match by patientName + dateKey
-      // Actually, let's check if any consultation matches this exact start time (same doctor is implicit)
+      const aptDate = parseDateTime(apt.scheduledStart)
       for (const c of consultations) {
-        const cDateKey = c.date.replace('Z', '').replace(' ', 'T').slice(0, 16)
+        const cDate = parseDateTime(c.date)
         const cPatientName = c.invoice?.patient?.user?.name
-        if (cDateKey === cleanStart && cPatientName && cPatientName === apt.patientName) {
-          return false // suppress this appointment — the consultation takes precedence
+        if (cPatientName && cPatientName === apt.patientName) {
+          const diffMinutes = Math.abs(cDate.getTime() - aptDate.getTime()) / 60000
+          if (diffMinutes <= 120) { // Within 2 hours
+            return false // suppress this appointment — the consultation takes precedence
+          }
         }
       }
       return true
@@ -329,12 +350,16 @@ export default function DoctorScheduleCalendar({
           scheduledEnd: end.toISOString(),
           patientName,
           reason: 'Consulta médica',
-          status: 'Realizada',
+          status: c.status === 'PENDING' ? 'Pendiente' :
+                  c.status === 'IN_PROGRESS' ? 'En Progreso' :
+                  c.status === 'FINISHED' ? 'Finalizada' :
+                  c.status === 'CANCELLED' ? 'Cancelada' : 'Realizada',
           statusId: -1, // Consultations don't have an appointment statusId
           doctorId: c.doctorId,
           type: 'Consulta',
           price: c.invoice?.total_usd ? `$${c.invoice.total_usd}` : '—',
           isConsultation: true,
+          consultationStatus: c.status,
         } as BookedAppointment,
       }
     })
@@ -517,7 +542,14 @@ export default function DoctorScheduleCalendar({
                 <div className="flex items-center gap-2 bg-white rounded-md p-1 border border-primary-200">
                   <div className="w-48">
                     <Select
-                      options={statuses.filter(s => s.id !== 2 && s.id !== 4).map(s => ({ value: s.id, label: s.name }))}
+                      options={selectedApt.isConsultation
+                        ? [
+                            { value: 'PENDING', label: 'Pendiente' },
+                            { value: 'IN_PROGRESS', label: 'En Progreso' },
+                            { value: 'FINISHED', label: 'Finalizada' },
+                            { value: 'CANCELLED', label: 'Cancelada' }
+                          ]
+                        : statuses.filter(s => s.id !== 2 && s.id !== 4).map(s => ({ value: s.id, label: s.name }))}
                       value={selectedEditStatusId}
                       onChange={(val) => handleStatusChange(selectedApt.id, val)}
                       name="status"
@@ -533,8 +565,15 @@ export default function DoctorScheduleCalendar({
                     style={{ backgroundColor: STATUS_COLORS[selectedApt.status] ?? '#6b7280' }}
                   >
                     {selectedApt.status}
-                    {!selectedApt.isConsultation && selectedApt.statusId !== 2 && (
-                      <button onClick={() => { setIsEditingStatus(true); setSelectedEditStatusId(selectedApt.statusId) }} className="hover:text-white/80 bg-black/10 rounded-full p-1" title="Cambiar estado">
+                    {(
+                      selectedApt.isConsultation
+                        ? true
+                        : selectedApt.statusId !== 2
+                    ) && (
+                      <button onClick={() => { 
+                        setIsEditingStatus(true); 
+                        setSelectedEditStatusId(selectedApt.isConsultation ? selectedApt.consultationStatus! : selectedApt.statusId) 
+                      }} className="hover:text-white/80 bg-black/10 rounded-full p-1" title="Cambiar estado">
                         <FaPencil className="w-2.5 h-2.5" />
                       </button>
                     )}
@@ -565,7 +604,11 @@ export default function DoctorScheduleCalendar({
                 ) : (
                   <p className="font-semibold flex items-center gap-2">
                     {doctor?.user.name || 'Médico de la cita'}
-                    {!selectedApt.isConsultation && selectedApt.statusId !== 2 && (
+                    {(
+                      selectedApt.isConsultation
+                        ? true
+                        : selectedApt.statusId !== 2
+                    ) && (
                       <button onClick={() => { setIsEditingDoctor(true); setSelectedEditDoctorId(selectedApt.doctorId || selectedDoctorId || '') }} className="inline-flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-md px-1.5 py-0.5 transition-colors" title="Cambiar médico">
                         <FaPencil className="w-2.5 h-2.5" /> Cambiar
                       </button>
