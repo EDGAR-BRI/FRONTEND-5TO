@@ -40,6 +40,7 @@ export type DoctorFinanceResponse = {
       amount: number;
       date: string;
     }>;
+    exchangeRate: number;
   };
 };
 
