@@ -282,22 +282,9 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 data-nums-compact">
-        <StatsCard
-          title="Ingresos Totales"
-          value={formatCurrency(reportData.stats.totalRevenue)}
-          color="primary"
-          icon={<FaDollarSign size={18} />}
-          variant="compact"
-        />
-        <StatsCard
-          title="Gastos Totales"
-          value={formatCurrency(reportData.stats.totalExpenses)}
-          color="danger"
-          icon={<FaMoneyBillWave size={18} />}
-          variant="compact"
-        />
-        <StatsCard
+      <div className="flex flex-col sm:flex-row gap-4 data-nums-compact w-full">
+        <StatsCard 
+        className="flex-1"
           title="Ganancia Doctor"
           value={formatCurrency(reportData.stats.doctorEarnings)}
           color="success"
@@ -305,6 +292,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
           variant="compact"
         />
         <StatsCard
+          className="flex-1"
           title="Comisión Doctor"
           value={`${reportData.stats.doctorCommission}%`}
           color="success"
