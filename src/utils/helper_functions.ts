@@ -67,6 +67,8 @@ export function formatAppointmentsByDoctorId(
     patientName: string
     reason: string
     status: string
+    statusId: number
+    doctorId: number
     type: string
     price: string
 }[]> {

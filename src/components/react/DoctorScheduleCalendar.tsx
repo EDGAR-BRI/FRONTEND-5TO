@@ -13,6 +13,8 @@ import { Select } from '@/components/react/primary/Select'
 import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import type { DoctorSchedConfigOption } from "@/lib/services/medical/doctor/doctor.interface";
 import { getAppointmentsByDr, updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
+import { listConsultationsByDoctor } from '@/lib/services/medical/consultation/consultation.service'
+import type { ConsultationSummary } from '@/lib/services/medical/consultation/consultation.interface'
 import { getAppointmentStatuses } from '@/lib/services/scheduling/appointment-status/appointment_status.service'
 import { formatAppointmentsByDoctorId, convertirAHHMM } from '@/utils/helper_functions'
 import { Alert } from '@/utils/alerts'
@@ -42,6 +44,8 @@ export interface BookedAppointment {
   doctorId: number
   type: string
   price: string
+  /** True when this event represents a medical consultation, not a regular appointment */
+  isConsultation?: boolean
 }
 
 type CalendarEvent = {
@@ -94,6 +98,7 @@ const formatos: Formats = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
+  Realizada: '#22c55e',
   Confirmada: '#f59e0b',
   Pendiente: '#9ca3af',
   Cancelada: '#ef4444',
@@ -135,6 +140,7 @@ export default function DoctorScheduleCalendar({
 
   // ── Appointments fetch por doctor ───────────────────────────────────────
   const [appointmentsByDoctorId, setAppointmentsByDoctorId] = useState<Record<number, BookedAppointment[]>>({})
+  const [consultationsByDoctorId, setConsultationsByDoctorId] = useState<Record<number, ConsultationSummary[]>>({})
   const [loadingApts, setLoadingApts] = useState(false)
 
   // ── Edición de Cita ───────────────────────────────────────
@@ -159,11 +165,18 @@ export default function DoctorScheduleCalendar({
     if (selectedDoctorId === null || selectedDoctorId === 0) return
     setLoadingApts(true)
     try {
-      const raw = await getAppointmentsByDr(selectedDoctorId)
+      const [raw, consultations] = await Promise.all([
+        getAppointmentsByDr(selectedDoctorId),
+        listConsultationsByDoctor(selectedDoctorId).catch(() => [] as ConsultationSummary[]),
+      ])
       const formatted = formatAppointmentsByDoctorId(raw)
       setAppointmentsByDoctorId(prev => ({
         ...prev,
         [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
+      }))
+      setConsultationsByDoctorId(prev => ({
+        ...prev,
+        [selectedDoctorId!]: consultations,
       }))
     } catch (err) {
       console.error('Error re-fetching appointments:', err)
@@ -201,8 +214,13 @@ export default function DoctorScheduleCalendar({
     try {
       await updateAppointment(appointmentId, { doctorId: targetDoctorId })
       setIsEditingDoctor(false)
-      // Invalidate cached appointments for the target doctor so they refresh on selection
+      // Invalidate cached appointments/consultations for the target doctor so they refresh on selection
       setAppointmentsByDoctorId(prev => {
+        const next = { ...prev }
+        delete next[targetDoctorId]
+        return next
+      })
+      setConsultationsByDoctorId(prev => {
         const next = { ...prev }
         delete next[targetDoctorId]
         return next
@@ -224,12 +242,19 @@ export default function DoctorScheduleCalendar({
     if (appointmentsByDoctorId[selectedDoctorId]) return
 
     setLoadingApts(true)
-    getAppointmentsByDr(selectedDoctorId)
-      .then(raw => {
+    Promise.all([
+      getAppointmentsByDr(selectedDoctorId),
+      listConsultationsByDoctor(selectedDoctorId).catch(() => [] as ConsultationSummary[]),
+    ])
+      .then(([raw, consultations]) => {
         const formatted = formatAppointmentsByDoctorId(raw)
         setAppointmentsByDoctorId(prev => ({
           ...prev,
           [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
+        }))
+        setConsultationsByDoctorId(prev => ({
+          ...prev,
+          [selectedDoctorId!]: consultations,
         }))
       })
       .catch(err => console.error('Error fetching appointments:', err))
@@ -252,14 +277,70 @@ export default function DoctorScheduleCalendar({
   const aptEvents = useMemo(() => {
     if (selectedDoctorId === null || selectedDoctorId === 0) return []
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
-    return apts.map<CalendarEvent>(apt => ({
+    const consultations = consultationsByDoctorId[selectedDoctorId] ?? []
+
+    // Build a set of "patientId|dateKey" from consultations so we can suppress overlapping appointments
+    const consultationKeys = new Set<string>()
+    for (const c of consultations) {
+      const patientId = c.invoice?.patient?.id
+      if (!patientId || !c.date) continue
+      const dateKey = c.date.replace('Z', '').replace(' ', 'T').slice(0, 16) // 'YYYY-MM-DDTHH:mm'
+      consultationKeys.add(`${patientId}|${dateKey}`)
+    }
+
+    // Filter out appointments that are covered by a consultation (same patient + same date/time)
+    const filteredApts = apts.filter(apt => {
+      const cleanStart = apt.scheduledStart.replace('Z', '').replace(' ', 'T').slice(0, 16)
+      // We need the patient ID — extract from patientName won't work, let's use a broader match on date only
+      // Since BookedAppointment doesn't carry patientId, we match by patientName + dateKey
+      // Actually, let's check if any consultation matches this exact start time (same doctor is implicit)
+      for (const c of consultations) {
+        const cDateKey = c.date.replace('Z', '').replace(' ', 'T').slice(0, 16)
+        const cPatientName = c.invoice?.patient?.user?.name
+        if (cDateKey === cleanStart && cPatientName && cPatientName === apt.patientName) {
+          return false // suppress this appointment — the consultation takes precedence
+        }
+      }
+      return true
+    })
+
+    // Map remaining appointments to calendar events
+    const appointmentEvents: CalendarEvent[] = filteredApts.map(apt => ({
       id: apt.id,
       title: apt.patientName,
       start: parseDateTime(apt.scheduledStart),
       end: parseDateTime(apt.scheduledEnd),
       resource: apt,
     }))
-  }, [selectedDoctorId, appointmentsByDoctorId])
+
+    // Map consultations to calendar events with 'Realizada' status
+    const consultationEvents: CalendarEvent[] = consultations.map(c => {
+      const start = parseDateTime(c.date)
+      const end = new Date(start.getTime() + 30 * 60_000) // 30 min default
+      const patientName = c.invoice?.patient?.user?.name || 'Paciente'
+      return {
+        id: c.id,
+        title: `${patientName} (Consulta)`,
+        start,
+        end,
+        resource: {
+          id: c.id,
+          scheduledStart: c.date,
+          scheduledEnd: end.toISOString(),
+          patientName,
+          reason: 'Consulta médica',
+          status: 'Realizada',
+          statusId: -1, // Consultations don't have an appointment statusId
+          doctorId: c.doctorId,
+          type: 'Consulta',
+          price: c.invoice?.total_usd ? `$${c.invoice.total_usd}` : '—',
+          isConsultation: true,
+        } as BookedAppointment,
+      }
+    })
+
+    return [...appointmentEvents, ...consultationEvents]
+  }, [selectedDoctorId, appointmentsByDoctorId, consultationsByDoctorId])
 
   const shiftEvents = useMemo(() => {
     if (selectedDoctorId === null || selectedDoctorId === 0) return []
@@ -428,7 +509,7 @@ export default function DoctorScheduleCalendar({
         />
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeAndClear} title="Detalle de cita">
+      <Modal isOpen={isOpen} onClose={closeAndClear} title={selectedApt?.isConsultation ? 'Detalle de consulta' : 'Detalle de cita'}>
         {selectedApt && (
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-2 min-h-[28px]">
@@ -452,7 +533,7 @@ export default function DoctorScheduleCalendar({
                     style={{ backgroundColor: STATUS_COLORS[selectedApt.status] ?? '#6b7280' }}
                   >
                     {selectedApt.status}
-                    {selectedApt.statusId !== 2 && (
+                    {!selectedApt.isConsultation && selectedApt.statusId !== 2 && (
                       <button onClick={() => { setIsEditingStatus(true); setSelectedEditStatusId(selectedApt.statusId) }} className="hover:text-white/80 bg-black/10 rounded-full p-1" title="Cambiar estado">
                         <FaPencil className="w-2.5 h-2.5" />
                       </button>
@@ -484,7 +565,7 @@ export default function DoctorScheduleCalendar({
                 ) : (
                   <p className="font-semibold flex items-center gap-2">
                     {doctor?.user.name || 'Médico de la cita'}
-                    {selectedApt.statusId !== 2 && (
+                    {!selectedApt.isConsultation && selectedApt.statusId !== 2 && (
                       <button onClick={() => { setIsEditingDoctor(true); setSelectedEditDoctorId(selectedApt.doctorId || selectedDoctorId || '') }} className="inline-flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-md px-1.5 py-0.5 transition-colors" title="Cambiar médico">
                         <FaPencil className="w-2.5 h-2.5" /> Cambiar
                       </button>
@@ -516,17 +597,19 @@ export default function DoctorScheduleCalendar({
 
             <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
               <Button label="Cerrar" variant={ButtonTheme.GHOST} size="sm" onClick={closeAndClear} />
-              <Button label="Gestionar pago" variant={ButtonTheme.PRIMARY} size="sm" disabled={isEditingDoctor || isEditingStatus} onClick={() => {
-                closeAndClear();
-                const url = new URL(window.location.href);
-                const pathParts = url.pathname.split('/').filter(Boolean);
-                if (pathParts.includes('receptionist')) {
-                    pathParts[pathParts.length - 1] = 'invoice';
-                    url.pathname = '/' + pathParts.join('/');
-                    url.searchParams.set('appointmentId', selectedApt.id.toString());
-                    window.location.href = url.toString();
-                }
-              }} />
+              {!selectedApt.isConsultation && selectedApt.status === 'Pendiente' && (
+                <Button label="Gestionar pago" variant={ButtonTheme.PRIMARY} size="sm" disabled={isEditingDoctor || isEditingStatus} onClick={() => {
+                  closeAndClear();
+                  const url = new URL(window.location.href);
+                  const pathParts = url.pathname.split('/').filter(Boolean);
+                  if (pathParts.includes('receptionist')) {
+                      pathParts[pathParts.length - 1] = 'invoice';
+                      url.pathname = '/' + pathParts.join('/');
+                      url.searchParams.set('appointmentId', selectedApt.id.toString());
+                      window.location.href = url.toString();
+                  }
+                }} />
+              )}
             </div>
           </div>
         )}
