@@ -113,7 +113,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
   const rangeDays =
     fromDate && toDate
       ? Math.floor((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)) +
-        1
+      1
       : null;
   const chartGranularity =
     quickRange === "week"
