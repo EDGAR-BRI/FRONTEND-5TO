@@ -13,11 +13,13 @@ import {
 	FaStethoscope,
 	FaNotesMedical,
 } from "react-icons/fa6";
+import { Modal } from "@/components/react/primary/Modal";
+import { useModal } from "@/hooks/UseModal";
 import { finishConsultation } from "@/lib/services/medical/consultation/consultation.service";
 import type { FinishConsultationDto } from "@/lib/services/medical/consultation/consultation.interface";
-import { getSymptoms } from "@/lib/services/medical/symptoms/symptoms.service";
+import { getSymptoms, createSymptom } from "@/lib/services/medical/symptoms/symptoms.service";
 import type { Symptom } from "@/lib/services/medical/symptoms/symptoms.interface";
-import { getDiagnoses } from "@/lib/services/medical/diagnosis/diagnosis.service";
+import { getDiagnoses, createDiagnosis } from "@/lib/services/medical/diagnosis/diagnosis.service";
 import type { Diagnosis } from "@/lib/services/medical/diagnosis/diagnosis.interface";
 import { getSupplies } from "@/lib/services/inventory/supply/supply.service";
 import type { Supply } from "@/lib/services/inventory/supply/supply.interface";
@@ -151,11 +153,74 @@ export default function ConsultationForm({
 	const [diagnosesList, setDiagnosesList] = useState<Diagnosis[]>([]);
 	const [suppliesList, setSuppliesList] = useState<Supply[]>([]);
 
+	// Nuevo síntoma modal
+	const symptomModal = useModal();
+	const [newSymptomName, setNewSymptomName] = useState("");
+	const [isCreatingSymptom, setIsCreatingSymptom] = useState(false);
+
+	// Nuevo diagnóstico modal
+	const diagnosisModal = useModal();
+	const [newDiagnosis, setNewDiagnosis] = useState({ code: "", description: "", category: "" });
+	const [isCreatingDiagnosis, setIsCreatingDiagnosis] = useState(false);
+
 	useEffect(() => {
 		getSymptoms().then(setSymptomsList).catch(console.error);
 		getDiagnoses().then(setDiagnosesList).catch(console.error);
 		getSupplies().then(setSuppliesList).catch(console.error);
 	}, []);
+
+	const handleCreateSymptom = async () => {
+		const name = newSymptomName.trim();
+		if (!name || name.length < 2) {
+			await Alert.error("Nombre inválido", "El nombre debe tener al menos 2 caracteres.");
+			return;
+		}
+		setIsCreatingSymptom(true);
+		try {
+			const created = await createSymptom({ name });
+			await symptomModal.closeModal();
+			setNewSymptomName("");
+			const fresh = await getSymptoms();
+			setSymptomsList(fresh);
+			setSymptoms([...symptoms, { ...created, severity: "Leve", duration: "", notes: "" }]);
+			await Alert.success("Síntoma creado", created.name);
+		} catch (e) {
+			await Alert.error("Error", e instanceof Error ? e.message : "No se pudo crear el síntoma.");
+		} finally {
+			setIsCreatingSymptom(false);
+		}
+	};
+
+	const handleCreateDiagnosis = async () => {
+		const { code, description, category } = newDiagnosis;
+		if (!code.trim() || !description.trim() || !category.trim()) {
+			await Alert.error("Campos requeridos", "Código, descripción y categoría son obligatorios.");
+			return;
+		}
+		setIsCreatingDiagnosis(true);
+		try {
+			const created = await createDiagnosis({ code: code.trim(), description: description.trim(), category: category.trim() });
+			await diagnosisModal.closeModal();
+			setNewDiagnosis({ code: "", description: "", category: "" });
+			const fresh = await getDiagnoses();
+			setDiagnosesList(fresh);
+			setDiagnoses([
+				...diagnoses,
+				{
+					...created,
+					name: created.description,
+					is_primary: diagnoses.length === 0,
+					condition_status: "Activo",
+					onset_date: "",
+				},
+			]);
+			await Alert.success("Diagnóstico creado", created.description);
+		} catch (e) {
+			await Alert.error("Error", e instanceof Error ? e.message : "No se pudo crear el diagnóstico.");
+		} finally {
+			setIsCreatingDiagnosis(false);
+		}
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -465,8 +530,15 @@ export default function ConsultationForm({
 						<FaNotesMedical className="text-primary-100" />
 						<h2 className="text-lg font-bold text-primary-100">Síntomas</h2>
 					</header>
-					<div className="w-64">
-						<SearchableSelect
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={symptomModal.openModal}
+							className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-primary-100 text-sm font-semibold rounded-lg border border-white/30 transition-colors">
+							<FaPlus /> Nuevo
+						</button>
+						<div className="w-64">
+							<SearchableSelect
 							key={symptomKey}
 							options={symptomsList.map((s) => ({
 								value: s.id,
@@ -486,8 +558,39 @@ export default function ConsultationForm({
 							}}
 							value=""
 						/>
+						</div>
 					</div>
 				</main>
+				<Modal isOpen={symptomModal.isOpen} onClose={symptomModal.closeModal} title="Nuevo Síntoma">
+					<div className="flex flex-col gap-4">
+						<div>
+							<label className="block text-sm font-semibold text-slate-600 mb-1">Nombre del síntoma</label>
+							<input
+								type="text"
+								placeholder="Ej: Dolor de cabeza"
+								className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary-500"
+								value={newSymptomName}
+								onChange={(e) => setNewSymptomName(e.target.value)}
+								onKeyDown={(e) => e.key === "Enter" && handleCreateSymptom()}
+							/>
+						</div>
+						<div className="flex justify-end gap-2">
+							<button
+								type="button"
+								onClick={symptomModal.closeModal}
+								className="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg font-semibold transition-colors">
+								Cancelar
+							</button>
+							<button
+								type="button"
+								onClick={handleCreateSymptom}
+								disabled={isCreatingSymptom}
+								className="px-4 py-2 text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-300 rounded-lg font-semibold flex items-center gap-2 transition-colors">
+								{isCreatingSymptom ? "Guardando..." : <><FaPlus /> Crear</>}
+							</button>
+						</div>
+					</div>
+				</Modal>
 				<div className="p-4 flex flex-col items-center gap-3 @container">
 					{symptoms.length === 0 ? (
 						<p className="text-sm text-slate-400 text-center py-4">
@@ -561,35 +664,93 @@ export default function ConsultationForm({
 						<FaStethoscope className="text-primary-100" />
 						<h2 className="text-lg font-bold text-primary-100">Diagnósticos</h2>
 					</div>
-					<div className="w-64">
-						<SearchableSelect
-							key={diagnosisKey}
-							options={diagnosesList.map((d) => ({
-								value: d.id,
-								label: `${d.description} [${d.code}]`,
-							}))}
-							placeholder="Buscar diagnóstico..."
-							searchPlaceholder="Buscar diagnóstico..."
-							onChange={(value) => {
-								const item = diagnosesList.find((d) => d.id === Number(value));
-								if (item && !diagnoses.find((d) => d.id === item.id)) {
-									setDiagnoses([
-										...diagnoses,
-										{
-											...item,
-											name: item.description,
-											is_primary: diagnoses.length === 0,
-											condition_status: "Activo",
-											onset_date: "",
-										},
-									]);
-								}
-								setDiagnosisKey((k) => k + 1);
-							}}
-							value=""
-						/>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={diagnosisModal.openModal}
+							className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-primary-100 text-sm font-semibold rounded-lg border border-white/30 transition-colors">
+							<FaPlus /> Nuevo
+						</button>
+						<div className="w-64">
+							<SearchableSelect
+								key={diagnosisKey}
+								options={diagnosesList.map((d) => ({
+									value: d.id,
+									label: `${d.description} [${d.code}]`,
+								}))}
+								placeholder="Buscar diagnóstico..."
+								searchPlaceholder="Buscar diagnóstico..."
+								onChange={(value) => {
+									const item = diagnosesList.find((d) => d.id === Number(value));
+									if (item && !diagnoses.find((d) => d.id === item.id)) {
+										setDiagnoses([
+											...diagnoses,
+											{
+												...item,
+												name: item.description,
+												is_primary: diagnoses.length === 0,
+												condition_status: "Activo",
+												onset_date: "",
+											},
+										]);
+									}
+									setDiagnosisKey((k) => k + 1);
+								}}
+								value=""
+							/>
+						</div>
 					</div>
 				</div>
+				<Modal isOpen={diagnosisModal.isOpen} onClose={diagnosisModal.closeModal} title="Nuevo Diagnóstico">
+					<div className="flex flex-col gap-4">
+						<div>
+							<label className="block text-sm font-semibold text-slate-600 mb-1">Código</label>
+							<input
+								type="text"
+								placeholder="Ej: J06.9"
+								className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary-500"
+								value={newDiagnosis.code}
+								onChange={(e) => setNewDiagnosis((p) => ({ ...p, code: e.target.value }))}
+							/>
+						</div>
+						<div>
+							<label className="block text-sm font-semibold text-slate-600 mb-1">Descripción</label>
+							<input
+								type="text"
+								placeholder="Ej: Infección respiratoria aguda"
+								className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary-500"
+								value={newDiagnosis.description}
+								onChange={(e) => setNewDiagnosis((p) => ({ ...p, description: e.target.value }))}
+								onKeyDown={(e) => e.key === "Enter" && handleCreateDiagnosis()}
+							/>
+						</div>
+						<div>
+							<label className="block text-sm font-semibold text-slate-600 mb-1">Categoría</label>
+							<input
+								type="text"
+								placeholder="Ej: Enfermedades del sistema respiratorio"
+								className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary-500"
+								value={newDiagnosis.category}
+								onChange={(e) => setNewDiagnosis((p) => ({ ...p, category: e.target.value }))}
+							/>
+						</div>
+						<div className="flex justify-end gap-2">
+							<button
+								type="button"
+								onClick={diagnosisModal.closeModal}
+								className="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg font-semibold transition-colors">
+								Cancelar
+							</button>
+							<button
+								type="button"
+								onClick={handleCreateDiagnosis}
+								disabled={isCreatingDiagnosis}
+								className="px-4 py-2 text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-300 rounded-lg font-semibold flex items-center gap-2 transition-colors">
+								{isCreatingDiagnosis ? "Guardando..." : <><FaPlus /> Crear</>}
+							</button>
+						</div>
+					</div>
+				</Modal>
 				<div className="p-4 flex flex-col gap-3">
 					{diagnoses.length === 0 ? (
 						<p className="text-sm text-slate-400 text-center py-4">
