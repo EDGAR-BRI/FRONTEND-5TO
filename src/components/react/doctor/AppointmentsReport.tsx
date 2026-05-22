@@ -239,22 +239,6 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Reporte de Citas</h1>
-          <p className="text-slate-500 font-medium">Análisis detallado de las citas médicas.</p>
-        </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200"
-          >
-            <FaPrint />
-            Exportar PDF
-          </button>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard title="Total Citas" value={statsWithScheduled.total} color="primary" icon={<FaCalendar size={18} />} variant="compact" />
         <StatsCard title="Completadas" value={statsWithScheduled.completed} color="success" icon={<FaCalendarCheck size={18} />} variant="compact" />

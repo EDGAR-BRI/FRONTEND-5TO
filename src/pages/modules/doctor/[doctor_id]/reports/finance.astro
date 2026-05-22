@@ -1,13 +1,18 @@
 ---
 import DoctorLayout from "@/layouts/DoctorLayout.astro";
 import FinanceReport from "@/components/react/doctor/FinanceReport.tsx";
+
+const { doctor_id = "1" } = Astro.params;
+const userId = Number(doctor_id);
 ---
 
 <DoctorLayout
   title="Reportes Financieros | Doctor"
   currentPath="/modules/doctor/[doctor_id]/reports/finance"
 >
-  <div class="flex justify-between items-end">
+  
+  <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen gap-5 flex flex-col">
+    <div class="flex justify-between items-end">
     <div>
       <h1 class="text-3xl font-black text-slate-800 tracking-tight">
         Reporte Financiero
@@ -16,16 +21,8 @@ import FinanceReport from "@/components/react/doctor/FinanceReport.tsx";
         Análisis de los ingresos del doctor.
       </p>
     </div>
-    <div class="flex gap-4">
-      <button
-        class="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200"
-      >
-
-        Exportar PDF
-      </button>
-    </div>
+    <div class="flex gap-4"></div>
   </div>
-  <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen gap-5 flex flex-col">
-    <FinanceReport client:load />
+    <FinanceReport client:load userId={userId} />
   </main>
 </DoctorLayout>

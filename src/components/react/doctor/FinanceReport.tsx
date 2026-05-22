@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   FaPrint,
   FaDollarSign,
@@ -7,98 +7,61 @@ import {
   FaSpinner,
 } from "react-icons/fa6";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import StaticCard from "@/components/react/primary/StaticCard";
 import { Modal } from "@/components/react/primary/Modal";
+import { getDoctorFinanceReport } from "@/lib/services/report/doctorFinance.service";
+import { Alert } from "@/utils/alerts";
 
-export default function FinanceReport() {
+type FinanceReportProps = {
+  userId?: number;
+};
+
+export default function FinanceReport({ userId }: FinanceReportProps) {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const currentYear = new Date().getFullYear();
   const [filters, setFilters] = useState({
-    from: "",
-    to: "",
+    from: `${currentYear}-01-01`,
+    to: `${currentYear}-12-31`,
   });
   const [quickRange, setQuickRange] = useState<null | "week" | "month" | "year">(
     null,
   );
-
-  const mockData = {
+  const [reportData, setReportData] = useState({
     stats: {
-      totalRevenue: 125000,
-      totalExpenses: 45000,
-      netProfit: 80000,
-      profitMargin: 64,
-      growthRate: 12,
+      totalRevenue: 0,
+      totalExpenses: 0,
+      netProfit: 0,
+      doctorEarnings: 0,
+      doctorCommission: 0,
     },
-    monthlyData: [
-      { month: "Ene", revenue: 95000, expenses: 35000, profit: 60000 },
-      { month: "Feb", revenue: 102000, expenses: 38000, profit: 64000 },
-      { month: "Mar", revenue: 108000, expenses: 40000, profit: 68000 },
-      { month: "Abr", revenue: 115000, expenses: 42000, profit: 73000 },
-      { month: "May", revenue: 125000, expenses: 45000, profit: 80000 },
-    ],
-    revenueSources: [
-      { source: "Consultas", amount: 75000 },
-      { source: "Procedimientos", amount: 30000 },
-      { source: "Laboratorio", amount: 15000 },
-      { source: "Otros", amount: 5000 },
-    ],
-    recentTransactions: [
-      {
-        id: 1,
-        description: "Consulta - María González",
-        category: "Consultas",
-        type: "income",
-        amount: 2500,
-        date: "2026-05-15",
-      },
-      {
-        id: 2,
-        description: "Pago de suministros",
-        category: "Gastos",
-        type: "expense",
-        amount: 3500,
-        date: "2026-05-14",
-      },
-      {
-        id: 3,
-        description: "Procedimiento - Carlos R.",
-        category: "Procedimientos",
-        type: "income",
-        amount: 4500,
-        date: "2026-05-14",
-      },
-      {
-        id: 4,
-        description: "Laboratorio - Ana M.",
-        category: "Laboratorio",
-        type: "income",
-        amount: 1800,
-        date: "2026-05-13",
-      },
-      {
-        id: 5,
-        description: "Mantenimiento equipo",
-        category: "Gastos",
-        type: "expense",
-        amount: 2200,
-        date: "2026-05-12",
-      },
-    ],
-  };
+    monthlyData: [] as Array<{
+      month: string;
+      revenue: number;
+      expenses: number;
+      profit: number;
+      doctorEarnings: number;
+    }>,
+    revenueSources: [] as Array<{ source: string; amount: number }>,
+    recentTransactions: [] as Array<{
+      id: number;
+      description: string;
+      category: string;
+      type: "income" | "expense";
+      amount: number;
+      date: string;
+    }>,
+  });
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   const handleExportPDF = () => {
     setIsExporting(true);
@@ -117,20 +80,21 @@ export default function FinanceReport() {
 
   const parseMonthLabel = (value: string) => {
     const map: Record<string, number> = {
-      Ene: 0,
-      Feb: 1,
-      Mar: 2,
-      Abr: 3,
-      May: 4,
-      Jun: 5,
-      Jul: 6,
-      Ago: 7,
-      Sep: 8,
-      Oct: 9,
-      Nov: 10,
-      Dic: 11,
+      "ene.": 0, "ene": 0, "Ene": 0, "Ene.": 0,
+      "feb.": 1, "feb": 1, "Feb": 1, "Feb.": 1,
+      "mar.": 2, "mar": 2, "Mar": 2, "Mar.": 2,
+      "abr.": 3, "abr": 3, "Abr": 3, "Abr.": 3,
+      "may.": 4, "may": 4, "May": 4, "May.": 4,
+      "jun.": 5, "jun": 5, "Jun": 5, "Jun.": 5,
+      "jul.": 6, "jul": 6, "Jul": 6, "Jul.": 6,
+      "ago.": 7, "ago": 7, "Ago": 7, "Ago.": 7,
+      "sep.": 8, "sep": 8, "Sep": 8, "Sep.": 8,
+      "oct.": 9, "oct": 9, "Oct": 9, "Oct.": 9,
+      "nov.": 10, "nov": 10, "Nov": 10, "Nov.": 10,
+      "dic.": 11, "dic": 11, "Dic": 11, "Dic.": 11,
     };
-    const monthIndex = map[value] ?? 0;
+    const normalized = value.trim().toLowerCase();
+    const monthIndex = map[normalized] ?? map[value] ?? 0;
     return new Date(new Date().getFullYear(), monthIndex, 1);
   };
 
@@ -165,63 +129,17 @@ export default function FinanceReport() {
             : "month";
 
   const filteredMonthlyData = useMemo(() => {
-    return mockData.monthlyData.filter((item) =>
+    return reportData.monthlyData.filter((item) =>
       isWithinRange(parseMonthLabel(item.month), fromDate, toDate),
     );
-  }, [mockData.monthlyData, fromDate, toDate]);
+  }, [reportData.monthlyData, fromDate, toDate]);
 
   const filteredTransactions = useMemo(() => {
-    return mockData.recentTransactions.filter((transaction) => {
+    return reportData.recentTransactions.filter((transaction) => {
       const date = new Date(transaction.date);
       return isWithinRange(date, fromDate, toDate);
     });
-  }, [mockData.recentTransactions, fromDate, toDate]);
-
-  const statsFromMonthly = useMemo(() => {
-    return filteredMonthlyData.reduce(
-      (acc, item) => {
-        acc.revenue += item.revenue;
-        acc.expenses += item.expenses;
-        acc.profit += item.profit;
-        return acc;
-      },
-      { revenue: 0, expenses: 0, profit: 0 },
-    );
-  }, [filteredMonthlyData]);
-
-  const statsFromTransactions = useMemo(() => {
-    return filteredTransactions.reduce(
-      (acc, transaction) => {
-        if (transaction.type === "income") {
-          acc.revenue += transaction.amount;
-        } else {
-          acc.expenses += transaction.amount;
-        }
-        acc.profit = acc.revenue - acc.expenses;
-        return acc;
-      },
-      { revenue: 0, expenses: 0, profit: 0 },
-    );
-  }, [filteredTransactions]);
-
-  const filteredStats = useMemo(() => {
-    const baseStats =
-      rangeDays === null || rangeDays > 31 ? statsFromMonthly : statsFromTransactions;
-    const margin = baseStats.revenue
-      ? Math.round((baseStats.profit / baseStats.revenue) * 100)
-      : 0;
-    return {
-      totalRevenue: baseStats.revenue,
-      totalExpenses: baseStats.expenses,
-      netProfit: baseStats.profit,
-      profitMargin: margin,
-      growthRate: mockData.stats.growthRate,
-    };
-  }, [rangeDays, statsFromMonthly, statsFromTransactions, mockData.stats.growthRate]);
-
-  const filteredRevenueSources = useMemo(() => {
-    return mockData.revenueSources;
-  }, [mockData.revenueSources]);
+  }, [reportData.recentTransactions, fromDate, toDate]);
 
   const applyQuickRange = (range: "week" | "month" | "year") => {
     const today = new Date();
@@ -245,13 +163,40 @@ export default function FinanceReport() {
     setQuickRange(range);
   };
 
+  useEffect(() => {
+    const fetchReport = async () => {
+      if (!userId || Number.isNaN(userId)) return;
+      setIsLoadingReport(true);
+      try {
+        const response = await getDoctorFinanceReport({
+          userId,
+          from: filters.from || undefined,
+          to: filters.to || undefined,
+        });
+        console.log("[FinanceReport] Datos recibidos:", response.data);
+        setReportData({
+          stats: response.data.stats,
+          monthlyData: response.data.monthlyData,
+          revenueSources: response.data.revenueSources,
+          recentTransactions: response.data.recentTransactions,
+        });
+      } catch (error: any) {
+        Alert.error(error.message ?? "No se pudo cargar el reporte financiero");
+      } finally {
+        setIsLoadingReport(false);
+      }
+    };
+
+    fetchReport();
+  }, [userId, filters.from, filters.to]);
+
   const chartData = useMemo(() => {
     if (chartGranularity === "month") {
       return filteredMonthlyData.map((item) => ({
         period: item.month,
         revenue: item.revenue,
         expenses: item.expenses,
-        profit: item.profit,
+        profit: item.doctorEarnings,
       }));
     }
 
@@ -335,37 +280,34 @@ export default function FinanceReport() {
     toDate,
   ]);
 
-  const revenueSourcesColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
-
   return (
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 data-nums-compact">
         <StatsCard
           title="Ingresos Totales"
-          value={formatCurrency(filteredStats.totalRevenue)}
+          value={formatCurrency(reportData.stats.totalRevenue)}
           color="primary"
           icon={<FaDollarSign size={18} />}
-          trendUp={filteredStats.growthRate >= 0}
           variant="compact"
         />
         <StatsCard
           title="Gastos Totales"
-          value={formatCurrency(filteredStats.totalExpenses)}
+          value={formatCurrency(reportData.stats.totalExpenses)}
           color="danger"
           icon={<FaMoneyBillWave size={18} />}
           variant="compact"
         />
         <StatsCard
-          title="Ganancia Neta"
-          value={formatCurrency(filteredStats.netProfit)}
+          title="Ganancia Doctor"
+          value={formatCurrency(reportData.stats.doctorEarnings)}
           color="success"
           icon={<FaDollarSign size={18} />}
           variant="compact"
         />
         <StatsCard
-          title="Margen de Ganancia"
-          value={`${filteredStats.profitMargin}%`}
-          color="primary"
+          title="Comisión Doctor"
+          value={`${reportData.stats.doctorCommission}%`}
+          color="success"
           icon={<FaArrowTrendUp size={18} />}
           variant="compact"
         />
@@ -380,7 +322,7 @@ export default function FinanceReport() {
             <button
               type="button"
               onClick={() => {
-                setFilters({ from: "", to: "" });
+                setFilters({ from: `${currentYear}-01-01`, to: `${currentYear}-12-31` });
                 setQuickRange(null);
               }}
               className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition"
@@ -394,6 +336,7 @@ export default function FinanceReport() {
               <input
                 type="date"
                 value={filters.from}
+                max={filters.to}
                 onChange={(event) => {
                   setFilters((prev) => ({ ...prev, from: event.target.value }));
                   setQuickRange(null);
@@ -406,6 +349,7 @@ export default function FinanceReport() {
               <input
                 type="date"
                 value={filters.to}
+                min={filters.from}
                 onChange={(event) => {
                   setFilters((prev) => ({ ...prev, to: event.target.value }));
                   setQuickRange(null);
@@ -441,56 +385,6 @@ export default function FinanceReport() {
       </StaticCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <StaticCard className="p-8">
-          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">
-            Evolución Mensual
-          </h3>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="period"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: "12px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                  }}
-                  formatter={(value: any, name: string) => {
-                    const labels: Record<string, string> = {
-                      revenue: "Ganancias por consultas",
-                      expenses: "Gastos en insumos",
-                    };
-                    return [formatCurrency(value), labels[name] || name];
-                  }}
-                />
-                <Bar
-                  dataKey="revenue"
-                  name="Ganancias por consultas"
-                  fill="#3b82f6"
-                  radius={[6, 6, 0, 0]}
-                />
-                <Bar
-                  dataKey="expenses"
-                  name="Gastos en insumos"
-                  fill="#ef4444"
-                  radius={[6, 6, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </StaticCard>
-
         <StaticCard className="p-8">
           <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">
             Tendencia de Ganancias
@@ -530,6 +424,43 @@ export default function FinanceReport() {
             </ResponsiveContainer>
           </div>
         </StaticCard>
+
+        <StaticCard className="p-8">
+          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">
+            Desglose de Consultas
+          </h3>
+          <div className="h-80 w-full overflow-y-auto space-y-3 pr-1">
+            {filteredTransactions.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-sm text-slate-400">
+                No hay consultas en el rango seleccionado.
+              </div>
+            ) : (
+              filteredTransactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
+                      {tx.description}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(tx.date).toLocaleDateString("es-VE", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}{" "}
+                      &middot; {tx.category}
+                    </p>
+                  </div>
+                  <p className="text-sm font-bold text-emerald-600 whitespace-nowrap">
+                    {formatCurrency(tx.amount)}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </StaticCard>
       </div>
 
       <Modal
@@ -544,13 +475,9 @@ export default function FinanceReport() {
           <div className="bg-slate-50 p-4 rounded-lg">
             <p className="text-sm text-slate-600 mb-2">El reporte incluirá:</p>
             <ul className="text-sm text-slate-600 space-y-1">
-              <li>
-                • Estadísticas de citas (total, completadas, canceladas,
-                programadas)
-              </li>
-              <li>• Gráfica de evolución diaria</li>
-              <li>• Distribución por estado</li>
-              <li>• Lista de pacientes más frecuentes</li>
+              <li>• Resumen de ingresos y ganancias del doctor</li>
+              <li>• Evolución mensual de ingresos</li>
+              <li>• Distribución de fuentes de ingreso</li>
             </ul>
           </div>
           <div className="flex gap-3 pt-2">
