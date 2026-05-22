@@ -14,10 +14,6 @@ type AppointmentsReportProps = {
 export default function AppointmentsReport({ userId }: AppointmentsReportProps) {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [filters, setFilters] = useState({
-    from: '',
-    to: ''
-  });
   const [quickRange, setQuickRange] = useState<null | 'week' | 'month' | 'year'>(null);
   const [reportData, setReportData] = useState({
     stats: {
@@ -39,6 +35,10 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   const currentYear = new Date().getFullYear();
+  const [filters, setFilters] = useState({
+    from: `${currentYear}-01-01`,
+    to: `${currentYear}-12-31`
+  });
 
   const isWithinRange = (date: Date, from?: Date, to?: Date) => {
     if (from && date < from) return false;
@@ -269,7 +269,7 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
             <button
               type="button"
               onClick={() => {
-                setFilters({ from: '', to: '' });
+                setFilters({ from: `${currentYear}-01-01`, to: `${currentYear}-12-31` });
                 setQuickRange(null);
               }}
               className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition"
