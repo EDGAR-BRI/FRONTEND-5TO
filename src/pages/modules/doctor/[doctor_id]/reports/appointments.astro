@@ -1,10 +1,13 @@
 ---
 import DoctorLayout from "@/layouts/DoctorLayout.astro";
 import AppointmentsReport from "@/components/react/doctor/AppointmentsReport.tsx";
+
+const { doctor_id = "1" } = Astro.params;
+const userId = Number(doctor_id);
 ---
 
 <DoctorLayout title="Reportes de Citas | Doctor" currentPath="/modules/doctor/[doctor_id]/reports/appointments">
   <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen">
-    <AppointmentsReport client:load />
+    <AppointmentsReport client:load userId={userId} />
   </main>
 </DoctorLayout>
