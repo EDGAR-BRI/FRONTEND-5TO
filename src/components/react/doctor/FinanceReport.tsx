@@ -60,6 +60,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
       amount: number;
       date: string;
     }>,
+    exchangeRate: 1,
   });
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
@@ -72,10 +73,18 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
   };
 
   const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
+  const formatVES = (amount: number, rate: number) => {
+    const converted = amount * rate;
     return new Intl.NumberFormat("es-VE", {
       style: "currency",
       currency: "VES",
-    }).format(amount);
+    }).format(converted);
   };
 
   const parseMonthLabel = (value: string) => {
@@ -179,6 +188,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
           monthlyData: response.data.monthlyData,
           revenueSources: response.data.revenueSources,
           recentTransactions: response.data.recentTransactions,
+          exchangeRate: response.data.exchangeRate,
         });
       } catch (error: any) {
         Alert.error(error.message ?? "No se pudo cargar el reporte financiero");
@@ -290,6 +300,7 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
           color="success"
           icon={<FaDollarSign size={18} />}
           variant="compact"
+          subText={`≈ ${formatVES(reportData.stats.doctorEarnings, reportData.exchangeRate)}`}
         />
         <StatsCard
           className="flex-1"
@@ -398,7 +409,10 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
                     border: "none",
                     boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                   }}
-                  formatter={(value: any) => formatCurrency(value)}
+                  formatter={(value: any) => [
+                    `${formatCurrency(value)} (≈ ${formatVES(value, reportData.exchangeRate)})`,
+                    "Ganancia",
+                  ]}
                 />
                 <Line
                   type="monotone"
@@ -441,9 +455,14 @@ export default function FinanceReport({ userId }: FinanceReportProps) {
                       &middot; {tx.category}
                     </p>
                   </div>
-                  <p className="text-sm font-bold text-emerald-600 whitespace-nowrap">
-                    {formatCurrency(tx.amount)}
-                  </p>
+                  <div className="text-right whitespace-nowrap">
+                    <p className="text-sm font-bold text-emerald-600">
+                      {formatCurrency(tx.amount)}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      ≈ {formatVES(tx.amount, reportData.exchangeRate)}
+                    </p>
+                  </div>
                 </div>
               ))
             )}
