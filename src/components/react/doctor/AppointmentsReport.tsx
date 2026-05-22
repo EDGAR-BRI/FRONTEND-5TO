@@ -40,20 +40,16 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
     to: `${currentYear}-12-31`
   });
 
-  const isWithinRange = (date: Date, from?: Date, to?: Date) => {
-    if (from && date < from) return false;
-    if (to) {
-      const end = new Date(to);
-      end.setHours(23, 59, 59, 999);
-      if (date > end) return false;
-    }
+  const isWithinRange = (dateStr: string, from?: string, to?: string) => {
+    if (from && dateStr < from) return false;
+    if (to && dateStr > to) return false;
     return true;
   };
 
-  const fromDate = filters.from ? new Date(filters.from) : undefined;
-  const toDate = filters.to ? new Date(filters.to) : undefined;
+  const fromDate = filters.from ?? undefined;
+  const toDate = filters.to ?? undefined;
   const rangeDays = fromDate && toDate
-    ? Math.floor((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+    ? Math.floor((new Date(toDate).getTime() - new Date(fromDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
     : null;
   const chartGranularity = quickRange === 'week'
     ? 'day'
@@ -68,14 +64,13 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
           : 'day';
 
   const filteredDailyData = useMemo(() => {
-    return reportData.dailyData.filter((item) => isWithinRange(new Date(item.date), fromDate, toDate));
+    return reportData.dailyData.filter((item) => isWithinRange(item.date, fromDate, toDate));
   }, [reportData.dailyData, fromDate, toDate]);
 
   
   const filteredTopPatients = useMemo(() => {
     return reportData.topPatients.filter((patient) => {
-      const lastDate = new Date(patient.lastAppointmentDate);
-      return isWithinRange(lastDate, fromDate, toDate);
+      return isWithinRange(patient.lastAppointmentDate, fromDate, toDate);
     });
   }, [reportData.topPatients, fromDate, toDate]);
 
@@ -115,16 +110,23 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
         cancelled: number;
         scheduled: number;
       }[] = [];
-      const cursor = new Date(fromDate);
-      while (cursor <= toDate) {
-        const label = cursor.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit' });
+
+      const startDate = new Date(fromDate + 'T00:00:00.000Z');
+      const endDate = new Date(toDate + 'T00:00:00.000Z');
+      const cursor = new Date(startDate);
+      while (cursor <= endDate) {
+        const y = cursor.getUTCFullYear();
+        const m = String(cursor.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(cursor.getUTCDate()).padStart(2, '0');
+        const label = `${d}/${m}`;
         days.push({ period: label, total: 0, completed: 0, cancelled: 0, scheduled: 0 });
-        cursor.setDate(cursor.getDate() + 1);
+        cursor.setUTCDate(cursor.getUTCDate() + 1);
       }
 
       const indexMap = new Map(days.map((item, index) => [item.period, index]));
       filteredDailyData.forEach((item) => {
-        const label = new Date(item.date).toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit' });
+        const parts = item.date.split('-');
+        const label = `${parts[2]}/${parts[1]}`;
         const targetIndex = indexMap.get(label);
         if (targetIndex === undefined) return;
         days[targetIndex].total += item.total;
@@ -143,7 +145,7 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
       return [];
     }
 
-    const year = fromDate.getFullYear();
+    const year = parseInt(fromDate.split('-')[0], 10);
     const months: {
       key: string;
       period: string;
@@ -153,17 +155,17 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
       scheduled: number;
     }[] = [];
 
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
-      const date = new Date(year, monthIndex, 1);
       const key = `${year}-${monthIndex}`;
-      const period = date.toLocaleDateString('es-VE', { month: 'short' });
+      const period = monthNames[monthIndex];
       months.push({ key, period, total: 0, completed: 0, cancelled: 0, scheduled: 0 });
     }
 
     const monthMap = new Map(months.map((item) => [item.key, item]));
     filteredDailyData.forEach((item) => {
-      const itemDate = new Date(item.date);
-      const monthIndex = itemDate.getMonth();
+      const parts = item.date.split('-');
+      const monthIndex = parseInt(parts[1], 10) - 1;
       const key = `${year}-${monthIndex}`;
       const bucket = monthMap.get(key);
       if (!bucket) return;
