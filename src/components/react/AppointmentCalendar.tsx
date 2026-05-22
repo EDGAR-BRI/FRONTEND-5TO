@@ -5,6 +5,7 @@ import { format, parse, startOfWeek, startOfMonth, getDay, isBefore } from 'date
 import { es } from 'date-fns/locale/es'
 import useSWR from 'swr'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+import type { View } from 'react-big-calendar';
 
 import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme, type variant } from '@/components/react/primary/Button'
@@ -87,7 +88,7 @@ export type AppointmentCalendarProps = {
   statusClassByEstado?: Record<string, string>
   heightPx?: number
   onSelectDate?: (date: string) => void
-  onRangeChange?: (params: { view: 'month' | 'week' | 'day'; date: Date }) => void
+  onRangeChange?: (params: { view: View; date: Date }) => void
   availableDays?: number[]
   /** Citas del doctor seleccionado */
   doctorAppointments?: Appointment[]
@@ -166,7 +167,7 @@ export default function AppointmentCalendar({
   const [citaSeleccionada, setCitaSeleccionada] = useState<Cita | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>('month')
+  const [currentView, setCurrentView] = useState<View>('month')
   const [dayListDate, setDayListDate] = useState<string | null>(null)
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
 
@@ -224,16 +225,16 @@ export default function AppointmentCalendar({
   // Mínimo: primer día del mes actual
   const minDate = useMemo(() => startOfMonth(new Date()), [])
 
-  const handleNavigate = useCallback((newDate: Date, _view: any, action: NavigateAction) => {
+  const handleNavigate = useCallback((newDate: Date, view: View, action: NavigateAction) => {
     if (action === 'PREV' && isBefore(newDate, minDate)) return
     setCurrentDate(newDate)
     onRangeChange?.({ view: currentView, date: newDate })
   }, [currentView, minDate, onRangeChange])
 
-  const handleViewChange = useCallback((view: 'month' | 'week' | 'day') => {
+  const handleViewChange = useCallback((view: View) => {
     setCurrentView(view)
     onRangeChange?.({ view, date: currentDate })
-  }, [currentDate, onRangeChange])
+  }, [currentDate, onRangeChange, currentView])
 
   const handleSelectSlot = (slotInfo: { start: Date }) => {
     const today = new Date()
@@ -361,17 +362,27 @@ export default function AppointmentCalendar({
   )
 
   // Eventos de citas del doctor (para vistas week/day)
-  const drEvents: EventoCalendario[] = useMemo(() => {
+    const drEvents: EventoCalendario[] = useMemo(() => {
     if (citas && citas.length > 0) return []
     if (!doctorAppointments || doctorAppointments.length === 0) return []
-    return doctorAppointments.map((apt, i) => {
+    
+    return doctorAppointments.map((apt) => {
       const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
       const start = new Date(cleanDate)
       const end = new Date(start)
       end.setMinutes(end.getMinutes() + 30)
+
+      // 🛡️ CORRECCIÓN: Usamos apt.patient?.id de forma segura para validar la propiedad
+      const esCitaPropia = context?.patientId && apt.patient && String(apt.patient.id) === String(context.patientId);
+      const puedeVerNombres = role === 'receptionist' || role === 'doctor' || role === 'admin' || esCitaPropia;
+
+      const tituloPrivado = puedeVerNombres 
+        ? `${apt.patient?.user?.name || 'Paciente'}` 
+        : 'Horario Ocupado';
+
       return {
         id: apt.id,
-        title: `${apt.patient.user.name}`,
+        title: tituloPrivado,
         start, end,
         estado: apt.status.name,
         cita: {
@@ -383,14 +394,14 @@ export default function AppointmentCalendar({
           hora: format(start, 'HH:mm'),
           estado: apt.status.name,
           statusId: apt.status.id,
-          pacienteNombre: apt.patient.user.name,
-          pacienteId: '',
-          motivo: apt.reson_visit || '',
+          pacienteNombre: puedeVerNombres ? (apt.patient?.user?.name || 'Paciente') : 'Paciente Privado',
+          pacienteId: puedeVerNombres ? String(apt.patient?.id || '') : '',
+          motivo: puedeVerNombres ? (apt.reson_visit || '') : 'Privado',
           tipoConsulta: 'Presencial' as const,
         },
       }
     })
-  }, [citas, doctorAppointments])
+  }, [citas, doctorAppointments, role, context?.patientId])
 
   const allEvents = useMemo(() => [...eventosAdaptados, ...drEvents], [eventosAdaptados, drEvents])
 
@@ -579,9 +590,27 @@ export default function AppointmentCalendar({
                   <span>{label}</span>
                   {count > 0 && (
                     <button
-                      onClick={(e) => { e.stopPropagation(); setDayListDate(dateKey) }}
-                      style={{ background: '#059669', color: 'white', fontSize: '9px', fontWeight: 700, minWidth: '16px', height: '16px', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', border: 'none', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}
-                      title={`${count} cita${count > 1 ? 's' : ''} — clic para ver`}
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (role !== 'pacient') setDayListDate(dateKey);
+                      }}
+                      style={{ 
+                        background: '#059669', 
+                        color: 'white', 
+                        fontSize: '9px', 
+                        fontWeight: 700, 
+                        minWidth: '16px', 
+                        height: '16px', 
+                        borderRadius: '9999px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        padding: '0 4px', 
+                        border: 'none', 
+                        cursor: role === 'pacient' ? 'default' : 'pointer',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.15)' 
+                      }}
+                      title={role === 'pacient' ? `${count} hora(s) ocupada(s)` : `${count} cita${count > 1 ? 's' : ''} — clic para ver`}
                     >
                       {count}
                     </button>
