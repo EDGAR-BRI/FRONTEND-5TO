@@ -334,6 +334,11 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
                 <Tooltip 
                   contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} 
+                  formatter={(value, name) => {
+                    const labels: Record<string, string> = { completed: 'Completadas', cancelled: 'Canceladas', scheduled: 'Programadas' };
+                    return [value, labels[name as string] ?? name];
+                  }}
+                  labelFormatter={(label) => `Fecha: ${label}`}
                 />
                 <Line 
                   type="monotone" 
@@ -383,6 +388,7 @@ export default function AppointmentsReport({ userId }: AppointmentsReportProps) 
                 </Pie>
                 <Tooltip 
                   contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} 
+                  formatter={(value, name) => [value, name]}
                 />
               </PieChart>
             </ResponsiveContainer>
