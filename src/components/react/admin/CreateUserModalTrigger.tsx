@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ModalTrigger } from "@/components/react/primary/ModalTrigger";
 import { Field } from "@/components/react/primary/Field";
 import { Select, type SelectOption } from "@/components/react/primary/Select";
 import { Button, ButtonTheme } from "@/components/react/primary/Button";
 import { createAdminUser } from "@/lib/services/admin/admin.service";
+import { getSpecialtiesSelect } from "@/lib/services/medical/specialty/specialty.service";
 
 type RoleOption = { value: number; label: string };
 
@@ -11,6 +12,7 @@ type UserDraft = {
     ci: string;
     name: string;
     roleId: number | "";
+    specialtyId: number | "";
     password: string;
 };
 
@@ -18,6 +20,7 @@ const emptyDraft = (): UserDraft => ({
     ci: "",
     name: "",
     roleId: "",
+    specialtyId: "",
     password: "",
 });
 
@@ -31,6 +34,8 @@ export default function CreateUserModalTrigger({
     const [draft, setDraft] = useState<UserDraft>(emptyDraft);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [specialtyOptions, setSpecialtyOptions] = useState<SelectOption[]>([]);
+    const [loadingSpecialties, setLoadingSpecialties] = useState(false);
 
     const selectRoleOptions: SelectOption[] = useMemo(
         () => roleOptions.map((option) => ({ value: option.value, label: option.label })),
@@ -40,6 +45,47 @@ export default function CreateUserModalTrigger({
     const set = <K extends keyof UserDraft>(key: K, value: UserDraft[K]) => {
         setDraft((prev) => ({ ...prev, [key]: value }));
     };
+
+    const selectedRole = roleOptions.find((option) => option.value === draft.roleId);
+    const isDoctor = selectedRole?.label.toUpperCase().includes("DOCTOR") ?? false;
+
+    useEffect(() => {
+        let mounted = true;
+
+        if (!isDoctor) {
+            setDraft((prev) => ({ ...prev, specialtyId: "" }));
+            setSpecialtyOptions([]);
+            return;
+        }
+
+        (async () => {
+            try {
+                setLoadingSpecialties(true);
+                const specialties = await getSpecialtiesSelect();
+
+                if (!mounted) return;
+
+                setSpecialtyOptions(
+                    specialties.map((specialty) => ({
+                        value: specialty.id,
+                        label: specialty.name,
+                    }))
+                );
+            } catch {
+                if (mounted) {
+                    setSpecialtyOptions([]);
+                }
+            } finally {
+                if (mounted) {
+                    setLoadingSpecialties(false);
+                }
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
+    }, [isDoctor]);
 
     return (
         <ModalTrigger
@@ -61,6 +107,7 @@ export default function CreateUserModalTrigger({
                                 name: draft.name,
                                 password: draft.password,
                                 roleId: Number(draft.roleId),
+                                specialtyId: isDoctor ? Number(draft.specialtyId) : undefined,
                             });
 
                             close();
@@ -116,6 +163,18 @@ export default function CreateUserModalTrigger({
                         onChange={(v) => set("roleId", Number(v))}
                         required
                     />
+
+                    {isDoctor ? (
+                        <Select
+                            label="Especialidad"
+                            name="specialtyId"
+                            options={specialtyOptions}
+                            placeholder={loadingSpecialties ? "Cargando especialidades..." : "Selecciona una especialidad"}
+                            value={draft.specialtyId}
+                            onChange={(v) => set("specialtyId", Number(v))}
+                            required
+                        />
+                    ) : null}
 
                     <div className="flex gap-3 shrink-0 ml-auto pt-2 justify-end">
                         <Button

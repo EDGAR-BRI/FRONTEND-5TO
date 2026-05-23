@@ -52,6 +52,7 @@ const mapUser = (user: UserDto): AdminUserView => ({
 	roleId: user.roleId,
 	role: normalizeRoleCode(user.role?.code),
 	status: user.active ? "ACTIVO" : "INACTIVO",
+	doctor: user.doctor,
 });
 
 export const listAdminUsers = async (): Promise<AdminUserView[]> => {
@@ -110,6 +111,7 @@ export const createAdminUser = async (payload: {
 	name: string;
 	password: string;
 	roleId: number;
+	specialtyId?: number;
 }) => {
 	const created = await createUser(payload);
 	return mapUser(created);
@@ -122,6 +124,7 @@ export const updateAdminUser = async (
 		name?: string;
 		password?: string;
 		roleId?: number;
+		specialtyId?: number;
 	}
 ) => {
 	const updated = await updateUser(id, payload);
