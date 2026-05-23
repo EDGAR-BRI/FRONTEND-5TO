@@ -245,11 +245,19 @@ export default function AppointmentCalendar({
     // Bloquear días donde el doctor no trabaja
     if (doctorSchedulesData && doctorSchedulesData.length > 0 && doctorAvailabilities) {
       const dateUTC = new Date(Date.UTC(slotInfo.start.getFullYear(), slotInfo.start.getMonth(), slotInfo.start.getDate(), 0, 0, 0, 0));
-      const activeSchedule = doctorSchedulesData.find(s => {
-        const start = new Date(s.period_start);
-        const end = s.period_end ? new Date(s.period_end) : null;
-        return dateUTC >= start && (!end || dateUTC <= end);
-      });
+      const activeSchedule = doctorSchedulesData
+        .map(s => {
+          const ps = new Date(s.period_start);
+          const _start = new Date(Date.UTC(ps.getUTCFullYear(), ps.getUTCMonth(), ps.getUTCDate(), 0, 0, 0, 0));
+          let _end: Date | null = null;
+          if (s.period_end) {
+            const pe = new Date(s.period_end);
+            _end = new Date(Date.UTC(pe.getUTCFullYear(), pe.getUTCMonth(), pe.getUTCDate(), 0, 0, 0, 0));
+          }
+          return { ...s, _start, _end };
+        })
+        .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+        .sort((a, b) => b._start.getTime() - a._start.getTime())[0];
       if (!activeSchedule) return;
       const day = getDay(slotInfo.start);
       if (!doctorAvailabilities.some(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === day)) return;
@@ -310,11 +318,19 @@ export default function AppointmentCalendar({
     let isWorkDay = false;
     if (doctorSchedulesData && doctorSchedulesData.length > 0 && doctorAvailabilities) {
       const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
-      const activeSchedule = doctorSchedulesData.find(s => {
-        const start = new Date(s.period_start);
-        const end = s.period_end ? new Date(s.period_end) : null;
-        return dateUTC >= start && (!end || dateUTC <= end);
-      });
+      const activeSchedule = doctorSchedulesData
+        .map(s => {
+          const ps = new Date(s.period_start);
+          const _start = new Date(Date.UTC(ps.getUTCFullYear(), ps.getUTCMonth(), ps.getUTCDate(), 0, 0, 0, 0));
+          let _end: Date | null = null;
+          if (s.period_end) {
+            const pe = new Date(s.period_end);
+            _end = new Date(Date.UTC(pe.getUTCFullYear(), pe.getUTCMonth(), pe.getUTCDate(), 0, 0, 0, 0));
+          }
+          return { ...s, _start, _end };
+        })
+        .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+        .sort((a, b) => b._start.getTime() - a._start.getTime())[0];
       if (activeSchedule) {
         const day = getDay(date);
         isWorkDay = doctorAvailabilities.some(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === day);

@@ -99,10 +99,7 @@ export default function DoctorScheduleManager() {
             .finally(() => setLoadingDoctors(false))
     }, [])
 
-    const dayStartUTC = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0))
-
     const fetchActiveScheduleData = useCallback(async (doctorId: number): Promise<{ id: number, availabilities: DoctorAvailability[] }> => {
-        const todayStart = dayStartUTC(new Date())
         // Optimize: Fetch only the active schedule (periodEnd=null) which already includes its availabilities
         const schedules = await getDoctorSchedules(doctorId, 'null')
 
@@ -114,7 +111,7 @@ export default function DoctorScheduleManager() {
 
         const created = await createDoctorSchedule({
             doctorId,
-            period_start: todayStart.toISOString().slice(0, 10),
+            period_start: new Date().toISOString(),
             period_end: null,
         })
 
@@ -228,18 +225,17 @@ export default function DoctorScheduleManager() {
                 const data = await fetchActiveScheduleData(selectedDocId)
                 scheduleId = data.id
             }
-            const todayStart = dayStartUTC(new Date())
-            const todayISO = todayStart.toISOString().slice(0, 10)
+            const nowISO = new Date().toISOString()
 
             // Finalizar el schedule actual
             await updateDoctorSchedule(scheduleId, {
-                period_end: todayISO
+                period_end: nowISO
             })
             console.log("FINALIZADO EL SCHED ACTUAL")
             // Crear un schedule nuevo con fecha de inicio hoy y sin fecha de fin
             const newSchedule = await createDoctorSchedule({
                 doctorId: selectedDocId,
-                period_start: todayISO,
+                period_start: nowISO,
                 period_end: null,
             })
             

@@ -115,6 +115,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
                         externalDate={selectedDate}
                         onDoctorChange={handleDoctorChange}
                         doctorSchedule={doctorSchedule}
+                        doctorSchedulesData={doctorSchedulesData}
                         doctorAppointments={doctorAppointments}
                         onSuccess={() => {
                             // Refrescar citas del doctor tras crear una nueva (Aplica para ambos ahora)
