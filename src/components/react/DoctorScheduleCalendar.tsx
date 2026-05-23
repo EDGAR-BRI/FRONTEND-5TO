@@ -381,7 +381,16 @@ export default function DoctorScheduleCalendar({
       const dayOfWeek = date.getDay()
 
       const activeSchedule = docSchedules
-        .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+        .map(s => {
+          const ps = new Date(s.period_start);
+          const _start = new Date(Date.UTC(ps.getUTCFullYear(), ps.getUTCMonth(), ps.getUTCDate(), 0, 0, 0, 0));
+          let _end: Date | null = null;
+          if (s.period_end) {
+            const pe = new Date(s.period_end);
+            _end = new Date(Date.UTC(pe.getUTCFullYear(), pe.getUTCMonth(), pe.getUTCDate(), 0, 0, 0, 0));
+          }
+          return { ...s, _start, _end };
+        })
         .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
         .sort((a, b) => b._start.getTime() - a._start.getTime())[0]
 

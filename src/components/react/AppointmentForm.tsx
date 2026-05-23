@@ -65,12 +65,40 @@ export interface AppointmentFormProps {
     externalDate?: string
     onDoctorChange?: (doctorId: string | number) => void
     doctorSchedule?: DoctorAvailability[]
+    doctorSchedulesData?: { id: number, period_start: string, period_end: string | null }[]
     doctorAppointments?: Appointment[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function resolveDateOptions(preset: DatePreset, weekday?: string, workDays?: number[]): Date[] {
+function findActiveSchedule(
+  date: Date,
+  schedules?: { id: number, period_start: string, period_end: string | null }[]
+) {
+  if (!schedules || schedules.length === 0) return null;
+  const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+  return schedules
+    .map(s => {
+      const ps = new Date(s.period_start);
+      const _start = new Date(Date.UTC(ps.getUTCFullYear(), ps.getUTCMonth(), ps.getUTCDate(), 0, 0, 0, 0));
+      let _end: Date | null = null;
+      if (s.period_end) {
+        const pe = new Date(s.period_end);
+        _end = new Date(Date.UTC(pe.getUTCFullYear(), pe.getUTCMonth(), pe.getUTCDate(), 0, 0, 0, 0));
+      }
+      return { ...s, _start, _end };
+    })
+    .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+    .sort((a, b) => b._start.getTime() - a._start.getTime())[0] || null;
+}
+
+function resolveDateOptions(
+    preset: DatePreset, 
+    weekday?: string, 
+    workDays?: number[],
+    schedules?: { id: number, period_start: string, period_end: string | null }[],
+    doctorSchedule?: DoctorAvailability[]
+): Date[] {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     let rawDates: Date[] = []
@@ -94,6 +122,16 @@ function resolveDateOptions(preset: DatePreset, weekday?: string, workDays?: num
         const dateOnly = new Date(d)
         dateOnly.setHours(0, 0, 0, 0)
         if (dateOnly < today) return false
+        
+        if (schedules && schedules.length > 0 && doctorSchedule) {
+            const activeSchedule = findActiveSchedule(dateOnly, schedules);
+            if (!activeSchedule) return false;
+            const day = dateOnly.getDay();
+            const hasAvail = doctorSchedule.some(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === day);
+            if (!hasAvail) return false;
+            return true;
+        }
+
         if (workDays && workDays.length > 0) {
             return workDays.includes(dateOnly.getDay())
         }
@@ -145,6 +183,7 @@ export default function AppointmentForm({
     externalDate,
     onDoctorChange,
     doctorSchedule = [],
+    doctorSchedulesData = [],
     doctorAppointments = [],
 }: AppointmentFormProps) {
 
@@ -246,9 +285,9 @@ export default function AppointmentForm({
 
     const dateOptions = useMemo(() => {
         if (datePreset === 'specific') return []
-        if (datePreset === 'weekday') return resolveDateOptions('weekday', String(selectedWeekday), workDays)
-        return resolveDateOptions(datePreset, undefined, workDays)
-    }, [datePreset, selectedWeekday, workDays])
+        if (datePreset === 'weekday') return resolveDateOptions('weekday', String(selectedWeekday), workDays, doctorSchedulesData, doctorSchedule)
+        return resolveDateOptions(datePreset, undefined, workDays, doctorSchedulesData, doctorSchedule)
+    }, [datePreset, selectedWeekday, workDays, doctorSchedulesData, doctorSchedule])
 
     useEffect(() => {
         if (externalDate) {
@@ -280,7 +319,19 @@ export default function AppointmentForm({
             dayOfWeek = d.getDay()
         }
         if (dayOfWeek === null) return null
-        const schedForDay = doctorSchedule.filter(s => s.day_of_week === dayOfWeek)
+        
+        let schedForDay = doctorSchedule.filter(s => s.day_of_week === dayOfWeek)
+        
+        if (doctorSchedulesData && doctorSchedulesData.length > 0) {
+            const dateObj = new Date(resolvedDate + 'T00:00:00')
+            const activeSchedule = findActiveSchedule(dateObj, doctorSchedulesData)
+            if (activeSchedule) {
+                schedForDay = schedForDay.filter(s => s.doctorScheduleId === activeSchedule.id)
+            } else {
+                return null // Fuera de periodo
+            }
+        }
+        
         if (schedForDay.length === 0) return null
         const starts = schedForDay.map(s => {
             const clean = s.start_time.replace('Z', '').substring(11, 16)
@@ -291,7 +342,7 @@ export default function AppointmentForm({
             return clean || s.end_time.substring(0, 5)
         })
         return { start: starts.sort()[0], end: ends.sort().reverse()[0] }
-    }, [doctorSchedule, resolvedDate])
+    }, [doctorSchedule, doctorSchedulesData, resolvedDate])
 
     const hourOptions = useMemo(() => {
         let hours = getHoursForSlot(timeSlot)
@@ -410,6 +461,15 @@ export default function AppointmentForm({
         } else {
             if (dateObj < now) {
                 setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
+                return;
+            }
+        }
+
+        // Validar que la fecha elegida manualmente cae en un ciclo activo
+        if (doctorSchedulesData && doctorSchedulesData.length > 0) {
+            const activeSchedule = findActiveSchedule(dateObj, doctorSchedulesData);
+            if (!activeSchedule) {
+                setFeedback({ type: 'error', msg: 'La fecha seleccionada no pertenece a un ciclo de horarios vigente del doctor.' });
                 return;
             }
         }
