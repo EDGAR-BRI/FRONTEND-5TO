@@ -6,6 +6,7 @@ export type RoleDto = {
 	id: number;
 	name: string;
 	code: string;
+	base_salary?: number | string | null;
 };
 
 export type SupplyDto = {
@@ -52,6 +53,16 @@ export type AdminUserView = {
 	roleId: number;
 	role: AdminUserRoleCode;
 	status: "ACTIVO" | "INACTIVO";
+	doctor?: {
+		id: number;
+		specialtyId: number;
+		specialty?: {
+			id: number;
+			name: string;
+			consultation_price: number;
+			commission_percentage: number;
+		};
+	};
 };
 
 export type SupplyCategory = {

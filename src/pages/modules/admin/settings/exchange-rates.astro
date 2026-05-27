@@ -1,0 +1,14 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import ExchangeRatesDashboard from "@/components/react/admin/settings/ExchangeRatesDashboard";
+---
+
+<AdminLayout title="Admin | Tasas de cambio">
+	<section class="p-8 space-y-6">
+		<div>
+			<h1 class="text-2xl font-semibold text-primary-800">Tasas de cambio</h1>
+			<p class="text-sm text-cool-gray-70">Gestiona la tasa vigente y su historial.</p>
+		</div>
+		<ExchangeRatesDashboard client:only="react" />
+	</section>
+</AdminLayout>

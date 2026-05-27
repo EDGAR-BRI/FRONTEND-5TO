@@ -1,32 +1,69 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { FaCalendarCheck, FaUserCheck } from "react-icons/fa6";
-import { getDoctorStats } from "@/lib/services/scheduling/appointment/appointment.service";
-import type { DoctorStatsResponse } from "@/lib/services/scheduling/appointment/appointment.interface";
+import { listConsultationsByDoctor } from "@/lib/services/medical/consultation/consultation.service";
+import type { ConsultationSummary } from "@/lib/services/medical/consultation/consultation.interface";
 
 interface DoctorStatsProps {
   doctorId: number;
 }
 
+function isSameLocalDay(left: Date, right: Date) {
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
+}
+
 export default function DoctorStats({ doctorId }: DoctorStatsProps) {
-  const [stats, setStats] = useState<DoctorStatsResponse | null>(null);
+  const [consultations, setConsultations] = useState<ConsultationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!doctorId) return;
 
+    let cancelled = false;
     setLoading(true);
-    getDoctorStats(doctorId)
+    setError(null);
+
+    listConsultationsByDoctor(doctorId)
       .then((data) => {
-        setStats(data);
-        setError(null);
+        if (cancelled) return;
+        setConsultations(data);
       })
       .catch((err) => {
+        if (cancelled) return;
         setError(err.message ?? "Error al cargar estadísticas");
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [doctorId]);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const todayConsultations = consultations.filter((c) => {
+      const dateSource = c.started_at ?? c.date;
+      if (!dateSource) return false;
+      const d = new Date(dateSource);
+      if (Number.isNaN(d.getTime())) return false;
+      return isSameLocalDay(d, now);
+    });
+
+    const citasHoy = todayConsultations.length;
+    const pacientesAtendidos = todayConsultations.filter(
+      (c) => c.status === "FINISHED"
+    ).length;
+
+    return { citasHoy, pacientesAtendidos };
+  }, [consultations]);
 
   if (loading) {
     return (
@@ -51,13 +88,13 @@ export default function DoctorStats({ doctorId }: DoctorStatsProps) {
     <div id="DoctorStats" className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <StatsCard
         title="Citas Hoy"
-        value={stats?.citasHoy ?? 0}
+        value={stats.citasHoy}
         color="primary"
         icon={<FaCalendarCheck />}
       />
       <StatsCard
         title="Pacientes Atendidos"
-        value={stats?.pacientesAtendidos ?? 0}
+        value={stats.pacientesAtendidos}
         color="success"
         icon={<FaUserCheck />}
       />

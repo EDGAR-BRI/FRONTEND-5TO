@@ -55,7 +55,7 @@ export default function TodaysScheduleTable() {
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-heading-6 text-primary-800">Agenda de hoy</h2>
                 <a
-                    href="/appointments"
+                    href="schedules"
                     className="text-body-xs font-medium text-primary-600 hover:underline"
                 >
                     Ver todo

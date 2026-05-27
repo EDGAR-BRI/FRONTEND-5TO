@@ -1,5 +1,30 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const row = payload[0]?.payload ?? {};
+  const attended = payload.find((entry) => entry.dataKey === 'attended')?.value ?? 0;
+  const cancelled = payload.find((entry) => entry.dataKey === 'cancelled')?.value ?? 0;
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white/98 p-3 shadow-lg backdrop-blur-sm">
+      <div className="mb-1 text-sm font-bold text-slate-800">{label}</div>
+      {row.date ? <div className="mb-2 text-xs text-slate-500">{row.date}</div> : null}
+      <div className="space-y-1 text-sm text-slate-600">
+        <div className="flex items-center justify-between gap-4">
+          <span>Atendidas</span>
+          <span className="font-semibold text-emerald-600">{attended}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Canceladas</span>
+          <span className="font-semibold text-slate-500">{cancelled}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CitasBarChart = ({ data }) => {
   return (
     <div className="w-full h-[380px]"> 
@@ -16,7 +41,7 @@ const CitasBarChart = ({ data }) => {
           />
           
           <XAxis 
-            dataKey="day" 
+            dataKey="label" 
             axisLine={false} 
             tickLine={false} 
             tick={{ fill: '#64748b', fontSize: 13, fontWeight: 'bold' }}
@@ -30,16 +55,8 @@ const CitasBarChart = ({ data }) => {
           />
           
           <Tooltip 
+            content={<CustomTooltip />}
             cursor={{ fill: '#f1f5f9', opacity: 0.4 }}
-            contentStyle={{ 
-              borderRadius: '12px', 
-              border: '1px solid #e2e8f0', 
-              boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.05)',
-              backgroundColor: 'rgba(255, 255, 255, 0.98)',
-              backdropFilter: 'blur(5px)',
-              padding: '12px'
-            }}
-            labelStyle={{ fontWeight: 'bold', marginBottom: '4px', color: '#1e293b' }}
           />
           
           <Legend 
@@ -51,14 +68,12 @@ const CitasBarChart = ({ data }) => {
           <Bar 
             dataKey="attended" 
             name="Atendidas" 
-            stackId="a" 
             fill="#2dd4bf" 
             barSize={38}
           />
           <Bar 
-            dataKey="noShow" 
-            name="Ausencias" 
-            stackId="a" 
+            dataKey="cancelled" 
+            name="Canceladas" 
             fill="#e2e8f0" 
             radius={[6, 6, 0, 0]} 
             barSize={38}

@@ -1,18 +1,28 @@
 ---
 import MainLayout from "@/layouts/DoctorLayout.astro";
 
-import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
+// import { DoctorFinanceSummary } from "@/components/react/doctor/DoctorFinanceSummary";
 import DashboardActions from "@/components/react/doctor/DashboardActions";
 import UpcomingAppointments from "@/components/react/doctor/UpcomingAppointments";
 import ActivityChart from "@/components/react/doctor/ActivityChart";
-import PatientStats from "@/components/react/doctor/PatientStats";
+// import PatientStats from "@/components/react/doctor/PatientStats";
 
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/react/primary/Avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/react/primary/Avatar";
 import { Badge } from "@/components/react/primary/Badge";
 import StaticCard from "@/components/react/primary/StaticCard";
 
-import { FaArrowRight, FaHeart, FaIdCard, FaStar, FaUsers, FaSackDollar } from "react-icons/fa6";
+import {
+  FaArrowRight,
+  FaHeart,
+  FaIdCard,
+  FaStar,
+  FaUsers,
+  FaSackDollar,
+} from "react-icons/fa6";
 
 import { getDoctorByUserId } from "@/lib/services/medical/doctor/doctor.service";
 
@@ -30,10 +40,9 @@ let summary = {
 if (userId && !isNaN(userId)) {
   try {
     doctor = await getDoctorByUserId(userId);
-    
+
     const doctorId = doctor?.id || 0;
 
-    
     summary = {
       totalIncome: 0,
       totalExpenses: 0,
@@ -47,63 +56,75 @@ if (userId && !isNaN(userId)) {
 
 const doctorName = doctor?.user?.name || "Doctor";
 const specialtyName = doctor?.specialty?.name || "Especialidad";
-
 ---
 
 <MainLayout>
-  <main class="bg-slate-50 min-h-screen p-8 font-sans @container">
+  <main
+    class="bg-slate-50 min-h-screen p-4 md:px-0 md:py-8 font-sans @container"
+  >
+    <StaticCard className="p-6 mb-10">
+      <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+        <Avatar
+          className="w-20 h-20 sm:w-28 sm:h-28 shadow-md border-2 border-slate-100 shrink-0"
+        >
+          <!-- <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt={doctorName} /> -->
+          <AvatarFallback
+            className="bg-[#1e3a8a] text-white font-black text-3xl"
+            >{
+              doctorName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+            }</AvatarFallback
+          >
+        </Avatar>
 
-      <StaticCard className="p-6 mb-10">
-        <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-          
-          <Avatar className="w-20 h-20 sm:w-28 sm:h-28 shadow-md border-2 border-slate-100 shrink-0">
-            <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=256&auto=format&fit=crop" alt={doctorName} />
-            <AvatarFallback className="bg-[#1e3a8a] text-white font-black text-3xl">{doctorName.split(' ').map(n => n[0]).join('').slice(0,2)}</AvatarFallback>
-          </Avatar>
+        <div class="flex-1 text-center sm:text-left">
+          <p
+            class="text-[10px] sm:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1"
+          >
+            Panel Médico Oficial
+          </p>
+          <h1
+            class="text-3xl sm:text-4xl font-black text-[#1e293b] leading-none mb-4"
+          >
+            {doctorName}
+          </h1>
 
-          <div class="flex-1 text-center sm:text-left">
-            <p class="text-[10px] sm:text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">
-              Panel Médico Oficial
-            </p>
-            <h1 class="text-3xl sm:text-4xl font-black text-[#1e293b] leading-none mb-4">
-              {doctorName}
-            </h1>
-
-            <!-- aqui tengo que poner aCTIONcARD -->
-            <div class="flex flex-wrap justify-center sm:justify-start gap-3">
-              <Badge styles={{ bg: "bg-white", text: "text-slate-600", border: "border-slate-200" }} className="gap-2 px-4 py-1.5 shadow-sm">
- 				<FaStar size={16} className="text-yellow-500 shrink-0" />
-                <span class="font-bold">{specialtyName.toUpperCase()}</span>
-              </Badge>
-            </div>
+          <!-- aqui tengo que poner aCTIONcARD -->
+          <div class="flex flex-wrap justify-center sm:justify-start gap-3">
+            <Badge
+              styles={{
+                bg: "bg-white",
+                text: "text-slate-600",
+                border: "border-slate-200",
+              }}
+              className="gap-2 px-4 py-1.5 shadow-sm"
+            >
+              <FaStar size={16} className="text-yellow-500 shrink-0" />
+              <span class="font-bold">{specialtyName.toUpperCase()}</span>
+            </Badge>
           </div>
         </div>
-      </StaticCard>
+      </div>
+    </StaticCard>
 
-    <!-- <DoctorFinanceSummary client:visible summary={summary} /> -->
-    
-    <div class="mb-10">
-      <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
-        Gestión de Consultorio
-      </h3>
-      <DashboardActions client:visible />
-    </div>
-
-    <div class="flex flex-col @[900px]:flex-row gap-8">
+    <section class="flex flex-col @[900px]:flex-row gap-8">
       <!-- <div class="lg:col-span-2 space-y-8"> -->
 
-        <StaticCard className="overflow-hidden flex-2">
-          <UpcomingAppointments client:visible />
-        </StaticCard>
+      <UpcomingAppointments client:visible doctorId={doctor?.userId ?? 0} />
 
       <!-- </div> -->
 
       <!-- <div class="space-y-8"> -->
-        <StaticCard className="p-8 flex-1">
-          <ActivityChart client:visible doctorId={doctor?.id ?? 0} />
-        </StaticCard>
 
+      <ActivityChart
+        className="p-8 flex-1"
+        client:visible
+        doctorId={doctor?.id ?? 0}
+      />
       <!-- </div> -->
-    </div>
+    </section>
   </main>
 </MainLayout>

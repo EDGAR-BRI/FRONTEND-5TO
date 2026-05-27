@@ -1,0 +1,21 @@
+---
+import MainLayout from "@/layouts/DoctorLayout.astro";
+import StaticCard from "@/components/react/primary/StaticCard";
+import PatientAgenda from "@/components/react/doctor/PatientAgenda";
+
+const { doctor_id } = Astro.params;
+---
+
+<MainLayout>
+  <div class="bg-slate-50 min-h-screen pt-4 md:p-0 md:py-6 font-sans">
+    <div class="mb-8">
+      <h1 class="text-3xl font-black text-slate-800">Historial de pacientes</h1>
+      <p class="text-sm text-slate-500 mt-2">
+        Gestiona todas las citas programadas y el historial de consultas
+        médicas.
+      </p>
+    </div>
+
+    <PatientAgenda client:load doctorId={doctor_id as string} />
+  </div>
+</MainLayout>

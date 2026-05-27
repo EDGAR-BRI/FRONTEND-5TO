@@ -11,14 +11,9 @@ import { listPayrolls, updatePayroll } from '@/lib/services/finance/payroll/payr
 import type { PayrollRecord } from '@/lib/services/finance/payroll/payroll.interface';
 import { createSalaryPayment, getPendingSalarySummary } from '@/lib/services/finance/salaryPayment/salaryPayment.service';
 import type { PendingSalarySummaryItem, PendingSalarySummaryResponse } from '@/lib/services/finance/salaryPayment/salaryPayment.interface';
-
-const money = (value: number, currency = 'USD') =>
-	new Intl.NumberFormat('es-VE', {
-		style: 'currency',
-		currency,
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	}).format(Number(value || 0));
+import { getBcvRate, getExchangeRates } from '@/lib/services/finance/exchange-rate/exchange_rate.service';
+import type { BcvRateResponse, ExchangeRate } from '@/lib/services/finance/exchange-rate/exchange_rate.interface';
+import { dualAmount, money } from '@/utils/currency';
 
 const sameCalendarDay = (left: Date, right: Date) =>
 	left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
@@ -39,6 +34,8 @@ const breakdownLabel = (item: PendingSalarySummaryItem['breakdown'][number]) => 
 export const CurrentMonthPayroll = () => {
 	const { data, error, mutate } = useSWR<PayrollRecord[]>('payroll-current', listPayrolls, { refreshInterval: 5000 });
 	const { data: pendingData, error: pendingError, isLoading: pendingLoading, mutate: mutatePending } = useSWR<PendingSalarySummaryResponse>('salary-payment-pending-summary', getPendingSalarySummary, { refreshInterval: 5000 });
+	const { data: exchangeRates = [] } = useSWR<ExchangeRate[]>('current-payroll-exchange-rates', getExchangeRates);
+	const { data: bcvRate } = useSWR<BcvRateResponse>('current-payroll-bcv-rate', getBcvRate);
 	const [paying, setPaying] = useState<number | null>(null);
 	const [selected, setSelected] = useState<PendingSalarySummaryItem | null>(null);
 	const [confirmOpen, setConfirmOpen] = useState(false);
@@ -51,6 +48,11 @@ export const CurrentMonthPayroll = () => {
 	}>({ current: null, paid: [], failed: [] });
 
 	const today = new Date();
+	const activeExchangeRate = useMemo(() => exchangeRates.find((rate) => rate.is_active) ?? exchangeRates[0] ?? null, [exchangeRates]);
+	const usdToBsRate = useMemo(
+		() => activeExchangeRate?.rate ?? bcvRate?.valor.valor_num ?? 0,
+		[activeExchangeRate, bcvRate]
+	);
 
 	const payroll = useMemo(() => {
 		const all = data ?? [];
@@ -66,8 +68,9 @@ export const CurrentMonthPayroll = () => {
 		const consultations = payroll.payrollLines.length;
 		const doctors = new Set(payroll.payrollLines.map((l) => l.consultation.doctorId)).size;
 		const total = payroll.payrollLines.reduce((s, l) => s + payrollLineAmount(l), 0);
-		return { consultations, doctors, total };
-	}, [payroll]);
+		const totalBs = usdToBsRate ? total * usdToBsRate : 0;
+		return { consultations, doctors, total, totalBs };
+	}, [payroll, usdToBsRate]);
 
 	const canPayPayroll = () => {
 		if (!payroll) return false;
@@ -157,10 +160,11 @@ export const CurrentMonthPayroll = () => {
 
 	return (
 		<div className="space-y-6">
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 				<StatsCard title="Consultas acumuladas" value={stats.consultations} color="primary" icon={<FaUsers size={18} />} variant="compact" />
 				<StatsCard title="Doctores" value={stats.doctors} color="success" icon={<FaUsers size={18} />} variant="compact" />
-				<StatsCard title="Monto estimado" value={money(stats.total)} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
+				<StatsCard title="Monto USD" value={money(stats.total)} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
+				<StatsCard title="Monto Bs" value={money(stats.totalBs, 'VES')} valueClassName="text-lg xl:text-xl leading-tight break-words whitespace-normal" color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
 			</div>
 
 			{/* <div className="rounded-2xl border border-primary-200 bg-white p-4">
@@ -220,12 +224,18 @@ export const CurrentMonthPayroll = () => {
 						<p className="text-sm text-cool-gray-60">Se muestran médicos y usuarios con salario fijo, con su desglose antes de confirmar.</p>
 					</div>
 					<div className="text-sm text-cool-gray-60">
-						{pendingLoading ? 'Cargando...' : `${pendingData?.totalUsers ?? 0} usuarios · ${money(pendingData?.totalAmount ?? 0)}`}
+						{pendingLoading ? 'Cargando...' : `${pendingData?.totalUsers ?? 0} usuarios · ${money(pendingData?.totalAmount ?? 0)} / Bs. ${money(dualAmount(pendingData?.totalAmount ?? 0, 'USD', usdToBsRate).ves, 'VES')}`}
 					</div>
 				</div>
 
 				<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-					<p className="text-sm text-cool-gray-60">Revisa el detalle antes de pagar de forma secuencial.</p>
+					{canPayPayroll() ?
+						<p className="text-sm text-cool-gray-60">Revisa el detalle antes de pagar de forma secuencial.</p>
+					: (
+						<div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+							Solo se puede pagar el último día del mes.
+						</div>
+					)}
 					<Button
 						variant="primary"
 						label="Pagar todas"
@@ -246,9 +256,10 @@ export const CurrentMonthPayroll = () => {
 										<p className="text-sm text-cool-gray-60">{item.roleName} · CI {item.ci}</p>
 										<p className="text-xs text-cool-gray-50">{item.type === 'DOCTOR' ? `${item.breakdown.length} líneas pendientes` : 'Pago fijo de salario'}</p>
 									</div>
-									<div className="text-right">
-										<p className="text-lg font-semibold text-primary-900">{money(item.amount)}</p>
-										<Button
+							<div className="text-right">
+								<p className="text-lg font-semibold text-primary-900">{money(item.amount)}</p>
+							<p className="text-xs text-cool-gray-50 break-words whitespace-normal">Bs. {money(dualAmount(item.amount, 'USD', usdToBsRate).ves, 'VES')}</p>
+								<Button
 											variant="primary"
 											size="sm"
 											label="Pagar"
@@ -262,14 +273,17 @@ export const CurrentMonthPayroll = () => {
 									{item.breakdown.map((line) => (
 										<div key={`${item.userId}-${line.type}-${line.payrollLineId ?? line.label}`} className="rounded-xl border border-white bg-white px-4 py-3 text-sm text-cool-gray-70">
 											<div className="flex items-start justify-between gap-3">
-												<div>
-													<p className="font-medium text-primary-900">{breakdownLabel(line)}</p>
-													{line.type === 'PAYROLL_LINE' ? (
-														<p className="text-xs text-cool-gray-50">Base {money(line.baseAmount ?? 0)} · Comisión {line.commissionPercentage ?? 0}%</p>
-													) : null}
-												</div>
-												<p className="font-semibold text-primary-900">{money(line.amount)}</p>
-											</div>
+								<div>
+									<p className="font-medium text-primary-900">{breakdownLabel(line)}</p>
+									{line.type === 'PAYROLL_LINE' ? (
+										<p className="text-xs text-cool-gray-50">Base {money(line.baseAmount ?? 0)} · Comisión {line.commissionPercentage ?? 0}%</p>
+									) : null}
+								</div>
+								<div className="text-right">
+									<p className="font-semibold text-primary-900">{money(line.amount)}</p>
+								<p className="text-[11px] text-cool-gray-50 break-words whitespace-normal">Bs. {money(dualAmount(line.amount, 'USD', usdToBsRate).ves, 'VES')}</p>
+								</div>
+							</div>
 										</div>
 									))}
 								</div>
@@ -299,10 +313,13 @@ export const CurrentMonthPayroll = () => {
 									<p className="font-semibold text-primary-900">{money(line.amount)}</p>
 								</div>
 							))}
-							<div className="border-t border-primary-200 pt-2 flex items-center justify-between">
-								<p className="text-sm font-semibold text-primary-900">Total</p>
+						<div className="border-t border-primary-200 pt-2 flex items-center justify-between">
+							<p className="text-sm font-semibold text-primary-900">Total</p>
+							<div className="text-right">
 								<p className="text-lg font-semibold text-primary-900">{money(selected.amount)}</p>
+								<p className="text-xs text-cool-gray-50 break-words whitespace-normal">Bs. {money(dualAmount(selected.amount, 'USD', usdToBsRate).ves, 'VES')}</p>
 							</div>
+						</div>
 						</div>
 
 					<div className="flex justify-end gap-2 pt-2">
@@ -315,10 +332,10 @@ export const CurrentMonthPayroll = () => {
 
 			<Modal isOpen={payAllOpen} onClose={closePayAll} title="Confirmar pago masivo">
 				<div className="space-y-4">
-					<div className="rounded-xl border border-primary-100 bg-primary-50 p-4">
-						<p className="text-sm text-cool-gray-60">Usuarios a pagar</p>
-						<p className="text-lg font-semibold text-primary-900">{pendingData?.items.length ?? 0} pendientes · {money(pendingData?.totalAmount ?? 0)}</p>
-					</div>
+						<div className="rounded-xl border border-primary-100 bg-primary-50 p-4">
+							<p className="text-sm text-cool-gray-60">Usuarios a pagar</p>
+							<p className="text-lg font-semibold text-primary-900">{pendingData?.items.length ?? 0} pendientes · {money(pendingData?.totalAmount ?? 0)} / Bs. {money(dualAmount(pendingData?.totalAmount ?? 0, 'USD', usdToBsRate).ves, 'VES')}</p>
+						</div>
 
 					<div className="max-h-85 space-y-2 overflow-y-auto rounded-xl border border-primary-100 p-3">
 						{(pendingData?.items ?? []).map((item) => (

@@ -4,6 +4,7 @@ export const prerender = false;
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import DailyBookPdfButton from "@/components/react/admin/reports/DailyBookPdfButton";
+import IncomeStatementPdfButton from "@/components/react/admin/reports/IncomeStatementPdfButton";
 import RevenueTimelineChart from "@/components/react/admin/reports/RevenueTimelineChart";
 import SpecialtyDemandChart from "@/components/react/admin/reports/SpecialtyDemandChart";
 
@@ -20,11 +21,14 @@ const preset = Astro.url.searchParams.get("preset") ?? undefined;
 				<h1 class="text-3xl font-bold text-gray-800">Reportes Financieros y de Uso</h1>
 				<p class="text-gray-500 mt-1">Análisis de rendimiento, ingresos y distribución de pacientes.</p>
 			</div>
-			<DailyBookPdfButton client:load />
+			<div class="flex flex-col lg:flex-row gap-3 w-full sm:w-auto">
+				<DailyBookPdfButton client:load />
+				<IncomeStatementPdfButton client:load />
+			</div>
 		</header>
 
 		<ReportTimeframeFilters
-			client:visible
+			client:load
 			title="Filtros del centro de reportes"
 			subtitle="Filtra el tablero general por día, semana, mes o año antes de revisar ingresos y demanda."
 			initialPeriod={period}

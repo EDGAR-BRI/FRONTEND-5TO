@@ -1,0 +1,27 @@
+---
+import DoctorLayout from "@/layouts/DoctorLayout.astro";
+import AppointmentsReport from "@/components/react/doctor/AppointmentsReport.tsx";
+
+const { doctor_id = "1" } = Astro.params;
+const userId = Number(doctor_id);
+---
+
+<DoctorLayout
+  title="Reportes de Citas | Doctor"
+  currentPath="/modules/doctor/[doctor_id]/reports/appointments"
+>
+  <main class="p-4 md:p-8 bg-slate-50/50 min-h-screen flex flex-col gap-4">
+    <div class="flex justify-between items-end">
+      <div>
+        <h1 class="text-3xl font-black text-slate-800 tracking-tight">
+          Reporte de Consultas
+        </h1>
+        <p class="text-slate-500 font-medium">
+          Análisis detallado de las consultas médicas.
+        </p>
+      </div>
+      <div class="flex gap-4"></div>
+    </div>
+    <AppointmentsReport client:load userId={userId} />
+  </main>
+</DoctorLayout>

@@ -1,37 +1,39 @@
 ---
-import PacientLayout from '@/layouts/PatientLayout.astro';
-import StaticCard from '@/components/react/primary/StaticCard';
-import ActionCard from '@/components/react/primary/ActionCard';
+import PacientLayout from "@/layouts/PatientLayout.astro";
+import StaticCard from "@/components/react/primary/StaticCard";
 import {
-  FaArrowDown,
-  FaArrowUp,
-  FaCalendarCheck,
-  FaCalendarDays,
-  FaCalendarPlus,
-  FaCircleInfo,
-  FaDroplet,
-  FaEnvelope,
-  FaFileMedical,
-  FaFolderOpen,
-  FaHeart,
-  FaHeartPulse,
-  FaIdCard,
-  FaPhone,
-  FaPills,
-  FaPlus,
-  FaRegClock,
-  FaRegNoteSticky,
-  FaRegCalendarXmark,
-  FaStethoscope,
-  FaTablets,
-  FaTriangleExclamation,
-  FaUserDoctor,
-  FaUserPen,
-  FaVenus,
-  FaCapsules,
-} from 'react-icons/fa6';
+	FaArrowDown,
+	FaArrowUp,
+	FaCalendarCheck,
+	FaCalendarDays,
+	FaCalendarPlus,
+	FaCircleInfo,
+	FaDroplet,
+	FaEnvelope,
+	FaFileMedical,
+	FaFolderOpen,
+	FaHeart,
+	FaHeartPulse,
+	FaIdCard,
+	FaPhone,
+	FaPills,
+	FaPlus,
+	FaRegClock,
+	FaRegNoteSticky,
+	FaRegCalendarXmark,
+	FaStethoscope,
+	FaTablets,
+	FaTriangleExclamation,
+	FaUserDoctor,
+	FaUserPen,
+	FaVenus,
+	FaCapsules,
+	FaBolt,
+	FaWallet,
+	FaMars,
+} from "react-icons/fa6";
 
-import { api, getCI, getToken, getUserIdFromToken } from '@/lib/api';
+import { api, getCI, getToken, getUserIdFromToken } from "@/lib/api";
 
 const { pacient_id } = Astro.params;
 const token = getToken(Astro.cookies);
@@ -39,392 +41,512 @@ const userId = getUserIdFromToken(token);
 const authCi = getCI(Astro.cookies)?.trim() || null;
 
 const normalizeCi = (value: string | null | undefined) =>
-  value
-    ? value.toString().trim().toUpperCase().replace(/^[VEJPG]-?/i, '').replace(/\s+/g, '')
-    : '';
+	value
+		? value
+				.toString()
+				.trim()
+				.toUpperCase()
+				.replace(/^[VEJPG]-?/i, "")
+				.replace(/\s+/g, "")
+		: "";
 
 let patientData: any = null;
 let infoPatientData: any = null;
 let appointmentsData: any[] = [];
-
+let prescriptionsData: any[] = [];
 
 try {
-  // `pacient_id` es el ID del paciente seleccionado en la URL.
-  // Primero cargamos ese registro y luego derivamos el grupo familiar desde su `userId`.
-  const selectedPatientRes = await api(`/medical/patient/${pacient_id}`, {}, Astro.cookies);
+	// 1. Cargar datos del paciente
+	const selectedPatientRes = await api(
+		`/medical/patient/${pacient_id}`,
+		{},
+		Astro.cookies,
+	);
+	if (!selectedPatientRes.ok) return Astro.redirect("/no-encontrado");
 
-  if (!selectedPatientRes.ok) {
-    return Astro.redirect('/no-encontrado');
-  }
+	const selectedPatient = (await selectedPatientRes.json())?.data;
+	if (!selectedPatient) return Astro.redirect("/no-encontrado");
 
-  const selectedPatientJson = await selectedPatientRes.json();
-  const selectedPatient = selectedPatientJson?.data ?? null;
+	const selectedCi = normalizeCi(
+		selectedPatient.ci || selectedPatient.user?.ci,
+	);
+	const expectedCi = normalizeCi(authCi);
 
-  if (!selectedPatient) {
-    return Astro.redirect('/no-encontrado');
-  }
+	if (!userId || !authCi || selectedCi !== expectedCi) {
+		const ownerPatientsRes = await api(
+			`/medical/patient/user/${userId}`,
+			{},
+			Astro.cookies,
+		);
+		if (ownerPatientsRes.ok) {
+			const ownerRaw = (await ownerPatientsRes.json())?.data;
+			const ownerPatients = Array.isArray(ownerRaw)
+				? ownerRaw
+				: ownerRaw
+					? [ownerRaw]
+					: [];
+			const myPatient = ownerPatients.find(
+				(p: any) => normalizeCi(p.ci || p.user?.ci) === expectedCi,
+			);
+			if (myPatient)
+				return Astro.redirect(`/modules/pacient/${myPatient.id}/overview`);
+		}
+		return Astro.redirect("/no-encontrado");
+	}
 
-  const selectedCi = normalizeCi(selectedPatient.ci || selectedPatient.user?.ci);
-  const expectedCi = normalizeCi(authCi);
+	patientData = selectedPatient;
 
-  if (!userId || !authCi || selectedCi !== expectedCi) {
-    const ownerPatientsRes = await api(`/medical/patient/user/${userId}`, {}, Astro.cookies);
-    const ownerPatientsJson = ownerPatientsRes.ok ? await ownerPatientsRes.json() : null;
-    const ownerRaw = ownerPatientsJson?.data;
-    const ownerPatients = Array.isArray(ownerRaw) ? ownerRaw : ownerRaw ? [ownerRaw] : [];
-    const mainOwnerPatient = ownerPatients.find((patient: any) => {
-      const patientCi = normalizeCi(patient?.ci);
-      const linkedUserCi = normalizeCi(patient?.user?.ci);
-      return patientCi === expectedCi || linkedUserCi === expectedCi;
-    });
+	// 3. Traer Información Médica Extra (InfoPatient)
+	const infoPatientRes = await api(
+		`/medical/info-patient/patient/${selectedPatient.id}`,
+		{},
+		Astro.cookies,
+	);
+	if (infoPatientRes.ok) {
+		infoPatientData = (await infoPatientRes.json())?.data || null;
+	}
 
-    if (!mainOwnerPatient) {
-      return Astro.redirect('/no-encontrado');
-    }
+	const appointmentsRes = await api(
+		`/scheduling/appointment/patient/${selectedPatient.id}`,
+		{},
+		Astro.cookies,
+	);
+	if (appointmentsRes.ok) {
+		const aptRaw = (await appointmentsRes.json())?.data;
+		appointmentsData = Array.isArray(aptRaw) ? aptRaw : [];
+	}
 
-    return Astro.redirect(`/modules/pacient/${mainOwnerPatient.id}/overview`);
-  }
-
-  patientData = selectedPatient;
-
-  const infoPatientRes = await api(`/medical/info-patient/patient/${selectedPatient.id}`, {}, Astro.cookies);
-  if (infoPatientRes.ok) {
-    const infoPatientJson = await infoPatientRes.json();
-    infoPatientData = infoPatientJson?.data ?? null;
-  }
-
-  const linkedUserId = selectedPatient.user?.id || selectedPatient.userId;
-  if (!linkedUserId) {
-    appointmentsData = [];
-  } else {
-    const linkedPatientsRes = await api(`/medical/patient/user/${linkedUserId}`, {}, Astro.cookies);
-    const linkedPatientsJson = linkedPatientsRes.ok ? await linkedPatientsRes.json() : null;
-    const linkedRaw = linkedPatientsJson?.data;
-    const linkedPatients = Array.isArray(linkedRaw) ? linkedRaw : linkedRaw ? [linkedRaw] : [selectedPatient];
-
-    const appointmentResponses = await Promise.all(
-      linkedPatients.map((patient: any) => api(`/scheduling/appointment/patient/${patient.id}`, {}, Astro.cookies))
-    );
-
-    const appointmentJsonList = await Promise.all(
-      appointmentResponses
-        .filter((res) => res.ok)
-        .map((res) => res.json())
-    );
-
-    appointmentsData = appointmentJsonList.flatMap((item) =>
-      Array.isArray(item?.data) ? item.data : []
-    );
-  }
+	const prescriptionsRes = await api(
+		`/medical/prescription/patient/${selectedPatient.id}`,
+		{},
+		Astro.cookies,
+	);
+	if (prescriptionsRes.ok) {
+		const rxRaw = (await prescriptionsRes.json())?.data;
+		prescriptionsData = Array.isArray(rxRaw) ? rxRaw : [];
+	}
 } catch (error) {
-  console.error("Error cargando el overview:", error);
-  return Astro.redirect('/error-servidor');
+	console.error("Error cargando el overview:", error);
+	return Astro.redirect("/error-servidor");
 }
 
 // ─── Format patient data ──────────────────────────────────────────────────
-const fullName = patientData?.user?.name || 'Paciente Desconocido';
-const ci = patientData?.user?.ci || 'Sin CI';
-const bloodType = infoPatientData?.blood_type || 'No registrado';
+const fullName =
+	patientData?.name || patientData?.user?.name || "Paciente Desconocido";
+const ci = patientData?.ci || patientData?.user?.ci || "Sin CI";
+const bloodType = infoPatientData?.blood_type || "No registrado";
+const sexFormat =
+	infoPatientData?.sex === "FEMALE"
+		? "Femenina"
+		: infoPatientData?.sex === "MALE"
+			? "Masculino"
+			: "-";
+
+const birthDate = infoPatientData?.birth_date
+	? new Date(infoPatientData.birth_date)
+	: null;
+const age = birthDate
+	? Math.floor(
+			(new Date().getTime() - birthDate.getTime()) /
+				(365.25 * 24 * 60 * 60 * 1000),
+		)
+	: "-";
 
 const patient = {
-  id: pacient_id ?? '001',
-  fullName: fullName,
-  ci: ci,
-  age: '-', 
-  bloodType: bloodType,
-  sex: '-', 
-  email: '-', 
-  phone: '-', 
-  emergencyContact: '-',
-  avatarInitials: fullName.substring(0, 2).toUpperCase(),
+	id: pacient_id ?? "001",
+	fullName: fullName,
+	ci: ci,
+	age: age,
+	bloodType: bloodType,
+	sex: sexFormat,
+	email: infoPatientData?.email || "-",
+	phone: infoPatientData?.main_phone || "-",
+	emergencyContact: infoPatientData?.secondary_phone || "-", // Usamos secundario como emergencia temporalmente
+	avatarInitials: fullName.substring(0, 2).toUpperCase(),
 };
 
 // ─── Format Appointments Data ─────────────────────────────────────────────
 const now = new Date();
 
-// Filtramos las citas que son en el futuro y no están canceladas
+// Citas en el futuro
 const upcomingAppointments = appointmentsData
-  .filter(apt => new Date(apt.date_time) >= now && apt.status?.name !== 'Cancelada')
-  .sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime()) // Ordenar por fecha más próxima
-  .slice(0, 4) // Mostramos solo las 4 más próximas en el dashboard
-  .map(apt => ({
-    date: apt.date_time,
-    specialty: apt.doctor?.specialty?.name || 'Especialidad General',
-    status: apt.status?.name || 'Pendiente',
-    // Coloreamos el status dinámicamente según lo que venga de la BD
-    statusClass: apt.status?.name === 'Pendiente' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700', 
-    type: apt.type?.name || 'Consulta',
-    doctor: apt.doctor?.user?.name ? `${apt.doctor.user.name}` : 'No asignado',
-    time: new Date(apt.date_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }),
-    reason: apt.reson_visit || 'Sin motivo especificado'
-  }));
+	.filter(
+		(apt) => new Date(apt.date_time) >= now && apt.status?.name !== "Cancelada",
+	)
+	.sort(
+		(a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime(),
+	)
+	.slice(0, 4)
+	.map((apt) => ({
+		date: apt.date_time,
+		specialty: apt.doctor?.specialty?.name || "Medicina General",
+		status: apt.status?.name || "Pendiente",
+		statusClass:
+			apt.status?.name === "Confirmada"
+				? "bg-green-100 text-green-700"
+				: "bg-amber-100 text-amber-700",
+		type: apt.type?.name || "Consulta",
+		doctor: apt.doctor?.user?.name
+			? `Dr(a). ${apt.doctor.user.name}`
+			: "No asignado",
+		time: new Date(apt.date_time).toLocaleTimeString("es-VE", {
+			hour: "2-digit",
+			minute: "2-digit",
+		}),
+		reason: apt.reson_visit || "Sin motivo especificado",
+	}));
 
-// Filtramos las citas en el pasado o ya finalizadas para el historial reciente
+// Consultas Pasadas (Historial)
 const recentConsultations = appointmentsData
-  .filter(apt => new Date(apt.date_time) < now || apt.status?.name === 'Finalizada')
-  .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()) // Ordenar de la más reciente a la más antigua
-  .slice(0, 3)
-  .map(apt => ({
-    date: new Date(apt.date_time).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }),
-    specialty: apt.doctor?.specialty?.name || 'Consulta',
-    doctor: apt.doctor?.user?.name ? `${apt.doctor.user.name}` : '-',
-    reason: apt.reson_visit || '-',
-    diagnosis: 'Pendiente', // El backend de consultas aún no está, así que dejamos el mock
-    plan: 'Pendiente' // Mock
-  }));
+	.filter(
+		(apt) =>
+			new Date(apt.date_time) < now ||
+			["Finalizada", "Atendido", "Completada"].includes(apt.status?.name),
+	)
+	.sort(
+		(a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime(),
+	)
+	.slice(0, 3)
+	.map((apt) => ({
+		date: new Date(apt.date_time).toLocaleDateString("es-VE", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+		}),
+		specialty: apt.doctor?.specialty?.name || "Medicina General",
+		doctor: apt.doctor?.user?.name ? `Dr(a). ${apt.doctor.user.name}` : "-",
+		reason: apt.reson_visit || "Control médico rutinario",
+		status: apt.status?.name || "Finalizada",
+	}));
 
-// Mocks restantes que conectaremos después
-const stats: any[] = [];
-const prescriptions: any[] = [];
-const alerts: any[] = [];
-
-const quickActions = [
-  { label: 'Agendar cita', icon: FaCalendarPlus, href: 'schedule-appointment', color: 'from-primary-500 to-primary-700' },
-  { label: 'Historial clínico', icon: FaFileMedical, href: 'history', color: 'from-teal-500 to-teal-700' },
-  { label: 'Mi perfil', icon: FaUserPen, href: 'profile', color: 'from-violet-500 to-violet-700' },
-  { label: 'Documentos', icon: FaFolderOpen, href: 'history', color: 'from-orange-400 to-orange-600' },
+// ─── Llenar Stats con datos reales ──────────────────────────────────────
+const stats = [
+	{
+		label: "Citas Totales",
+		value: appointmentsData.length,
+		icon: FaCalendarCheck,
+		bg: "bg-blue-100",
+		color: "text-blue-600",
+		trend: "Historial",
+		trendUp: null,
+	},
+	{
+		label: "Citas Pendientes",
+		value: upcomingAppointments.length,
+		icon: FaCalendarDays,
+		bg: "bg-emerald-100",
+		color: "text-emerald-600",
+		trend: "Próximas",
+		trendUp: null,
+	},
+	{
+		label: "Tratamientos",
+		value: prescriptionsData.length,
+		icon: FaPills,
+		bg: "bg-amber-100",
+		color: "text-amber-600",
+		trend: "Activos",
+		trendUp: null,
+	},
 ];
+
+// ─── Format Prescriptions ─────────────────────────────────────────────
+const prescriptions = prescriptionsData.slice(0, 4).map((med) => ({
+	name: med.medication_name || med.supply?.name || "Medicamento",
+	status: "Activo",
+	statusClass: "bg-emerald-100 text-emerald-700",
+	sig: `${med.dosage || ""} - ${med.frequency || ""} por ${med.duration || ""}`.trim(),
+	icon: FaCapsules,
+}));
+
+// ─── Alertas Dinámicas ────────────────────────────────────────────────
+const alerts: any[] = [];
+if (infoPatientData?.allergies && infoPatientData.allergies.trim() !== "") {
+	alerts.push({
+		type: "allergy",
+		label: infoPatientData.allergies.substring(0, 25) + "...",
+		color: "bg-red-50 text-red-700 border-red-200",
+		icon: FaTriangleExclamation,
+	});
+}
+if (
+	infoPatientData?.chronic_diseases &&
+	infoPatientData.chronic_diseases.trim() !== ""
+) {
+	alerts.push({
+		type: "condition",
+		label: infoPatientData.chronic_diseases.substring(0, 25) + "...",
+		color: "bg-amber-50 text-amber-700 border-amber-200",
+		icon: FaHeartPulse,
+	});
+}
 ---
 
 <PacientLayout title={`Dashboard - ${patient.fullName}`}>
-  <div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
-
-    <!-- Header / Welcome -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <!-- Avatar -->
-        <div class="w-14 h-14 rounded-full bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-xl shadow-md select-none shrink-0">
-          {patient.avatarInitials}
-        </div>
-        <div>
-          <p class="text-body-s text-primary-700 font-medium">Bienvenida de nuevo,</p>
-          <h1 class="text-heading-4 text-primary-800 leading-tight">{patient.fullName}</h1>
-          <p class="text-body-xs text-cool-gray-50 mt-0.5">
-            <FaIdCard className="mr-1 inline-block" /> {patient.ci}
-            &nbsp;·&nbsp;
-            <FaDroplet className="mr-1 inline-block" /> {patient.bloodType}
-            &nbsp;·&nbsp;
-            <FaVenus className="mr-1 inline-block" /> {patient.sex}
-          </p>
-        </div>
-      </div>
-
-      <!-- Alert badges (allergies / conditions) -->
-      <div class="flex flex-wrap gap-2">
-        {alerts.map(({ icon: Icon, ...alert }) => (
-          <span class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${alert.color}`}>
-            <Icon className="inline-block" />
-            {alert.type === 'allergy' ? 'Alergia:' : 'Dx:'} {alert.label}
-          </span>
-        ))}
-      </div>
-    </div>
-
-    <!-- ─── Stat Cards ─── -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-      {stats.map(({ icon: Icon, ...stat }) => (
-        <StaticCard client:visible className="p-5 bg-primary-100!">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
-              <Icon className={`${stat.color} text-base`} />
-            </div>
-            {stat.trendUp !== null && (
-              <span class={`text-body-xxs font-medium px-2 py-0.5 rounded-full ${stat.trendUp ? 'bg-green-50 text-success' : 'bg-red-50 text-error'}`}>
-                {stat.trendUp ? (
-									<FaArrowUp className="mr-0.5 inline-block" />
+	<div class="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in @container">
+		<!-- Header / Welcome -->
+		<div
+			class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div class="flex items-center gap-4">
+				<!-- Avatar -->
+				<div
+					class="w-16 h-16 rounded-full bg-linear-to-br from-sky-500 to-sky-700 flex items-center justify-center text-white font-bold text-2xl shadow-md select-none shrink-0 ring-4 ring-white">
+					{patient.avatarInitials}
+				</div>
+				<div>
+					<p class="text-body-s text-sky-700 font-medium">
+						Bienvenida de nuevo,
+					</p>
+					<h1 class="text-heading-4 text-slate-900 leading-tight">
+						{patient.fullName}
+					</h1>
+					<div
+						class="flex flex-wrap items-center gap-3 text-body-xs text-slate-500 mt-1">
+						<span
+							class="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md"
+							><FaIdCard /> {patient.ci}</span
+						>
+						<span
+							class="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md"
+							><FaDroplet className="text-red-400" /> {patient.bloodType}</span
+						>
+						<span
+							class="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
+							{
+								patient.sex === "Masculino" ? (
+									<FaMars className="text-blue-400" />
+								) : patient.sex === "Femenina" ? (
+									<FaVenus className="text-pink-400" />
 								) : (
-									<FaArrowDown className="mr-0.5 inline-block" />
-								)}
-                {stat.trend}
-              </span>
-            )}
-            {stat.trendUp === null && (
-              <span class="text-body-xxs font-medium px-2 py-0.5 rounded-full bg-cool-gray-10 text-cool-gray-60 whitespace-nowrap">
-                {stat.trend}
-              </span>
-            )}
-          </div>
-          <div>
-            <p class="text-3xl font-bold text-primary-800">{stat.value}</p>
-            <p class="text-body-xs text-cool-gray-50 mt-0.5">{stat.label}</p>
-          </div>
-        </StaticCard>
-      ))}
-    </div>
+									<FaVenus className="text-slate-400" />
+								)
+							}
+							{patient.sex}
+						</span>
+						<span
+							class="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md"
+							>{patient.age} años</span
+						>
+					</div>
+				</div>
+			</div>
 
-    <!-- <div>
-      <h2 class="text-heading-6 text-primary-800 mb-3">Acciones rápidas</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {quickActions.map(({ icon: Icon, ...action }) => (
-          <a href={action.href} class="block group relative overflow-hidden h-full">
-            <ActionCard client:visible className={`bg-linear-to-br ${action.color} p-5 flex-col items-center gap-2 text-white border-transparent hover:border-transparent h-full w-full justify-center`}>
-              <Icon className="text-2xl opacity-90" />
-              <span class="text-button-s font-semibold text-center leading-snug">{action.label}</span>
-              
-              <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full"></div>
-            </ActionCard>
-          </a>
-        ))}
-      </div>
-    </div> -->
+			<!-- Alert badges (allergies / conditions) -->
+			{
+				alerts.length > 0 && (
+					<div class="flex flex-wrap gap-2">
+						{alerts.map(({ icon: Icon, ...alert }) => (
+							<span
+								class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border shadow-sm ${alert.color}`}>
+								<Icon className="inline-block" />
+								{alert.type === "allergy" ? "Alergia:" : "Dx:"} {alert.label}
+							</span>
+						))}
+					</div>
+				)
+			}
+		</div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+		<!-- ─── Stat Cards ─── -->
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+			{
+				stats.map(({ icon: Icon, ...stat }) => (
+					<StaticCard
+						client:visible
+						className="p-5 bg-white border border-slate-200 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
+						<div class="flex items-center justify-between flex-wrap gap-2">
+							<div
+								class={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
+								<Icon className={`${stat.color} text-xl`} />
+							</div>
+							<span class="text-body-xxs font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-slate-500 whitespace-nowrap tracking-wide uppercase">
+								{stat.trend}
+							</span>
+						</div>
+						<div class="mt-4">
+							<p class="text-4xl font-black text-slate-800">{stat.value}</p>
+							<p class="text-sm font-medium text-slate-500 mt-1">
+								{stat.label}
+							</p>
+						</div>
+					</StaticCard>
+				))
+			}
+		</div>
 
-      <StaticCard client:visible className="lg:col-span-3 bg-white! p-0! flex flex-col overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
-          <h2 class="text-heading-6 text-primary-800">
-            <FaCalendarDays className="text-primary-500 mr-2 inline-block" />
-            Próximas citas
-          </h2>
-          <a href="schedule-appointment" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
-            Agendar nueva <FaPlus className="ml-0.5 inline-block" />
-          </a>
-        </div>
+		<div class="flex flex-col flex-wrap @[800px]:flex-row w-full gap-6 @container">
+			<!-- 1. Próximas Citas (Extendido 2x2: Ocupa 2 columnas de ancho y 2 filas de alto) -->
+			<StaticCard
+				client:visible
+				className="lg:col-span-2 flex-2 lg:row-span-2 bg-white! p-0! flex flex-col overflow-hidden shadow-sm border border-slate-200">
+				<div
+					class="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+						<FaCalendarDays className="text-sky-500" />
+						Próximas citas
+					</h2>
+					<a
+						href="schedule-appointment"
+						class="text-xs text-white bg-sky-600 hover:bg-sky-700 px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1 shadow-sm">
+						<FaPlus /> Agendar
+					</a>
+				</div>
 
-        <div class="divide-y divide-primary-100 flex-1">
-          {upcomingAppointments.length === 0 && (
-            <div class="p-6 text-center text-cool-gray-50 text-body-s">
-              <FaRegCalendarXmark className="text-2xl mb-2 block mx-auto" />
-              No tienes citas próximas
-            </div>
-          )}
-          {upcomingAppointments.map(apt => (
-            <div class="px-5 py-4 hover:bg-primary-50 transition-colors">
-              <div class="flex items-start gap-4">
-                <!-- Date block -->
-                <div class="shrink-0 w-12 text-center">
-                  <div class="text-xs font-semibold text-primary-500 uppercase tracking-wider">
-                    {new Date(apt.date).toLocaleString('es', { month: 'short' })}
-                  </div>
-                  <div class="text-2xl font-bold text-primary-800 leading-none">
-                    {new Date(apt.date).getDate()}
-                  </div>
-                </div>
-                <!-- Info -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center flex-wrap gap-2">
-                    <p class="text-subtitle-s text-primary-800 font-semibold">{apt.specialty}</p>
-                    <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${apt.statusClass}`}>
-                      {apt.status}
-                    </span>
-                    <span class="text-xs text-cool-gray-50 bg-cool-gray-10 px-2 py-0.5 rounded-full">
-                      {apt.type}
-                    </span>
-                  </div>
-                  <p class="text-body-xs text-cool-gray-50 mt-0.5">
-                    <FaUserDoctor className="mr-1 inline-block" />{apt.doctor}
-                  </p>
-                  <p class="text-body-xs text-primary-700 mt-0.5">
-                    <FaRegClock className="mr-1 inline-block" />{apt.time}
-                    &nbsp;·&nbsp;
-                    <FaRegNoteSticky className="mr-1 inline-block" />{apt.reason}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </StaticCard>
+				<div class="divide-y divide-slate-100 flex-1 flex flex-col">
+					{
+						upcomingAppointments.length === 0 ? (
+							<div class="p-12 text-center text-slate-400 flex flex-col items-center justify-center h-full flex-1">
+								<div class="bg-slate-50 p-4 rounded-full mb-3 border border-slate-100">
+									<FaRegCalendarXmark className="text-3xl text-slate-300" />
+								</div>
+								<p class="font-medium">No tienes citas próximas agendadas</p>
+							</div>
+						) : (
+							upcomingAppointments.map((apt) => (
+								<div class="px-6 py-5 hover:bg-slate-50 transition-colors">
+									<div class="flex items-start gap-5">
+										<div class="shrink-0 w-14 text-center bg-sky-50 rounded-xl py-2 border border-sky-100">
+											<div class="text-[10px] font-black text-sky-600 uppercase tracking-widest">
+												{new Date(apt.date).toLocaleString("es", {
+													month: "short",
+												})}
+											</div>
+											<div class="text-2xl font-black text-sky-900 leading-none mt-1">
+												{new Date(apt.date).getDate()}
+											</div>
+										</div>
+										<div class="flex-1 min-w-0 pt-0.5">
+											<div class="flex items-center flex-wrap gap-2 mb-1">
+												<p class="text-base text-slate-800 font-bold">
+													{apt.specialty}
+												</p>
+												<span
+													class={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${apt.statusClass}`}>
+													{apt.status}
+												</span>
+											</div>
+											<p class="text-sm text-slate-500 font-medium">
+												<FaUserDoctor className="mr-1.5 inline-block text-slate-400" />
+												{apt.doctor}
+											</p>
+											<p class="text-xs text-sky-700 mt-2 flex items-center gap-3 font-medium">
+												<span class="bg-sky-50 px-2 py-1 rounded border border-sky-100">
+													<FaRegClock className="mr-1 inline-block" />
+													{apt.time}
+												</span>
+												<span>
+													<FaRegNoteSticky className="mr-1 inline-block opacity-70" />
+													{apt.reason}
+												</span>
+											</p>
+										</div>
+									</div>
+								</div>
+							))
+						)
+					}
+				</div>
+			</StaticCard>
 
-      <!-- Medicamentos -->
-      <StaticCard client:visible className="lg:col-span-2 bg-white! p-0! flex flex-col overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
-          <h2 class="text-heading-6 text-primary-800">
-            <FaPills className="text-warning mr-2 inline-block" />
-            Medicamentos
-          </h2>
-          <span class="text-body-xxs text-cool-gray-50">Activos</span>
-        </div>
+			<div class="flex flex-col flex-1 gap-6">
+				<!-- ─── Medicamentos Activos ─── -->
+				<StaticCard
+					client:visible
+					className="lg:col-span-2 bg-white! p-0! flex flex-col overflow-hidden shadow-sm border border-slate-200">
+					<div
+						class="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+						<h2
+							class="text-lg font-bold text-slate-800 flex items-center gap-2">
+							<FaPills className="text-emerald-500" />
+							Tratamientos
+						</h2>
+						<a
+							href="profile"
+							class="text-xs text-emerald-600 hover:text-emerald-700 font-bold transition-colors">
+							Ver todos
+						</a>
+					</div>
 
-        <div class="divide-y divide-primary-100 flex-1">
-          {prescriptions.map(({ icon: Icon, ...med }) => (
-            <div class="px-5 py-4 hover:bg-primary-50 transition-colors flex items-start gap-3">
-              <div class="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
-                <Icon className="text-primary-600 text-sm" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <p class="text-body-s font-semibold text-primary-800 truncate">{med.name}</p>
-                  <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${med.statusClass}`}>
-                    {med.status}
-                  </span>
-                </div>
-                <p class="text-body-xs text-cool-gray-50 mt-0.5">{med.sig}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </StaticCard>
-    </div>
+					<div class="divide-y divide-slate-100 flex-1">
+						{
+							prescriptions.length === 0 ? (
+								<div class="p-8 text-center text-slate-400 flex flex-col items-center justify-center h-full">
+									<div class="bg-slate-50 p-3 rounded-full mb-2 border border-slate-100">
+										<FaTablets className="text-2xl text-slate-300" />
+									</div>
+									<p class="font-medium text-sm">
+										No tienes tratamientos activos
+									</p>
+								</div>
+							) : (
+								prescriptions.slice(0, 2).map(({ icon: Icon, ...med }) => (
+									<div class="px-6 py-4 hover:bg-slate-50 transition-colors flex items-center gap-4">
+										<div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+											<Icon className="text-emerald-600 text-lg" />
+										</div>
+										<div class="flex-1 min-w-0">
+											<p class="text-sm font-bold text-slate-800 truncate mb-0.5">
+												{med.name}
+											</p>
+											<p class="text-xs text-slate-500 font-medium truncate">
+												{med.sig}
+											</p>
+										</div>
+									</div>
+								))
+							)
+						}
+					</div>
+				</StaticCard>
 
-    <!-- ─── Recent Consultations ────────────────────────────── -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+				<!-- ─── Recent Consultations ────────────── -->
+				<StaticCard
+					client:visible
+					className="lg:col-span-2 bg-white! p-0! flex flex-col overflow-hidden shadow-sm border border-slate-200">
+					<div
+						class="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+						<h2
+							class="text-lg font-bold text-slate-800 flex items-center gap-2">
+							<FaStethoscope className="text-indigo-500" />
+							Consultas recientes
+						</h2>
+						<a
+							href="history"
+							class="text-xs text-indigo-600 hover:text-indigo-700 font-bold transition-colors">
+							Historial completo
+						</a>
+					</div>
 
-      <!-- Recent Consultations -->
-      <StaticCard client:visible className="!bg-white !p-0 flex flex-col overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-primary-200">
-          <h2 class="text-heading-6 text-primary-800">
-            <FaStethoscope className="text-primary-500 mr-2 inline-block" />
-            Consultas recientes
-          </h2>
-          <a href="history" class="text-body-xs text-primary-500 hover:text-primary-700 font-medium transition-colors">
-            Ver historial
-          </a>
-        </div>
-
-        <div class="divide-y divide-primary-100 flex-1">
-          {recentConsultations.map(c => (
-            <div class="px-5 py-4 hover:bg-primary-50 transition-colors">
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <p class="text-body-s font-semibold text-primary-800">{c.specialty}</p>
-                <span class="text-body-xxs text-cool-gray-50">{c.date}</span>
-              </div>
-              <p class="text-body-xs text-cool-gray-60">
-                <FaUserDoctor className="mr-1 inline-block" />{c.doctor}
-              </p>
-              <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-body-xs">
-                <div>
-                  <span class="text-cool-gray-50 font-medium">Motivo: </span>
-                  <span class="text-primary-800">{c.reason}</span>
-                </div>
-                <div>
-                  <span class="text-cool-gray-50 font-medium">Dx: </span>
-                  <span class="text-primary-800">{c.diagnosis}</span>
-                </div>
-                <div class="col-span-2">
-                  <span class="text-cool-gray-50 font-medium">Plan: </span>
-                  <span class="text-primary-800">{c.plan}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </StaticCard>
-    </div>
-
-    <!-- ─── Contact / Personal Info Banner ───────────────────────────────── -->
-    <div class="bg-linear-to-r from-primary-700 to-primary-800 rounded-xl p-5 text-white shadow-md">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 class="text-heading-6 font-semibold mb-1">
-            <FaCircleInfo className="mr-2 opacity-80 inline-block" />
-            Información de contacto
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-body-xs text-primary-200">
-            <span><FaEnvelope className="mr-1.5 inline-block" />{patient.email}</span>
-            <span><FaPhone className="mr-1.5 inline-block" />{patient.phone}</span>
-            <span class="sm:col-span-2"><FaHeart className="mr-1.5 inline-block" />Emergencia: {patient.emergencyContact}</span>
-          </div>
-        </div>
-        <a
-          href="profile"
-          class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-button-s font-medium transition-colors"
-        >
-          <FaUserPen />
-          Editar perfil
-        </a>
-      </div>
-    </div>
-
-  </div>
+					<div class="divide-y divide-slate-100 flex-1">
+						{
+							recentConsultations.length === 0 ? (
+								<div class="p-8 text-center text-slate-400 flex flex-col items-center justify-center h-full">
+									<p class="font-medium text-sm">
+										No hay consultas previas registradas.
+									</p>
+								</div>
+							) : (
+								recentConsultations.slice(0, 2).map((c) => (
+									<div class="px-6 py-4 hover:bg-slate-50 transition-colors">
+										<div class="flex items-center justify-between gap-2 mb-1.5">
+											<p class="text-sm font-bold text-slate-800">
+												{c.specialty}
+											</p>
+											<span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+												{c.date}
+											</span>
+										</div>
+										<p class="text-xs text-slate-600 font-medium">
+											<FaUserDoctor className="mr-1.5 inline-block text-slate-400" />
+											{c.doctor}
+										</p>
+									</div>
+								))
+							)
+						}
+					</div>
+				</StaticCard>
+			</div>
+		</div>
+	</div>
 </PacientLayout>

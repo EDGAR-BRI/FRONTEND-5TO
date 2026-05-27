@@ -1,10 +1,17 @@
 export type PatientInfo =
 {
     patientId?: number;
+    patient?: {
+        id?: number;
+        name?: string | null;
+        ci?: string | null;
+        last_visit_at?: string | null;
+        user?: {
+            name?: string | null;
+            ci?: string | null;
+        } | null;
+    } | null;
 
-    ci: string;
-    name: string;
-    last_name: string;
     sex: 'MALE' | 'FEMALE';
     birth_date: Date;
 

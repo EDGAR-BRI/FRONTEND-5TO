@@ -8,10 +8,16 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { Modal } from '@/components/react/primary/Modal'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import { useModal } from '@/hooks/UseModal'
-import { FaRegCalendarXmark, FaUserDoctor } from 'react-icons/fa6'
+import { FaRegCalendarXmark, FaUserDoctor, FaPencil } from 'react-icons/fa6'
+import { Select } from '@/components/react/primary/Select'
+import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import type { DoctorSchedConfigOption } from "@/lib/services/medical/doctor/doctor.interface";
-import { getAppointmentsByDr } from '@/lib/services/scheduling/appointment/appointment.service'
+import { getAppointmentsByDr, updateAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
+import { listConsultationsByDoctor, updateConsultation } from '@/lib/services/medical/consultation/consultation.service'
+import type { ConsultationSummary } from '@/lib/services/medical/consultation/consultation.interface'
+import { getAppointmentStatuses } from '@/lib/services/scheduling/appointment-status/appointment_status.service'
 import { formatAppointmentsByDoctorId, convertirAHHMM } from '@/utils/helper_functions'
+import { Alert } from '@/utils/alerts'
 
 
 export interface DoctorInfo {
@@ -34,8 +40,13 @@ export interface BookedAppointment {
   patientName: string
   reason: string
   status: string
+  statusId: number
+  doctorId: number
   type: string
   price: string
+  /** True when this event represents a medical consultation, not a regular appointment */
+  isConsultation?: boolean
+  consultationStatus?: string
 }
 
 type CalendarEvent = {
@@ -52,6 +63,9 @@ export interface DoctorScheduleCalendarProps {
   allAvailabilities: { doctorScheduleId?: number, day_of_week: number, start_time: string, end_time: string }[]
   heightPx?: number
   initialView?: 'month' | 'week' | 'day' | 'agenda'
+  selectedDoctorId?: number | null
+  onDoctorSelect?: (docId: number) => void
+  loadingSchedules?: boolean
 }
 
 const locales = { es }
@@ -89,10 +103,11 @@ const formatos: Formats = {
 
 const STATUS_COLORS: Record<string, string> = {
   Realizada: '#22c55e',
+  Finalizada: '#22c55e',
   Confirmada: '#f59e0b',
   Pendiente: '#9ca3af',
   Cancelada: '#ef4444',
-  Finalizada: '#22c55e',
+  'En Progreso': '#3b82f6',
 }
 
 function parseDateTime(str: string): Date {
@@ -131,7 +146,115 @@ export default function DoctorScheduleCalendar({
 
   // ── Appointments fetch por doctor ───────────────────────────────────────
   const [appointmentsByDoctorId, setAppointmentsByDoctorId] = useState<Record<number, BookedAppointment[]>>({})
+  const [consultationsByDoctorId, setConsultationsByDoctorId] = useState<Record<number, ConsultationSummary[]>>({})
   const [loadingApts, setLoadingApts] = useState(false)
+
+  // ── Edición de Cita ───────────────────────────────────────
+  const [isEditingDoctor, setIsEditingDoctor] = useState(false)
+  const [isEditingStatus, setIsEditingStatus] = useState(false)
+  const [statuses, setStatuses] = useState<any[]>([])
+  const [updatingApt, setUpdatingApt] = useState(false)
+  const [selectedEditStatusId, setSelectedEditStatusId] = useState<number | string>('')
+  const [selectedEditDoctorId, setSelectedEditDoctorId] = useState<number | string>('')
+
+  useEffect(() => {
+    if (isOpen) {
+      getAppointmentStatuses().then(setStatuses).catch(console.error)
+    } else {
+      setIsEditingDoctor(false)
+      setIsEditingStatus(false)
+    }
+  }, [isOpen])
+
+  /** Clear cached appointments for the current doctor and re-fetch */
+  const refetchAppointments = async () => {
+    if (selectedDoctorId === null || selectedDoctorId === 0) return
+    setLoadingApts(true)
+    try {
+      const [raw, consultations] = await Promise.all([
+        getAppointmentsByDr(selectedDoctorId),
+        listConsultationsByDoctor(selectedDoctorId).catch(() => [] as ConsultationSummary[]),
+      ])
+      const formatted = formatAppointmentsByDoctorId(raw)
+      setAppointmentsByDoctorId(prev => ({
+        ...prev,
+        [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
+      }))
+      setConsultationsByDoctorId(prev => ({
+        ...prev,
+        [selectedDoctorId!]: consultations,
+      }))
+    } catch (err) {
+      console.error('Error re-fetching appointments:', err)
+    } finally {
+      setLoadingApts(false)
+    }
+  }
+
+  /** Called immediately when the user picks a new status from the dropdown */
+  const handleStatusChange = async (appointmentId: number, newStatusId: number | string) => {
+    if (!newStatusId) return
+    setUpdatingApt(true)
+    try {
+      if (selectedApt?.isConsultation) {
+        await updateConsultation(appointmentId, { status: newStatusId as any })
+        setIsEditingStatus(false)
+        const mappedStatus = newStatusId === 'PENDING' ? 'Pendiente' :
+                             newStatusId === 'IN_PROGRESS' ? 'En Progreso' :
+                             newStatusId === 'FINISHED' ? 'Finalizada' :
+                             newStatusId === 'CANCELLED' ? 'Cancelada' : 'Realizada'
+        if (selectedApt) {
+          setSelectedApt({ ...selectedApt, status: mappedStatus, consultationStatus: newStatusId as string })
+        }
+      } else {
+        await updateAppointment(appointmentId, { statusId: Number(newStatusId) })
+        setIsEditingStatus(false)
+        const newStatus = statuses.find(s => s.id === Number(newStatusId))
+        if (selectedApt && newStatus) {
+          setSelectedApt({ ...selectedApt, status: newStatus.name, statusId: newStatus.id })
+        }
+      }
+      await refetchAppointments()
+      await Alert.success('Estado actualizado', 'El estado fue actualizado exitosamente.')
+    } catch (e: any) {
+      console.error(e)
+      await Alert.error('Error al actualizar estado', e?.message || 'Ocurrió un error inesperado.')
+    } finally {
+      setUpdatingApt(false)
+    }
+  }
+
+  const saveDoctor = async (appointmentId: number) => {
+    if (!selectedEditDoctorId) return
+    const targetDoctorId = Number(selectedEditDoctorId)
+    setUpdatingApt(true)
+    try {
+      if (selectedApt?.isConsultation) {
+        await updateConsultation(appointmentId, { doctorId: targetDoctorId })
+      } else {
+        await updateAppointment(appointmentId, { doctorId: targetDoctorId })
+      }
+      setIsEditingDoctor(false)
+      // Invalidate cached appointments/consultations for the target doctor so they refresh on selection
+      setAppointmentsByDoctorId(prev => {
+        const next = { ...prev }
+        delete next[targetDoctorId]
+        return next
+      })
+      setConsultationsByDoctorId(prev => {
+        const next = { ...prev }
+        delete next[targetDoctorId]
+        return next
+      })
+      await refetchAppointments()
+      await Alert.success('Médico actualizado', 'El médico de la cita fue actualizado exitosamente.')
+    } catch (e: any) {
+      console.error(e)
+      await Alert.error('Error al actualizar médico', e?.message || 'Ocurrió un error inesperado.')
+    } finally {
+      setUpdatingApt(false)
+    }
+  }
 
   useEffect(() => {
     // Don't fetch if no doctor selected
@@ -140,12 +263,19 @@ export default function DoctorScheduleCalendar({
     if (appointmentsByDoctorId[selectedDoctorId]) return
 
     setLoadingApts(true)
-    getAppointmentsByDr(selectedDoctorId)
-      .then(raw => {
+    Promise.all([
+      getAppointmentsByDr(selectedDoctorId),
+      listConsultationsByDoctor(selectedDoctorId).catch(() => [] as ConsultationSummary[]),
+    ])
+      .then(([raw, consultations]) => {
         const formatted = formatAppointmentsByDoctorId(raw)
         setAppointmentsByDoctorId(prev => ({
           ...prev,
           [selectedDoctorId!]: formatted[selectedDoctorId!] ?? [],
+        }))
+        setConsultationsByDoctorId(prev => ({
+          ...prev,
+          [selectedDoctorId!]: consultations,
         }))
       })
       .catch(err => console.error('Error fetching appointments:', err))
@@ -168,14 +298,74 @@ export default function DoctorScheduleCalendar({
   const aptEvents = useMemo(() => {
     if (selectedDoctorId === null || selectedDoctorId === 0) return []
     const apts = appointmentsByDoctorId[selectedDoctorId] ?? []
-    return apts.map<CalendarEvent>(apt => ({
+    const consultations = consultationsByDoctorId[selectedDoctorId] ?? []
+
+    // Build a set of "patientId|dateKey" from consultations so we can suppress overlapping appointments
+    const consultationKeys = new Set<string>()
+    for (const c of consultations) {
+      const patientId = c.invoice?.patient?.id
+      if (!patientId || !c.date) continue
+      const dateKey = c.date.replace('Z', '').replace(' ', 'T').slice(0, 16) // 'YYYY-MM-DDTHH:mm'
+      consultationKeys.add(`${patientId}|${dateKey}`)
+    }
+
+    // Filter out appointments that are covered by a consultation (same patient + almost same date/time)
+    const filteredApts = apts.filter(apt => {
+      const aptDate = parseDateTime(apt.scheduledStart)
+      for (const c of consultations) {
+        const cDate = parseDateTime(c.date)
+        const cPatientName = c.invoice?.patient?.user?.name
+        if (cPatientName && cPatientName === apt.patientName) {
+          const diffMinutes = Math.abs(cDate.getTime() - aptDate.getTime()) / 60000
+          if (diffMinutes <= 120) { // Within 2 hours
+            return false // suppress this appointment — the consultation takes precedence
+          }
+        }
+      }
+      return true
+    })
+
+    // Map remaining appointments to calendar events
+    const appointmentEvents: CalendarEvent[] = filteredApts.map(apt => ({
       id: apt.id,
       title: apt.patientName,
       start: parseDateTime(apt.scheduledStart),
       end: parseDateTime(apt.scheduledEnd),
       resource: apt,
     }))
-  }, [selectedDoctorId, appointmentsByDoctorId])
+
+    // Map consultations to calendar events with 'Realizada' status
+    const consultationEvents: CalendarEvent[] = consultations.map(c => {
+      const start = parseDateTime(c.date)
+      const end = new Date(start.getTime() + 30 * 60_000) // 30 min default
+      const patientName = c.invoice?.patient?.user?.name || 'Paciente'
+      return {
+        id: c.id,
+        title: `${patientName} (Consulta)`,
+        start,
+        end,
+        resource: {
+          id: c.id,
+          scheduledStart: c.date,
+          scheduledEnd: end.toISOString(),
+          patientName,
+          reason: 'Consulta médica',
+          status: c.status === 'PENDING' ? 'Pendiente' :
+                  c.status === 'IN_PROGRESS' ? 'En Progreso' :
+                  c.status === 'FINISHED' ? 'Finalizada' :
+                  c.status === 'CANCELLED' ? 'Cancelada' : 'Realizada',
+          statusId: -1, // Consultations don't have an appointment statusId
+          doctorId: c.doctorId,
+          type: 'Consulta',
+          price: c.invoice?.total_usd ? `$${c.invoice.total_usd}` : '—',
+          isConsultation: true,
+          consultationStatus: c.status,
+        } as BookedAppointment,
+      }
+    })
+
+    return [...appointmentEvents, ...consultationEvents]
+  }, [selectedDoctorId, appointmentsByDoctorId, consultationsByDoctorId])
 
   const shiftEvents = useMemo(() => {
     if (selectedDoctorId === null || selectedDoctorId === 0) return []
@@ -191,7 +381,16 @@ export default function DoctorScheduleCalendar({
       const dayOfWeek = date.getDay()
 
       const activeSchedule = docSchedules
-        .map(s => ({ ...s, _start: new Date(s.period_start), _end: s.period_end ? new Date(s.period_end) : null }))
+        .map(s => {
+          const ps = new Date(s.period_start);
+          const _start = new Date(Date.UTC(ps.getUTCFullYear(), ps.getUTCMonth(), ps.getUTCDate(), 0, 0, 0, 0));
+          let _end: Date | null = null;
+          if (s.period_end) {
+            const pe = new Date(s.period_end);
+            _end = new Date(Date.UTC(pe.getUTCFullYear(), pe.getUTCMonth(), pe.getUTCDate(), 0, 0, 0, 0));
+          }
+          return { ...s, _start, _end };
+        })
         .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
         .sort((a, b) => b._start.getTime() - a._start.getTime())[0]
 
@@ -344,20 +543,88 @@ export default function DoctorScheduleCalendar({
         />
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeAndClear} title="Detalle de cita">
+      <Modal isOpen={isOpen} onClose={closeAndClear} title={selectedApt?.isConsultation ? 'Detalle de consulta' : 'Detalle de cita'}>
         {selectedApt && (
           <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2">
-              <span
-                className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                style={{ backgroundColor: STATUS_COLORS[selectedApt.status] ?? '#6b7280' }}
-              >
-                {selectedApt.status}
-              </span>
-              <span className="text-cool-gray-50">{selectedApt.type}</span>
+            <div className="flex items-center gap-2 min-h-[28px]">
+              {isEditingStatus ? (
+                <div className="flex items-center gap-2 bg-white rounded-md p-1 border border-primary-200">
+                  <div className="w-48">
+                    <Select
+                      options={selectedApt.isConsultation
+                        ? [
+                            { value: 'PENDING', label: 'Pendiente' },
+                            { value: 'IN_PROGRESS', label: 'En Progreso' },
+                            { value: 'FINISHED', label: 'Finalizada' },
+                            { value: 'CANCELLED', label: 'Cancelada' }
+                          ]
+                        : statuses.filter(s => s.id !== 2 && s.id !== 4).map(s => ({ value: s.id, label: s.name }))}
+                      value={selectedEditStatusId}
+                      onChange={(val) => handleStatusChange(selectedApt.id, val)}
+                      name="status"
+                    />
+                  </div>
+                  {updatingApt && <span className="text-xs text-primary-500 animate-pulse">Guardando...</span>}
+                  <button onClick={() => setIsEditingStatus(false)} disabled={updatingApt} className="text-xs font-bold text-cool-gray-50 hover:text-cool-gray-70 px-2">✕</button>
+                </div>
+              ) : (
+                <>
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                    style={{ backgroundColor: STATUS_COLORS[selectedApt.status] ?? '#6b7280' }}
+                  >
+                    {selectedApt.status}
+                    {(
+                      selectedApt.isConsultation
+                        ? true
+                        : selectedApt.statusId !== 2
+                    ) && (
+                      <button onClick={() => { 
+                        setIsEditingStatus(true); 
+                        setSelectedEditStatusId(selectedApt.isConsultation ? selectedApt.consultationStatus! : selectedApt.statusId) 
+                      }} className="hover:text-white/80 bg-black/10 rounded-full p-1" title="Cambiar estado">
+                        <FaPencil className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </span>
+                  <span className="text-cool-gray-50">{selectedApt.type}</span>
+                </>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-primary-800">
+              <div className="col-span-2">
+                <p className="text-xs text-cool-gray-50 font-medium">Médico Especialista</p>
+                {isEditingDoctor ? (
+                  <div className="flex flex-col gap-2 mt-1 bg-white rounded-md p-2 border border-primary-200">
+                    <SearchableSelect
+                      options={doctors.map(d => ({ value: d.id, label: `${d.user.name} — C.I. ${d.user.ci || 'N/A'}` }))}
+                      value={selectedEditDoctorId}
+                      onChange={(val) => setSelectedEditDoctorId(val)}
+                      placeholder="Buscar médico..."
+                      searchPlaceholder="Buscar por cédula o nombre..."
+                      name="doctor"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={() => setIsEditingDoctor(false)} disabled={updatingApt} className="text-xs font-bold text-cool-gray-50 hover:text-cool-gray-70">Cancelar</button>
+                      <button onClick={() => saveDoctor(selectedApt.id)} disabled={updatingApt} className="text-xs font-bold text-emerald-600 hover:text-emerald-700">Guardar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="font-semibold flex items-center gap-2">
+                    {doctor?.user.name || 'Médico de la cita'}
+                    {(
+                      selectedApt.isConsultation
+                        ? true
+                        : selectedApt.statusId !== 2
+                    ) && (
+                      <button onClick={() => { setIsEditingDoctor(true); setSelectedEditDoctorId(selectedApt.doctorId || selectedDoctorId || '') }} className="inline-flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-md px-1.5 py-0.5 transition-colors" title="Cambiar médico">
+                        <FaPencil className="w-2.5 h-2.5" /> Cambiar
+                      </button>
+                    )}
+                  </p>
+                )}
+              </div>
               <div>
                 <p className="text-xs text-cool-gray-50 font-medium">Paciente</p>
                 <p className="font-semibold">{selectedApt.patientName}</p>
@@ -382,7 +649,19 @@ export default function DoctorScheduleCalendar({
 
             <div className="flex justify-end gap-2 pt-2 border-t border-primary-100">
               <Button label="Cerrar" variant={ButtonTheme.GHOST} size="sm" onClick={closeAndClear} />
-              <Button label="Gestionar pago" variant={ButtonTheme.PRIMARY} size="sm" onClick={closeAndClear} />
+              {!selectedApt.isConsultation && selectedApt.status === 'Pendiente' && (
+                <Button label="Gestionar pago" variant={ButtonTheme.PRIMARY} size="sm" disabled={isEditingDoctor || isEditingStatus} onClick={() => {
+                  closeAndClear();
+                  const url = new URL(window.location.href);
+                  const pathParts = url.pathname.split('/').filter(Boolean);
+                  if (pathParts.includes('receptionist')) {
+                      pathParts[pathParts.length - 1] = 'invoice';
+                      url.pathname = '/' + pathParts.join('/');
+                      url.searchParams.set('appointmentId', selectedApt.id.toString());
+                      window.location.href = url.toString();
+                  }
+                }} />
+              )}
             </div>
           </div>
         )}

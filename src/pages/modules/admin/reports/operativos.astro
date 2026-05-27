@@ -7,7 +7,8 @@ import { Badge } from "@/components/react/primary/Badge";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import StaticCard from "@/components/react/primary/StaticCard";
-import { Button } from "@/components/react/primary/Button";
+import { getOperativosOverview } from "@/lib/services/report/operativos.service";
+import OperativosPdfExport from "@/components/react/admin/reports/OperativosPdfExport";
 import {
     FaArrowRight,
     FaCalendarCheck,
@@ -15,36 +16,41 @@ import {
     FaHospitalUser,
     FaStethoscope,
     FaUserDoctor,
-    FaFilePdf,
     FaPrint
 } from "react-icons/fa6";
+
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = (Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const operativos = await getOperativosOverview({ from, to, period });
+
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
 
 const concreteReports = [
     {
         title: "Carga y puntualidad de citas",
-        description: "Horas de mayor demanda, ausencias y cumplimiento por turno.",
-        href: "/modules/admin/reports/operativos-citas",
+        description: "Horas de mayor demanda y cumplimiento por rango seleccionado.",
+        href: `/modules/admin/reports/operativos-citas${filterSuffix}`,
         badge: "Agenda",
     },
     {
         title: "Tiempos de atencion",
-        description: "Duracion por especialidad y tiempo promedio de espera por bloque.",
-        href: "/modules/admin/reports/operativos-tiempos",
+        description: "Duracion promedio por especialidad y picos de actividad.",
+        href: `/modules/admin/reports/operativos-tiempos${filterSuffix}`,
         badge: "Flujo",
     },
     {
         title: "Productividad medica",
-        description: "Atenciones por medico, saturacion y capacidad disponible.",
-        href: "/modules/admin/reports/operativos-productividad",
+        description: "Atenciones por medico e ingresos asociados.",
+        href: `/modules/admin/reports/operativos-productividad${filterSuffix}`,
         badge: "Equipo",
     },
-];
-
-const slotsByTime = [
-    { slot: "07:00 - 09:00", occupancy: "71%", status: "Normal" },
-    { slot: "09:00 - 11:00", occupancy: "88%", status: "Alto" },
-    { slot: "11:00 - 13:00", occupancy: "93%", status: "Critico" },
-    { slot: "14:00 - 16:00", occupancy: "82%", status: "Alto" },
 ];
 ---
 
@@ -55,30 +61,29 @@ const slotsByTime = [
                 <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Reporte Operativo</h1>
                 <p class="text-gray-500 mt-1">Seguimiento de capacidad, tiempos y productividad asistencial.</p>
             </div>
-            <div class="flex gap-3">
-                <Button label="Exportar PDF" variant="secondary"><FaFilePdf size={14} /> Exportar PDF</Button>
-                <Button label="Imprimir Reporte" variant="primary"><FaPrint size={14} /> Imprimir Reporte</Button>
+		    <div class="flex gap-3">
+				<OperativosPdfExport client:load from={from} to={to} period={period} preset={preset} />
             </div>
         </header>
 
         {/* TARJETAS DE ESTADÍSTICAS */}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Citas Programadas" value="148" trend="8.2%" trendUp={true} color="primary">
+            <StatsCard title="Citas Programadas" value={operativos.data.stats.scheduledAppointments} trend="8.2%" trendUp={true} color="primary">
                 <FaCalendarCheck slot="icon" size={20} />
             </StatsCard>
-            <StatsCard title="Tiempo Promedio" value="23 min" trend="1.1%" trendUp={false} color="warning">
+            <StatsCard title="Tiempo Promedio" value={`${operativos.data.stats.avgAttentionTime} min`} trend="1.1%" trendUp={false} color="warning">
                 <FaClock slot="icon" size={20} />
             </StatsCard>
-            <StatsCard title="Pacientes Atendidos" value="127" trend="6.4%" trendUp={true} color="success">
+            <StatsCard title="Pacientes Atendidos" value={operativos.data.stats.patientsAttended} trend="6.4%" trendUp={true} color="success">
                 <FaHospitalUser slot="icon" size={20} />
             </StatsCard>
-            <StatsCard title="Médicos Activos" value="18" trend="0.0%" trendUp={true} color="primary">
+            <StatsCard title="Médicos Activos" value={operativos.data.stats.activeDoctors} trend="0.0%" trendUp={true} color="primary">
                 <FaUserDoctor slot="icon" size={20} />
             </StatsCard>
         </section>
 
         {/* FILTROS OPERATIVOS */}
-        <ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." />
+        <ReportTimeframeFilters client:load title="Filtros operativos" subtitle="Agrupa la actividad asistencial por día, semana, mes o año según el nivel de detalle que necesites." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
         <div class="space-y-8 mt-8">
 			<section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -94,7 +99,7 @@ const slotsByTime = [
 					<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 						{
 							concreteReports.map((report) => (
-								<a href={report.href} class="block group">
+                                    <a href={report.href} class="block group">
 									<ActionCard className="h-full p-6 items-start justify-between border-primary-100 hover:border-primary-500 transition-all shadow-sm hover:shadow-md">
 										<div class="space-y-4">
 											<span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight bg-primary-50 text-primary-600 border border-primary-100 group-hover:bg-primary-600 group-hover:text-white transition-colors">
@@ -134,25 +139,25 @@ const slotsByTime = [
 									<div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
 										<FaStethoscope size={20} /> 
                     				</div>
-									<span>12 médicos activos</span>
-                				</div>
+                                    <span>{operativos.data.periodSummary.activeDoctors} médicos activos</span>
+                                </div>
 
-								<div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
-									<div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
-									<FaHospitalUser size={20} />
-									</div>
-									<span>35 pacientes en espera</span>
-								</div>
-								<div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
-									<div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-sm border border-amber-100">
-										<FaClock size={20} />
-									</div>
-									<span>Espera promedio: 18 min</span>
-								</div>
-							</div>
-						</div>
-					</StaticCard>
-				</div>
+                                <div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
+                                    <FaHospitalUser size={20} />
+                                    </div>
+                                    <span>Ingresos del período: ${operativos.data.periodSummary.revenueUsd.toFixed(2)}</span>
+                                </div>
+                                <div class="flex items-center gap-4 text-base text-gray-700 font-semibold">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-sm border border-amber-100">
+                                        <FaClock size={20} />
+                                    </div>
+                                    <span>Citas del período: {operativos.data.periodSummary.appointments}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </StaticCard>
+                </div>
 			</section>
 		</div>
 
@@ -164,16 +169,16 @@ const slotsByTime = [
                         <thead class="bg-primary-300">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Franja</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ocupacion</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Citas</th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-primary-300">
                             {
-                                slotsByTime.map((row) => (
+                                operativos.data.occupancyBySlot.map((row) => (
                                     <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
                                         <td class="px-4 py-3 text-sm text-cool-gray-90 font-medium">{row.slot}</td>
-                                        <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{row.occupancy}</td>
+                                        <td class="px-4 py-3 text-sm text-right text-cool-gray-90 font-bold">{row.count}</td>
                                         <td class="px-4 py-3 text-sm text-right">
                                             <span class={`font-semibold ${
                                                 row.status === 'Critico' ? 'text-red-600' : 

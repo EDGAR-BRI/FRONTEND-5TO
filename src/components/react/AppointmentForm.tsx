@@ -22,13 +22,14 @@ import { SearchableSelect } from '@/components/react/primary/SearchableSelect'
 import { Field } from '@/components/react/primary/Field'
 import { Button, ButtonTheme } from '@/components/react/primary/Button'
 import StaticCard from '@/components/react/primary/StaticCard'
-import { FaCalendarPlus } from 'react-icons/fa6'
+import { Modal } from '@/components/react/primary/Modal' // <-- NUEVO IMPORT
+import { FaCalendarPlus, FaCircleQuestion, FaStethoscope } from 'react-icons/fa6'
+import AppointmentVoucherModal from '@/components/react/pacient/AppointmentVoucherModal'
 
 import { getDrsSelect } from '@/lib/services/medical/doctor/doctor.service'
 import { getPatients } from '@/lib/services/medical/patient/patient.service'
 import { getAppointmentTypes } from '@/lib/services/scheduling/appointment-type/appointment_type.service'
 import { createAppointment } from '@/lib/services/scheduling/appointment/appointment.service'
-import type { DoctorSchedConfigOption } from '@/lib/services/medical/doctor/doctor.interface'
 import type { Patient } from '@/lib/services/medical/patient/patient.interface'
 import type { AppointmentType } from '@/lib/services/scheduling/appointment-type/appointment_type.interface'
 import type { DoctorAvailability } from '@/lib/services/scheduling/doctor-availability/doctor_availability.interface'
@@ -38,7 +39,7 @@ import type { SelectOption } from '@/components/react/primary/Select'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DatePreset = 'this_week' | 'this_month' | 'weekday' | 'specific'
-export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'any' | 'specific'
+export type TimeSlot = 'morning' | 'afternoon' | 'evening'
 
 const WEEKDAYS: SelectOption[] = [
     { value: '1', label: 'Lunes' },
@@ -55,38 +56,49 @@ const AFTERNOON_HOURS = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '
 const EVENING_HOURS = ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00']
 
 export interface AppointmentFormProps {
-    /** Endpoint de creación de cita */
     createEndpoint?: string
-
-    /** Callbacks */
     onSuccess?: () => void
     onError?: (err: unknown) => void
-
-    /** Contexto extra enviado en el body (ej: patientId) */
     context?: Record<string, string | number | undefined>
-
-    /** Rol del usuario que abre el form */
     role?: "receptionist" | "pacient"
-
-    /** ID del usuario actual (útil para rol paciente) */
     userId?: string | number
-
-    /** Fecha seleccionada externamente (YYYY-MM-DD) */
     externalDate?: string
-
-    /** Callback cuando cambia el doctor */
     onDoctorChange?: (doctorId: string | number) => void
-
-    /** Disponibilidad del doctor seleccionado (para filtrar días y horas) */
     doctorSchedule?: DoctorAvailability[]
-
-    /** Citas existentes del doctor (para filtrar horas ocupadas) */
+    doctorSchedulesData?: { id: number, period_start: string, period_end: string | null }[]
     doctorAppointments?: Appointment[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function resolveDateOptions(preset: DatePreset, weekday?: string, workDays?: number[]): Date[] {
+function findActiveSchedule(
+  date: Date,
+  schedules?: { id: number, period_start: string, period_end: string | null }[]
+) {
+  if (!schedules || schedules.length === 0) return null;
+  const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+  return schedules
+    .map(s => {
+      const ps = new Date(s.period_start);
+      const _start = new Date(Date.UTC(ps.getUTCFullYear(), ps.getUTCMonth(), ps.getUTCDate(), 0, 0, 0, 0));
+      let _end: Date | null = null;
+      if (s.period_end) {
+        const pe = new Date(s.period_end);
+        _end = new Date(Date.UTC(pe.getUTCFullYear(), pe.getUTCMonth(), pe.getUTCDate(), 0, 0, 0, 0));
+      }
+      return { ...s, _start, _end };
+    })
+    .filter(s => s._start <= dateUTC && (s._end === null || s._end >= dateUTC))
+    .sort((a, b) => b._start.getTime() - a._start.getTime())[0] || null;
+}
+
+function resolveDateOptions(
+    preset: DatePreset, 
+    weekday?: string, 
+    workDays?: number[],
+    schedules?: { id: number, period_start: string, period_end: string | null }[],
+    doctorSchedule?: DoctorAvailability[]
+): Date[] {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     let rawDates: Date[] = []
@@ -110,7 +122,16 @@ function resolveDateOptions(preset: DatePreset, weekday?: string, workDays?: num
         const dateOnly = new Date(d)
         dateOnly.setHours(0, 0, 0, 0)
         if (dateOnly < today) return false
-        // Si hay días laborables definidos, filtrar
+        
+        if (schedules && schedules.length > 0 && doctorSchedule) {
+            const activeSchedule = findActiveSchedule(dateOnly, schedules);
+            if (!activeSchedule) return false;
+            const day = dateOnly.getDay();
+            const hasAvail = doctorSchedule.some(a => a.doctorScheduleId === activeSchedule.id && a.day_of_week === day);
+            if (!hasAvail) return false;
+            return true;
+        }
+
         if (workDays && workDays.length > 0) {
             return workDays.includes(dateOnly.getDay())
         }
@@ -162,11 +183,12 @@ export default function AppointmentForm({
     externalDate,
     onDoctorChange,
     doctorSchedule = [],
+    doctorSchedulesData = [],
     doctorAppointments = [],
 }: AppointmentFormProps) {
 
     // ── Remote data ──────────────────────────────────────────────────────────
-    const [doctors, setDoctors] = useState<DoctorSchedConfigOption[]>([])
+    const [doctors, setDoctors] = useState<any[]>([])
     const [patients, setPatients] = useState<Patient[]>([])
     const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([])
     const [dataLoading, setDataLoading] = useState(true)
@@ -195,18 +217,17 @@ export default function AppointmentForm({
         return () => { cancelled = true }
     }, [])
 
-    // Derive unique specialties from doctor data
     const specialtyOptions: SelectOption[] = useMemo(() => {
-        const seen = new Set<string>()
+        const seen = new Set<number>()
         const opts: SelectOption[] = [{ value: '', label: 'Cualquiera' }]
         doctors
             .filter(d => {
-                if (seen.has(d.specialty.name)) return false
-                seen.add(d.specialty.name)
+                if (seen.has(d.specialty.id)) return false
+                seen.add(d.specialty.id)
                 return true
             })
             .sort((a, b) => a.specialty.name.localeCompare(b.specialty.name))
-            .forEach(d => opts.push({ value: d.specialty.name, label: d.specialty.name }))
+            .forEach(d => opts.push({ value: d.specialty.id, label: d.specialty.name }))
         return opts
     }, [doctors])
 
@@ -237,6 +258,12 @@ export default function AppointmentForm({
     const [motivo, setMotivo] = useState('')
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+    
+    // 👇 Estados para Modales (Confirmación y Voucher)
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [pendingAppointmentData, setPendingAppointmentData] = useState<any>(null);
+    const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+    const [voucherData, setVoucherData] = useState<any>(null);
 
     // ── Fecha ────────────────────────────────────────────────────────────────
     const [datePreset, setDatePreset] = useState<DatePreset>('specific')
@@ -246,13 +273,11 @@ export default function AppointmentForm({
 
     const [dateFlash, setDateFlash] = useState(false)
 
-    // Días laborables del doctor (para filtrar)
     const workDays = useMemo(() => {
         if (!doctorSchedule || doctorSchedule.length === 0) return undefined
         return Array.from(new Set(doctorSchedule.map(s => s.day_of_week)))
     }, [doctorSchedule])
 
-    // Filtrar opciones de WEEKDAYS según días que trabaja el doctor
     const filteredWeekdays = useMemo(() => {
         if (!workDays) return WEEKDAYS
         return WEEKDAYS.filter(w => workDays.includes(Number(w.value)))
@@ -260,11 +285,10 @@ export default function AppointmentForm({
 
     const dateOptions = useMemo(() => {
         if (datePreset === 'specific') return []
-        if (datePreset === 'weekday') return resolveDateOptions('weekday', String(selectedWeekday), workDays)
-        return resolveDateOptions(datePreset, undefined, workDays)
-    }, [datePreset, selectedWeekday, workDays])
+        if (datePreset === 'weekday') return resolveDateOptions('weekday', String(selectedWeekday), workDays, doctorSchedulesData, doctorSchedule)
+        return resolveDateOptions(datePreset, undefined, workDays, doctorSchedulesData, doctorSchedule)
+    }, [datePreset, selectedWeekday, workDays, doctorSchedulesData, doctorSchedule])
 
-    // Sincronizar fecha externa
     useEffect(() => {
         if (externalDate) {
             setDatePreset('specific')
@@ -275,33 +299,40 @@ export default function AppointmentForm({
     }, [externalDate])
 
     const resolvedDate = useMemo(() => {
-        if (datePreset === 'specific') return specificDate
+        if (datePreset === 'specific') return specificDate;
         if (datePreset === 'weekday') {
-            const day = WEEKDAYS.find(w => w.value === selectedWeekday)
-            return day ? day.label : ''
+            if (dateOptions.length > 0) return format(dateOptions[0], 'yyyy-MM-dd');
+            return '';
         }
-        return selectedDateFromList
-    }, [datePreset, specificDate, selectedWeekday, selectedDateFromList])
+        return selectedDateFromList;
+    }, [datePreset, specificDate, selectedDateFromList, dateOptions])
 
     // ── Hora ─────────────────────────────────────────────────────────────────
-    const [timeSlot, setTimeSlot] = useState<TimeSlot>('specific')
+    const [timeSlot, setTimeSlot] = useState<TimeSlot>('morning')
     const [selectedHourFromList, setSelectedHourFromList] = useState('')
-    const [specificHour, setSpecificHour] = useState('')
 
-    // Rango de horas del doctor para el día seleccionado
     const doctorTimeRange = useMemo(() => {
         if (!doctorSchedule || doctorSchedule.length === 0 || !resolvedDate) return null
-        // Determinar el día de la semana de la fecha seleccionada
         let dayOfWeek: number | null = null
-        // Si es YYYY-MM-DD
         if (/^\d{4}-\d{2}-\d{2}$/.test(resolvedDate)) {
             const d = new Date(resolvedDate + 'T00:00:00')
             dayOfWeek = d.getDay()
         }
         if (dayOfWeek === null) return null
-        const schedForDay = doctorSchedule.filter(s => s.day_of_week === dayOfWeek)
+        
+        let schedForDay = doctorSchedule.filter(s => s.day_of_week === dayOfWeek)
+        
+        if (doctorSchedulesData && doctorSchedulesData.length > 0) {
+            const dateObj = new Date(resolvedDate + 'T00:00:00')
+            const activeSchedule = findActiveSchedule(dateObj, doctorSchedulesData)
+            if (activeSchedule) {
+                schedForDay = schedForDay.filter(s => s.doctorScheduleId === activeSchedule.id)
+            } else {
+                return null // Fuera de periodo
+            }
+        }
+        
         if (schedForDay.length === 0) return null
-        // Tomar el rango más amplio (min start, max end)
         const starts = schedForDay.map(s => {
             const clean = s.start_time.replace('Z', '').substring(11, 16)
             return clean || s.start_time.substring(0, 5)
@@ -311,7 +342,7 @@ export default function AppointmentForm({
             return clean || s.end_time.substring(0, 5)
         })
         return { start: starts.sort()[0], end: ends.sort().reverse()[0] }
-    }, [doctorSchedule, resolvedDate])
+    }, [doctorSchedule, doctorSchedulesData, resolvedDate])
 
     const hourOptions = useMemo(() => {
         let hours = getHoursForSlot(timeSlot)
@@ -320,17 +351,15 @@ export default function AppointmentForm({
             const currentHourStr = format(new Date(), 'HH:mm')
             hours = hours.filter(h => h > currentHourStr)
         }
-        // Filtrar por horario de trabajo del doctor
         if (doctorTimeRange) {
             hours = hours.filter(h => h >= doctorTimeRange.start && h < doctorTimeRange.end)
         }
-        // Filtrar horas ocupadas por citas existentes
         if (resolvedDate && doctorAppointments.length > 0) {
-            const dateStr = resolvedDate // YYYY-MM-DD
+            const dateStr = resolvedDate 
             const occupiedStarts = doctorAppointments
                 .filter(apt => {
                     const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
-                    return cleanDate.startsWith(dateStr) && apt.status.name !== 'Cancelada'
+                    return cleanDate.startsWith(dateStr) && apt.status?.name !== 'Cancelada'
                 })
                 .map(apt => {
                     const cleanDate = apt.date_time.replace('Z', '').replace(' ', 'T')
@@ -338,17 +367,13 @@ export default function AppointmentForm({
                 })
             
             hours = hours.filter(h => {
-                // Parsear hora actual de la opción
                 const [h_hh, h_mm] = h.split(':').map(Number)
                 const optTime = h_hh * 60 + h_mm
-                
-                // Verificar si choca con alguna cita existente (asumiendo duración de 15 mins o margen)
                 for (const occ of occupiedStarts) {
                     const [o_hh, o_mm] = occ.split(':').map(Number)
                     const occTime = o_hh * 60 + o_mm
-                    // Si la diferencia absoluta es menor a 15 minutos, hay solapamiento
                     if (Math.abs(optTime - occTime) < 15) {
-                        return false // Hora bloqueada
+                        return false 
                     }
                 }
                 return true
@@ -358,25 +383,22 @@ export default function AppointmentForm({
     }, [timeSlot, resolvedDate, doctorTimeRange, doctorAppointments])
 
     const resolvedHour = useMemo(() => {
-        if (timeSlot === 'any') return 'Cualquiera'
-        if (timeSlot === 'specific') return specificHour
         return selectedHourFromList
-    }, [timeSlot, specificHour, selectedHourFromList])
+    }, [selectedHourFromList])
 
     // ── Doctor ↔ Especialidad ────────────────────────────────────────────────
     const filteredDoctorOptions: SelectOption[] = useMemo(() => {
         if (!especialidad) return doctorOptionsAll
         return doctors
-            .filter(d => d.specialty.name === String(especialidad))
+            .filter(d => d.specialty.id === Number(especialidad))
             .map(d => ({ value: d.id, label: `${d.user.name} - ${d.user.ci}` }))
     }, [doctors, doctorOptionsAll, especialidad])
 
     const handleEspecialidadChange = useCallback((val: string | number) => {
         setEspecialidad(val)
-        // Si el doctor seleccionado no pertenece a esta especialidad, resetear
         if (val && doctorId) {
             const doc = doctors.find(d => d.id === Number(doctorId))
-            if (doc && doc.specialty.name !== String(val)) {
+            if (doc && doc.specialty.id !== Number(val)) {
                 setDoctorId('')
             }
         }
@@ -384,10 +406,9 @@ export default function AppointmentForm({
 
     const handleDoctorChange = useCallback((val: string | number) => {
         setDoctorId(val)
-        // Auto-seleccionar la especialidad del doctor
         if (val) {
             const doc = doctors.find(d => d.id === Number(val))
-            if (doc) setEspecialidad(doc.specialty.name)
+            if (doc) setEspecialidad(doc.specialty.id)
         }
         onDoctorChange?.(val)
     }, [doctors, onDoctorChange])
@@ -403,7 +424,6 @@ export default function AppointmentForm({
     const handleTimeSlotChange = (slot: TimeSlot) => {
         setTimeSlot(slot)
         setSelectedHourFromList('')
-        setSpecificHour('')
     }
 
     // ── Validation ───────────────────────────────────────────────────────────
@@ -415,53 +435,97 @@ export default function AppointmentForm({
         resolvedHour
     )
 
-    // ── Submit ───────────────────────────────────────────────────────────────
-    const handleSubmit = async () => {
+    // ── 1. PRE-SUBMIT (ABRE EL MODAL DE CONFIRMACIÓN) ────────────────────────
+    const handlePreSubmit = () => {
         if (!isValid) return
-        setLoading(true)
         setFeedback(null)
-        try {
-            const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
-            const dateTimeString = `${resolvedDate}T${horaFinal}:00`;
-            const dateObj = new Date(dateTimeString);
 
-            // Validation against past dates
-            const now = new Date();
-            if (resolvedHour === 'Cualquiera') {
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-                if (selectedDay < today) {
-                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
-                    setLoading(false);
-                    return;
-                }
-            } else {
-                if (dateObj < now) {
-                    setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
-                    setLoading(false);
-                    return;
-                }
+        const horaFinal = resolvedHour === 'Cualquiera' ? '08:00' : resolvedHour;
+        const [year, month, day] = resolvedDate.split('-').map(Number);
+        const [hour, minute] = horaFinal.split(':').map(Number);
+        const dateObj = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+        const now = new Date();
+
+        if (isNaN(dateObj.getTime())) {
+            setFeedback({ type: 'error', msg: 'La fecha seleccionada no es válida.' });
+            return;
+        }
+
+        if (resolvedHour === 'Cualquiera') {
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const selectedDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            if (selectedDay < today) {
+                setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha pasada.' });
+                return;
             }
+        } else {
+            if (dateObj < now) {
+                setFeedback({ type: 'error', msg: 'No se puede pautar una cita en una fecha y hora pasada.' });
+                return;
+            }
+        }
 
+        // Validar que la fecha elegida manualmente cae en un ciclo activo
+        if (doctorSchedulesData && doctorSchedulesData.length > 0) {
+            const activeSchedule = findActiveSchedule(dateObj, doctorSchedulesData);
+            if (!activeSchedule) {
+                setFeedback({ type: 'error', msg: 'La fecha seleccionada no pertenece a un ciclo de horarios vigente del doctor.' });
+                return;
+            }
+        }
 
-            const dateTimeUTC = `${resolvedDate}T${horaFinal}:00.000Z`;
+        const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
+        const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
+        const patientName = filteredPatientOptions.find(p => String(p.value) === String(patientId))?.label || 'Paciente';
 
-            const selectedDoctor = doctors.find(d => d.id === Number(doctorId));
-            const consultationPrice = selectedDoctor?.specialty.consultation_price || 0;
+        // Guardamos todos los datos en un estado temporal y abrimos la confirmación
+        setPendingAppointmentData({
+            dateObj,
+            horaFinal,
+            consultationPrice,
+            selectedDoctor,
+            patientName: patientName.split(' - ')[0],
+            formattedDate: format(dateObj, 'dd/MM/yyyy')
+        });
+
+        setIsConfirmModalOpen(true);
+    }
+
+    // ── 2. CONFIRM SUBMIT (LLAMA A LA BD) ────────────────────────────────────
+    const handleConfirmSubmit = async () => {
+        if (!pendingAppointmentData) return;
+        
+        setLoading(true)
+        setIsConfirmModalOpen(false); // Cerramos confirmación mientras carga
+
+        try {
+            const { dateObj, horaFinal, consultationPrice, selectedDoctor, patientName, formattedDate } = pendingAppointmentData;
+            const dateTimeUTC = dateObj.toISOString();
 
             await createAppointment({
                 patientId: Number(patientId),
-                doctorId: Number(doctorId),
+                doctorId: selectedDoctor ? Number(selectedDoctor.id) : undefined,
+                specialtyId: !selectedDoctor && especialidad ? Number(especialidad) : undefined,
                 date_time: dateTimeUTC,
                 reson_visit: motivo || undefined,
                 statusId: 1,
                 typeId: Number(appointmentTypeId),
                 price: consultationPrice
-            })
+            });
 
-            setFeedback({ type: 'success', msg: 'Cita pautada correctamente. Pendiente de confirmación.' })
-            onSuccess?.()
-            setMotivo('')
+            // Llenamos los datos para el Comprobante Final
+            setVoucherData({
+                patientName: patientName,
+                doctorName: selectedDoctor?.user.name || 'Doctor',
+                specialty: selectedDoctor?.specialty.name || 'Consulta General',
+                date: formattedDate,
+                time: horaFinal,
+                price: consultationPrice
+            });
+
+            setIsVoucherModalOpen(true); // Abrimos la factura
+            setPendingAppointmentData(null); // Limpiamos temporal
+
         } catch (err: any) {
             console.error('Error creando cita:', err)
             setFeedback({ type: 'error', msg: err.message || 'No se pudo pautar la cita. Intenta de nuevo.' })
@@ -474,7 +538,6 @@ export default function AppointmentForm({
     // ── Render ───────────────────────────────────────────────────────────────
     return (
         <StaticCard className="lg:col-span-1 flex flex-col gap-1">
-            {/* Header */}
             <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 rounded-lg bg-primary/10">
                     <FaCalendarPlus className="w-4 h-4 text-primary" />
@@ -490,7 +553,6 @@ export default function AppointmentForm({
             ) : (
                 <div className="space-y-4">
                     
-                    {/* ── Paciente ── */}
                     {role !== 'pacient' && (
                         <SearchableSelect
                             label="Paciente *"
@@ -503,18 +565,6 @@ export default function AppointmentForm({
                         />
                     )}
 
-                    {/* ── Paciente ──
-                    <SearchableSelect
-                        label="Paciente *"
-                        placeholder={filteredPatientOptions.length === 0 ? 'Sin pacientes disponibles' : '— Seleccionar paciente —'}
-                        options={filteredPatientOptions}
-                        value={patientId}
-                        onChange={(val) => setPatientId(val)}
-                        name="patient"
-                        searchPlaceholder="Buscar paciente por nombre o CI…"
-                    /> */}
-
-                    {/* ── Tipo de Cita ── */}
                     <Select
                         label="Tipo de Cita *"
                         placeholder="— Seleccionar tipo —"
@@ -524,7 +574,6 @@ export default function AppointmentForm({
                         name="appointmentType"
                     />
 
-                    {/* ── Especialidad ── */}
                     <Select
                         label="Especialidad"
                         placeholder="Cualquiera"
@@ -534,7 +583,6 @@ export default function AppointmentForm({
                         name="especialidad"
                     />
 
-                    {/* ── Doctor ── */}
                     <SearchableSelect
                         label="Doctor"
                         placeholder={filteredDoctorOptions.length === 0 ? 'Sin doctores disponibles' : '— Seleccionar doctor —'}
@@ -545,7 +593,6 @@ export default function AppointmentForm({
                         searchPlaceholder="Buscar doctor…"
                     />
 
-                    {/* ── Fecha ── */}
                     <div className="rounded-lg border border-primary-300 bg-primary-50/50 p-3 space-y-3">
                         <label className="block text-sm font-medium text-primary-700">
                             Fecha <span className="text-red-500 ml-0.5">*</span>
@@ -558,7 +605,6 @@ export default function AppointmentForm({
                             <Chip active={datePreset === 'specific'} onClick={() => handleDatePresetChange('specific')}>Fecha específica</Chip>
                         </div>
 
-                        {/* Selector de día específico */}
                         {datePreset === 'weekday' && (
                             <Select
                                 label="Día"
@@ -569,7 +615,6 @@ export default function AppointmentForm({
                             />
                         )}
 
-                        {/* Grid de días (this_week / this_month) */}
                         {datePreset !== 'weekday' && datePreset !== 'specific' && dateOptions.length > 0 && (
                             <div>
                                 <p className="text-xs text-primary-500 mb-1.5">Selecciona el día</p>
@@ -600,7 +645,6 @@ export default function AppointmentForm({
                             </div>
                         )}
 
-                        {/* Input fecha específica */}
                         {datePreset === 'specific' && (
                             <div className={dateFlash ? 'date-field-flash' : ''} key={dateFlash ? 'flash' : 'idle'}>
                                 <Field
@@ -623,7 +667,6 @@ export default function AppointmentForm({
                         )}
                     </div>
 
-                    {/* ── Hora ── */}
                     <div className="rounded-lg border border-primary-300 bg-primary-50/50 p-3 space-y-3">
                         <label className="block text-sm font-medium text-primary-700">
                             Hora <span className="text-red-500 ml-0.5">*</span>
@@ -633,11 +676,8 @@ export default function AppointmentForm({
                             <Chip active={timeSlot === 'morning'} sub="7 – 12" onClick={() => handleTimeSlotChange('morning')}>🌅 Mañana</Chip>
                             <Chip active={timeSlot === 'afternoon'} sub="12 – 18" onClick={() => handleTimeSlotChange('afternoon')}>☀️ Tarde</Chip>
                             <Chip active={timeSlot === 'evening'} sub="18 – 21" onClick={() => handleTimeSlotChange('evening')}>🌆 Noche</Chip>
-                            <Chip active={timeSlot === 'any'} onClick={() => handleTimeSlotChange('any')}>🔄 Cualquiera</Chip>
-                            <Chip active={timeSlot === 'specific'} onClick={() => handleTimeSlotChange('specific')}>🕐 Específica</Chip>
                         </div>
 
-                        {/* Indicador de horario del doctor */}
                         {doctorTimeRange && (
                             <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5">
                                 <span>🩺</span>
@@ -645,7 +685,6 @@ export default function AppointmentForm({
                             </div>
                         )}
 
-                        {/* Grid de horas por franja */}
                         {hourOptions.length > 0 && (
                             <div className="grid grid-cols-4 gap-1">
                                 {hourOptions.map(h => (
@@ -663,28 +702,8 @@ export default function AppointmentForm({
                                 ))}
                             </div>
                         )}
-
-                        {/* Cualquiera info */}
-                        {timeSlot === 'any' && (
-                            <div className="flex items-center gap-2 text-sm text-primary-700 font-medium bg-primary-100 border border-primary-200 rounded-lg px-3 py-2">
-                                <span>🔄</span>
-                                <span>Se asignará la hora según disponibilidad del doctor.</span>
-                            </div>
-                        )}
-
-                        {/* Input hora específica */}
-                        {timeSlot === 'specific' && (
-                            <Field
-                                name="specificHour"
-                                type="time"
-                                placeholder="Ej: 10:30"
-                                value={specificHour}
-                                onChange={(e) => setSpecificHour(e.target.value)}
-                            />
-                        )}
                     </div>
 
-                    {/* ── Motivo ── */}
                     <div className="flex flex-col gap-1">
                         <label className="font-medium text-sm text-primary-700 px-1">
                             Motivo <span className="text-primary-400 text-xs font-normal">(Opcional)</span>
@@ -698,10 +717,9 @@ export default function AppointmentForm({
                         />
                     </div>
 
-                    {/* ── Feedback ── */}
                     {feedback && (
                         <div
-                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-60"
+                            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[150]"
                             style={{ animation: 'toastSlideUpCenter 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
                         >
                             <div className={`px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border ${feedback.type === 'success'
@@ -726,17 +744,77 @@ export default function AppointmentForm({
                         </div>
                     )}
 
-                    {/* ── Submit ── */}
+                    {/* BOTÓN PRINCIPAL (LLAMA A LA CONFIRMACIÓN) */}
                     <Button
-                        label={loading ? 'Pautando…' : 'Pautar Cita'}
+                        label={loading ? 'Procesando…' : 'Pautar Cita'}
                         variant={ButtonTheme.PRIMARY}
                         size="lg"
                         adaptive
                         disabled={!isValid || loading}
                         loading={loading}
-                        onClick={handleSubmit}
+                        onClick={handlePreSubmit}
                         className="mt-1"
                     />
+
+                    {/* ── MODAL DE CONFIRMACIÓN ── */}
+                    <Modal 
+                        isOpen={isConfirmModalOpen} 
+                        onClose={() => setIsConfirmModalOpen(false)} 
+                        title="Confirmar Agendamiento"
+                    >
+                        {pendingAppointmentData && (
+                            <div className="space-y-4 text-sm text-primary-800">
+                                <div className="flex items-center gap-3 border-b border-primary-100 pb-4">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                        <FaCircleQuestion className="text-primary-600 text-xl" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-base">¿Estás seguro de agendar esta cita?</p>
+                                        <p className="text-cool-gray-50">Por favor verifica los datos antes de continuar.</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-primary-50 p-4 rounded-xl space-y-2">
+                                    <p><span className="font-semibold">Paciente:</span> {pendingAppointmentData.patientName}</p>
+                                    <p><span className="font-semibold">Médico:</span> {pendingAppointmentData.doctorName}</p>
+                                    <p className="flex justify-between border-t border-primary-200 pt-2 mt-2">
+                                        <span className="font-semibold">Fecha y Hora:</span> 
+                                        <span className="font-bold text-primary-700">{pendingAppointmentData.formattedDate} a las {pendingAppointmentData.horaFinal}</span>
+                                    </p>
+                                    <p className="flex justify-between">
+                                        <span className="font-semibold">Monto Estimado:</span> 
+                                        <span className="font-bold text-emerald-600">${Number(pendingAppointmentData.consultationPrice).toFixed(2)}</span>
+                                    </p>
+                                </div>
+
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <Button 
+                                        label="Cancelar" 
+                                        variant={ButtonTheme.SECONDARY} 
+                                        onClick={() => setIsConfirmModalOpen(false)} 
+                                    />
+                                    <Button 
+                                        label="Confirmar y Pautar" 
+                                        variant={ButtonTheme.PRIMARY} 
+                                        onClick={handleConfirmSubmit} 
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </Modal>
+
+                    {/* ── MODAL DEL VOUCHER ── */}
+                    <AppointmentVoucherModal 
+                        isOpen={isVoucherModalOpen}
+                        onClose={() => {
+                            setIsVoucherModalOpen(false);
+                            onSuccess?.();
+                            setMotivo('');
+                            setVoucherData(null);
+                        }}
+                        appointmentData={voucherData}
+                    />
+
                 </div>
             )}
         </StaticCard>

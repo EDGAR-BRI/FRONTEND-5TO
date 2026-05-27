@@ -13,9 +13,10 @@ export const getInitials = (name: string | null): string | null => {
         .join("");
 };
 export function convertirAFechaISO(fechaStr: string): string {
-    // Si ya viene en formato aaaa-mm-dd, devolverlo directamente
+    // Si ya viene en formato aaaa-mm-dd, convertirlo a dd-mm-aaaa
     if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-        return fechaStr;
+        const [año, mes, dia] = fechaStr.split('-');
+        return `${dia}-${mes}-${año}`;
     }
     
     // Intentar parsear la fecha
@@ -31,7 +32,7 @@ export function convertirAFechaISO(fechaStr: string): string {
     const mes = String(fecha.getMonth() + 1).padStart(2, '0');
     const dia = String(fecha.getDate()).padStart(2, '0');
     
-    return `${año}-${mes}-${dia}`;
+    return `${dia}-${mes}-${año}`;
 }
 export function convertirAHHMM(value: string): string {
     if (/^\d{2}:\d{2}$/.test(value)) return value
@@ -66,6 +67,8 @@ export function formatAppointmentsByDoctorId(
     patientName: string
     reason: string
     status: string
+    statusId: number
+    doctorId: number
     type: string
     price: string
 }[]> {
@@ -89,6 +92,8 @@ export function formatAppointmentsByDoctorId(
             patientName: a.patient?.user?.name,
             reason: a.reson_visit,
             status,
+            statusId: a.status.id,
+            doctorId: a.doctorId,
             type: a.type.name,
             price: `$${a.price}`,
         })

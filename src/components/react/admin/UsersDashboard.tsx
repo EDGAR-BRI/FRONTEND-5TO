@@ -51,6 +51,7 @@ export default function UsersDashboard() {
                     roleId: user.roleId,
                     role: user.role,
                     status: user.status,
+                    doctor: user.doctor,
                 })));
 
                 setRoleOptions(
@@ -108,6 +109,7 @@ export default function UsersDashboard() {
                 roleId: user.roleId,
                 role: user.role,
                 status: user.status,
+                doctor: user.doctor,
             })));
         } finally {
             setIsLoading(false);

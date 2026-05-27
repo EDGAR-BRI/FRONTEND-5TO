@@ -52,6 +52,7 @@ const mapUser = (user: UserDto): AdminUserView => ({
 	roleId: user.roleId,
 	role: normalizeRoleCode(user.role?.code),
 	status: user.active ? "ACTIVO" : "INACTIVO",
+	doctor: user.doctor,
 });
 
 export const listAdminUsers = async (): Promise<AdminUserView[]> => {
@@ -67,11 +68,50 @@ export const listAdminRoles = async (): Promise<RoleDto[]> => {
 	return readEnvelopeData<RoleDto[]>(response);
 };
 
+export const createAdminRole = async (payload: {
+	name: string;
+	code: string;
+	base_salary?: number;
+}) => {
+	const response = await api("/auth/role", {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<RoleDto>(response);
+};
+
+export const updateAdminRole = async (id: number, payload: {
+	name?: string;
+	code?: string;
+	base_salary?: number | null;
+}) => {
+	const response = await api(`/auth/role/${id}`, {
+		method: "PUT",
+		body: JSON.stringify(payload),
+	});
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<RoleDto>(response);
+};
+
+export const deleteAdminRole = async (id: number) => {
+	const response = await api(`/auth/role/${id}`, { method: "DELETE" });
+	if (!response.ok) {
+		throw new Error(await readEnvelopeErrorMessage(response));
+	}
+	return readEnvelopeData<RoleDto>(response);
+};
+
 export const createAdminUser = async (payload: {
 	ci: string;
 	name: string;
 	password: string;
 	roleId: number;
+	specialtyId?: number;
 }) => {
 	const created = await createUser(payload);
 	return mapUser(created);
@@ -84,6 +124,7 @@ export const updateAdminUser = async (
 		name?: string;
 		password?: string;
 		roleId?: number;
+		specialtyId?: number;
 	}
 ) => {
 	const updated = await updateUser(id, payload);

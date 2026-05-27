@@ -1,5 +1,160 @@
-import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
+﻿import type { Invoice } from '@/lib/services/finance/invoice/invoice.interface';
 import { convertirAFechaISO } from './helper_functions';
+
+export function printInvoiceThermal(invoice: Invoice) {
+    const patientName = invoice.patient.name ?? invoice.patient.user?.name ?? 'No registrado';
+    const patientCI = invoice.patient.ci ?? invoice.patient.user?.ci ?? '—';
+    const receptionistName = invoice.receptionist.name;
+    const invoiceDate = convertirAFechaISO(invoice.exchangeRate.createdAt);
+    const rate = Number(invoice.exchangeRate.rate);
+
+    const payments = Array.isArray(invoice.payments) ? invoice.payments : [invoice.payments];
+    const totalUSD = Number(invoice.total_usd);
+    const totalBs = (totalUSD * rate).toFixed(2);
+    const taxName = invoice.tax?.name ?? '—';
+    const taxRate = invoice.tax?.rate ? `${Number(invoice.tax.rate)}%` : '—';
+    const totalIGTF = payments.reduce((sum, p) => sum + Number(p.igtf_amount || 0), 0);
+
+    const paymentRows = payments.map(p => {
+        const methodName = p.paymentMethod?.name ?? '—';
+        const currency = p.paymentMethod?.currency?.toUpperCase() ?? 'USD';
+        const isVES = currency.includes('VES') || currency.includes('BS') || currency.includes('BOLIVAR');
+        const amountUSD = Number(p.amount_paid);
+        const amountDisplay = isVES
+            ? `Bs ${(amountUSD * rate).toFixed(2)}`
+            : `$${amountUSD.toFixed(2)}`;
+        const igtfDisplay = Number(p.igtf_amount) > 0 ? `$${Number(p.igtf_amount).toFixed(2)}` : '—';
+        return `<tr><td>${methodName}</td><td>${amountDisplay}</td><td>${igtfDisplay}</td></tr>`;
+    }).join('');
+
+    const widthPx = 220;
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Factura #${invoice.id}</title>
+<style>
+@page { size: auto; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #000;
+    background: #fff;
+    width: ${widthPx}px;
+    padding: 6px;
+    line-height: 1.3;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.center { text-align: center; }
+.bold { font-weight: bold; }
+.divider { border-top: 1px dashed #000; margin: 4px 0; }
+.row { display: flex; justify-content: space-between; }
+table { width: 100%; border-collapse: collapse; font-size: 10px; }
+td { padding: 2px 0; vertical-align: top; }
+td:nth-child(2), td:nth-child(3) { text-align: right; }
+.big { font-size: 13px; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="center bold">VITALFE & ALEGRIA</div>
+<div class="center" style="font-size:8px;">Centro Medico</div>
+<div class="center">========================</div>
+<div class="center bold" style="font-size:12px;">FACTURA</div>
+<div class="center">Nro: #${invoice.id}</div>
+<div class="center">${invoiceDate}</div>
+<div class="divider"></div>
+<div><span class="bold">PACIENTE:</span> ${patientName}</div>
+<div><span class="bold">C.I.:</span> ${patientCI}</div>
+<div><span class="bold">CAJERA:</span> ${receptionistName}</div>
+<div class="divider"></div>
+<table>
+<tr><td class="bold">METODO</td><td class="bold">MONTO</td><td class="bold">IGTF</td></tr>
+${paymentRows}
+</table>
+<div class="divider"></div>
+${invoice.tax ? `<div class="row"><span>Impuesto ${taxRate}</span><span>${taxName}</span></div>` : ''}
+${totalIGTF > 0 ? `<div class="row"><span>Total IGTF</span><span>$${totalIGTF.toFixed(2)}</span></div>` : ''}
+<div class="row big"><span>TOTAL USD</span><span>$${totalUSD.toFixed(2)}</span></div>
+<div class="row big"><span>TOTAL BS</span><span>Bs ${totalBs}</span></div>
+<div class="divider"></div>
+<div class="center" style="font-size:8px;">Tasa: 1 USD = ${rate.toFixed(2)} Bs</div>
+<div class="center" style="font-size:8px;">========================</div>
+<div class="center" style="font-size:8px;">Doc. generado por VitalFe</div>
+<script>window.onload = function() { window.print(); };</script>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+    }
+}
+
+export function printAppointmentThermal(data: {
+    patientName: string;
+    doctorName: string;
+    specialty: string;
+    date: string;
+    time: string;
+    price: number;
+}) {
+    const widthPx = 220;
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Comprobante de Cita</title>
+<style>
+@page { size: auto; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #000;
+    background: #fff;
+    width: ${widthPx}px;
+    padding: 6px;
+    line-height: 1.3;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.center { text-align: center; }
+.bold { font-weight: bold; }
+.divider { border-top: 1px dashed #000; margin: 4px 0; }
+.row { display: flex; justify-content: space-between; }
+.big { font-size: 13px; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="center bold">VITALFE & ALEGRIA</div>
+<div class="center" style="font-size:8px;">Comprobante de Cita</div>
+<div class="center">========================</div>
+<div><span class="bold">PACIENTE:</span> ${data.patientName}</div>
+<div class="divider"></div>
+<div><span class="bold">ESPECIALIDAD:</span> ${data.specialty}</div>
+<div><span class="bold">DOCTOR:</span> ${data.doctorName}</div>
+<div class="divider"></div>
+<div class="row"><span><span class="bold">FECHA:</span></span><span>${data.date}</span></div>
+<div class="row"><span><span class="bold">HORA:</span></span><span>${data.time}</span></div>
+<div class="divider"></div>
+<div class="row big"><span>PRECIO:</span><span>$${Number(data.price).toFixed(2)}</span></div>
+<div class="center" style="font-size:8px;">========================</div>
+<div class="center" style="font-size:8px;">Presente este comprobante en caja</div>
+<script>window.onload = function() { window.print(); };</script>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+    }
+}
 
 export function printInvoice(invoice: Invoice) {
     const patientName = invoice.patient.name ?? invoice.patient.user?.name ?? 'No registrado';
@@ -8,7 +163,6 @@ export function printInvoice(invoice: Invoice) {
     const invoiceDate = convertirAFechaISO(invoice.exchangeRate.createdAt);
     const rate = Number(invoice.exchangeRate.rate);
 
-    // Normalize payments to array
     const payments = Array.isArray(invoice.payments) ? invoice.payments : [invoice.payments];
 
     const totalUSD = Number(invoice.total_usd);
@@ -20,11 +174,10 @@ export function printInvoice(invoice: Invoice) {
 
     const statusName = invoice.status?.name ?? '—';
 
-    // Build payment rows
     const paymentRows = payments.map(p => {
         const methodName = p.paymentMethod?.name ?? '—';
         const currency = p.paymentMethod?.currency?.toUpperCase() ?? 'USD';
-        const isVES = currency.includes('VES') || currency.includes('BS') || currency.includes('BOLÍVAR') || currency.includes('BOLIVAR');
+        const isVES = currency.includes('VES') || currency.includes('BS') || currency.includes('BOLIVAR');
         const amountUSD = Number(p.amount_paid);
         const amountDisplay = isVES
             ? `Bs ${(amountUSD * rate).toFixed(2)} <span style="color:#6b7280;font-size:11px;">(≈ $${amountUSD.toFixed(2)})</span>`

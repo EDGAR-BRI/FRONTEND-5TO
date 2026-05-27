@@ -4,7 +4,6 @@ import useSWR from "swr";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { DataTable, type Column } from "@/components/react/primary/DataTable";
-import { Badge } from "@/components/react/primary/Badge";
 import { StatsCard } from "@/components/react/primary/StatsCard";
 import { listExpensePayments } from "@/lib/services/expenses/expensePayment/expensePayment.service";
 import type { ExpensePaymentRecord } from "@/lib/services/expenses/expensePayment/expensePayment.interface";
@@ -28,6 +27,41 @@ const money = (value: number, currency = "USD") =>
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(Number(value || 0));
+
+const normalizeCurrency = (currency?: string | null) => (currency?.toUpperCase() === "VES" ? "VES" : "USD");
+
+const convertAmount = (amount: number, fromCurrency: string, toCurrency: "USD" | "VES", rate?: number | null) => {
+    const normalizedFrom = normalizeCurrency(fromCurrency);
+    const normalizedRate = Number(rate || 0);
+    const baseAmount = Number(amount || 0);
+
+    if (normalizedFrom === toCurrency) {
+        return baseAmount;
+    }
+
+    if (!normalizedRate) {
+        return 0;
+    }
+
+    if (normalizedFrom === "USD" && toCurrency === "VES") {
+        return baseAmount * normalizedRate;
+    }
+
+    if (normalizedFrom === "VES" && toCurrency === "USD") {
+        return baseAmount / normalizedRate;
+    }
+
+    return baseAmount;
+};
+
+const dualAmount = (amount: number, currency?: string | null, rate?: number | null) => {
+    const normalizedCurrency = normalizeCurrency(currency);
+
+    return {
+        usd: convertAmount(amount, normalizedCurrency, "USD", rate),
+        ves: convertAmount(amount, normalizedCurrency, "VES", rate),
+    };
+};
 
 export const PaidServicesHistoryDashboard = () => {
     const { data, error, isLoading, mutate } = useSWR<ExpensePaymentRecord[]>("paid-services-history", listExpensePayments);
@@ -111,18 +145,18 @@ export const PaidServicesHistoryDashboard = () => {
 
     const columns: Column<ExpensePaymentRecord>[] = useMemo(() => [
         {
-            header: "PAYMENT",
+            header: "PAGO",
             accessorKey: "id",
             cell: (r) => (
                 <div className="flex flex-col gap-1">
                     <span className="font-semibold text-primary-900">#{r.id}</span>
-                    <span className="text-xs text-cool-gray-50">{r.invoiceExpense?.category?.name ?? "Sin categoria"}</span>
+                    <span className="text-xs text-cool-gray-50">{r.invoiceExpense?.category?.name ?? "Sin categoría"}</span>
                     <span className="text-xs text-cool-gray-50">{r.date_at ? format(new Date(r.date_at), "dd MMM yyyy · HH:mm", { locale: es }) : "Sin fecha"}</span>
                 </div>
             ),
         },
         {
-            header: "SUPPLIER / INFO",
+            header: "PROVEEDOR / INFO",
             accessorKey: "invoiceExpenseId",
             cell: (r) => (
                 <div className="flex flex-col gap-1 min-w-0">
@@ -132,21 +166,21 @@ export const PaidServicesHistoryDashboard = () => {
             ),
         },
         {
-            header: "AMOUNT",
+            header: "MONTO",
             accessorKey: "amount",
             cell: (r) => {
-                const currency = r.paymentMethod?.currency ?? "USD";
+                const amounts = dualAmount(r.amount, r.paymentMethod?.currency, r.exchangeRate?.rate);
 
                 return (
                     <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-cool-gray-90">{money(r.amount, currency === "VES" ? "VES" : currency)}</span>
-                        <span className="text-xs text-cool-gray-50">Total invoice: {money(r.invoiceExpense?.total_amount ?? 0, currency === "VES" ? "VES" : currency)}</span>
+                        <span className="font-semibold text-cool-gray-90">{money(amounts.usd)}</span>
+                        <span className="text-xs text-cool-gray-50 break-words whitespace-normal">Bs. {money(amounts.ves, "VES")}</span>
                     </div>
                 );
             },
         },
         {
-            header: "ACTIONS",
+            header: "ACCIONES",
             accessorKey: "id",
             align: "right",
             cell: (r) => (
@@ -158,7 +192,7 @@ export const PaidServicesHistoryDashboard = () => {
                     }}
                     className="inline-flex items-center gap-1 rounded-lg border border-primary-200 bg-white px-3 py-2 text-xs font-semibold text-primary-700 hover:border-primary-400 hover:bg-primary-50 transition-colors"
                 >
-                    View detail
+                    Ver detalle
                     <FaArrowRight size={11} />
                 </button>
             ),
@@ -168,13 +202,13 @@ export const PaidServicesHistoryDashboard = () => {
     if (error) {
         return (
             <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
-                Could not load paid services history.
+                No se pudo cargar el historial de servicios pagados.
                 <button
                     type="button"
                     onClick={() => mutate()}
                     className="ml-3 inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 transition-colors"
                 >
-                    Retry
+                    Reintentar
                     <FaRotateRight size={12} />
                 </button>
             </div>
@@ -186,7 +220,7 @@ export const PaidServicesHistoryDashboard = () => {
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                     <StatsCard
-                        title="Paid services"
+                        title="Servicios pagados"
                         value={stats.totalRecords}
                         color="primary"
                         icon={<FaReceipt size={18} />}
@@ -200,14 +234,15 @@ export const PaidServicesHistoryDashboard = () => {
                         variant="compact"
                     />
                     <StatsCard
-                        title="Total VES"
+                        title="Total Bs"
                         value={money(stats.totalVes, "VES")}
+                        valueClassName="text-lg xl:text-xl leading-tight break-words whitespace-normal"
                         color="primary"
                         icon={<FaFileInvoiceDollar size={18} />}
                         variant="compact"
                     />
                     <StatsCard
-                        title="Unique invoices"
+                        title="Facturas únicas"
                         value={stats.uniqueInvoices}
                         color="warning"
                         icon={<FaClock size={18} />}
@@ -219,8 +254,8 @@ export const PaidServicesHistoryDashboard = () => {
                     <div className="rounded-2xl border border-primary-200 bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden">
                         <div className="flex flex-col gap-4 border-b border-primary-200 bg-primary-50/70 px-5 py-4 md:flex-row md:items-center md:justify-between">
                             <div className="space-y-1">
-                                <h2 className="text-lg font-semibold text-primary-900">Paid services history</h2>
-                                <p className="text-sm text-cool-gray-60">Payments for services and related invoice info.</p>
+                                <h2 className="text-lg font-semibold text-primary-900">Historial de servicios pagados</h2>
+                                <p className="text-sm text-cool-gray-60">Pagos de servicios e información relacionada de la factura.</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -229,14 +264,14 @@ export const PaidServicesHistoryDashboard = () => {
                                     className="inline-flex items-center gap-2 rounded-xl border border-primary-200 bg-white px-3 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50 transition-colors"
                                 >
                                     <FaRotateRight size={13} />
-                                    Refresh
+                                    Actualizar
                                 </button>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-4 border-b border-primary-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
                             <label className="relative block w-full lg:max-w-md">
-                                <span className="sr-only">Search payments</span>
+                                <span className="sr-only">Buscar pagos</span>
                                 <FaMagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cool-gray-40" size={14} />
                                 <input
                                     type="search"
@@ -248,7 +283,7 @@ export const PaidServicesHistoryDashboard = () => {
                             </label>
 
                             <div className="flex flex-wrap gap-2">
-                                {/* place for future filters */}
+                                {/* espacio para filtros futuros */}
                             </div>
                         </div>
 
@@ -266,7 +301,7 @@ export const PaidServicesHistoryDashboard = () => {
             <div className={`fixed inset-0 z-40 transition ${isPanelOpen ? "pointer-events-auto" : "pointer-events-none"}`} aria-hidden={!isPanelOpen}>
                 <button
                     type="button"
-                    aria-label="Close detail panel"
+                    aria-label="Cerrar panel de detalle"
                     onClick={() => setIsPanelOpen(false)}
                     className={`absolute inset-0 bg-cool-gray-90/50 backdrop-blur-[2px] transition-opacity duration-300 ${isPanelOpen ? "opacity-100" : "opacity-0"}`}
                 />
@@ -275,21 +310,21 @@ export const PaidServicesHistoryDashboard = () => {
                     className={`absolute right-0 top-0 flex h-full w-full max-w-[min(92vw,32rem)] flex-col border-l border-primary-200 bg-white shadow-2xl transition-transform duration-300 ease-out ${isPanelOpen ? "translate-x-0" : "translate-x-full"}`}
                     role="dialog"
                     aria-modal="true"
-                    aria-labelledby="paid-service-detail-title"
+                        aria-labelledby="paid-service-detail-title"
                 >
                     {selected ? (
                         <>
                             <div className="flex items-start justify-between gap-4 border-b border-primary-200 bg-primary-50 px-5 py-4">
                                 <div className="space-y-1">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-500">Payment detail</p>
-                                    <h3 id="paid-service-detail-title" className="text-lg font-semibold text-primary-900">Payment #{selected.id}</h3>
-                                    <p className="text-sm text-cool-gray-60">Invoice #{selected.invoiceExpense?.id} · {selected.invoiceExpense?.category?.name}</p>
+                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-500">Detalle del pago</p>
+                                        <h3 id="paid-service-detail-title" className="text-lg font-semibold text-primary-900">Pago #{selected.id}</h3>
+                                        <p className="text-sm text-cool-gray-60">Factura #{selected.invoiceExpense?.id} · {selected.invoiceExpense?.category?.name}</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setIsPanelOpen(false)}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-200 bg-white text-primary-700 hover:bg-primary-50 transition-colors"
-                                    aria-label="Close detail"
+                                    aria-label="Cerrar detalle"
                                 >
                                     <FaXmark size={14} />
                                 </button>
@@ -298,36 +333,55 @@ export const PaidServicesHistoryDashboard = () => {
                             <div className="flex-1 space-y-5 overflow-y-auto p-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                     <div className="rounded-xl border border-primary-100 bg-primary-50/70 p-3">
-                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Supplier</p>
+                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Proveedor</p>
                                         <p className="mt-1 font-semibold text-primary-900">{selected.invoiceExpense?.supplier?.name ?? "Sin proveedor"}</p>
                                         <p className="text-xs text-cool-gray-60">{selected.invoiceExpense?.supplier?.contact ?? "Sin contacto"}</p>
                                     </div>
                                     <div className="rounded-xl border border-primary-100 bg-primary-50/70 p-3">
-                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Payment method</p>
+                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Método de pago</p>
                                         <p className="mt-1 font-semibold text-primary-900">{selected.paymentMethod?.name ?? "Método"}</p>
-                                        <p className="text-xs text-cool-gray-60">Currency: {selected.paymentMethod?.currency ?? "USD"}</p>
+                                        <p className="text-xs text-cool-gray-60">Moneda: {selected.paymentMethod?.currency ?? "USD"}</p>
                                     </div>
                                     <div className="rounded-xl border border-primary-100 bg-primary-50/70 p-3">
-                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Date</p>
+                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Fecha</p>
                                         <p className="mt-1 font-semibold text-primary-900">{selected.date_at ? format(new Date(selected.date_at), "dd MMM yyyy", { locale: es }) : "Sin fecha"}</p>
                                     </div>
                                     <div className="rounded-xl border border-primary-100 bg-primary-50/70 p-3">
-                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Exchange rate</p>
+                                        <p className="text-xs uppercase tracking-wide text-cool-gray-50">Tasa de cambio</p>
                                         <p className="mt-1 font-semibold text-primary-900">{selected.exchangeRate?.rate ? money(selected.exchangeRate.rate, "VES") : "Sin tasa"}</p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <StatsCard
-                                        title="Amount"
-                                        value={money(selected.amount, selected.paymentMethod?.currency === "VES" ? "VES" : (selected.paymentMethod?.currency ?? "USD"))}
+                                        title="Monto USD"
+                                        value={money(dualAmount(selected.amount, selected.paymentMethod?.currency, selected.exchangeRate?.rate).usd)}
                                         color="success"
                                         icon={<FaSackDollar size={16} />}
                                         variant="compact"
                                     />
                                     <StatsCard
-                                        title="Invoice total"
-                                        value={money(selected.invoiceExpense?.total_amount ?? 0, selected.paymentMethod?.currency === "VES" ? "VES" : (selected.paymentMethod?.currency ?? "USD"))}
+                                        title="Monto Bs"
+                                        value={money(dualAmount(selected.amount, selected.paymentMethod?.currency, selected.exchangeRate?.rate).ves, "VES")}
+                                        valueClassName="text-lg xl:text-xl leading-tight break-words whitespace-normal"
+                                        color="primary"
+                                        icon={<FaFileInvoiceDollar size={16} />}
+                                        variant="compact"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <StatsCard
+                                        title="Factura USD"
+                                        value={money(dualAmount(selected.invoiceExpense?.total_amount ?? 0, selected.paymentMethod?.currency, selected.exchangeRate?.rate).usd)}
+                                        color="success"
+                                        icon={<FaReceipt size={16} />}
+                                        variant="compact"
+                                    />
+                                    <StatsCard
+                                        title="Factura Bs"
+                                        value={money(dualAmount(selected.invoiceExpense?.total_amount ?? 0, selected.paymentMethod?.currency, selected.exchangeRate?.rate).ves, "VES")}
+                                        valueClassName="text-lg xl:text-xl leading-tight break-words whitespace-normal"
                                         color="primary"
                                         icon={<FaFileInvoiceDollar size={16} />}
                                         variant="compact"
@@ -337,17 +391,17 @@ export const PaidServicesHistoryDashboard = () => {
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2 text-sm font-semibold text-primary-900">
                                         <FaBoxesStacked size={14} />
-                                        Invoice info
+                                        Información de la factura
                                     </div>
                                     <div className="rounded-xl border border-primary-100 p-3 text-sm">
-                                        <p className="font-semibold text-primary-900">Category: {selected.invoiceExpense?.category?.name}</p>
-                                        <p className="mt-2 text-xs text-cool-gray-60">Date: {selected.invoiceExpense?.date_at ? format(new Date(selected.invoiceExpense.date_at), "dd MMM yyyy", { locale: es }) : "Sin fecha"}</p>
+                                        <p className="font-semibold text-primary-900">Categoría: {selected.invoiceExpense?.category?.name}</p>
+                                        <p className="mt-2 text-xs text-cool-gray-60">Fecha: {selected.invoiceExpense?.date_at ? format(new Date(selected.invoiceExpense.date_at), "dd MMM yyyy", { locale: es }) : "Sin fecha"}</p>
                                     </div>
                                 </div>
                             </div>
                         </>
                     ) : (
-                        <div className="flex h-full items-center justify-center p-6 text-sm text-cool-gray-60">No record selected.</div>
+                        <div className="flex h-full items-center justify-center p-6 text-sm text-cool-gray-60">No hay ningún registro seleccionado.</div>
                     )}
                 </aside>
             </div>

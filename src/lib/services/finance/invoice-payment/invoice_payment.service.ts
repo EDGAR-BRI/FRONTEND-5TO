@@ -4,13 +4,14 @@ import type {CreateInvoicePaymentDto, InvoicePayment, PaymentAcumulators} from "
 
 const BASE_PATH = "/finance/invoice-payment";
 export const getPaymentsBreakdown = async (): Promise<PaymentAcumulators[]> => {
-    const response = await api(BASE_PATH, { // CAMBIAR POR LA QUE IMPLEMENTE SAMUEL CON LOS WHERE NECESARIOS
+    const response = await api("/report/receptionist-overview", {
         method: "GET"
     });
     if(!response.ok){
 		throw new Error(await readEnvelopeErrorMessage(response));
 	}
-    return readEnvelopeData<PaymentAcumulators[]>(response);
+    const overview = await readEnvelopeData<{ paymentBreakdown: PaymentAcumulators[] }>(response);
+    return overview.paymentBreakdown;
 }
 export const getInvoicePayments = async (): Promise<InvoicePayment[]> => {
     const response = await api(BASE_PATH, {

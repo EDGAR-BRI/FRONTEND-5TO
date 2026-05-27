@@ -1,0 +1,14 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import RolesSalariesDashboard from "@/components/react/admin/settings/RolesSalariesDashboard";
+---
+
+<AdminLayout title="Admin | Roles y sueldos">
+	<section class="p-8 space-y-6">
+		<div>
+			<h1 class="text-2xl font-semibold text-primary-800">Roles y sueldos</h1>
+			<p class="text-sm text-cool-gray-70">Administra roles del sistema y sueldo base.</p>
+		</div>
+		<RolesSalariesDashboard client:only="react" />
+	</section>
+</AdminLayout>

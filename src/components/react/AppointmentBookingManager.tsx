@@ -23,7 +23,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
     const [doctorAppointments, setDoctorAppointments] = useState<Appointment[]>([])
     const [loadingApts, setLoadingApts] = useState(false)
 
-    // Cargar disponibilidad del doctor
+    // 1. Cargar disponibilidad del doctor (Común para ambos roles)
     useEffect(() => {
         if (!selectedDoctorId) {
             setAvailableDays([])
@@ -48,12 +48,13 @@ export default function AppointmentBookingManager({ role, userId, context }: App
                 setAvailableDays([])
                 setDoctorSchedule([])
                 setDoctorSchedulesData([])
+                setDoctorAppointments([])
             })
     }, [selectedDoctorId])
 
-    // Solo para recepcionista: cargar citas del doctor seleccionado
+    // 2. CORRECCIÓN VITAL: Cargar citas del doctor para TODOS los roles (recepcionista y paciente)
     useEffect(() => {
-        if (role !== 'receptionist' || !selectedDoctorId) {
+        if (!selectedDoctorId) {
             setDoctorAppointments([])
             return
         }
@@ -68,7 +69,7 @@ export default function AppointmentBookingManager({ role, userId, context }: App
                 setDoctorAppointments([])
             })
             .finally(() => setLoadingApts(false))
-    }, [selectedDoctorId, role])
+    }, [selectedDoctorId]) // <-- Eliminamos la restricción de 'role'
 
     const handleDoctorChange = useCallback((id: string | number) => {
         const numId = Number(id)
@@ -106,87 +107,103 @@ export default function AppointmentBookingManager({ role, userId, context }: App
                 @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(20px); } }
             `}</style>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-w-0">
-            <div className="lg:col-span-1">
-                <AppointmentForm
-                    role={role}
-                    userId={userId}
-                    context={context}
-                    externalDate={selectedDate}
-                    onDoctorChange={handleDoctorChange}
-                    doctorSchedule={doctorSchedule}
-                    doctorAppointments={doctorAppointments}
-                    onSuccess={() => {
-                        // Refrescar citas del doctor tras crear una nueva
-                        if (selectedDoctorId && role === 'receptionist') {
-                            getAppointmentsByDr(selectedDoctorId)
-                                .then(setDoctorAppointments)
-                                .catch(() => {})
-                        }
-                    }}
-                />
-            </div>
+                <div className="lg:col-span-1">
+                    <AppointmentForm
+                        role={role}
+                        userId={userId}
+                        context={context}
+                        externalDate={selectedDate}
+                        onDoctorChange={handleDoctorChange}
+                        doctorSchedule={doctorSchedule}
+                        doctorSchedulesData={doctorSchedulesData}
+                        doctorAppointments={doctorAppointments}
+                        onSuccess={() => {
+                            // Refrescar citas del doctor tras crear una nueva (Aplica para ambos ahora)
+                            if (selectedDoctorId) {
+                                getAppointmentsByDr(selectedDoctorId)
+                                    .then(setDoctorAppointments)
+                                    .catch(() => {})
+                            }
+                        }}
+                    />
+                </div>
 
-            <div className="lg:col-span-3 bg-white rounded-xl border border-primary-200 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
-                <div className="p-4 border-b border-primary-100 flex items-center justify-between bg-primary-50/30">
-                    <h3 className="text-sm font-bold text-primary-800 flex items-center gap-2">
-                        📅 Calendario de Disponibilidad
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        {loadingApts && (
-                            <span className="text-[10px] text-primary-500 animate-pulse font-medium">
-                                Cargando citas…
-                            </span>
-                        )}
-                        {selectedDoctorId ? (
-                            <div className="flex items-center gap-2">
-                                {doctorAppointments.length > 0 && (
-                                    <span className="text-[10px] bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full font-bold">
-                                        {doctorAppointments.length} cita{doctorAppointments.length !== 1 ? 's' : ''}
-                                    </span>
-                                )}
-                                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                    Días de trabajo activos
+                <div className="lg:col-span-3 bg-white rounded-xl border border-primary-200 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+                    <div className="p-4 border-b border-primary-100 flex items-center justify-between bg-primary-50/30">
+                        <h3 className="text-sm font-bold text-primary-800 flex items-center gap-2">
+                            📅 Calendario de Disponibilidad
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            {loadingApts && (
+                                <span className="text-[10px] text-primary-500 animate-pulse font-medium">
+                                    Cargando citas…
                                 </span>
-                            </div>
-                        ) : (
-                            <span className="text-[10px] bg-cool-gray-10 text-cool-gray-50 px-2 py-0.5 rounded-full font-medium italic">
-                                Selecciona un doctor para ver disponibilidad
+                            )}
+                            {selectedDoctorId ? (
+                                <div className="flex items-center gap-2">
+                                    {doctorAppointments.length > 0 && (
+                                        <span className="text-[10px] bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full font-bold">
+                                            {doctorAppointments.length} cita{doctorAppointments.length !== 1 ? 's' : ''}
+                                        </span>
+                                    )}
+                                    <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                        Días de trabajo activos
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-[10px] bg-cool-gray-10 text-cool-gray-50 px-2 py-0.5 rounded-full font-medium italic">
+                                    Selecciona un doctor para ver disponibilidad
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Leyenda visual */}
+                    {selectedDoctorId && (
+                        <div className="px-4 py-2 border-b border-primary-50 flex flex-wrap items-center gap-4 text-[11px] text-primary-600">
+                            <span className="flex items-center gap-1.5">
+                                <span className="inline-block w-3 h-3 rounded-sm" style={{ background: '#f0fdf4' }} />
+                                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                                Día laborable
                             </span>
-                        )}
-                    </div>
-                </div>
+                            <span className="flex items-center gap-1.5">
+                                <span className="inline-block w-3 h-3 rounded-sm" style={{ background: '#ecfdf5', borderLeft: '2px solid #059669' }} />
+                                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-600 text-white text-[8px] font-bold">●</span>
+                                Con citas
+                            </span>
+                        </div>
+                    )}
 
-                {/* Leyenda visual */}
-                {selectedDoctorId && (
-                    <div className="px-4 py-2 border-b border-primary-50 flex flex-wrap items-center gap-4 text-[11px] text-primary-600">
-                        <span className="flex items-center gap-1.5">
-                            <span className="inline-block w-3 h-3 rounded-sm" style={{ background: '#f0fdf4' }} />
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                            Día laborable
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <span className="inline-block w-3 h-3 rounded-sm" style={{ background: '#ecfdf5', borderLeft: '2px solid #059669' }} />
-                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-600 text-white text-[8px] font-bold">3</span>
-                            Con citas
-                        </span>
-                    </div>
-                )}
-
-                <div className="flex-1 overflow-x-auto">
-                    <div className="min-w-[700px] h-full">
-                        <AppointmentCalendar
-                            role={role}
-                            context={context}
-                            onSelectDate={handleSelectDate}
-                            availableDays={availableDays}
-                            doctorAppointments={doctorAppointments}
-                            doctorSchedulesData={doctorSchedulesData}
-                            doctorAvailabilities={doctorSchedule}
-                        />
+                    <div className="flex-1 overflow-x-auto">
+                        <div className="min-w-[700px] h-full">
+                            <MirrorCalendarWrapper 
+                                role={role}
+                                context={context}
+                                handleSelectDate={handleSelectDate}
+                                availableDays={availableDays}
+                                doctorAppointments={doctorAppointments}
+                                doctorSchedulesData={doctorSchedulesData}
+                                doctorSchedule={doctorSchedule}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        </div>
+    )
+}
+
+// Pequeño componente auxiliar para evitar que react-big-calendar rompa tipos en el renderizado
+function MirrorCalendarWrapper({ role, context, handleSelectDate, availableDays, doctorAppointments, doctorSchedulesData, doctorSchedule }: any) {
+    return (
+        <AppointmentCalendar
+            role={role}
+            context={context}
+            onSelectDate={handleSelectDate}
+            availableDays={availableDays}
+            doctorAppointments={doctorAppointments}
+            doctorSchedulesData={doctorSchedulesData}
+            doctorAvailabilities={doctorSchedule}
+        />
     )
 }

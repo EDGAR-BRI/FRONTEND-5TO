@@ -12,6 +12,16 @@ export type UserDto = {
 	roleId: number;
 	active: boolean;
 	role?: UserRoleDto;
+	doctor?: {
+		id: number;
+		specialtyId: number;
+		specialty?: {
+			id: number;
+			name: string;
+			consultation_price: number;
+			commission_percentage: number;
+		};
+	};
 };
 
 export type CreateUserRequest = {
@@ -19,6 +29,7 @@ export type CreateUserRequest = {
 	name: string;
 	password: string;
 	roleId: number;
+	specialtyId?: number;
 };
 
 export type UpdateUserRequest = {
@@ -26,5 +37,6 @@ export type UpdateUserRequest = {
 	name?: string;
 	password?: string;
 	roleId?: number;
+	specialtyId?: number;
 };
 

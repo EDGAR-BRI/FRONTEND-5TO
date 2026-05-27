@@ -10,11 +10,34 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const atenciones = payload.find((entry) => entry.dataKey === 'Atenciones')?.value ?? 0;
+  const ingresos = payload.find((entry) => entry.dataKey === 'Ingresos')?.value ?? 0;
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+      <div className="mb-2 text-sm font-bold text-slate-800">{label}</div>
+      <div className="space-y-1 text-sm text-slate-600">
+        <div className="flex items-center justify-between gap-4">
+          <span>Atenciones</span>
+          <span className="font-semibold text-blue-600">{Number(atenciones)}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Ingresos</span>
+          <span className="font-semibold text-rose-600">${Number(ingresos).toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ProductividadComposedChart({ data }) {
   const cleanData = data.map(item => ({
     name: item.name,
-    Atenciones: item.attended,
-    Saturacion: parseInt(item.saturation)
+    Atenciones: Number(item.attended) || 0,
+    Ingresos: Number(item.revenue) || 0,
   }));
 
   return (
@@ -38,19 +61,19 @@ export default function ProductividadComposedChart({ data }) {
             tickLine={false} 
             tick={{ fill: '#94a3b8', fontSize: 11 }} 
           />
-          {/* Eje Derecho para Saturación % */}
+          {/* Eje Derecho para Ingresos */}
           <YAxis 
             yAxisId="right" 
             orientation="right" 
             axisLine={false} 
             tickLine={false} 
-            unit="%"
+            unit="$"
             tick={{ fill: '#94a3b8', fontSize: 11 }} 
           />
           
           <Tooltip 
+            content={<CustomTooltip />}
             cursor={{ fill: '#f8fafc' }}
-            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
           />
           <Legend iconType="circle" />
 
@@ -66,7 +89,7 @@ export default function ProductividadComposedChart({ data }) {
           <Line 
             yAxisId="right" 
             type="monotone" 
-            dataKey="Saturacion" 
+            dataKey="Ingresos" 
             stroke="#ef4444" 
             strokeWidth={3} 
             dot={{ r: 6, fill: '#ef4444', strokeWidth: 2, stroke: '#fff' }} 

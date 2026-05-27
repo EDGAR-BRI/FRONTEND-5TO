@@ -1,300 +1,537 @@
-import React, { useState, useEffect } from 'react';
-import { FaPrint, FaSpinner, FaDollarSign, FaArrowTrendUp, FaArrowTrendDown, FaMoneyBillWave } from "react-icons/fa6";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import StatCard from './StatCard';
-import { getFinanceReport, exportFinanceReportPDF, type FinanceReportResponse } from '@/lib/services/report/financeReport.service';
-import { getToken, getDoctorId } from '@/lib/api';
+import React, { useMemo, useState, useEffect } from "react";
+import {
+  FaPrint,
+  FaDollarSign,
+  FaArrowTrendUp,
+  FaMoneyBillWave,
+  FaSpinner,
+} from "react-icons/fa6";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { StatsCard } from "@/components/react/primary/StatsCard";
+import StaticCard from "@/components/react/primary/StaticCard";
+import { Modal } from "@/components/react/primary/Modal";
+import { getDoctorFinanceReport } from "@/lib/services/report/doctorFinance.service";
+import { Alert } from "@/utils/alerts";
 
-export default function FinanceReport() {
-  const doctorId = getDoctorId();
-  const token = getToken();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<FinanceReportResponse | null>(null);
-  const [exporting, setExporting] = useState(false);
+type FinanceReportProps = {
+  userId?: number;
+};
 
-  useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        const reportData = await getFinanceReport({ 
-          doctorId: doctorId ? parseInt(doctorId) : undefined 
-        });
-        setData(reportData);
-      } catch (error) {
-        console.error('Error fetching finance report:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+export default function FinanceReport({ userId }: FinanceReportProps) {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const currentYear = new Date().getFullYear();
+  const [filters, setFilters] = useState({
+    from: `${currentYear}-01-01`,
+    to: `${currentYear}-12-31`,
+  });
+  const [quickRange, setQuickRange] = useState<null | "week" | "month" | "year">(
+    null,
+  );
+  const [reportData, setReportData] = useState({
+    stats: {
+      totalRevenue: 0,
+      totalExpenses: 0,
+      netProfit: 0,
+      doctorEarnings: 0,
+      doctorCommission: 0,
+    },
+    monthlyData: [] as Array<{
+      month: string;
+      revenue: number;
+      expenses: number;
+      profit: number;
+      doctorEarnings: number;
+    }>,
+    revenueSources: [] as Array<{ source: string; amount: number }>,
+    recentTransactions: [] as Array<{
+      id: number;
+      description: string;
+      category: string;
+      type: "income" | "expense";
+      amount: number;
+      date: string;
+    }>,
+    exchangeRate: 1,
+  });
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
 
-    if (doctorId && token) {
-      fetchReport();
-    }
-  }, [doctorId, token]);
-
-  // Función para exportar PDF
-  const handleExportPDF = async () => {
-    try {
-      setExporting(true);
-      const blob = await exportFinanceReportPDF({ 
-        doctorId: doctorId ? parseInt(doctorId) : undefined 
-      });
-      
-      // Crear URL y descargar el archivo
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reporte-financiero-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-    } finally {
-      setExporting(false);
-    }
+  const handleExportPDF = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      setIsExportModalOpen(false);
+    }, 2000);
   };
 
-  // Formatear valores monetarios
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-VE', {
-      style: 'currency',
-      currency: 'VES'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <FaSpinner className="animate-spin text-4xl text-blue-600" />
-      </div>
-    );
-  }
+  const formatVES = (amount: number, rate: number) => {
+    const converted = amount * rate;
+    return new Intl.NumberFormat("es-VE", {
+      style: "currency",
+      currency: "VES",
+    }).format(converted);
+  };
 
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <p className="text-slate-500">No hay datos disponibles para el reporte financiero.</p>
-      </div>
-    );
-  }
+  const parseMonthLabel = (value: string) => {
+    const map: Record<string, number> = {
+      "ene.": 0, "ene": 0, "Ene": 0, "Ene.": 0,
+      "feb.": 1, "feb": 1, "Feb": 1, "Feb.": 1,
+      "mar.": 2, "mar": 2, "Mar": 2, "Mar.": 2,
+      "abr.": 3, "abr": 3, "Abr": 3, "Abr.": 3,
+      "may.": 4, "may": 4, "May": 4, "May.": 4,
+      "jun.": 5, "jun": 5, "Jun": 5, "Jun.": 5,
+      "jul.": 6, "jul": 6, "Jul": 6, "Jul.": 6,
+      "ago.": 7, "ago": 7, "Ago": 7, "Ago.": 7,
+      "sep.": 8, "sep": 8, "Sep": 8, "Sep.": 8,
+      "oct.": 9, "oct": 9, "Oct": 9, "Oct.": 9,
+      "nov.": 10, "nov": 10, "Nov": 10, "Nov.": 10,
+      "dic.": 11, "dic": 11, "Dic": 11, "Dic.": 11,
+    };
+    const normalized = value.trim().toLowerCase();
+    const monthIndex = map[normalized] ?? map[value] ?? 0;
+    return new Date(new Date().getFullYear(), monthIndex, 1);
+  };
 
-  // Datos para el gráfico de fuentes de ingresos
-  const revenueSourcesColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+  const isWithinRange = (date: Date, from?: Date, to?: Date) => {
+    if (from && date < from) return false;
+    if (to) {
+      const end = new Date(to);
+      end.setHours(23, 59, 59, 999);
+      if (date > end) return false;
+    }
+    return true;
+  };
+
+  const fromDate = filters.from ? new Date(filters.from) : undefined;
+  const toDate = filters.to ? new Date(filters.to) : undefined;
+  const rangeDays =
+    fromDate && toDate
+      ? Math.floor((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)) +
+      1
+      : null;
+  const chartGranularity =
+    quickRange === "week"
+      ? "day"
+      : quickRange === "month"
+        ? "day"
+        : quickRange === "year"
+          ? "month"
+          : rangeDays !== null
+            ? rangeDays <= 31
+              ? "day"
+              : "month"
+            : "month";
+
+  const filteredMonthlyData = useMemo(() => {
+    return reportData.monthlyData.filter((item) =>
+      isWithinRange(parseMonthLabel(item.month), fromDate, toDate),
+    );
+  }, [reportData.monthlyData, fromDate, toDate]);
+
+  const filteredTransactions = useMemo(() => {
+    return reportData.recentTransactions.filter((transaction) => {
+      const date = new Date(transaction.date);
+      return isWithinRange(date, fromDate, toDate);
+    });
+  }, [reportData.recentTransactions, fromDate, toDate]);
+
+  const applyQuickRange = (range: "week" | "month" | "year") => {
+    const today = new Date();
+    const end = today.toISOString().slice(0, 10);
+    let startDate = new Date(today);
+
+    if (range === "week") {
+      startDate.setDate(startDate.getDate() - 6);
+    }
+
+    if (range === "month") {
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    }
+
+    if (range === "year") {
+      startDate = new Date(today.getFullYear(), 0, 1);
+    }
+
+    const start = startDate.toISOString().slice(0, 10);
+    setFilters({ from: start, to: end });
+    setQuickRange(range);
+  };
+
+  useEffect(() => {
+    const fetchReport = async () => {
+      if (!userId || Number.isNaN(userId)) return;
+      setIsLoadingReport(true);
+      try {
+        const response = await getDoctorFinanceReport({
+          userId,
+          from: filters.from || undefined,
+          to: filters.to || undefined,
+        });
+        console.log("[FinanceReport] Datos recibidos:", response.data);
+        setReportData({
+          stats: response.data.stats,
+          monthlyData: response.data.monthlyData,
+          revenueSources: response.data.revenueSources,
+          recentTransactions: response.data.recentTransactions,
+          exchangeRate: response.data.exchangeRate,
+        });
+      } catch (error: any) {
+        Alert.error(error.message ?? "No se pudo cargar el reporte financiero");
+      } finally {
+        setIsLoadingReport(false);
+      }
+    };
+
+    fetchReport();
+  }, [userId, filters.from, filters.to]);
+
+  const chartData = useMemo(() => {
+    if (chartGranularity === "month") {
+      return filteredMonthlyData.map((item) => ({
+        period: item.month,
+        revenue: item.revenue,
+        expenses: item.expenses,
+        profit: item.doctorEarnings,
+      }));
+    }
+
+    if (!fromDate || !toDate) {
+      return [];
+    }
+
+    if (chartGranularity === "day") {
+      const days: {
+        period: string;
+        revenue: number;
+        expenses: number;
+        profit: number;
+      }[] = [];
+      const cursor = new Date(fromDate);
+      while (cursor <= toDate) {
+        const label = cursor.toLocaleDateString("es-VE", {
+          day: "2-digit",
+          month: "2-digit",
+        });
+        days.push({ period: label, revenue: 0, expenses: 0, profit: 0 });
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      const indexMap = new Map(days.map((item, index) => [item.period, index]));
+      filteredTransactions.forEach((transaction) => {
+        const date = new Date(transaction.date);
+        const label = date.toLocaleDateString("es-VE", {
+          day: "2-digit",
+          month: "2-digit",
+        });
+        const targetIndex = indexMap.get(label);
+        if (targetIndex === undefined) return;
+        if (transaction.type === "income") {
+          days[targetIndex].revenue += transaction.amount;
+        } else {
+          days[targetIndex].expenses += transaction.amount;
+        }
+        days[targetIndex].profit =
+          days[targetIndex].revenue - days[targetIndex].expenses;
+      });
+
+      return days;
+    }
+
+    const weekMap = new Map<
+      number,
+      { period: string; revenue: number; expenses: number; profit: number }
+    >();
+    filteredTransactions.forEach((transaction) => {
+      const date = new Date(transaction.date);
+      const weekIndex = Math.ceil(date.getDate() / 7);
+      if (!weekMap.has(weekIndex)) {
+        weekMap.set(weekIndex, {
+          period: `Semana ${weekIndex}`,
+          revenue: 0,
+          expenses: 0,
+          profit: 0,
+        });
+      }
+      const bucket = weekMap.get(weekIndex);
+      if (!bucket) return;
+      if (transaction.type === "income") {
+        bucket.revenue += transaction.amount;
+      } else {
+        bucket.expenses += transaction.amount;
+      }
+      bucket.profit = bucket.revenue - bucket.expenses;
+    });
+
+    return Array.from(weekMap.values()).sort((a, b) => {
+      const aIndex = Number(a.period.replace("Semana ", ""));
+      const bIndex = Number(b.period.replace("Semana ", ""));
+      return aIndex - bIndex;
+    });
+  }, [
+    chartGranularity,
+    filteredMonthlyData,
+    filteredTransactions,
+    fromDate,
+    toDate,
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
-      
-      {/* 1. Encabezado de la pantalla */}
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Reporte Financiero</h1>
-          <p className="text-slate-500 font-medium">Análisis detallado de los ingresos y gastos.</p>
-        </div>
-        <button 
-          onClick={handleExportPDF}
-          disabled={exporting}
-          className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {exporting ? <FaSpinner className="animate-spin" /> : <FaPrint />}
-          {exporting ? 'Exportando...' : 'Exportar PDF'}
-        </button>
+      <div className="flex flex-col sm:flex-row gap-4 data-nums-compact w-full">
+        <StatsCard 
+        className="flex-1"
+          title="Ganancias"
+          value={formatCurrency(reportData.stats.doctorEarnings)}
+          color="success"
+          icon={<FaDollarSign size={18} />}
+          variant="compact"
+          subText={`≈ ${formatVES(reportData.stats.doctorEarnings, reportData.exchangeRate)}`}
+        />
+        <StatsCard
+          className="flex-1"
+          title="Comisión por consulta"
+          value={`${reportData.stats.doctorCommission}%`}
+          color="success"
+          icon={<FaArrowTrendUp size={18} />}
+          variant="compact"
+        />
       </div>
 
-      {/* 2. Fila de Tarjetas de Estadísticas Financieras */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-green-50 text-green-500">
-              <FaDollarSign size={20} />
-            </div>
-            <div className={`flex items-center gap-1 text-[10px] font-bold ${data.data.stats.growthRate >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'} px-2 py-0.5 rounded-full`}>
-              {data.data.stats.growthRate >= 0 ? <FaArrowTrendUp size={10} /> : <FaArrowTrendDown size={10} />}
-              {Math.abs(data.data.stats.growthRate)}%
-            </div>
+      <StaticCard className="p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest">
+              Filtros
+            </h3>
+            <button
+              type="button"
+              onClick={() => {
+                setFilters({ from: `${currentYear}-01-01`, to: `${currentYear}-12-31` });
+                setQuickRange(null);
+              }}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition"
+            >
+              Limpiar filtros
+            </button>
           </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(data.data.stats.totalRevenue)}</h3>
-            <p className="text-xs text-slate-400 font-medium">Ingresos Totales</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="text-xs font-semibold text-slate-600 flex flex-col gap-2">
+              Desde
+              <input
+                type="date"
+                value={filters.from}
+                max={filters.to}
+                onChange={(event) => {
+                  setFilters((prev) => ({ ...prev, from: event.target.value }));
+                  setQuickRange(null);
+                }}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              />
+            </label>
+            <label className="text-xs font-semibold text-slate-600 flex flex-col gap-2">
+              Hasta
+              <input
+                type="date"
+                value={filters.to}
+                min={filters.from}
+                onChange={(event) => {
+                  setFilters((prev) => ({ ...prev, to: event.target.value }));
+                  setQuickRange(null);
+                }}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => applyQuickRange("week")}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              onClick={() => applyQuickRange("month")}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Mes
+            </button>
+            <button
+              type="button"
+              onClick={() => applyQuickRange("year")}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Año
+            </button>
           </div>
         </div>
+      </StaticCard>
 
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-red-50 text-red-500">
-              <FaMoneyBillWave size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(data.data.stats.totalExpenses)}</h3>
-            <p className="text-xs text-slate-400 font-medium">Gastos Totales</p>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
-              <FaDollarSign size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(data.data.stats.netProfit)}</h3>
-            <p className="text-xs text-slate-400 font-medium">Ganancia Neta</p>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-xl p-5 border border-slate-100 flex flex-col justify-between h-32">
-          <div className="flex justify-between items-start">
-            <div className="p-2 rounded-lg bg-purple-50 text-purple-500">
-              <FaArrowTrendUp size={20} />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800">{data.data.stats.profitMargin}%</h3>
-            <p className="text-xs text-slate-400 font-medium">Margen de Ganancia</p>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Panel de Gráficas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Gráfica de Barras - Ingresos Mensuales */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Evolución Mensual</h3>
+        <StaticCard className="p-8">
+          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">
+            Tendencia de Ganancias
+          </h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.data.monthlyData}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12}}
+                <XAxis
+                  dataKey="period"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 12 }}
                 />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <Tooltip 
-                  contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} 
-                  formatter={(value: any) => formatCurrency(value)}
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 12 }}
                 />
-                <Bar dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="expenses" fill="#ef4444" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Gráfica de Líneas - Tendencia */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Tendencia de Ganancias</h3>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.data.monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12}}
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                  }}
+                  formatter={(value: any) => [
+                    `${formatCurrency(value)} (≈ ${formatVES(value, reportData.exchangeRate)})`,
+                    "Ganancia",
+                  ]}
                 />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <Tooltip 
-                  contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} 
-                  formatter={(value: any) => formatCurrency(value)}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="profit" 
-                  stroke="#10b981" 
+                <Line
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#10b981"
                   strokeWidth={3}
-                  dot={{ fill: '#10b981', r: 5 }}
+                  dot={{ fill: "#10b981", r: 5 }}
                   activeDot={{ r: 7 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </StaticCard>
 
-      </div>
-
-      {/* 4. Fuentes de Ingresos y Transacciones Recientes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Gráfica de Pastel - Fuentes de Ingresos */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Fuentes de Ingresos</h3>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data.data.revenueSources}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="amount"
+        <StaticCard className="p-8">
+          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">
+            Desglose de Consultas
+          </h3>
+          <div className="h-80 w-full overflow-y-auto space-y-3 pr-1">
+            {filteredTransactions.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-sm text-slate-400">
+                No hay consultas en el rango seleccionado.
+              </div>
+            ) : (
+              filteredTransactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3"
                 >
-                  {data.data.revenueSources.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={revenueSourcesColors[index % revenueSourcesColors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} 
-                  formatter={(value: any) => formatCurrency(value)}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 space-y-2">
-            {data.data.revenueSources.map((source, index) => (
-              <div key={source.source} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: revenueSourcesColors[index % revenueSourcesColors.length] }}
-                  ></div>
-                  <span className="text-slate-700">{source.source}</span>
-                </div>
-                <span className="font-medium text-slate-800">{formatCurrency(source.amount)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Transacciones Recientes */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-          <h3 className="font-bold text-slate-800 uppercase text-xs tracking-widest mb-6">Transacciones Recientes</h3>
-          <div className="space-y-4 max-h-80 overflow-y-auto">
-            {data.data.recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 border-b border-slate-100 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    transaction.type === 'income' 
-                      ? 'bg-green-50 text-green-600' 
-                      : 'bg-red-50 text-red-600'
-                  }`}>
-                    {transaction.type === 'income' ? '+' : '-'}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
+                      {tx.description}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(tx.date).toLocaleDateString("es-VE", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}{" "}
+                      &middot; {tx.category}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-800">{transaction.description}</p>
-                    <p className="text-xs text-slate-500">{transaction.category}</p>
+                  <div className="text-right whitespace-nowrap">
+                    <p className="text-sm font-bold text-emerald-600">
+                      {formatCurrency(tx.amount)}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      ≈ {formatVES(tx.amount, reportData.exchangeRate)}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`font-bold text-sm ${
-                    transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                  </p>
-                  <p className="text-xs text-slate-500">{new Date(transaction.date).toLocaleDateString()}</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        </div>
-
+        </StaticCard>
       </div>
 
+      <Modal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        title="Exportar Reporte Financiero"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-700">
+            ¿Desea exportar el reporte financiero en formato PDF?
+          </p>
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <p className="text-sm text-slate-600 mb-2">El reporte incluirá:</p>
+            <ul className="text-sm text-slate-600 space-y-1">
+              <li>• Resumen de ingresos y ganancias del doctor</li>
+              <li>• Evolución mensual de ingresos</li>
+              <li>• Distribución de fuentes de ingreso</li>
+            </ul>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setIsExportModalOpen(false)}
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              className="flex-1 flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isExporting ? (
+                <>
+                  <FaSpinner className="animate-spin" /> Exportando...
+                </>
+              ) : (
+                <>
+                  <FaPrint /> Exportar
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        .data-nums-compact h3, 
+        .data-nums-compact [class*="text-2xl"], 
+        .data-nums-compact span {
+          font-size: 1.125rem !important;
+          line-height: 1.75rem !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          max-width: 100% !important;
+        }
+        .data-nums-compact div[class*="relative"] {
+          overflow: hidden !important;
+        }
+      `,
+        }}
+      />
     </div>
   );
 }

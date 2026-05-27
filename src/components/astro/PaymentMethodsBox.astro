@@ -1,7 +1,11 @@
 ---
-import { getPaymentsBreakdown } from "@/lib/services/finance/invoice-payment/invoice_payment.service";
+import type { PaymentAcumulators } from "@/lib/services/finance/invoice-payment/invoice_payment.interface";
 
-const paymentBreakdown = await getPaymentsBreakdown();
+interface Props {
+    paymentBreakdown: PaymentAcumulators[];
+}
+
+const { paymentBreakdown } = Astro.props as Props;
 
 const COLORS = [
     "bg-primary-500",
@@ -32,11 +36,15 @@ const paymentBreakdownWithMeta = paymentBreakdown.map((item, i) => ({
             No se han registrado pagos hoy.
         </p>
     ) : (
-        paymentBreakdownWithMeta.map((item) => (
-            <div>
-                <div class="flex justify-between text-body-xs mb-1">
-                    <span class="text-cool-gray-60">
-                        {item.paymentMethod.name}
+        <div>
+            <div class="text-lg font-bold text-cool-gray-800 mb-4">
+                Distribución de pagos de hoy
+            </div>
+            {paymentBreakdownWithMeta.map((item) => (
+                <div>
+                    <div class="flex justify-between text-body-xs mb-1">
+                        <span class="text-cool-gray-60">
+                            {item.paymentMethod.name}
                     </span>
                     <span class="font-semibold text-primary-800">
                         ${item.amount_paid}
@@ -50,5 +58,6 @@ const paymentBreakdownWithMeta = paymentBreakdown.map((item, i) => ({
                 </div>
             </div>
         ))
+        }</div>
     )
 }

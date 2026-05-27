@@ -7,9 +7,9 @@ import { PaymentsBills } from './PaymentsBills';
 import StaticCard from '@/components/react/primary/StaticCard'; 
 import { ModalTrigger } from '@/components/react/primary/ModalTrigger';
 import { Button } from '../primary/Button';
-import useSWR, { mutate } from 'swr'; // Importamos mutate para actualizar la UI en vivo
+import useSWR, { mutate } from 'swr'; 
 import { fetcher } from '@/lib/fetcher';
-import { api } from '@/lib/api'; // Tu helper de peticiones
+import { api } from '@/lib/api'; 
 import { Alert } from '@/utils/alerts';
 
 import {
@@ -39,28 +39,49 @@ type ProfileTabsProps = {
 export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
   const [activeTab, setActiveTab] = useState('personal');
   
-  // 1. Traemos los datos actuales para rellenar el formulario inicial
+  // 1. Traemos los datos actuales
   const { data: patientData } = useSWR(`/medical/info-patient/patient/${patientId}`, fetcher);
 
-  // 2. Estados del formulario (Solo para los datos que acepta tu BD)
+  // 2. Estados del formulario COMPLETOS
   const [bloodType, setBloodType] = useState('');
   const [chronicDiseases, setChronicDiseases] = useState('');
   const [allergies, setAllergies] = useState('');
   const [email, setEmail] = useState('');
   const [mainPhone, setMainPhone] = useState('');
   const [address, setAddress] = useState('');
+  
+  // Agregados los estados faltantes que usabas en el JSX
+  const [sex, setSex] = useState('MALE');
+  const [birthDate, setBirthDate] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [profession, setProfession] = useState('');
+  
   const [isSaving, setIsSaving] = useState(false);
 
+  // Variable de apoyo para usar la data más fresca (la de SWR o la inicial de Astro)
+  const currentData = patientData?.data || initialData;
+
   useEffect(() => {
-    if (patientData?.data) {
-      setBloodType(patientData.data.blood_type || '');
-      setChronicDiseases(patientData.data.chronic_diseases || '');
-      setAllergies(patientData.data.allergies || '');
-      setEmail(patientData.data.email || '');
-      setMainPhone(patientData.data.main_phone || '');
-      setAddress(patientData.data.address || '');
+    if (currentData) {
+      setBloodType(currentData.blood_type || '');
+      setChronicDiseases(currentData.chronic_diseases || '');
+      setAllergies(currentData.allergies || '');
+      setEmail(currentData.email || '');
+      setMainPhone(currentData.main_phone || '');
+      setAddress(currentData.address || '');
+      
+      // Asignar los nuevos campos
+      setSex(currentData.sex || 'MALE');
+      setNationality(currentData.nacionality || ''); // Con "c" porque así está en tu Prisma
+      setProfession(currentData.profession || '');
+      
+      // Formatear la fecha para que el input type="date" la lea correctamente (YYYY-MM-DD)
+      if (currentData.birth_date) {
+        const formattedDate = new Date(currentData.birth_date).toISOString().split('T')[0];
+        setBirthDate(formattedDate);
+      }
     }
-  }, [info]);
+  }, [currentData]); // Corregido: antes decía [info] que no existía
 
   const tabs = [
     { id: 'personal', label: 'Inf. Personal', icon: FaCircleUser },
@@ -83,12 +104,15 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
           allergies: allergies,
           email: email,
           main_phone: mainPhone,
-          address: address
+          address: address,
+          sex: sex,
+          nacionality: nationality,
+          profession: profession,
+          birth_date: birthDate ? new Date(birthDate).toISOString() : undefined
         })
       });
 
       if (response.ok) {
-        // Magia de SWR: Le decimos que vuelva a cargar los datos en toda la pantalla
         mutate(`/medical/info-patient/patient/${patientId}`);
         await Alert.success("¡Perfil actualizado con éxito!");
         close();
@@ -142,10 +166,12 @@ export const ProfileTabs = ({ patientId, initialData }: ProfileTabsProps) => {
               
               <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
                 <div className="w-full transition-all duration-300">
-                  <ContactInfo patientId={patientId} initialData={info} />
+                  {/* Corregido: Pasamos currentData en lugar de info */}
+                  <ContactInfo patientId={patientId} initialData={currentData} />
                 </div>
                 <div className="w-full transition-all duration-300">
-                  <EmergencyContact patientId={patientId} initialData={info} />
+                  {/* Corregido: Pasamos currentData en lugar de info */}
+                  <EmergencyContact patientId={patientId} initialData={currentData} />
                 </div>
               </div>
 

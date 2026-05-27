@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import AppointmentCalendar from "@/components/react/AppointmentCalendar";
-import type { Cita, CalendarAction } from "@/components/react/AppointmentCalendar";
+import type { Cita } from "@/components/react/AppointmentCalendar";
 import { getAppointmentsByDr } from "@/lib/services/scheduling/appointment/appointment.service";
 import { getDoctorSchedules } from "@/lib/services/scheduling/doctor-schedule/doctor_schedule.service";
 import type { Appointment } from "@/lib/services/scheduling/appointment/appointment.interface";
 
 interface DoctorScheduleProps {
   doctorId: number;
+  userId?: number;
 }
 
 function parseLocalDateTime(value: string) {
@@ -25,8 +26,8 @@ function mapAppointmentToCita(apt: Appointment): Cita {
 
   return {
     id: apt.id,
-    patientName: apt.patient?.user?.name ?? "Paciente",
-    id_paciente: String(apt.patient?.id),
+    pacienteNombre: apt.patient?.name ?? "Paciente",
+    pacienteId: String(apt.patient?.id),
     hora: format(d, "HH:mm"),
     motivo: apt.reson_visit ?? "Consulta",
     doctor: apt.doctor?.user?.name ?? "Doctor",
@@ -78,26 +79,16 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
 
   const citas = useMemo(() => appointments.map(mapAppointmentToCita), [appointments]);
 
-  const actions: CalendarAction[] = [
-    {
-      id: "historial",
-      label: "Ver Historial Clínico",
-      kind: "link",
-      variant: "primary",
-      hrefTemplate: "/modules/pacient/{id_paciente}/history",
-    },
-  ];
-
   const statusClassByEstado = useMemo(() => ({
-    Pendiente: 'bg-yellow-400 text-yellow-900',
-    Confirmada: 'bg-blue-600 text-white',
-    Cancelada: 'bg-red-200 text-red-800',
-    Finalizada: 'bg-slate-300 text-slate-700',
+    Pendiente: '!bg-amber-400 !text-amber-950',
+    Confirmada: '!bg-emerald-600 !text-white',
+    Cancelada: '!bg-rose-600 !text-white',
+    Finalizada: '!bg-slate-400 !text-white',
   }), []);
 
   if (loading) {
     return (
-      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
         <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
           Cargando calendario...
@@ -108,7 +99,7 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
 
   if (error) {
     return (
-      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+      <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
         <div className="flex-1 flex items-center justify-center text-red-500 text-sm">
           {error}
@@ -118,19 +109,17 @@ export default function DoctorSchedule({ doctorId }: DoctorScheduleProps) {
   }
 
   return (
-    <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-[600px]">
+    <section id="doctorSchedule" className="bg-white p-4 rounded-xl border border-primary-200 shadow-sm flex flex-col min-h-150">
       <h2 className="text-xl font-bold text-slate-800 mb-6">Calendario de Consultas</h2>
       <div className="flex-1">
         <AppointmentCalendar
           role="doctor"
           citas={citas}
           context={{ doctorId: String(doctorId) }}
-          actions={actions}
           statusClassByEstado={statusClassByEstado}
           doctorAppointments={appointments}
           doctorSchedulesData={schedules}
           doctorAvailabilities={availabilities}
-          client:visible
         />
       </div>
     </section>

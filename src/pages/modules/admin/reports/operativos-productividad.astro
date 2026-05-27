@@ -4,21 +4,35 @@ export const prerender = false;
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import ReportTimeframeFilters from "@/components/react/primary/ReportTimeframeFilters";
 import { StatsCard } from "@/components/react/primary/StatsCard";
-import { FaArrowLeft, FaGaugeHigh, FaStethoscope, FaUserDoctor } from "react-icons/fa6";
+import { FaArrowLeft, FaDollarSign, FaStethoscope, FaUserDoctor } from "react-icons/fa6";
 import ProductividadComposedChart from "@/components/react/admin/ProductividadComposedChart";
+import { getOperativosProductividad } from "@/lib/services/report/operativos.service";
 
-const doctors = [
-  { name: "Dra. Ramos", attended: 22, avgTime: "19 min", saturation: "83%" },
-  { name: "Dr. Ledezma", attended: 19, avgTime: "21 min", saturation: "77%" },
-  { name: "Dra. Quispe", attended: 24, avgTime: "18 min", saturation: "91%" },
-  { name: "Dr. Nuñez", attended: 17, avgTime: "23 min", saturation: "72%" },
-];
+const from = Astro.url.searchParams.get("from") ?? undefined;
+const to = Astro.url.searchParams.get("to") ?? undefined;
+const period = (Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? undefined;
+const preset = Astro.url.searchParams.get("preset") ?? undefined;
+const report = await getOperativosProductividad({ from, to, period });
+
+const filterQuery = new URLSearchParams();
+if (from) filterQuery.set("from", from);
+if (to) filterQuery.set("to", to);
+if (period) filterQuery.set("period", period);
+if (preset) filterQuery.set("preset", preset);
+const filterSuffix = filterQuery.toString() ? `?${filterQuery.toString()}` : "";
+
+const doctors = report.data.byDoctor.map((item) => ({
+  name: item.name,
+  attended: item.attended,
+  avgTime: item.avgTime,
+  revenue: item.revenue,
+}));
 ---
 
 <AdminLayout title="Operativos - Productividad | Admin">
   <div class="p-6 md:p-8 space-y-8">
 
-    <a href="/modules/admin/reports/operativos" class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
+    <a href={`/modules/admin/reports/operativos${filterSuffix}`} class="inline-flex items-center gap-2 text-sm font-bold text-primary-700 hover:underline group">
       <FaArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" /> 
       Volver a operativos
     </a>
@@ -30,36 +44,36 @@ const doctors = [
 
     {/* TARJETAS DE ESTADÍSTICAS*/}
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <StatsCard title="Médicos en turno" value="12" trend="0.0%" trendUp={true} color="primary">
-        <FaUserDoctor slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Atenciones promedio" value="20" trend="3.1%" trendUp={true} color="success">
-        <FaStethoscope slot="icon" size={20} />
-      </StatsCard>
-      <StatsCard title="Saturación promedio" value="81%" trend="1.7%" trendUp={false} color="warning">
-        <FaGaugeHigh slot="icon" size={20} />
-      </StatsCard>
-    </section>
+       <StatsCard title="Médicos en turno" value={report.data.stats.doctorsInShift} trend="0.0%" trendUp={true} color="primary">
+         <FaUserDoctor slot="icon" size={20} />
+       </StatsCard>
+       <StatsCard title="Atenciones promedio" value={report.data.stats.avgAttentions.toFixed(1)} trend="3.1%" trendUp={true} color="success">
+         <FaStethoscope slot="icon" size={20} />
+       </StatsCard>
+       <StatsCard title="Ingresos promedio" value={`$${report.data.stats.avgRevenue.toFixed(2)}`} trend="1.7%" trendUp={false} color="warning">
+         <FaDollarSign slot="icon" size={20} />
+       </StatsCard>
+     </section>
 
-    {/*FILTROS */}
-    <ReportTimeframeFilters client:load title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de saturación." />
+     {/*FILTROS */}
+     <ReportTimeframeFilters client:load title="Filtro de productividad" subtitle="Compara productividad médica por día, semana, mes o año y ubica picos de actividad." initialPeriod={(Astro.url.searchParams.get("period") as "day" | "week" | "month" | "year") ?? "month"} initialPreset={Astro.url.searchParams.get("preset") ?? undefined} />
 
-    <div class="mt-8">
+      <div class="mt-8">
       <section class="bg-white rounded-xl border border-primary-200 p-8 shadow-sm">
         <div class="mb-8 border-b border-gray-100 pb-5">
-            <h2 class="text-xl font-bold text-gray-800">Carga de Trabajo vs. Saturación</h2>
-            <p class="text-sm text-gray-500 font-medium">Relación entre el volumen de pacientes atendidos y la capacidad utilizada por médico.</p>
+        <h2 class="text-xl font-bold text-gray-800">Productividad por médico</h2>
+        <p class="text-sm text-gray-500 font-medium">Atenciones realizadas, tiempo promedio por consulta e ingresos generados por cada médico.</p>
         </div>
-        <ProductividadComposedChart client:only="react" data={doctors} />
-      </section>
-    </div>
+         <ProductividadComposedChart client:only="react" data={doctors} />
+       </section>
+     </div>
 
     <section class="bg-primary-100 rounded-xl border border-primary-200 p-6 space-y-4 mt-8">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold text-gray-800">Productividad por médico</h2>
-        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
-            Turno mañana
-        </span>
+         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-300 text-primary-900 border border-primary-400/20">
+            Productividad real
+         </span>
       </div>
       
       <div class="overflow-x-auto">
@@ -69,7 +83,7 @@ const doctors = [
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-primary-900">Médico</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Atenciones</th>
               <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Tiempo prom.</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Saturación</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-primary-900">Ingresos</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-primary-300">
@@ -78,12 +92,8 @@ const doctors = [
                 <tr class="hover:bg-primary-500/20 transition-colors cursor-default">
                   <td class="px-4 py-3 text-sm text-gray-700 font-medium">{item.name}</td>
                   <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.attended}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.avgTime}</td>
-                  <td class="px-4 py-3 text-sm text-right">
-                    <span class={`font-bold ${parseInt(item.saturation) > 85 ? 'text-red-600' : 'text-emerald-600'}`}>
-                      {item.saturation}
-                    </span>
-                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-700 font-bold">{item.avgTime.toFixed(1)} min</td>
+                  <td class="px-4 py-3 text-sm text-right font-bold text-emerald-600">${item.revenue.toFixed(2)}</td>
                 </tr>
               ))
             }
