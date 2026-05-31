@@ -320,7 +320,7 @@ export const CurrentMonthPayroll = () => {
 						<p className="text-lg font-semibold text-primary-900">{pendingData?.items.length ?? 0} pendientes · {money(pendingData?.totalAmount ?? 0)}</p>
 					</div>
 
-					<div className="max-h-[340px] space-y-2 overflow-y-auto rounded-xl border border-primary-100 p-3">
+					<div className="max-h-85 space-y-2 overflow-y-auto rounded-xl border border-primary-100 p-3">
 						{(pendingData?.items ?? []).map((item) => (
 							<div key={`pay-all-${item.userId}`} className="rounded-lg border border-primary-100 bg-white p-3 text-sm">
 								<div className="flex items-center justify-between gap-3">
