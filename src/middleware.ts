@@ -74,6 +74,20 @@ const getRoleFromPath = (pathname: string): string | null => {
     return ROLE_ROUTES[match[1]] ?? null;
 };
 
+const getRoleSegment = (role: string): string | null => {
+    for (const [segment, roleCode] of Object.entries(ROLE_ROUTES)) {
+        if (roleCode === role) return segment;
+    }
+    return null;
+};
+
+const getUserIdFromPath = (pathname: string): number | null => {
+    const match = pathname.match(/^\/modules\/\w+\/(\d+)(?:\/|$)/);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isInteger(parsed) ? parsed : null;
+};
+
 const getDashboardPath = (role: string, userId: number): string => {
     const base = ROLE_DASHBOARD[role] ?? "/login";
     if (role === "DOCTOR" || role === "RECEPTION" || role === "PATIENT") {
@@ -166,6 +180,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (userRole !== requiredRole) {
         if (isDev) console.log("[MIDDLEWARE] Role mismatch:", userRole, "!=", requiredRole, "redirecting to /no-encontrado");
         return redirect("/no-encontrado");
+    }
+
+    const roleSegment = getRoleSegment(userRole);
+    const roleBasePath = roleSegment ? `/modules/${roleSegment}` : null;
+    const dashboardPath = getDashboardPath(userRole, userId);
+
+    // Redirect role root paths (e.g. /modules/doctor) to the proper dashboard with the authenticated user id.
+    if (roleBasePath && (pathname === roleBasePath || pathname === `${roleBasePath}/`)) {
+        if (isDev) console.log("[MIDDLEWARE] Redirecting role root to dashboard:", dashboardPath);
+        return redirect(dashboardPath);
+    }
+
+    // Prevent users from navigating to another user's scoped module path.
+    if (userRole === "DOCTOR" || userRole === "RECEPTION" || userRole === "PATIENT") {
+        const scopedUserId = getUserIdFromPath(pathname);
+        if (scopedUserId && scopedUserId !== userId) {
+            if (isDev) console.log("[MIDDLEWARE] Scoped userId mismatch, redirecting to own dashboard:", dashboardPath);
+            return redirect(dashboardPath);
+        }
     }
 
     if (isDev) console.log("[MIDDLEWARE] Access granted");

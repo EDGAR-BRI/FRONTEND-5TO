@@ -1,0 +1,29 @@
+---
+import Clinica from "@/assets/clinica.svg";
+
+
+export interface Props {
+    variant?: "white" | "blue";
+    alt?: string;
+    class?: string;
+    logoClass?: string;
+}
+
+const { variant = "white", alt = "/", class: className = "", logoClass = "h-full w-auto" } = Astro.props as Props;
+---
+
+
+<a href="/" class:list={["flex items-center justify-center", className]}>
+  <div>
+    <Clinica class:list={[
+        variant === "white" ? "text-white" : "text-primary-600",
+        logoClass,
+        // "h-auto w-28"
+    ]} />
+  </div>
+    <!-- <img
+    src={clinica.src}
+    alt={alt}
+    class="h-30 w-auto mx-auto mb-6"
+  /> -->
+</a>

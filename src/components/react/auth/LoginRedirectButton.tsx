@@ -35,12 +35,12 @@ export const LoginRedirectButton: React.FC<LoginRedirectButtonProps> = ({
 
 		const roleToPath: Record<string, string> = {
 			admin: "/modules/admin/overview",
-			doctor: "/modules/doctor/1/overview",
-			medico: "/modules/doctor/1/overview",
+			doctor: "/modules/doctor",
+			medico: "/modules/doctor",
 			pacient: "/modules/pacient",
 			paciente: "/modules/pacient",
-			receptionist: "/modules/receptionist/1/overview",
-			recepcionista: "/modules/receptionist/1/overview",
+			receptionist: "/modules/receptionist",
+			recepcionista: "/modules/receptionist",
 		};
 
 		const nextPath = roleToPath[role] ?? roleToPath.admin;
