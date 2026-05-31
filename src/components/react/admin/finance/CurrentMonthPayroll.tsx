@@ -72,6 +72,7 @@ export const CurrentMonthPayroll = () => {
 	const canClosePayroll = canPayPayroll() && (pendingData?.totalUsers ?? 0) === 0;
 
 	const openPayment = (item: PendingSalarySummaryItem) => {
+		if (!canPayPayroll()) return;
 		setSelected(item);
 		setConfirmOpen(true);
 	};
@@ -106,7 +107,7 @@ export const CurrentMonthPayroll = () => {
 				<StatsCard title="Monto estimado" value={money(stats.total)} color="primary" icon={<FaCalendarDays size={18} />} variant="compact" />
 			</div>
 
-			<div className="rounded-2xl border border-primary-200 bg-white p-4">
+			{/* <div className="rounded-2xl border border-primary-200 bg-white p-4">
 				<div className="flex items-center justify-between gap-3 flex-wrap">
 					<div>
 						<h2 className="text-lg font-semibold text-primary-900">Payroll - {format(today, 'MMMM yyyy', { locale: es })}</h2>
@@ -154,7 +155,7 @@ export const CurrentMonthPayroll = () => {
 						<div className="text-sm text-cool-gray-60">No hay enlaces de nómina por el momento.</div>
 					)}
 				</div>
-			</div>
+			</div> */}
 
 			<div className="rounded-2xl border border-primary-200 bg-white p-4">
 				<div className="flex items-center justify-between gap-3 flex-wrap">
@@ -181,7 +182,13 @@ export const CurrentMonthPayroll = () => {
 									</div>
 									<div className="text-right">
 										<p className="text-lg font-semibold text-primary-900">{money(item.amount)}</p>
-										<Button variant="primary" size="sm" label="Pagar" onClick={() => openPayment(item)} />
+										<Button
+											variant="primary"
+											size="sm"
+											label="Pagar"
+											disabled={!canPayPayroll()}
+											onClick={() => openPayment(item)}
+										/>
 									</div>
 								</div>
 
@@ -232,10 +239,10 @@ export const CurrentMonthPayroll = () => {
 							</div>
 						</div>
 
-						<div className="flex justify-end gap-2 pt-2">
-							<Button variant="ghost" label="Cancelar" onClick={closePayment} />
-							<Button variant="primary" label="Confirmar pago" loading={paying === selected.userId} onClick={handlePay} />
-						</div>
+					<div className="flex justify-end gap-2 pt-2">
+						<Button variant="ghost" label="Cancelar" onClick={closePayment} />
+						<Button variant="primary" label="Confirmar pago" loading={paying === selected.userId} disabled={!canPayPayroll()} onClick={handlePay} />
+					</div>
 					</div>
 				) : null}
 			</Modal>
