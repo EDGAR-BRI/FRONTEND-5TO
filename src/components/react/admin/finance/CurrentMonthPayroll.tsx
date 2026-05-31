@@ -42,6 +42,13 @@ export const CurrentMonthPayroll = () => {
 	const [paying, setPaying] = useState<number | null>(null);
 	const [selected, setSelected] = useState<PendingSalarySummaryItem | null>(null);
 	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [payAllOpen, setPayAllOpen] = useState(false);
+	const [payingAll, setPayingAll] = useState(false);
+	const [payAllProgress, setPayAllProgress] = useState<{
+		current: string | null;
+		paid: string[];
+		failed: Array<{ name: string; error: string }>;
+	}>({ current: null, paid: [], failed: [] });
 
 	const today = new Date();
 
@@ -77,9 +84,21 @@ export const CurrentMonthPayroll = () => {
 		setConfirmOpen(true);
 	};
 
+	const openPayAll = () => {
+		if (!canPayPayroll() || (pendingData?.items.length ?? 0) === 0) return;
+		setPayAllProgress({ current: null, paid: [], failed: [] });
+		setPayAllOpen(true);
+	};
+
 	const closePayment = () => {
 		setConfirmOpen(false);
 		setSelected(null);
+	};
+
+	const closePayAll = () => {
+		if (payingAll) return;
+		setPayAllOpen(false);
+		setPayAllProgress({ current: null, paid: [], failed: [] });
 	};
 
 	const handlePay = async () => {
@@ -95,6 +114,43 @@ export const CurrentMonthPayroll = () => {
 		} finally {
 			setPaying(null);
 		}
+	};
+
+	const handlePayAll = async () => {
+		const items = pendingData?.items ?? [];
+		if (!canPayPayroll() || items.length === 0) return;
+
+		setPayingAll(true);
+		setPayAllProgress({ current: null, paid: [], failed: [] });
+		const paid: string[] = [];
+		const failed: Array<{ name: string; error: string }> = [];
+
+		for (const item of items) {
+			setPayAllProgress((prev) => ({ ...prev, current: item.userName }));
+			try {
+				await createSalaryPayment({ payrollId: item.payrollId, userId: item.userId, amount: item.amount });
+				paid.push(item.userName);
+				setPayAllProgress((prev) => ({
+					current: item.userName,
+					paid: [...paid],
+					failed: [...failed],
+				}));
+				await Promise.all([mutate(), mutatePending()]);
+			} catch (err) {
+				failed.push({ name: item.userName, error: err instanceof Error ? err.message : 'Error desconocido' });
+				setPayAllProgress((prev) => ({
+					current: item.userName,
+					paid: [...paid],
+					failed: [...failed],
+				}));
+			}
+		}
+
+		setPayingAll(false);
+		await Promise.all([mutate(), mutatePending()]);
+		await Alert.success('Proceso finalizado', `Pagos completados: ${paid.length} exitosos, ${failed.length} fallidos.`);
+		setPayAllOpen(false);
+		setPayAllProgress({ current: null, paid: [], failed: [] });
 	};
 
 	if (error || pendingError) return <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Error cargando la nómina del mes actual.</div>;
@@ -166,6 +222,16 @@ export const CurrentMonthPayroll = () => {
 					<div className="text-sm text-cool-gray-60">
 						{pendingLoading ? 'Cargando...' : `${pendingData?.totalUsers ?? 0} usuarios · ${money(pendingData?.totalAmount ?? 0)}`}
 					</div>
+				</div>
+
+				<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+					<p className="text-sm text-cool-gray-60">Revisa el detalle antes de pagar de forma secuencial.</p>
+					<Button
+						variant="primary"
+						label="Pagar todas"
+						disabled={!canPayPayroll() || (pendingData?.items.length ?? 0) === 0 || payingAll}
+						onClick={openPayAll}
+					/>
 				</div>
 
 				<div className="mt-4 space-y-3">
@@ -245,6 +311,70 @@ export const CurrentMonthPayroll = () => {
 					</div>
 					</div>
 				) : null}
+			</Modal>
+
+			<Modal isOpen={payAllOpen} onClose={closePayAll} title="Confirmar pago masivo">
+				<div className="space-y-4">
+					<div className="rounded-xl border border-primary-100 bg-primary-50 p-4">
+						<p className="text-sm text-cool-gray-60">Usuarios a pagar</p>
+						<p className="text-lg font-semibold text-primary-900">{pendingData?.items.length ?? 0} pendientes · {money(pendingData?.totalAmount ?? 0)}</p>
+					</div>
+
+					<div className="max-h-[340px] space-y-2 overflow-y-auto rounded-xl border border-primary-100 p-3">
+						{(pendingData?.items ?? []).map((item) => (
+							<div key={`pay-all-${item.userId}`} className="rounded-lg border border-primary-100 bg-white p-3 text-sm">
+								<div className="flex items-center justify-between gap-3">
+									<div>
+										<p className="font-semibold text-primary-900">{item.userName}</p>
+										<p className="text-cool-gray-60">{item.roleName} · CI {item.ci}</p>
+									</div>
+									<div className="text-right">
+										<p className="font-semibold text-primary-900">{money(item.amount)}</p>
+										<p className="text-xs text-cool-gray-50">{item.breakdown.length} conceptos</p>
+									</div>
+								</div>
+								<div className="mt-2 space-y-1">
+									{item.breakdown.map((line) => (
+										<div key={`pay-all-${item.userId}-${line.type}-${line.payrollLineId ?? line.label}`} className="flex items-center justify-between gap-3 text-xs text-cool-gray-70">
+											<p>{breakdownLabel(line)}</p>
+											<p className="font-medium text-primary-900">{money(line.amount)}</p>
+										</div>
+									))}
+								</div>
+							</div>
+						))}
+					</div>
+
+					{payingAll ? (
+						<div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+							<p className="font-semibold">Procesando: {payAllProgress.current ?? '...'} </p>
+							<p>Pagados: {payAllProgress.paid.length} · Fallidos: {payAllProgress.failed.length}</p>
+						</div>
+					) : null}
+
+					{payAllProgress.paid.length > 0 || payAllProgress.failed.length > 0 ? (
+						<div className="space-y-3 rounded-xl border border-primary-100 bg-white p-4">
+							<div>
+								<p className="text-sm font-semibold text-primary-900">Resultado parcial</p>
+								<p className="text-xs text-cool-gray-60">Se ejecuta de forma secuencial y continúa aunque falle un usuario.</p>
+							</div>
+							{payAllProgress.paid.length > 0 ? <p className="text-sm text-emerald-700">Pagados: {payAllProgress.paid.join(', ')}</p> : null}
+							{payAllProgress.failed.length > 0 ? (
+								<div className="space-y-1 text-sm text-red-700">
+									<p className="font-semibold">Fallidos</p>
+									{payAllProgress.failed.map((item) => (
+										<p key={`failed-${item.name}`}>{item.name}: {item.error}</p>
+									))}
+								</div>
+							) : null}
+						</div>
+					) : null}
+
+					<div className="flex justify-end gap-2 pt-2">
+						<Button variant="ghost" label="Cancelar" onClick={closePayAll} disabled={payingAll} />
+						<Button variant="primary" label={payingAll ? 'Procesando...' : 'Confirmar pagos'} loading={payingAll} disabled={!canPayPayroll() || (pendingData?.items.length ?? 0) === 0 || payingAll} onClick={handlePayAll} />
+					</div>
+				</div>
 			</Modal>
 		</div>
 	);
